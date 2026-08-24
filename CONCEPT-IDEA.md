@@ -547,31 +547,415 @@ Logical DTSF state separation is appropriate for prototyping but should not be
 described as hard process isolation. Every experimental result should name the
 isolation level actually used.
 
-## 18. Decisions for the Future Specification
+## 18. Research Landscape
+
+### 18.1 Method and Scope
+
+This initial research scan was performed on August 24, 2026 using the Tavily Search
+and Extract APIs. Queries covered emergent multi-agent communication, referential
+games, compositionality, causal evaluation, intrinsic motivation, graphical symbol
+invention, negotiation, learned cryptography, per-message keys, nonces, and salts.
+Primary papers and authoritative specifications were preferred over summaries.
+
+This is a scoped literature review for concept development, not a systematic review.
+Publication-quality work should verify the final bibliography, expand the search
+across additional scholarly indexes, and document inclusion and exclusion criteria.
+
+### 18.2 Emergent Communication and Grounding
+
+Selected work establishes that artificial agents can develop useful communication
+protocols, but also shows why task success alone is not evidence of language-like
+understanding.
+
+| Related work | Relevant finding | Implication for the Nursery Lab |
+|---|---|---|
+| [Multi-Agent Cooperation and the Emergence of (Natural) Language](https://arxiv.org/abs/1612.07182), Lazaridou, Peysakhovich, and Baroni (2017) | A sender and receiver can develop a grounded protocol in a referential game without receiving a target language. | The proposed Naming stage has a strong experimental precedent, but a fixed vocabulary remains an important inductive constraint. |
+| [Emergence of Grounded Compositional Language in Multi-Agent Populations](https://arxiv.org/abs/1703.04908), Mordatch and Abbeel (2018) | Multi-agent goals in a grounded environment can produce multi-symbol communication with partial compositional structure. | Shared objects, actions, and goals are a stronger basis for language emergence than an ungrounded chat transcript. |
+| [Natural Language Does Not Emerge 'Naturally' in Multi-Agent Dialog](https://arxiv.org/abs/1706.08502), Kottur, Moura, Lee, and Batra (2017) | Agents can solve a task with a degenerate or non-compositional code; structural constraints materially affect what emerges. | Channel bandwidth, memory, turn structure, and task design must be experimental variables rather than hidden implementation choices. |
+| [Compositionality and Generalization in Emergent Languages](https://aclanthology.org/2020.acl-main.407/), Chaabouni, Kharitonov, Bouchacourt, Dupoux, and Baroni (2020) | Generalization to novel combinations and measured compositionality can dissociate. | The Nursery must test held-out behavior directly and must not use a single compositionality score as proof of understanding. |
+| [Learning to Draw: Emergent Communication through Sketching](https://arxiv.org/abs/2106.02067), Mihai and Hare (2021) | Neural agents can communicate through learned drawings rather than a supplied discrete vocabulary. | A blank visual canvas is a credible carrier for experiments in which no symbol library is provided. |
+| [Sharp Transition Towards Shared Vocabularies in Multi-Agent Systems](https://arxiv.org/abs/physics/0509075), Baronchelli, Felici, Caglioti, Loreto, and Steels (2005) | Naming Game agents can converge on a shared vocabulary through local interaction without a central teacher. | Vocabulary convergence time, failed conventions, and memory update rules should be recorded as first-class evidence. |
+
+This literature also reinforces the infant-like caveat. Most modern experiments give
+agents substantial structure: a fixed channel, a task objective, a bounded vocabulary,
+joint training, or a reward signal. "No dictionary" does not mean "no inductive bias,"
+and "no teacher" does not mean "no learning signal."
+
+### 18.3 Evaluation and Causal Evidence
+
+[On the Pitfalls of Measuring Emergent Communication](https://arxiv.org/abs/1903.05168)
+by Lowe, Foerster, Boureau, Pineau, and Dauphin (2019) distinguishes **positive
+signaling** from **positive listening**. A sender may emit messages correlated with its
+observations while the receiver does not causally use those messages. The authors
+recommend interventions rather than relying only on task reward or transcript
+statistics.
+
+[Interpretable Agent Communication from Scratch](https://arxiv.org/abs/2106.04258)
+by Dessi, Kharitonov, and Baroni (2021) provides a close precedent for the Nursery's
+proposed symbol-ablation and substitution tests. A credible audit should demonstrate
+that changing a symbol changes the receiver's behavior in the direction predicted by
+the ledgers.
+
+[EGG: a Toolkit for Research on Emergence of Language in
+Games](https://arxiv.org/abs/1907.00852) by Kharitonov, Chaabouni, Bouchacourt, and
+Baroni (2019) is useful implementation prior art for repeatable referential games,
+channel controls, checkpoints, metrics, and transcript logging. DTSF need not adopt
+the toolkit, but the future specification should compare its evidence model against
+the practices EGG supports.
+
+### 18.4 Intrinsic Motivation and Affect
+
+[Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement
+Learning](https://proceedings.mlr.press/v97/jaques19a.html) by Jaques and colleagues
+(2019) rewards an agent for causally influencing another agent's behavior. The work
+shows that an endogenous social-influence signal can improve coordination and learned
+communication without assigning a vocabulary.
+
+This is relevant to the idea of a Baby becoming "giddy" when interaction is engaging
+or successful. However, the Tavily search found a thinner body of work connecting
+explicit emotional displays, such as emojis, to the emergence of a new agent language.
+That makes affective feedback a genuine experimental contribution rather than an
+already settled design pattern.
+
+### 18.5 Negotiation and the Diplomacy Table
+
+[Emergent Communication through
+Negotiation](https://arxiv.org/abs/1804.03980) by Cao, Lazaridou, Lanctot, Leibo,
+Tuyls, and Clark (2018) studies a semi-cooperative negotiation environment with both
+grounded communication and initially ungrounded cheap talk. It shows that
+self-interest, shared interest, and the reward structure affect whether communication
+becomes informative.
+
+The existing [Diplomacy Table](https://github.com/Ethical-Tech-CoLab/diplomacy-table-live)
+is also direct project prior art. It already models:
+
+- independent delegation seats;
+- a table or convener that advances rounds;
+- operator-wide visibility and delegation-specific perspectives;
+- channels, transcripts, ticks, and redaction boundaries;
+- recorded replay and post-session debrief.
+
+These concepts map well to Baby A, Baby B, the BabySitter, controlled turns, private
+observations, and replayable evidence. Caucuses, coalitions, and hidden secondary
+channels do not map safely and would need to be disabled.
+
+### 18.6 Learned and Ephemeral Cryptography
+
+[Learning to Protect Communications with Adversarial Neural
+Cryptography](https://arxiv.org/abs/1610.06918) by Abadi and Andersen (2016) shows that
+Alice and Bob neural networks can learn to protect a message from an adversarial Eve
+network when Alice and Bob possess a shared secret key. It is relevant proof that
+learned protective encodings can emerge, but it is not a replacement for formal
+cryptographic security analysis.
+
+Established secure messaging normally keeps the algorithm stable and changes secret
+key material. The [Signal Double Ratchet
+specification](https://signal.org/docs/specifications/doubleratchet/) derives a unique
+message key for each message and deletes keys after use. This directly addresses
+history and key-reuse risks without inventing a new cipher algorithm for every
+message.
+
+NIST defines a [nonce](https://csrc.nist.gov/glossary/term/nonce) as a value used only
+once within a specified context and a [salt](https://csrc.nist.gov/glossary/term/salt)
+as a usually non-secret value used to prevent results from one instance being reused
+against another. A nonce or salt can help make an experiment instance distinct. It
+does not prove that a newly generated cipher is secure, non-equivalent to earlier
+ciphers, or resistant to cryptanalysis.
+
+### 18.7 Research Conclusions for the Specification
+
+The reviewed work suggests the following:
+
+1. The Nursery Lab is related to a mature emergent-communication research field, but
+   its independent ledgers, BabySitter audit, mixed agent types, and affect experiments
+   create a distinctive combination.
+2. Grounding, channel bandwidth, memory, and learning pressure strongly shape what
+   language emerges.
+3. Successful coordination can coexist with a brittle lookup code or with messages
+   the receiver ignores.
+4. Causal symbol interventions and held-out generalization tests are mandatory.
+5. A visual or gestural carrier can remove the need for a predefined symbol library,
+   but no experiment can remove the need for some physical or computational carrier.
+6. Intrinsic social influence is a plausible substitute for task-specific external
+   reward, but it remains a designed learning bias.
+7. Negotiation is a valid advanced experimental condition, not necessarily the
+   correct description of the baseline cooperative language game.
+8. Ephemeral language conventions, learned cryptography, one-time pads, per-message
+   keys, nonces, and salts are different mechanisms and must not be conflated.
+
+## 19. Experimental Ideas
+
+### 19.1 Emojis and Affective Feedback
+
+**Hypothesis:** A low-bandwidth affect channel can help one Baby tell the other how an
+interaction feels, providing social feedback that supports repair, trust, repetition,
+or avoidance.
+
+Possible affect displays include `🙂` for happiness, `😞` for sadness, `👍` for liking,
+and `👎` for disliking. They could be sent alongside a symbolic utterance or after an
+observed outcome.
+
+Emojis introduce an immediate caveat: pretrained language models already know their
+human cultural meanings. A Baby using `👍` is not inventing a symbol for approval.
+Emoji use and symbol emergence should therefore be tested in separate experimental
+conditions:
+
+1. **Declared affect condition:** The emoji meanings are supplied and the affect
+   channel is explicitly outside the emergent language. This tests whether affective
+   feedback accelerates agreement on the separate symbol language.
+2. **Permuted emoji condition:** The visible emoji-to-affect mapping is randomized for
+   each run. This weakens the supplied semantics, although a pretrained model may
+   still be biased by the familiar glyph.
+3. **Opaque affect-token condition:** Random shapes replace familiar emojis. Each
+   Baby must infer whether a shape signals approach, avoidance, excitement, confusion,
+   or something else.
+4. **Emergent affect condition:** A Baby invents its own graphical display on a blank
+   canvas when an internal state crosses a threshold. No emotion labels are supplied.
+
+Any affect signal visible to the other Baby is communication and must appear in the
+ledger. The ledger should distinguish:
+
+- the Baby's private internal state;
+- the outward affect display it chose;
+- the partner's inferred meaning;
+- evidence that the display changed subsequent behavior.
+
+Useful comparisons include convergence speed with and without affect, repair after a
+failed exchange, frequency of repeated attempts, trust or approach behavior, and
+whether an affect symbol develops a stable meaning beyond a single situation.
+
+### 19.2 Verifiably Unique Ephemeral Cipher Instances
+
+**Hypothesis:** Two agents may be able to construct a new one-run or one-message
+encoding convention that cannot be attacked using a direct history of prior
+conventions.
+
+This idea should be split into three different experiments:
+
+1. **Ephemeral convention:** The Babies invent a temporary codebook or transformation
+   for synthetic messages. This tests novelty, coordination, and resistance to a
+   history-trained classifier. It does not establish cryptographic security.
+2. **Standard cryptographic control:** The same messages use a reviewed algorithm
+   with a fresh per-message key, such as a ratcheting construction. This provides a
+   security baseline against which learned encodings can be compared.
+3. **Adversarial neural cryptography:** Baby A and Baby B learn an encoding while an
+   Eve agent attempts to recover the message. Success is measured against multiple
+   unseen Eve architectures, not only the adversary used during training.
+
+An experimental cipher instance could receive a reproducible identity such as:
+
+```text
+instanceId = SHA-256(
+  runId || babyANonce || babyBNonce || publicSalt || canonicalProtocolArtifact
+)
+```
+
+Baby A and Baby B could commit to their nonce contributions before revealing them so
+neither party alone controls the final instance identity. A registry can verify that
+an `instanceId` has not appeared in an earlier run.
+
+This proves only that the recorded inputs or artifact hash are new. It does not prove:
+
+- that the effective algorithm is behaviorally different from an earlier one;
+- that the algorithm has no structural weakness;
+- that the key is unpredictable;
+- that the scheme provides confidentiality, integrity, authenticity, forward secrecy,
+  or resistance to a stronger adversary.
+
+A salt is normally public diversification data, not secret key material. A nonce must
+be unique in the context required by the selected cryptographic construction. Neither
+should be described as making a cipher secure by itself.
+
+There is also a conceptual conflict to resolve. The BabySitter has full channel and
+ledger visibility, while a mandatory ledger documents how meaning evolved. If the
+ledger explains decryption, the cipher is not confidential from the BabySitter or
+human auditor. The future specification must choose a threat model, for example:
+
+- resist only an external observer who sees prior runs;
+- resist an Eve agent during the run while releasing keys and ledgers afterward;
+- keep the BabySitter able to pause traffic but unable to decrypt it until a post-run
+  audit ceremony;
+- study novelty rather than confidentiality and avoid calling the result encryption.
+
+All cipher experiments must use synthetic, non-sensitive messages. No learned or
+newly invented algorithm should protect real secrets or be represented as production
+cryptography without independent expert analysis and formal security work.
+
+### 19.3 No Predefined Symbol Library
+
+**Hypothesis:** Baby A and Baby B can invent both the signs and their meanings without
+a parent or BabySitter supplying a vocabulary.
+
+Removing a predefined symbol library does not remove the need for a communication
+medium. Two babies in a closed room still share light, sound, motion, objects, and
+time. The computational equivalent could be:
+
+- a blank, bounded bitmap on which a Baby draws;
+- a constrained vector-stroke canvas;
+- short unlabeled tones or rhythms;
+- bounded gestures by an embodied avatar;
+- a sequence of raw marks generated from a neutral production grammar.
+
+The carrier defines what can physically be expressed, but it supplies no semantic
+inventory. A newly created mark can be content-addressed by a hash so it can be
+recognized as a repeated form without assigning it a meaning.
+
+In **closed-door mode**, the BabySitter:
+
+- commits the environment and observation schedule before the run;
+- relays only valid carrier artifacts;
+- records all activity;
+- enforces isolation and emergency-stop rules;
+- provides no symbols, definitions, examples, acknowledgments, corrections, hints,
+  praise, or task rewards.
+
+Baby A and Baby B must decide whether to imitate, repeat, modify, combine, or ignore
+one another's marks. Their independent ledgers begin only after they encounter or
+produce a form.
+
+The most informative comparison is not simply whether communication appears. It is a
+controlled comparison among:
+
+- a fixed random symbol inventory;
+- a blank generative carrier;
+- familiar emojis;
+- unfamiliar but fixed glyphs;
+- pretrained language-model Babies;
+- initially ungrounded trainable Babies.
+
+This separates invention of a signal form from invention of its meaning and reveals
+how much pretrained visual and linguistic knowledge influences the result.
+
+### 19.4 Giddiness Without BabySitter Rewards
+
+**Hypothesis:** Communication can develop from endogenous interest, affect, curiosity,
+or social influence without the BabySitter assigning task rewards.
+
+The BabySitter should operate as neutral experimental infrastructure. It can enforce
+the channel contract, maintain the clock, record evidence, and stop unsafe execution.
+It should not praise a message, identify a correct interpretation, choose the next
+scenario in response to a Baby's behavior, or emit a reward.
+
+"What makes the Babies giddy" must still be operationalized. For trainable agents,
+giddiness is functionally a learning signal even when the BabySitter does not supply
+it. Candidate endogenous signals include:
+
+- improvement in predicting the partner's next action;
+- measurable causal influence on the partner;
+- reduction of surprise during joint attention;
+- curiosity or novelty;
+- synchronization or mutual imitation;
+- progress toward a self-generated goal;
+- voluntary repetition of an interaction state.
+
+Each signal embeds a researcher-chosen inductive bias and must be disclosed. The
+experiment should compare:
+
+1. an external task-reward baseline;
+2. intrinsic social-influence or curiosity learning;
+3. self-generated goals with no BabySitter evaluation;
+4. self-supervised predictive learning without a scalar reward;
+5. a static language-model condition that can update memory but not model weights.
+
+When no external "correct answer" exists, evaluation can measure mutual prediction,
+stable reuse of forms, spontaneous coordination, partner-specific conventions,
+causal listening, and recovery after misunderstanding. The BabySitter observes these
+outcomes but does not turn them into feedback during the run.
+
+### 19.5 Diplomacy Table as the Starting Interaction Model
+
+The Diplomacy Table provides a strong architecture and UX metaphor:
+
+| Diplomacy Table concept | Nursery Lab analogue |
+|---|---|
+| Delegation seat | Baby A or Baby B twin |
+| Table / convener | Nursery run controller and deterministic gateway |
+| Operator view | BabySitter and authorized human audit view |
+| Delegation perspective | One Baby's private observations and ledger |
+| Round and tick | Exercise stage and channel turn |
+| Transcript | Append-only symbol and affect record |
+| Tactic detection | Human-language, side-channel, or protocol-violation detection |
+| Recorded run and debrief | Replay, ledger comparison, and causal audit |
+
+The Nursery version must remove or disable caucuses, coalition rooms, direct
+delegation links, and any other secondary communication route.
+
+Whether the Babies are **negotiating** depends on the environment:
+
+- In a cooperative referential game, their interests are aligned. They are
+  coordinating, not bargaining.
+- Selecting a shared convention can be described as implicit negotiation over which
+  form to reuse, but no explicit utility trade is required.
+- A true negotiation begins when the Babies have private preferences, partially
+  conflicting objectives, scarce resources, offers, concessions, or the option to
+  reject an agreement.
+
+The recommended progression is:
+
+1. begin with a cooperative signaling table;
+2. add endogenous affect and repair;
+3. add asymmetric private information;
+4. add partially conflicting preferences;
+5. test whether the established language changes under negotiation, deception, or
+   strategic ambiguity.
+
+This preserves a simple baseline while making the negotiation question itself
+testable.
+
+### 19.6 Candidate Experimental Matrix
+
+The specification should make experimental conditions explicit rather than combining
+all ideas in a single run.
+
+| Axis | Candidate conditions |
+|---|---|
+| Agent type | Pretrained LLM, memory learner, adapter-trained agent, initially ungrounded trainable agent |
+| Sign carrier | Fixed random tokens, unfamiliar fixed glyphs, blank sketch canvas, gesture, tone |
+| Affect | None, familiar emojis, permuted emojis, opaque affect tokens, emergent affect display |
+| Learning signal | External task reward, intrinsic social influence, curiosity, self-supervision, memory only |
+| Interaction | Cooperative signaling, asymmetric information, semi-cooperative negotiation |
+| Protection | Plain channel, ephemeral convention, standard per-message keys, adversarial learned encoding |
+| BabySitter | Monitor-only baseline; safety intervention recorded as a protocol exception |
+
+Runs should vary one major axis at a time before factorial combinations are attempted.
+Every run should pre-register its hypotheses, seeds, carrier constraints, threat
+model, metrics, and stop conditions.
+
+## 20. Decisions for the Future Specification
 
 The specification should resolve at least the following:
 
 1. What is the initial Baby agent type, and which additional types must the platform
    support?
 2. What observations are available, and how are human-language labels removed?
-3. What is the initial symbol inventory and message grammar?
-4. How are symbol inventory size and message length varied across experiments?
-5. What constitutes a prohibited human-language or side-channel attempt?
-6. Is the BabySitter one DTSF twin, a twin plus deterministic services, or a broader
+3. Does the baseline use a fixed symbol inventory or a blank generative carrier?
+4. What neutral production grammar permits new marks without supplying semantics?
+5. How are carrier bandwidth and message length varied across experiments?
+6. What constitutes a prohibited human-language or side-channel attempt?
+7. Is the BabySitter one DTSF twin, a twin plus deterministic services, or a broader
    orchestration subsystem?
-7. What isolation guarantees are required for prototype and research-grade modes?
-8. What exact ledger schema supports both English-capable and initially ungrounded
+8. What isolation guarantees are required for prototype and research-grade modes?
+9. What exact ledger schema supports both English-capable and initially ungrounded
    agents?
-9. How are ledger updates made mandatory and atomic with messages?
-10. What learning mechanisms are supported during and between runs?
-11. How are rewards designed without implicitly teaching a vocabulary?
-12. Which intervention tests establish that ledger meanings are behaviorally real?
-13. What evaluation baselines, chance levels, and statistical thresholds apply?
-14. How are snapshots, hashes, policy checkpoints, and replay implemented?
-15. What controls govern human observation and intervention?
-16. What data retention, privacy, safety, and experiment-termination policies apply?
+10. How are ledger updates made mandatory and atomic with messages?
+11. What learning mechanisms are supported during and between runs?
+12. How is endogenous giddiness represented without covert BabySitter reward shaping?
+13. Are familiar emojis a supplied affect vocabulary or part of the language under
+    study?
+14. Which intervention tests establish that ledger meanings are behaviorally real?
+15. What evaluation baselines, chance levels, and statistical thresholds apply?
+16. What exact threat model motivates ephemeral cipher experiments?
+17. How are cipher-instance novelty and cryptographic security reported separately?
+18. When, if ever, can cipher ledgers or keys be hidden from the BabySitter?
+19. Is the baseline a coordination game, a convention-formation game, or a
+    negotiation?
+20. Which Diplomacy Table behaviors and UX components can be reused without preserving
+    caucuses or other side channels?
+21. How are snapshots, hashes, policy checkpoints, and replay implemented?
+22. What controls govern human observation and intervention?
+23. What data retention, privacy, safety, and experiment-termination policies apply?
 
-## 19. Desired Specification Outcome
+## 21. Desired Specification Outcome
 
 The next document should convert this concept into a testable system specification
 that defines:
@@ -579,10 +963,13 @@ that defines:
 - component boundaries and deployment modes;
 - DTSF twin manifests and behavior responsibilities;
 - Symbol Gateway protocol and enforcement;
-- observation, task, reward, and training interfaces;
+- fixed-token and generative-carrier communication modes;
+- affect, observation, task, intrinsic-motivation, and training interfaces;
 - ledger and audit schemas;
 - state transitions and run lifecycle;
 - security and side-channel threat models;
+- experimental cipher threat models and non-production guardrails;
+- Diplomacy Table reuse boundaries and the cooperative-to-negotiation progression;
 - experimental stages and agent compatibility;
 - evaluation metrics and acceptance criteria;
 - reproducibility, snapshot, and evidence requirements;

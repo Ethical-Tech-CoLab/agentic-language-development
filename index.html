@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="A research concept for grounded, auditable language emergence between isolated artificial agents."
+  >
+  <meta name="theme-color" content="#0b1020">
+  <title>Agentic Language Development | Ethical Tech CoLab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b16;
+      --surface: #10182b;
+      --surface-strong: #17213a;
+      --border: #293756;
+      --text: #eef3ff;
+      --muted: #a8b4cc;
+      --blue: #71a7ff;
+      --cyan: #56d7e5;
+      --purple: #bc8cff;
+      --green: #6ce2ad;
+      --yellow: #ffd479;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(86, 215, 229, 0.12), transparent 28rem),
+        radial-gradient(circle at 85% 15%, rgba(188, 140, 255, 0.13), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--cyan);
+    }
+
+    a:focus-visible,
+    .button:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(calc(100% - 2rem), var(--max));
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid rgba(168, 180, 204, 0.18);
+      background: rgba(7, 11, 22, 0.82);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    nav {
+      min-height: 4.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      color: var(--text);
+      font-weight: 750;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+    }
+
+    .brand span {
+      color: var(--cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.94rem;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    main {
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 7.5rem 0 5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(19rem, 0.8fr);
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 1rem;
+      color: var(--green);
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 13ch;
+      margin-bottom: 1.5rem;
+      font-size: clamp(3rem, 8vw, 6.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
+    }
+
+    h1 .gradient {
+      background: linear-gradient(100deg, var(--cyan), var(--blue), var(--purple));
+      background-clip: text;
+      color: transparent;
+    }
+
+    h2 {
+      max-width: 19ch;
+      margin-bottom: 1rem;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+    }
+
+    .lede {
+      max-width: 64ch;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.28rem);
+    }
+
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+
+    .button {
+      min-height: 3rem;
+      padding: 0.75rem 1.15rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+    .button.primary {
+      border-color: transparent;
+      background: linear-gradient(110deg, #257fd7, #7852c8);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      border-color: var(--cyan);
+    }
+
+    .architecture {
+      min-height: 24rem;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      border-radius: 1.4rem;
+      display: grid;
+      gap: 1rem;
+      background: linear-gradient(160deg, rgba(23, 33, 58, 0.94), rgba(16, 24, 43, 0.72));
+      box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.3);
+    }
+
+    .role {
+      padding: 1rem;
+      border: 1px solid rgba(113, 167, 255, 0.34);
+      border-radius: 0.9rem;
+      background: rgba(7, 11, 22, 0.66);
+    }
+
+    .role strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      color: var(--blue);
+    }
+
+    .role small {
+      color: var(--muted);
+    }
+
+    .babies {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .channel {
+      padding: 0.75rem;
+      border: 1px dashed var(--purple);
+      border-radius: 999px;
+      color: var(--purple);
+      font-family: "Cascadia Code", "Fira Code", monospace;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    section {
+      padding: 5.5rem 0;
+    }
+
+    .section-intro {
+      max-width: 66ch;
+      margin-bottom: 2.5rem;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      padding: 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: rgba(16, 24, 43, 0.7);
+    }
+
+    .card .number {
+      color: var(--green);
+      font-family: "Cascadia Code", "Fira Code", monospace;
+      font-size: 0.82rem;
+    }
+
+    .card p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .callout {
+      padding: clamp(1.5rem, 5vw, 3rem);
+      border: 1px solid rgba(255, 212, 121, 0.38);
+      border-radius: 1.25rem;
+      background: linear-gradient(120deg, rgba(255, 212, 121, 0.08), rgba(188, 140, 255, 0.08));
+    }
+
+    .callout h2 {
+      color: var(--yellow);
+    }
+
+    .callout p:last-child {
+      margin-bottom: 0;
+    }
+
+    .research-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .research-item {
+      padding: 1.1rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .research-item strong {
+      color: var(--cyan);
+    }
+
+    .research-item p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+    }
+
+    .cta {
+      padding: clamp(2rem, 6vw, 4.5rem);
+      border: 1px solid rgba(86, 215, 229, 0.35);
+      border-radius: 1.5rem;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(86, 215, 229, 0.14), transparent 20rem),
+        var(--surface);
+    }
+
+    .cta h2 {
+      max-width: 24ch;
+    }
+
+    .cta p {
+      max-width: 65ch;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 2.5rem 0;
+      border-top: 1px solid rgba(168, 180, 204, 0.16);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    @media (max-width: 850px) {
+      .hero {
+        padding-top: 5rem;
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      nav,
+      .nav-links {
+        align-items: flex-start;
+      }
+
+      nav {
+        padding: 1rem 0;
+        flex-direction: column;
+      }
+
+      .hero {
+        padding-top: 3.5rem;
+      }
+
+      .grid,
+      .research-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="shell" aria-label="Primary navigation">
+      <a class="brand" href="#top">Ethical Tech <span>CoLab</span></a>
+      <div class="nav-links">
+        <a href="#concept">Concept</a>
+        <a href="#experiments">Experiments</a>
+        <a href="#research">Research</a>
+        <a href="https://github.com/Ethical-Tech-CoLab/agentic-language-development">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <div class="shell hero">
+      <div>
+        <p class="eyebrow">Research concept / Pre-specification</p>
+        <h1>Can agents invent a <span class="gradient">language?</span></h1>
+        <p class="lede">
+          Two isolated agents. No human language between them. Shared experiences,
+          independent meaning ledgers, and a silent observer preserving the full
+          history of how understanding emerges.
+        </p>
+        <div class="actions">
+          <a
+            class="button primary"
+            href="https://github.com/Ethical-Tech-CoLab/agentic-language-development/blob/main/CONCEPT-IDEA.md"
+          >
+            Read the detailed concept
+          </a>
+          <a
+            class="button"
+            href="https://github.com/Ethical-Tech-CoLab/agentic-language-development"
+          >
+            Explore the repository
+          </a>
+        </div>
+      </div>
+
+      <aside class="architecture" aria-label="Nursery Lab conceptual architecture">
+        <div class="role">
+          <strong>BabySitter / Nursery</strong>
+          <small>Controls the experiment, observes every turn, teaches nothing.</small>
+        </div>
+        <div class="babies">
+          <div class="role">
+            <strong>Baby A</strong>
+            <small>Private state, learner, independent ledger.</small>
+          </div>
+          <div class="role">
+            <strong>Baby B</strong>
+            <small>Private state, learner, independent ledger.</small>
+          </div>
+        </div>
+        <div class="channel">Symbol Gateway // only permitted route</div>
+        <div class="role">
+          <strong>Immutable evidence</strong>
+          <small>Transcript, ledger revisions, outcomes, snapshots, and interventions.</small>
+        </div>
+      </aside>
+    </div>
+
+    <section id="concept">
+      <div class="shell">
+        <p class="eyebrow">The premise</p>
+        <h2>A grounded protocol, not a disguised dictionary.</h2>
+        <p class="section-intro">
+          Baby A and Baby B encounter shared objects, actions, relationships, and
+          consequences. They exchange only permitted non-human signals and revise
+          private hypotheses about what those signals mean.
+        </p>
+        <div class="grid">
+          <article class="card">
+            <span class="number">01</span>
+            <h3>Isolated twins</h3>
+            <p>Separate DTSF twins prevent shared memory, direct endpoints, and hidden coordination.</p>
+          </article>
+          <article class="card">
+            <span class="number">02</span>
+            <h3>Shared experience</h3>
+            <p>Meaning is grounded through joint attention, action, success, failure, and repair.</p>
+          </article>
+          <article class="card">
+            <span class="number">03</span>
+            <h3>Independent ledgers</h3>
+            <p>Each Baby records first use, provisional meaning, evidence, contradiction, and revision.</p>
+          </article>
+          <article class="card">
+            <span class="number">04</span>
+            <h3>Controlled channel</h3>
+            <p>A deterministic gateway rejects human language, tools, attachments, and side routes.</p>
+          </article>
+          <article class="card">
+            <span class="number">05</span>
+            <h3>Causal evaluation</h3>
+            <p>Symbol swaps and ablations test whether messages actually change receiver behavior.</p>
+          </article>
+          <article class="card">
+            <span class="number">06</span>
+            <h3>Replayable evidence</h3>
+            <p>Every run preserves configuration, observations, turns, outcomes, and policy checkpoints.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell callout">
+        <p class="eyebrow">An essential caveat</p>
+        <h2>"Infant-like" is an analogy, not a claim of equivalence.</h2>
+        <p>
+          Pretrained language models already contain human-language knowledge.
+          Restricting their external channel does not make them language-naive. With
+          those models, the experiment studies a newly shared external protocol.
+        </p>
+        <p>
+          Stronger language-acquisition claims require initially ungrounded trainable
+          agents. Results must always identify the agent type, learning mechanism,
+          observation encoding, and reward conditions.
+        </p>
+      </div>
+    </section>
+
+    <section id="experiments">
+      <div class="shell">
+        <p class="eyebrow">Experimental directions</p>
+        <h2>Change one condition. Observe what language becomes.</h2>
+        <p class="section-intro">
+          The concept defines independent experiment axes so affect, symbol creation,
+          motivation, negotiation, and protective encodings can be tested rather than
+          blended into one ambiguous run.
+        </p>
+        <div class="grid">
+          <article class="card">
+            <span class="number">AFFECT</span>
+            <h3>Emoji and emotion</h3>
+            <p>Compare familiar emojis, permuted meanings, opaque affect tokens, and invented displays.</p>
+          </article>
+          <article class="card">
+            <span class="number">FORM</span>
+            <h3>No symbol library</h3>
+            <p>Replace fixed tokens with a blank sketch canvas, tones, gestures, or neutral marks.</p>
+          </article>
+          <article class="card">
+            <span class="number">MOTIVE</span>
+            <h3>Endogenous giddiness</h3>
+            <p>Test curiosity, social influence, prediction progress, and self-generated goals.</p>
+          </article>
+          <article class="card">
+            <span class="number">CIPHER</span>
+            <h3>Ephemeral conventions</h3>
+            <p>Separate code novelty from cryptographic security and compare against per-message keys.</p>
+          </article>
+          <article class="card">
+            <span class="number">TABLE</span>
+            <h3>Negotiation</h3>
+            <p>Progress from cooperative signaling to private preferences, offers, and strategic ambiguity.</p>
+          </article>
+          <article class="card">
+            <span class="number">MODEL</span>
+            <h3>Different minds</h3>
+            <p>Compare pretrained LLMs, memory learners, adapters, and initially ungrounded agents.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="research">
+      <div class="shell">
+        <p class="eyebrow">Research foundation</p>
+        <h2>Built on emergent communication, with stricter auditability.</h2>
+        <p class="section-intro">
+          The concept draws on referential games, grounded multi-agent learning,
+          compositionality research, causal communication metrics, intrinsic social
+          motivation, graphical signaling, negotiation, and adversarial neural
+          cryptography.
+        </p>
+        <div class="research-list">
+          <div class="research-item">
+            <strong>Grounding matters.</strong>
+            <p>Shared environments and actions provide evidence from which symbol meaning can emerge.</p>
+          </div>
+          <div class="research-item">
+            <strong>Success can mislead.</strong>
+            <p>Agents may solve a task with a brittle lookup code or messages the receiver ignores.</p>
+          </div>
+          <div class="research-item">
+            <strong>Structure is not guaranteed.</strong>
+            <p>Bandwidth, memory, task pressure, and representation shape compositionality.</p>
+          </div>
+          <div class="research-item">
+            <strong>Intervention is essential.</strong>
+            <p>Ablation and substitution are stronger evidence than a fluent transcript or ledger alone.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell cta">
+        <p class="eyebrow">Go deeper</p>
+        <h2>Read the complete concept and research review.</h2>
+        <p>
+          The detailed document covers the architecture, channel contract, mandatory
+          ledgers, learning loop, research sources, experimental matrix, cipher
+          caveats, risks, success criteria, and decisions required for the future
+          specification.
+        </p>
+        <div class="actions">
+          <a
+            class="button primary"
+            href="https://github.com/Ethical-Tech-CoLab/agentic-language-development/blob/main/CONCEPT-IDEA.md"
+          >
+            Open CONCEPT-IDEA.md
+          </a>
+          <a
+            class="button"
+            href="https://github.com/Ethical-Tech-CoLab/diplomacy-table-live"
+          >
+            See Diplomacy Table
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-row">
+      <span>Agentic Language Development</span>
+      <span>An Ethical Tech CoLab research concept · MIT licensed</span>
+    </div>
+  </footer>
+</body>
+</html>
