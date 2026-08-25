@@ -57,7 +57,8 @@ language.
 
 The concept includes research tracks for:
 
-- familiar, permuted, opaque, and emergent affect symbols;
+- a six-display affect allowlist for Happy, Sad, Laughing, Crying, Confused, and
+  Surprised, plus permuted, opaque, derived, and emergent affect controls;
 - blank-canvas communication without a predefined symbol library;
 - endogenous "giddiness," curiosity, and social influence without BabySitter rewards;
 - ephemeral coding conventions and adversarial neural cryptography;
@@ -66,6 +67,12 @@ The concept includes research tracks for:
 
 These are experimental hypotheses, not claims of established capability or
 cryptographic security.
+
+The Babies never receive a general emoji set. The declared affect condition permits
+one allowlisted display only in a fixed post-outcome feedback window. It does not
+permit emoji sequences, arbitrary timing, modifiers, reactions, or custom glyphs.
+Because even six displays can become a small second alphabet, the experiment must
+audit whether affect choices leak task information beyond their stated purpose.
 
 ## Important Caveat
 

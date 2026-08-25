@@ -691,26 +691,65 @@ The reviewed work suggests the following:
 interaction feels, providing social feedback that supports repair, trust, repetition,
 or avoidance.
 
-Possible affect displays include `🙂` for happiness, `😞` for sadness, `👍` for liking,
-and `👎` for disliking. They could be sent alongside a symbolic utterance or after an
-observed outcome.
+The default declared affect palette should be limited to exactly six displays:
+
+| Affect ID | Display | Declared meaning |
+|---|---|---|
+| `A1` | `😀` | Happy |
+| `A2` | `😞` | Sad |
+| `A3` | `😆` | Laughing |
+| `A4` | `😢` | Crying |
+| `A5` | `😕` | Confused |
+| `A6` | `😮` | Surprised |
+
+The affect IDs and English labels are gateway-internal documentation and are never
+sent to either Baby. A Baby receives only the single rendered display.
+
+No other emoji, reaction, Unicode pictograph, skin-tone modifier, variation, custom
+emoji, or combined glyph is available to either Baby.
 
 Emojis introduce an immediate caveat: pretrained language models already know their
-human cultural meanings. A Baby using `👍` is not inventing a symbol for approval.
-Emoji use and symbol emergence should therefore be tested in separate experimental
-conditions:
+human cultural meanings. A Baby using `😀` is not inventing a symbol for happiness.
+The palette is supplied feedback vocabulary and must be explicitly outside the
+emergent language.
 
-1. **Declared affect condition:** The emoji meanings are supplied and the affect
-   channel is explicitly outside the emergent language. This tests whether affective
-   feedback accelerates agreement on the separate symbol language.
-2. **Permuted emoji condition:** The visible emoji-to-affect mapping is randomized for
-   each run. This weakens the supplied semantics, although a pretrained model may
-   still be biased by the familiar glyph.
-3. **Opaque affect-token condition:** Random shapes replace familiar emojis. Each
-   Baby must infer whether a shape signals approach, avoidance, excitement, confusion,
-   or something else.
-4. **Emergent affect condition:** A Baby invents its own graphical display on a blank
-   canvas when an internal state crosses a threshold. No emotion labels are supplied.
+Constraining the vocabulary is necessary but not sufficient. Six displays still form
+a six-symbol alphabet capable of carrying approximately 2.6 bits in each use. Across
+multiple turns, the Babies could repurpose even this small palette as a second
+language. The gateway must therefore constrain the channel itself:
+
+1. The affect display occupies a separate typed field and can never appear inside a
+   symbol message.
+2. The gateway opens an affect window only after a defined action or outcome, never at
+   an arbitrary point selected by a Baby. Window frequency is fixed before the run;
+   neither Baby can request extra opportunities.
+3. Exactly one allowlisted display is delivered in the window. There are no sequences,
+   repetitions, combinations, modifiers, or custom forms.
+4. Delivery time, envelope size, and presentation are normalized so timing and message
+   shape do not add another signal.
+5. The receiving Baby cannot reply through the affect channel until the next
+   gateway-defined feedback window.
+6. The gateway rejects and audits every non-allowlisted code point or malformed affect
+   payload.
+7. Analysis tests whether affect choices correlate with objects, actions, or message
+   meanings after controlling for the stated emotional context. Unexpected correlation
+   is treated as suspected channel leakage.
+
+The no-affect condition remains the primary control. Affect experiments should then
+compare:
+
+1. **Six-display declared affect:** The fixed palette above is supplied, semantically
+   declared, and subject to the strict feedback-window contract.
+2. **Six-display permuted affect:** The same six visible displays are randomly mapped
+   to affect states for each run. A pretrained model may still be biased by the
+   familiar glyphs.
+3. **Opaque affect tokens:** Six unfamiliar shapes replace the familiar emojis while
+   preserving the same feedback-window constraints.
+4. **Derived affect:** The gateway maps a Baby's separately measured internal affect
+   state to one display instead of allowing an unconstrained message choice.
+5. **Emergent affect:** A separate experiment permits invented graphical displays.
+   Because this creates another generative language channel, it does not use the
+   constrained emoji contract and must be analyzed as language emergence.
 
 Any affect signal visible to the other Baby is communication and must appear in the
 ledger. The ledger should distinguish:
@@ -722,7 +761,8 @@ ledger. The ledger should distinguish:
 
 Useful comparisons include convergence speed with and without affect, repair after a
 failed exchange, frequency of repeated attempts, trust or approach behavior, and
-whether an affect symbol develops a stable meaning beyond a single situation.
+whether the fixed affect channel leaks task or referent information beyond its
+declared purpose.
 
 ### 19.2 Verifiably Unique Ephemeral Cipher Instances
 
@@ -818,7 +858,7 @@ controlled comparison among:
 
 - a fixed random symbol inventory;
 - a blank generative carrier;
-- familiar emojis;
+- the six-display affect allowlist;
 - unfamiliar but fixed glyphs;
 - pretrained language-model Babies;
 - initially ungrounded trainable Babies.
@@ -911,7 +951,7 @@ all ideas in a single run.
 |---|---|
 | Agent type | Pretrained LLM, memory learner, adapter-trained agent, initially ungrounded trainable agent |
 | Sign carrier | Fixed random tokens, unfamiliar fixed glyphs, blank sketch canvas, gesture, tone |
-| Affect | None, familiar emojis, permuted emojis, opaque affect tokens, emergent affect display |
+| Affect | None, six-display allowlist, six-display permuted mapping, six opaque tokens, derived affect, emergent affect display |
 | Learning signal | External task reward, intrinsic social influence, curiosity, self-supervision, memory only |
 | Interaction | Cooperative signaling, asymmetric information, semi-cooperative negotiation |
 | Protection | Plain channel, ephemeral convention, standard per-message keys, adversarial learned encoding |
@@ -940,8 +980,8 @@ The specification should resolve at least the following:
 10. How are ledger updates made mandatory and atomic with messages?
 11. What learning mechanisms are supported during and between runs?
 12. How is endogenous giddiness represented without covert BabySitter reward shaping?
-13. Are familiar emojis a supplied affect vocabulary or part of the language under
-    study?
+13. How does the gateway enforce the six-display allowlist, fixed feedback windows,
+    normalized delivery, and affect-channel leakage tests?
 14. Which intervention tests establish that ledger meanings are behaviorally real?
 15. What evaluation baselines, chance levels, and statistical thresholds apply?
 16. What exact threat model motivates ephemeral cipher experiments?
