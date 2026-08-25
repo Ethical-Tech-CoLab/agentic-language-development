@@ -1022,7 +1022,282 @@ as a separate, weaker-isolation condition.
 This experiment should answer not merely whether a language emerges, but **which
 learning process caused it to emerge**.
 
-## 20. Decisions for the Future Specification
+## 20. Designing Baby-Like Agents
+
+### 20.1 Capability Constraints, Not an Age Persona
+
+The instruction "act like a one-year-old" is not a sound experimental mechanism. A
+pretrained model is likely to produce a culturally learned caricature of infancy:
+baby talk, simplified grammar, emotional dependence, or behaviors copied from human
+descriptions of children. It does not remove English knowledge or reproduce infant
+cognition.
+
+The stronger approach is to define a **capability-constrained learner**. Baby-like
+behavior should emerge from what the agent can observe, remember, emit, and learn, not
+from role-play instructions.
+
+Internally, the system should call the participant a `Learner` rather than a `Baby`.
+The Baby terminology can remain in the research narrative and UX, but should not be a
+persona cue supplied to the model.
+
+### 20.2 Separate Model Tracks and Claims
+
+The Nursery should maintain two distinct model tracks:
+
+| Track | Starting condition | What it can study | Claim boundary |
+|---|---|---|---|
+| Pretrained-model learner | Already contains human-language and cultural knowledge | New external protocols, partner-specific conventions, private-memory adaptation, and channel compliance | Must not be described as first-language acquisition |
+| Initially ungrounded learner | No language pretraining, human semantic labels, or text-aligned sensory features | Grounding, convention formation, and language emergence from interaction | Stronger basis for infant-like language-acquisition research |
+
+Both tracks can use the same Nursery interfaces, scenarios, evidence model, and
+evaluation suite. Their results must remain separately labeled.
+
+### 20.3 Learner Contract for Pretrained Models
+
+For a pretrained LLM, use an operational learner contract rather than a child persona.
+A starting system prompt could be:
+
+```text
+You are Learner A in a controlled communication experiment.
+This is not role-play. Do not imitate a human child or produce baby talk.
+
+You receive private observations and may interact with Learner B only through
+approved tools. Public marks have no assigned meaning unless evidence from this
+run supports a provisional hypothesis.
+
+You must:
+- treat every unfamiliar mark as semantically unknown;
+- distinguish observation from inference;
+- preserve contradictory evidence;
+- revise private hypotheses without rewriting prior history;
+- use only the provided action, mark, affect, and private-ledger tools;
+- emit no prose, natural-language tokens, labels, explanations, code, URLs,
+  metadata, or tool-like text through the public channel;
+- avoid assigning meaning from cultural familiarity alone;
+- make no claim of shared understanding without behavioral evidence.
+
+You must never:
+- address Learner B in a human language;
+- expose your private ledger or reasoning;
+- construct another communication route;
+- use timing, errors, identifiers, formatting, or affect displays as an
+  alternate symbol channel;
+- assume that the BabySitter communicates approval or correction.
+
+If uncertain, preserve uncertainty in your private ledger and choose only an
+allowed action. Return no ordinary assistant message; use an approved tool.
+```
+
+This prompt establishes operating rules. It does not make the model language-naive
+and must not be treated as the security boundary.
+
+The contract must contain no semantic examples, sample messages, suggested symbol
+order, or demonstrations such as "`S1` means red." Even an illustrative example can
+seed the language the experiment is supposed to observe.
+
+### 20.4 Tool-Only Interaction
+
+A Baby should not have a general chat response surface. It should receive only
+narrowly typed operations such as:
+
+- `emit_mark(...)`;
+- `emit_canvas(...)`;
+- `select_object(...)`;
+- `perform_action(...)`;
+- `submit_affect(...)`;
+- `append_private_ledger_entry(...)`.
+
+The runtime forwards only the permitted public artifact. Private ledger updates remain
+inside the originating Baby's state.
+
+For strict runs, the gateway rejects ordinary model text even when it appears beside
+a valid tool call. Tool schemas are an interface boundary; deterministic validation
+still enforces carrier size, symbol allowlists, affect windows, and turn order.
+
+### 20.5 Additional Guardrails
+
+These controls complement the channel and isolation requirements in Sections 9 and 10.
+
+#### Observation Hygiene
+
+Human language must be removed from inputs as well as outputs:
+
+- no field names such as `red`, `circle`, `target`, or `correct`;
+- no filenames, captions, alt text, labels, OCR-visible words, or semantic IDs;
+- no human-readable exception messages;
+- no timestamps or identifiers that encode task state;
+- no text-pretrained image embeddings in the initially ungrounded track.
+
+Preferred inputs include raw pixels, neutral numeric arrays, coordinates, sounds, and
+synthetic sensor observations.
+
+#### Prompt Symmetry Without Semantic Seeding
+
+Baby A and Baby B may receive structurally equivalent operating rules, but their
+prompts must not contain shared examples, ordering conventions, suggested meanings,
+sample exchanges, or a default vocabulary.
+
+#### Context and Memory Isolation
+
+- separate system prompts and context windows;
+- separate memory stores and vector indexes;
+- no shared cache, replay buffer, scratchpad, or retrieval collection;
+- no cross-run memory unless persistence is the independent variable;
+- deterministic reset and snapshot behavior.
+
+#### Training Isolation
+
+The strongest isolation condition requires:
+
+- independent policy updates and optimizers;
+- no shared gradients;
+- no backpropagation through the other Baby;
+- no centralized replay buffer;
+- no centralized-training data unavailable during execution.
+
+Centralized-training variants can still be studied, but must be labeled as
+weaker-isolation conditions.
+
+#### Side-Channel Controls
+
+- fixed turn schedule and response deadline;
+- normalized message envelope and error behavior;
+- bounded carrier size;
+- no arbitrary silence, variable retry count, or unconstrained message length;
+- no direct network, filesystem, clipboard, or process access;
+- no model-generated identifiers;
+- correlation audits between channel choices and hidden task state.
+
+#### Prompt-Injection Controls
+
+Synthetic scenes should contain no text. If real images are later introduced, the
+Nursery needs OCR detection and quarantine so environmental text cannot instruct an
+agent or leak human vocabulary.
+
+### 20.6 Native and Human Audit Ledgers
+
+A Baby that writes an English statement such as "`S13` means red" is demonstrably not
+language-naive. Initially ungrounded experiments therefore need two ledger layers:
+
+1. **Agent-native ledger:** Association weights, probability distributions,
+   embeddings, confidence, episode references, prediction errors, and revision
+   history actually used by the learner.
+2. **Human audit ledger:** A deterministic or BabySitter-generated interpretation of
+   native state that is never fed back to either Baby and is clearly labeled external
+   analysis.
+
+For pretrained-LLM experiments, a private English ledger is acceptable, but confirms
+that the experiment concerns protocol invention rather than first-language
+acquisition.
+
+Human-readable audit output should distinguish direct state extraction from an
+interpretive explanation. It must never imply that an external reconstruction was the
+Baby's own internal definition.
+
+### 20.7 Model Recommendations
+
+#### Scientific Baseline: Small Models Trained From Scratch
+
+Use independently initialized policies such as:
+
+- GRU or LSTM actor-critic agents;
+- small recurrent transformers with limited context;
+- CNN plus recurrent policy for pixel observations;
+- independent PPO, A2C, or RIAL-style learners for discrete actions;
+- a discrete communication head or bounded sketch-generation head.
+
+These models avoid hidden English competence, permit full training control, run many
+seeds economically, and support causal ablations and policy checkpoints. Initial
+Naming Game experiments do not require a large model.
+
+#### Prototype and Demo Track: Small Open-Weight Instruction Models
+
+A locally deployable 3B-8B instruction model is appropriate when it provides:
+
+- reliable tool calling or constrained decoding;
+- local inference without network access;
+- reproducible sampling controls;
+- separate context and memory per Baby;
+- adapter-training support if later required;
+- token probabilities or equivalent audit signals.
+
+Use this track to validate DTSF orchestration, ledgers, channel enforcement, and UX,
+not to support claims of language-naive development.
+
+Small models are preferable to frontier-scale models for early runs because they are
+cheaper to repeat, easier to isolate, and less capable of exploiting obscure side
+channels. They still know language.
+
+#### Hybrid Track
+
+A strong hybrid combines:
+
+- a from-scratch or non-text-aligned sensory encoder;
+- a small trainable recurrent world model;
+- a randomly initialized communication policy;
+- optional frozen low-level visual features only after semantic-leakage testing.
+
+Avoid CLIP-style and other vision-language encoders in the strongest ungrounded
+condition because their representations were explicitly aligned with human language.
+
+#### BabySitter Model
+
+The BabySitter may use a larger reasoning model for audit summaries and anomaly
+review. Deterministic software, not the model, enforces the channel contract.
+BabySitter-generated analysis must never become input to either Baby during a run.
+
+### 20.8 Developmental Capabilities, Not Chronological Ages
+
+The zero-to-two-year analogy is useful for thinking about rapid plasticity, but
+chronological labels should not be prompt instructions. A run should never tell an
+agent, "you are now 18 months old."
+
+Define measurable developmental phases:
+
+1. **Sensorimotor familiarization:** Learn that actions alter observations.
+2. **Joint attention:** Detect that both agents encounter related events.
+3. **Imitation and turn-taking:** Repeat or vary partner-generated marks.
+4. **Intentional reference:** Use a signal that causally changes partner selection.
+5. **Repair:** Respond differently after misunderstanding.
+6. **Combination:** Reuse parts of known signals in novel situations.
+7. **Generalization:** Succeed on held-out combinations with learning disabled.
+
+Progress is based on demonstrated competence, not simulated age.
+
+Rapid early development can be modeled through explicit experimental variables:
+
+- initially high exploration followed by annealing;
+- high early learning rate followed by stabilization;
+- growing episodic-memory capacity;
+- increasing sensory and motor complexity;
+- staged carrier bandwidth;
+- consolidation periods between interaction batches.
+
+These are testable developmental mechanisms. A staged curriculum is itself a form of
+guidance and must be a separate experimental condition. The closed-door baseline uses
+a precommitted neutral environment schedule rather than adaptive BabySitter
+instruction.
+
+### 20.9 Recommended Initial Baselines
+
+Implement three parallel Baby pairs behind the same Nursery interface:
+
+1. **Frozen small-LLM pair:** Validates orchestration, prompt controls, ledgers, and
+   channel enforcement.
+2. **From-scratch recurrent RL pair:** Provides the primary ungrounded communication
+   baseline.
+3. **From-scratch self-supervised pair:** Tests whether communication emerges without
+   scalar reward.
+
+Keep the deterministic Symbol Gateway, observations, scenario seeds, evidence model,
+and evaluation suite identical where technically possible.
+
+The governing design principle is:
+
+> Do not ask a model to perform infancy. Construct an environment in which limited,
+> grounded, auditable learning is the only available path to successful interaction.
+
+## 21. Decisions for the Future Specification
 
 The specification should resolve at least the following:
 
@@ -1056,18 +1331,29 @@ The specification should resolve at least the following:
 21. How are snapshots, hashes, policy checkpoints, and replay implemented?
 22. What controls govern human observation and intervention?
 23. What data retention, privacy, safety, and experiment-termination policies apply?
+24. How are learner contracts versioned, tested, and kept free of semantic examples?
+25. How is agent-native state converted into a human audit ledger without feeding the
+    interpretation back to either Baby?
+26. What competence gates define developmental progression, and which curriculum
+    conditions count as experimental guidance?
+27. Which model-selection criteria and semantic-leakage tests apply to pretrained,
+    initially ungrounded, hybrid, and BabySitter models?
 
-## 21. Desired Specification Outcome
+## 22. Desired Specification Outcome
 
 The next document should convert this concept into a testable system specification
 that defines:
 
 - component boundaries and deployment modes;
 - DTSF twin manifests and behavior responsibilities;
+- learner contracts, tool-only interaction schemas, and prompt-version controls;
+- pretrained, initially ungrounded, and hybrid model tracks with explicit claim
+  boundaries;
 - Symbol Gateway protocol and enforcement;
 - fixed-token and generative-carrier communication modes;
 - affect, observation, task, intrinsic-motivation, and training interfaces;
-- ledger and audit schemas;
+- agent-native ledger and human audit-ledger schemas;
+- competence-based developmental phases and progression criteria;
 - state transitions and run lifecycle;
 - security and side-channel threat models;
 - experimental cipher threat models and non-production guardrails;
