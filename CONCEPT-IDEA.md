@@ -382,6 +382,32 @@ cannot produce English explanations, the environment may generate a separate
 researcher-facing interpretation from their internal policy state. Such generated
 interpretations must be labeled as analysis rather than as the agent's own explanation.
 
+### 11.3 Cryptographically Anchored Integrity
+
+Each Baby ledger must be cryptographically append-only:
+
+- every entry receives a strictly increasing sequence number;
+- every entry includes the previous entry hash;
+- canonical entry content is hashed and signed by an isolated ledger-writer service;
+- ordered entry hashes are committed to a Merkle tree;
+- signed checkpoints commit Baby A's ledger root, Baby B's ledger root, and the channel
+  transcript root together;
+- checkpoint hashes are periodically anchored to Base;
+- final public study batches may additionally anchor an aggregate root to Ethereum L1.
+
+The channel event and required private sender-ledger mutation must commit atomically
+before the message is delivered. Receiver interpretations later reference the exact
+delivered channel-event hash.
+
+After anchoring, an auditor can detect modification, deletion, insertion, or reordering
+within the committed prefix and can prove that later checkpoints extend earlier ones.
+This is strong tamper evidence, not proof that an entry was truthful or that no event
+was omitted before commitment.
+
+The complete event schema, Merkle construction, Base anchoring plan, evidence bundle,
+verifier behavior, recovery rules, and acceptance tests are defined in
+[LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md).
+
 ## 12. Proposed Learning Loop
 
 1. The Nursery creates a scenario and records its ground truth.
@@ -421,6 +447,11 @@ The Nursery can increase difficulty in stages:
 
 The progression should control task complexity, available vocabulary, number of
 turns, reward structure, and exposure history so that results can be compared.
+
+The ordered protocols, prerequisites, completion checklists, result tables, deviation
+logs, and publication checklist are maintained separately in
+[EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md). The notebook is a human workflow
+record; anchored run bundles remain the authoritative evidence.
 
 ## 14. What Should Count as Success
 
@@ -466,14 +497,20 @@ Each run should preserve:
 - accepted and rejected channel messages;
 - actions, rewards, and outcomes;
 - both append-only ledgers;
+- signed Merkle checkpoint manifests and anchor receipts;
 - learning or policy checkpoints where applicable;
 - BabySitter and human interventions;
 - runtime and deployment topology;
+- independent verification reports;
 - snapshots sufficient for replay.
 
 This evidence allows researchers to separate genuine learning from prompt leakage,
 hidden shared context, accidental human-language transfer, or irreproducible model
 behavior.
+
+The ledger integrity design proves the continuity of disclosed, anchored evidence. It
+does not convert model explanations into ground truth and does not replace causal
+behavioral evaluation.
 
 ## 16. Preliminary DTSF Shape
 
@@ -1338,6 +1375,10 @@ The specification should resolve at least the following:
     conditions count as experimental guidance?
 27. Which model-selection criteria and semantic-leakage tests apply to pretrained,
     initially ungrounded, hybrid, and BabySitter models?
+28. What checkpoint cadence, finality rule, Base anchor mechanism, key-management
+    policy, and independent verifier define an acceptable ledger proof?
+29. How are experiment pre-registrations, deviations, invalid runs, results, and
+    replications maintained in the experiment notebook and bound to anchored evidence?
 
 ## 22. Desired Specification Outcome
 
@@ -1353,7 +1394,11 @@ that defines:
 - fixed-token and generative-carrier communication modes;
 - affect, observation, task, intrinsic-motivation, and training interfaces;
 - agent-native ledger and human audit-ledger schemas;
+- append-only event hashes, Merkle checkpoints, signatures, Base anchors, and
+  independent verification;
 - competence-based developmental phases and progression criteria;
+- ordered experiment protocols, pre-registration, result records, and replication
+  criteria;
 - state transitions and run lifecycle;
 - security and side-channel threat models;
 - experimental cipher threat models and non-production guardrails;
