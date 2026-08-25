@@ -5,6 +5,8 @@
 
 [View the project site](https://ethical-tech-colab.github.io/agentic-language-development/)
 | [Read the full concept](CONCEPT-IDEA.md)
+| [Review ledger integrity](LEDGER-INTEGRITY-DESIGN.md)
+| [Open the experiment notebook](EXPERIMENT-NOTEBOOK.md)
 
 ## Overview
 
@@ -43,7 +45,8 @@ language.
 
 ## What Makes the Concept Distinct
 
-- **Independent mandatory ledgers** preserve every meaning hypothesis and revision.
+- **Independent mandatory ledgers** preserve every meaning hypothesis and revision
+  through hash chains, signed Merkle checkpoints, and optional public-chain anchors.
 - **Grounded shared experiences** connect symbols to objects, actions, and outcomes.
 - **Strict channel isolation** prevents English or another established human language
   from crossing between the Babies.
@@ -96,6 +99,16 @@ requirements.
 The complete rationale, literature review, experimental ideas, risks, and open
 decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 
+## Project Documents
+
+| Document | Purpose |
+|---|---|
+| [CONCEPT-IDEA.md](CONCEPT-IDEA.md) | Research premise, architecture, literature, safeguards, experiments, and open decisions |
+| [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md) | Hash-chain, ordered-Merkle, signature, Base-anchor, verifier, and recovery design |
+| [EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md) | Ordered experiment protocols, checklists, result tables, deviations, and publication review |
+
+The notebook is ready for pre-registration. No experiment results are claimed yet.
+
 ## Responsible Research
 
 All learned-cipher experiments should use synthetic, non-sensitive messages. Novel or
@@ -105,6 +118,9 @@ independent expert analysis and formal security work.
 The project should report failed conventions, prohibited communication attempts,
 human interventions, side-channel limitations, and negative results alongside
 successful runs.
+
+Only hashes and minimal routing metadata should be anchored publicly. Private ledgers,
+messages, prompts, identities, and secrets must remain off-chain.
 
 ## License
 
