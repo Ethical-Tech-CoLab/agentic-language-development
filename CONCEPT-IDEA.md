@@ -950,6 +950,7 @@ all ideas in a single run.
 | Axis | Candidate conditions |
 |---|---|
 | Agent type | Pretrained LLM, memory learner, adapter-trained agent, initially ungrounded trainable agent |
+| Learning mechanism | Frozen LLM with memory, extrinsic-reward MARL, intrinsic-motivation MARL, self-supervised learner, no-learning control |
 | Sign carrier | Fixed random tokens, unfamiliar fixed glyphs, blank sketch canvas, gesture, tone |
 | Affect | None, six-display allowlist, six-display permuted mapping, six opaque tokens, derived affect, emergent affect display |
 | Learning signal | External task reward, intrinsic social influence, curiosity, self-supervision, memory only |
@@ -960,6 +961,66 @@ all ideas in a single run.
 Runs should vary one major axis at a time before factorial combinations are attempted.
 Every run should pre-register its hypotheses, seeds, carrier constraints, threat
 model, metrics, and stop conditions.
+
+### 19.7 Learning Mechanism Comparison: RL and Non-RL
+
+**Hypothesis:** Language convergence may be driven by different mechanisms that can
+look similar in a transcript: reinforcement, pretrained linguistic priors, persistent
+memory, intrinsic motivation, or self-supervised prediction.
+
+The same Nursery exercise suite should be run under five conditions:
+
+1. **No-learning control:** Fixed or randomly initialized policies do not update
+   during the run. This establishes chance performance and detects task leakage.
+2. **LLM memory baseline:** Model weights remain frozen. Each Baby adapts only through
+   its private transcript, ledger, and persistent memory. This is in-context adaptation,
+   not reinforcement learning.
+3. **Extrinsic-reward multi-agent reinforcement learning:** Task success or failure
+   supplies a scalar reward used to update both independent policies.
+4. **Intrinsic-motivation multi-agent reinforcement learning:** Each Baby updates from
+   an endogenous signal such as curiosity, social influence, prediction progress, or
+   giddiness. The BabySitter supplies no reward.
+5. **Self-supervised ungrounded learning:** Each Baby learns to predict observations,
+   partner behavior, or future state without a scalar reward.
+
+For each condition, the Nursery should hold constant:
+
+- scenarios, held-out tasks, and random seeds;
+- observation boundaries and human-language filtering;
+- sign carrier, bandwidth, and turn schedule;
+- affect-channel condition;
+- BabySitter behavior and intervention policy;
+- ledger requirements, snapshot cadence, and evaluation budget.
+
+Where architectures differ too much for a controlled comparison, results must be
+labeled cross-architecture rather than attributed solely to the learning mechanism.
+Within-architecture comparisons are preferred whenever a model supports more than one
+training mode.
+
+The primary measurements should include:
+
+- task success and sample efficiency;
+- time to stable symbol conventions;
+- held-out and compositional generalization;
+- positive signaling and causal listening;
+- ledger-to-behavior agreement under symbol intervention;
+- vocabulary size, entropy, reuse, and drift;
+- recovery after misunderstanding or partner replacement;
+- human-language and affect-channel leakage;
+- dependence on the learning signal when reward or memory is ablated.
+
+An emoji received from the other Baby is an observation, not automatically a reward.
+It becomes reinforcement-like only when a learning rule assigns it value and updates
+the policy to seek or avoid similar future feedback.
+
+Strict isolation also constrains the RL implementation. Centralized training,
+backpropagation through both agents, shared replay buffers, or shared gradients can
+transfer information outside the permitted channel. The research-grade baseline
+should use independently updated policies and record any centralized-training variant
+as a separate, weaker-isolation condition.
+
+This experiment should answer not merely whether a language emerges, but **which
+learning process caused it to emerge**.
 
 ## 20. Decisions for the Future Specification
 
@@ -978,7 +1039,8 @@ The specification should resolve at least the following:
 9. What exact ledger schema supports both English-capable and initially ungrounded
    agents?
 10. How are ledger updates made mandatory and atomic with messages?
-11. What learning mechanisms are supported during and between runs?
+11. Which learning mechanisms support the controlled RL versus non-RL comparison, and
+    which within-architecture comparisons are technically possible?
 12. How is endogenous giddiness represented without covert BabySitter reward shaping?
 13. How does the gateway enforce the six-display allowlist, fixed feedback windows,
     normalized delivery, and affect-channel leakage tests?

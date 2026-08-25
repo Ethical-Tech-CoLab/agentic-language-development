@@ -61,6 +61,8 @@ The concept includes research tracks for:
   Surprised, plus permuted, opaque, derived, and emergent affect controls;
 - blank-canvas communication without a predefined symbol library;
 - endogenous "giddiness," curiosity, and social influence without BabySitter rewards;
+- controlled comparisons among frozen LLM memory, extrinsic-reward MARL,
+  intrinsic-motivation MARL, self-supervised learning, and a no-learning baseline;
 - ephemeral coding conventions and adversarial neural cryptography;
 - cooperative signaling followed by semi-cooperative negotiation;
 - reuse of the DTSF Diplomacy Table interaction and audit model.
