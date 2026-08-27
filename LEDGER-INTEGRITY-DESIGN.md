@@ -6,6 +6,9 @@
 >
 > **Purpose:** Make each Baby ledger append-only, sequentially verifiable, and
 > externally anchored so later modification is detectable.
+>
+> **Implementation plan:** [SPECIFICATION.md](SPECIFICATION.md) defines the enclosing
+> system requirements; [BACKLOG.md](BACKLOG.md) sequences the implementation work.
 
 ## 1. Integrity Claim
 
@@ -248,6 +251,18 @@ Illustrative manifest:
     "merkleRoot": "sha256:...",
     "lastEntryHash": "sha256:..."
   },
+  "auxiliaryTrees": {
+    "affect": {
+      "treeSize": 12,
+      "merkleRoot": "sha256:...",
+      "lastEntryHash": "sha256:..."
+    },
+    "audit": {
+      "treeSize": 24,
+      "merkleRoot": "sha256:...",
+      "lastEntryHash": "sha256:..."
+    }
+  },
   "runConfigurationHash": "sha256:...",
   "promptBundleHash": "sha256:...",
   "softwareCommit": "git:<commit>",
@@ -266,6 +281,13 @@ checkpointHash = SHA-256(
 
 The Nursery witness signs the checkpoint hash with Ed25519. The previous checkpoint
 hash makes the checkpoint series itself append-only.
+
+`babyA`, `babyB`, and `channel` are mandatory trees. `auxiliaryTrees` is an ordered
+map of named, independently hash-chained event streams. The initial implementation
+uses `affect` when affect is enabled and `audit` when generated human-audit entries
+exist. A verifier MUST reject an unknown auxiliary tree unless its schema and writer
+public key appear in the run manifest, and MUST include every present auxiliary tree
+in checkpoint rebuilding and consistency proofs.
 
 ## 9. Checkpoint Frequency
 
@@ -339,11 +361,14 @@ Use separate keys for:
 - Baby A ledger writer;
 - Baby B ledger writer;
 - channel transcript writer;
+- affect-event writer when affect is enabled;
+- generated audit-ledger writer when human audit interpretations are enabled;
 - Nursery checkpoint witness;
 - on-chain anchor wallet.
 
-Generate per-run ledger-writer keys inside their isolated services. Record public keys
-in the run manifest. Never expose signing keys to model context or tools.
+Generate all event-writer and witness keys per run inside isolated signer services.
+Record public keys and their exact event domains in the run manifest. Never expose
+signing keys to model context or tools.
 
 The anchor wallet should be a dedicated low-balance wallet with no other authority.
 Production anchoring should use a managed signer or hardware-backed key. The verifier
@@ -378,6 +403,8 @@ evidence/
       baby-a-ledger.jsonl
       baby-b-ledger.jsonl
       channel-transcript.jsonl
+      affect-transcript.jsonl     (when affect is enabled)
+      audit-ledger.jsonl          (when generated analysis exists)
       checkpoints/
         000001.json
         000002.json
@@ -390,6 +417,7 @@ evidence/
       policies/
       prompts/
       configuration/
+      experiment-record.json
       verification-report.json
 ```
 

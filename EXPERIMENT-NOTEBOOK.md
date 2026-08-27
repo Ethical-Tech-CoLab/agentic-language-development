@@ -6,7 +6,11 @@
 >
 > **Companion documents:**
 > [CONCEPT-IDEA.md](CONCEPT-IDEA.md) and
-> [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md)
+> [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md).
+>
+> **Implementation readiness:** [SPECIFICATION.md](SPECIFICATION.md) defines the
+> required platform; [BACKLOG.md](BACKLOG.md) tracks the engineering gates that make
+> these experiments executable.
 
 ## 1. Purpose
 
@@ -912,7 +916,7 @@ when task distributions change.
 - [ ] Anchor checkpoints at the standard interval.
 - [ ] Measure ledger revisions, abandoned meanings, and message entropy.
 - [ ] Replay early scenarios at later checkpoints.
-- [ ] Test rollback only in a separate forked run, never by rewriting the ledger.
+- [ ] Test rollback only in a separate derived run, never by rewriting the ledger.
 
 ### Results
 

@@ -1380,10 +1380,11 @@ The specification should resolve at least the following:
 29. How are experiment pre-registrations, deviations, invalid runs, results, and
     replications maintained in the experiment notebook and bound to anchored evidence?
 
-## 22. Desired Specification Outcome
+## 22. Specification and Plan
 
-The next document should convert this concept into a testable system specification
-that defines:
+[SPECIFICATION.md](SPECIFICATION.md) converts this concept into normative,
+implementation-grade requirements. [BACKLOG.md](BACKLOG.md) turns those requirements
+into a dependency-ordered delivery plan. Together they define:
 
 - component boundaries and deployment modes;
 - DTSF twin manifests and behavior responsibilities;
