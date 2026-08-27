@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Draft, ready for team review. No item in this backlog has been started; the repository is documentation-only and has no `package.json` or source tree.
+- **Status:** Implementation active. ALD-001 through ALD-004 are complete; ALD-005 is the next critical-path item.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -239,36 +239,36 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§4.1 Components](SPECIFICATION.md#41-components)
 - **Scope:** Initialize root `package.json` with `workspaces` for `packages/*` and `twins/*`; set up shared TypeScript config, lint/format config, and a root build script (`tsc --build` across project references).
 - **Acceptance criteria:**
-  - [ ] `npm install` at the repo root succeeds with zero workspace packages beyond the initial skeletons.
-  - [ ] `npm run build` (project references) compiles with zero errors.
-  - [ ] A new package can be added under `packages/*` and is automatically picked up by the workspace without editing the root `package.json`.
+  - [x] `npm install` at the repo root succeeds with zero workspace packages beyond the initial skeletons.
+  - [x] `npm run build` (project references) compiles with zero errors.
+  - [x] A new package can be added under `packages/*` and is automatically picked up by the workspace without editing the root `package.json`.
 
 #### ALD-002 — Shared `@ald/types` schema package
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-001
 - **Spec refs:** `SPECIFICATION.md` [§11 Data Schemas and Interfaces](SPECIFICATION.md#11-data-schemas-and-interfaces)
 - **Scope:** Create a `packages/types` package exporting TypeScript types/interfaces (or a schema-validation library's schema objects) for every data structure named in `SPECIFICATION.md` §11 (Run Configuration, Observation, Agent Action Proposal, Ledger Event, Channel Event, Affect Event, Checkpoint Manifest Reference, Anchor Receipt Reference, Experiment Record, Verification Report) as empty/skeleton shapes to be filled in by the epics that own them.
 - **Acceptance criteria:**
-  - [ ] One exported type/schema exists per §11 subsection (§11.1–§11.10), named to match the section title.
-  - [ ] The package builds and is importable from any other workspace package.
-  - [ ] A schema-drift test fails if a §11 subsection type is removed without the corresponding source-doc section also changing (a lightweight manifest of expected export names is checked in CI once `ALD-078` exists, and locally before then).
+  - [x] One exported type/schema exists per §11 subsection (§11.1–§11.10), named to match the section title.
+  - [x] The package builds and is importable from any other workspace package.
+  - [x] A schema-drift test fails if a §11 subsection type is removed without the corresponding source-doc section also changing (a lightweight manifest of expected export names is checked in CI once `ALD-078` exists, and locally before then).
 
 #### ALD-003 — Environment, configuration, and secrets convention
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-001
 - **Spec refs:** `SPECIFICATION.md` [§5. Deployment Modes and Claim Boundaries](SPECIFICATION.md#5-deployment-modes-and-claim-boundaries)
 - **Scope:** Define the environment-variable and config-file convention used across all packages (e.g., `DTSF_PORT`, mode switch variable, key-material file paths). No secrets are ever committed; document the convention in a `CONFIGURATION.md` or equivalent.
 - **Acceptance criteria:**
-  - [ ] A documented list of all environment variables exists with defaults and types.
-  - [ ] Loading config with a required variable missing fails fast with a clear error, not a silent default.
-  - [ ] No secret-shaped value (private key, API token) appears in any committed file; a scan step verifies this.
+  - [x] A documented list of all environment variables exists with defaults and types.
+  - [x] Loading config with a required variable missing fails fast with a clear error, not a silent default.
+  - [x] No secret-shaped value (private key, API token) appears in any committed file; a scan step verifies this.
 
 #### ALD-004 — DTSF twin pack scaffolding (baby-a, baby-b, nursery)
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-001, ALD-002
 - **Spec refs:** `SPECIFICATION.md` [§4.1 Components](SPECIFICATION.md#41-components), [§12.1 Route Convention](SPECIFICATION.md#121-route-convention), [§12.4 Baby Twin Routes (baby-a, baby-b)](SPECIFICATION.md#124-baby-twin-routes-baby-a-baby-b), [§12.5 Nursery Controller Routes (nursery)](SPECIFICATION.md#125-nursery-controller-routes-nursery)
 - **Scope:** Create three twin pack skeletons (`baby-a`, `baby-b`, `nursery`) with `twin.yaml` manifests, empty `behavior/pack.ts`, and a placeholder route returning `501 Not Implemented`, following the DTSF convention that **route patterns never include the twin-name prefix** (the runtime's `/:twinName/*` route strips it before dispatch).
 - **Acceptance criteria:**
-  - [ ] All three twin packs load without error when the DTSF runtime scans `twins/packs/`.
-  - [ ] Every registered route pattern in all three packs starts with `/`, not `/baby-a`, `/baby-b`, or `/nursery`.
-  - [ ] A request to `/baby-a/<placeholder-route>` reaches the handler with `req.params[0]` equal to the unprefixed path, confirmed by an integration test.
+  - [x] All three twin packs load without error when the DTSF runtime scans `twins/packs/`.
+  - [x] Every registered route pattern in all three packs starts with `/`, not `/baby-a`, `/baby-b`, or `/nursery`.
+  - [x] A request to `/baby-a/<placeholder-route>` reaches the handler with `req.params[0]` equal to the unprefixed path, confirmed by an integration test.
 
 ### EPIC-02 — Evidence Store and Ledger Integrity Core (Phase 0)
 

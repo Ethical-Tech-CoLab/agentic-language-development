@@ -1,0 +1,12 @@
+apiVersion: dtsf/v0.1
+kind: TwinManifest
+metadata:
+  name: nursery
+  owner: Ethical-Tech-CoLab
+  version: "0.1.0"
+behaviorPack:
+  entrypoint: "./behavior/pack.ts"
+state:
+  seed: 303
+capabilities:
+  - "scaffold"
