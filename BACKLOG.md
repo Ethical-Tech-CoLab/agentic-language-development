@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active. ALD-001 through ALD-004 are complete; ALD-005 is the next critical-path item.
+- **Status:** Implementation active. ALD-001 through ALD-007 are complete; ALD-008 is the next critical-path item.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -279,27 +279,27 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§13.1 SQLite Schema Additions](SPECIFICATION.md#131-sqlite-schema-additions), `LEDGER-INTEGRITY-DESIGN.md` [§3. Authoritative Local Store](LEDGER-INTEGRITY-DESIGN.md#3-authoritative-local-store)
 - **Scope:** Create the SQLite database file, apply the schema from §13.1, enable WAL journal mode, and write a migration runner so schema changes are versioned.
 - **Acceptance criteria:**
-  - [ ] Database is created with `journal_mode=WAL` confirmed via `PRAGMA journal_mode`.
-  - [ ] Every table in §13.1 exists, and event/audit/experiment tables have triggers rejecting `UPDATE` and `DELETE` while versioned records append new rows.
-  - [ ] Running the migration twice is idempotent, and an automated test proves privileged application code cannot bypass the append-only triggers.
+  - [x] Database is created with `journal_mode=WAL` confirmed via `PRAGMA journal_mode`.
+  - [x] Every table in §13.1 exists, and event/audit/experiment tables have triggers rejecting `UPDATE` and `DELETE` while versioned records append new rows.
+  - [x] Running the migration twice is idempotent, and an automated test proves privileged application code cannot bypass the append-only triggers.
 
 #### ALD-006 — Canonical ledger event serializer
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-002, ALD-005
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§4. Canonical Ledger Event](LEDGER-INTEGRITY-DESIGN.md#4-canonical-ledger-event), `SPECIFICATION.md` [§11.4 Ledger Event](SPECIFICATION.md#114-ledger-event)
 - **Scope:** Implement deterministic canonical serialization (stable key ordering, fixed number/string encoding) of a Ledger Event so that hashing the serialized form is reproducible across processes and platforms.
 - **Acceptance criteria:**
-  - [ ] Serializing the same logical event twice, in two different process runs, produces byte-identical output.
-  - [ ] Key order in the serialized form is independent of the key insertion order of the input object.
-  - [ ] A round-trip (serialize → deserialize) produces a deep-equal object to the input.
+  - [x] Serializing the same logical event twice, in two different process runs, produces byte-identical output.
+  - [x] Key order in the serialized form is independent of the key insertion order of the input object.
+  - [x] A round-trip (serialize → deserialize) produces a deep-equal object to the input.
 
 #### ALD-007 — Event type registry and validators
 - **Priority:** P0 · **Size:** S · **Class:** MVP · **Depends on:** ALD-006
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§5. Event Types](LEDGER-INTEGRITY-DESIGN.md#5-event-types)
 - **Scope:** Implement the enumerated event-type registry from §5 with a validator per type that checks required fields before an event may be serialized.
 - **Acceptance criteria:**
-  - [ ] Every event type listed in §5 has a corresponding validator function.
-  - [ ] Submitting an event with a missing required field is rejected before reaching the serializer.
-  - [ ] Submitting an unknown event type is rejected with a clear error, not silently accepted.
+  - [x] Every event type listed in §5 has a corresponding validator function.
+  - [x] Submitting an event with a missing required field is rejected before reaching the serializer.
+  - [x] Submitting an unknown event type is rejected with a clear error, not silently accepted.
 
 #### ALD-008 — Hash chaining of ledger and channel events
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-006, ALD-007

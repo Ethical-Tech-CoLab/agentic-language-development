@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/types" },
     { "path": "packages/config" },
+    { "path": "packages/evidence" },
     { "path": "twins/packs/baby-a" },
     { "path": "twins/packs/baby-b" },
     { "path": "twins/packs/nursery" }

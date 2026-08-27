@@ -5,7 +5,7 @@ coverage/
 .env
 .env.*
 !.env.example
-evidence/
+/evidence/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
