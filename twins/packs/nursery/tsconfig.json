@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./behavior",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+  "include": ["behavior/**/*.ts"],
+  "references": [
+    { "path": "../../../packages/types" }
+  ]
+}

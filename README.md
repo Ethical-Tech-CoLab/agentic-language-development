@@ -93,10 +93,12 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-This repository is currently in the **planning and implementation-readiness phase**.
-The concept, ledger design, experiment notebook, implementation specification, and
-dependency-ordered backlog are complete as draft planning artifacts. No runtime source
-or experiment results are claimed yet.
+This repository is in the **foundation implementation phase**. The npm/TypeScript
+workspace, shared runtime schemas, typed configuration loader, secret scan, and three
+DTSF-compatible twin-pack skeletons are implemented. The next critical-path work is
+the SQLite WAL evidence store and local ledger-integrity core (ALD-005 onward).
+
+No experiment results are claimed yet.
 
 The complete rationale, literature review, experimental ideas, risks, and open
 decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).

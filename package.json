@@ -1,0 +1,32 @@
+{
+  "name": "agentic-language-development",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Research infrastructure for grounded, auditable emergent agent communication",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "twins/packs/*"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint packages twins",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "check": "npm run lint && npm run build && npm test && npm run scan:secrets"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.11",
+    "yaml": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
