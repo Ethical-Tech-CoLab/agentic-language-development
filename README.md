@@ -7,6 +7,8 @@
 | [Read the full concept](CONCEPT-IDEA.md)
 | [Review ledger integrity](LEDGER-INTEGRITY-DESIGN.md)
 | [Open the experiment notebook](EXPERIMENT-NOTEBOOK.md)
+| [Read the specification](SPECIFICATION.md)
+| [Open the backlog](BACKLOG.md)
 
 ## Overview
 
@@ -91,10 +93,10 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-This repository is currently in the **concept and research phase**. The next milestone
-is a testable specification covering the runtime architecture, channel contract,
-ledger schema, experiment matrix, evaluation criteria, isolation model, and evidence
-requirements.
+This repository is currently in the **planning and implementation-readiness phase**.
+The concept, ledger design, experiment notebook, implementation specification, and
+dependency-ordered backlog are complete as draft planning artifacts. No runtime source
+or experiment results are claimed yet.
 
 The complete rationale, literature review, experimental ideas, risks, and open
 decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
@@ -106,6 +108,8 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [CONCEPT-IDEA.md](CONCEPT-IDEA.md) | Research premise, architecture, literature, safeguards, experiments, and open decisions |
 | [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md) | Hash-chain, ordered-Merkle, signature, Base-anchor, verifier, and recovery design |
 | [EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md) | Ordered experiment protocols, checklists, result tables, deviations, and publication review |
+| [SPECIFICATION.md](SPECIFICATION.md) | Normative architecture, protocols, schemas, APIs, isolation controls, lifecycle, and acceptance criteria |
+| [BACKLOG.md](BACKLOG.md) | Milestones, critical path, epics, dependency-ordered stories, readiness gates, and requirement coverage |
 
 The notebook is ready for pre-registration. No experiment results are claimed yet.
 
