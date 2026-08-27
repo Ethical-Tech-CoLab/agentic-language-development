@@ -260,6 +260,23 @@ export const LedgerEventDraftSchema = z.object({
   evidenceRefs: z.array(nonEmptyString).default([]),
 });
 
+export const UnsignedLedgerEventSchema = z.object({
+  version: z.literal(1),
+  runId: nonEmptyString,
+  babyId: z.enum(['A', 'B']),
+  sequence: positiveInteger,
+  turn: nonNegativeInteger,
+  eventType: nonEmptyString,
+  contentSchema: z.enum(['human-audit-ledger', 'agent-native-ledger']),
+  subjectId: nonEmptyString,
+  content: z.record(z.string(), z.unknown()),
+  blindingNonce: nonEmptyString,
+  previousEntryHash: hashString,
+  channelEventHash: hashString.optional(),
+  recordedAt: isoDateTime,
+  writerKeyId: nonEmptyString,
+});
+
 export const TurnProposalEnvelopeSchema = z.object({
   proposal: AgentActionProposalSchema,
   privateLedgerDraft: LedgerEventDraftSchema,
@@ -458,6 +475,7 @@ export type RunConfig = z.infer<typeof RunConfigSchema>;
 export type Observation = z.infer<typeof ObservationSchema>;
 export type AgentActionProposal = z.infer<typeof AgentActionProposalSchema>;
 export type LedgerEventDraft = z.infer<typeof LedgerEventDraftSchema>;
+export type UnsignedLedgerEvent = z.infer<typeof UnsignedLedgerEventSchema>;
 export type TurnProposalEnvelope = z.infer<typeof TurnProposalEnvelopeSchema>;
 export type LedgerDraftEnvelope = z.infer<typeof LedgerDraftEnvelopeSchema>;
 export type DeliveredChannelArtifact = z.infer<

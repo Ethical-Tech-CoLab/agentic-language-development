@@ -95,8 +95,9 @@ channel constraints, and reward conditions were used.
 
 This repository is in the **foundation implementation phase**. The npm/TypeScript
 workspace, shared runtime schemas, typed configuration loader, secret scan, and three
-DTSF-compatible twin-pack skeletons are implemented. The next critical-path work is
-the SQLite WAL evidence store and local ledger-integrity core (ALD-005 onward).
+DTSF-compatible twin-pack skeletons, SQLite WAL evidence schema, RFC 8785 canonical
+serialization, and ledger event validators are implemented. The next critical-path
+work is independent ledger/channel hash chaining (ALD-008 onward).
 
 No experiment results are claimed yet.
 
