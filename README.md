@@ -10,6 +10,7 @@
 | [Read the specification](SPECIFICATION.md)
 | [Open the backlog](BACKLOG.md)
 | [Read the research manuscript](RESEARCH.md)
+| [Read the page-turn edition](https://ethical-tech-colab.github.io/agentic-language-development/research-book.html?open=1)
 
 ## Overview
 
@@ -115,6 +116,30 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [SPECIFICATION.md](SPECIFICATION.md) | Normative architecture, protocols, schemas, APIs, isolation controls, lifecycle, and acceptance criteria |
 | [BACKLOG.md](BACKLOG.md) | Milestones, critical path, epics, dependency-ordered stories, readiness gates, and requirement coverage |
 | [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
+
+## Research Book
+
+The full research manuscript is also published through the Ethical Tech CoLab
+`read-as-book` v3 page-turn reader:
+
+**https://ethical-tech-colab.github.io/agentic-language-development/research-book.html?open=1**
+
+The reader uses committed WebP pages generated from [RESEARCH.md](RESEARCH.md), opens
+as a two-page spread on desktop, collapses to one page on mobile, and provides the
+generated PDF as a download.
+
+Regenerate the book after changing the manuscript:
+
+```powershell
+npm run book:research
+```
+
+The page rasterizer requires Node.js 22.13 or newer; generated book assets do not
+require Node.js in the browser.
+
+Set `CHROME_PATH` if Chrome or Edge is not installed at a standard location. The
+generated PDF, page manifest, page images, print edition, and locally bundled reader
+are committed so GitHub Pages needs no server, CDN, or runtime PDF renderer.
 
 The notebook is ready for pre-registration. No experiment results are claimed yet.
 

@@ -14,12 +14,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint packages twins",
+    "book:research": "node scripts/build-research-book.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "check": "npm run lint && npm run build && npm test && npm run scan:secrets"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.8",
     "@types/node": "^20.11.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.0.0",
+    "marked": "^18.0.11",
+    "pdfjs-dist": "^6.2.108",
+    "sharp": "^0.35.4",
     "tsx": "^4.21.0",
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.0.0",
@@ -27,6 +33,9 @@
     "yaml": "^2.8.1"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "read-as-book": "https://codeload.github.com/Ethical-Tech-CoLab/read-as-book/tar.gz/d1d1ec6193867c13637636fc03e538c27d95261c"
   }
 }

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="Page-turn edition of the Agentic Language Development research manuscript."
+  >
+  <meta name="theme-color" content="#09101e">
+  <title>Research Book | Agentic Language Development</title>
+  <link rel="stylesheet" href="book/vendor/read-as-book.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b16;
+      --surface: #111a2c;
+      --border: #2b3b5e;
+      --text: #eef3ff;
+      --muted: #a9b5cd;
+      --cyan: #63d9e5;
+      --blue: #74a8ff;
+      --purple: #bc8cff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(99, 217, 229, 0.14), transparent 30rem),
+        radial-gradient(circle at 85% 20%, rgba(188, 140, 255, 0.14), transparent 32rem),
+        var(--bg);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    main {
+      width: min(72rem, calc(100% - 2rem));
+      padding: 3rem 0;
+      display: grid;
+      grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.28fr);
+      gap: clamp(2rem, 6vw, 5rem);
+      align-items: center;
+    }
+
+    .cover {
+      aspect-ratio: 0.7727;
+      padding: clamp(1.6rem, 4vw, 3rem);
+      border: 1px solid rgba(116, 168, 255, 0.4);
+      border-radius: 0.5rem 1.2rem 1.2rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(150deg, rgba(116, 168, 255, 0.12), rgba(188, 140, 255, 0.08)),
+        var(--surface);
+      box-shadow: -0.8rem 1.5rem 4rem rgba(0, 0, 0, 0.38);
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 750;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 1rem 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+    }
+
+    .cover small,
+    p {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .content h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .actions {
+      margin: 2rem 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    button,
+    a.button {
+      min-height: 3rem;
+      padding: 0.75rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      background: transparent;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button {
+      border-color: transparent;
+      background: linear-gradient(110deg, #247dcc, #7552c8);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.68;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #ffd479;
+      outline-offset: 3px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .links a { color: var(--cyan); }
+
+    #book-status {
+      min-height: 1.5rem;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .research-book-overlay {
+      --rab-backdrop: rgba(5, 9, 18, 0.96);
+      --rab-fg: #eef3ff;
+      --rab-border: rgba(99, 217, 229, 0.35);
+      --rab-border-hover: rgba(99, 217, 229, 0.8);
+    }
+
+    .research-book-overlay .rab-actions,
+    .research-book-overlay .rab-counter {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; }
+      .cover { width: min(23rem, 100%); justify-self: center; }
+    }
+
+    @media (max-width: 639px) {
+      .research-book-overlay .rab-chrome {
+        gap: 0.5rem;
+        padding: 0.65rem;
+      }
+
+      .research-book-overlay .rab-title {
+        font-size: 0.68rem;
+      }
+
+      .research-book-overlay .rab-actions {
+        gap: 0.4rem;
+      }
+
+      .research-book-overlay .rab-counter {
+        min-width: 3.25rem;
+        text-align: center;
+      }
+
+      .research-book-overlay .rab-btn {
+        padding: 0.35rem 0.55rem;
+      }
+
+      .research-book-overlay .rab-hint {
+        padding: 0 0.65rem 0.65rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <article class="cover" aria-label="Research manuscript cover">
+      <div>
+        <div class="eyebrow">Ethical Tech CoLab · Working manuscript</div>
+        <h1>Auditable Emergent Communication</h1>
+        <p>Between isolated artificial agents</p>
+      </div>
+      <small>Preregistrable study protocol · September 2026</small>
+    </article>
+
+    <section class="content">
+      <div class="eyebrow">V3 page-turn edition</div>
+      <h2>Read the research as a book.</h2>
+      <p>
+        Open the complete academic manuscript in the CoLab page-turn reader.
+        Use a two-page spread on desktop, a single-page view on mobile, arrow
+        keys or onscreen controls, and Escape to close.
+      </p>
+      <div class="actions">
+        <button id="open-research-book" type="button">Read as book 📖</button>
+        <a class="button" href="book/research.pdf">Download PDF</a>
+      </div>
+      <div class="links">
+        <a href="RESEARCH.md">Open Markdown</a>
+        <a href="index.html">Back to project</a>
+      </div>
+      <div id="book-status" role="status" aria-live="polite">
+        Loading book metadata...
+      </div>
+    </section>
+  </main>
+  <script type="module" src="book/vendor/research-book.js"></script>
+</body>
+</html>

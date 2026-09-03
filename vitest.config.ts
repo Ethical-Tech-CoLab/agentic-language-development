@@ -19,6 +19,7 @@ export default defineConfig({
   test: {
     include: [
       'packages/**/__tests__/**/*.test.ts',
+      'book/**/__tests__/**/*.test.ts',
       'twins/**/__tests__/**/*.test.ts',
     ],
   },
