@@ -1,0 +1,164 @@
+/* Default look for the read-as-book viewer.
+ *
+ * Import once (`import "read-as-book/styles.css"`) or copy into your own
+ * stylesheet. Everything is driven by the custom properties below, so a theme
+ * is usually a few overrides on .rab-overlay rather than a fork. */
+
+.rab-overlay {
+  --rab-backdrop: rgba(0, 0, 0, 0.92);
+  --rab-fg: rgba(255, 255, 255, 0.85);
+  --rab-fg-muted: rgba(255, 255, 255, 0.6);
+  --rab-fg-faint: rgba(255, 255, 255, 0.4);
+  --rab-border: rgba(255, 255, 255, 0.25);
+  --rab-border-hover: rgba(255, 255, 255, 0.6);
+  --rab-z: 110;
+  --rab-font: inherit;
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--rab-z);
+  display: flex;
+  flex-direction: column;
+  background: var(--rab-backdrop);
+  backdrop-filter: blur(4px);
+  font-family: var(--rab-font);
+  color: var(--rab-fg);
+}
+
+.rab-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.rab-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rab-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rab-counter {
+  color: var(--rab-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rab-btn {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--rab-border);
+  border-radius: 999px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rab-fg);
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.rab-btn:hover {
+  border-color: var(--rab-border-hover);
+}
+
+.rab-stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 0.5rem;
+}
+
+.rab-book-wrap {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.rab-book {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.rab-loading {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.rab-arrow {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--rab-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--rab-fg);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.rab-arrow:hover {
+  border-color: var(--rab-border-hover);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rab-arrow-prev { left: 0.5rem; }
+.rab-arrow-next { right: 0.5rem; }
+
+.rab-hint {
+  padding-bottom: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--rab-fg-faint);
+}
+
+/* Default trigger button for the React <ReadAsBook> component. It inherits the
+ * host page's colours so it sits inside an existing design system. */
+.rab-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .rab-chrome { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .rab-stage { padding: 0 1.5rem; }
+  .rab-arrow-prev { left: 1rem; }
+  .rab-arrow-next { right: 1rem; }
+}
+
+@media (max-width: 639px) {
+  .rab-download { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rab-btn, .rab-arrow { transition: none; }
+}

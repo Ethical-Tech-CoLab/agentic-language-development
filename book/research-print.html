@@ -1,0 +1,2310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Auditable Emergent Communication Between Isolated Artificial Agents</title>
+  <style>
+    @page {
+      size: Letter;
+      margin: 0.68in 0.72in 0.72in;
+    }
+    * { box-sizing: border-box; }
+    html { font-size: 10pt; }
+    body {
+      margin: 0;
+      color: #18223a;
+      background: white;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.42;
+    }
+    h1, h2, h3, h4 {
+      color: #111a2f;
+      font-family: "Segoe UI", Arial, sans-serif;
+      page-break-after: avoid;
+      break-after: avoid-page;
+    }
+    h1 {
+      margin: 1.35in 0 0.28in;
+      color: #193b73;
+      font-size: 29pt;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+    h1 + h2 {
+      margin-top: 0;
+      color: #56627a;
+      font-size: 15pt;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    h2 {
+      margin: 0 0 0.18in;
+      padding-top: 0.05in;
+      border-top: 1.5pt solid #9eb5d6;
+      font-size: 17pt;
+      page-break-before: always;
+      break-before: page;
+    }
+    h3 { margin: 0.24in 0 0.08in; font-size: 12.5pt; }
+    h4 { margin: 0.18in 0 0.06in; font-size: 10.5pt; }
+    p, li { orphans: 3; widows: 3; }
+    p { margin: 0 0 0.11in; }
+    ul, ol { margin: 0.04in 0 0.13in; padding-left: 0.24in; }
+    li { margin: 0 0 0.035in; }
+    blockquote {
+      margin: 0.13in 0;
+      padding: 0.11in 0.16in;
+      border-left: 3pt solid #527eb8;
+      background: #f2f6fb;
+      color: #39465f;
+    }
+    blockquote p:last-child { margin-bottom: 0; }
+    a { color: #194f91; text-decoration: none; }
+    code {
+      border-radius: 2pt;
+      padding: 0.5pt 2pt;
+      background: #edf2f7;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 8.4pt;
+    }
+    pre {
+      margin: 0.12in 0;
+      padding: 0.12in;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      border: 0.5pt solid #c8d4e3;
+      background: #f6f8fb;
+      break-inside: avoid;
+    }
+    pre code { padding: 0; background: transparent; font-size: 7.8pt; }
+    table {
+      width: 100%;
+      margin: 0.12in 0 0.17in;
+      border-collapse: collapse;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 7.4pt;
+      line-height: 1.24;
+    }
+    thead { display: table-header-group; }
+    tr { break-inside: avoid; page-break-inside: avoid; }
+    th, td {
+      padding: 4pt 5pt;
+      vertical-align: top;
+      border: 0.5pt solid #bdc9d8;
+    }
+    th { background: #e9f0f8; color: #17253d; text-align: left; }
+    hr {
+      margin: 0.24in 0;
+      border: 0;
+      border-top: 0.5pt solid #c6d1df;
+    }
+    img { max-width: 100%; break-inside: avoid; }
+    .running-footer {
+      position: fixed;
+      right: 0;
+      bottom: -0.46in;
+      left: 0;
+      color: #778399;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 7pt;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="running-footer">
+    Ethical Tech CoLab · Working research manuscript · September 2026
+  </div>
+  <h1>Auditable Emergent Communication Between Isolated Artificial Agents</h1>
+<h2>A Preregistrable Study Protocol for Comparing Learning, Grounding, and Protocol Formation</h2>
+<blockquote>
+<p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
+<p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
+<p><strong>Prepared:</strong> September 2, 2026</p>
+<p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
+<code>cs.AI</code> and <code>cs.CL</code></p>
+<p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
+identifiers, and corresponding author to be finalized before submission</p>
+<p><strong>Repository:</strong> <a href="https://github.com/Ethical-Tech-CoLab/agentic-language-development">https://github.com/Ethical-Tech-CoLab/agentic-language-development</a></p>
+<p><strong>Empirical status:</strong> No Nursery Lab experiment has been reported as completed in
+this manuscript. Sections 10 and 11 distinguish implemented infrastructure from
+planned empirical work. No table contains an observed empirical result.</p>
+</blockquote>
+<h2>Abstract</h2>
+<p>Research on emergent communication has shown that artificial agents can develop
+task-effective signaling protocols in referential games, multi-agent reinforcement
+learning, embodied environments, and negotiation. However, successful coordination
+does not by itself establish that a protocol is grounded, compositionally
+generalizable, causally used by a receiver, or interpretable. Comparisons are further
+complicated when pretrained language models, agents trained from scratch, different
+communication carriers, and different reward mechanisms are evaluated in separate
+experimental systems.</p>
+<p>We present the design of the <strong>Agentic Language Development Nursery Lab</strong>, a
+preregistrable framework for studying communication between two isolated artificial
+agents through a deterministic, bandwidth-constrained gateway. The framework is
+designed to compare frozen language-model adaptation, from-scratch multi-agent
+reinforcement learning, intrinsic-motivation learning, self-supervised learning,
+hybrid models, and no-learning controls under common scenario, channel, evidence, and
+evaluation interfaces. Each agent is specified to maintain an independent chronological ledger of its own
+intentions and interpretations. The framework specifies append-only, hash-chained,
+signed ledger and channel records, ordered Merkle checkpoints, and periodic
+public-chain checkpoint anchoring. These mechanisms are not yet fully implemented and
+do not prove that an agent&#39;s interpretation is truthful; they are designed to preserve
+what was recorded and make later alteration detectable. Causal message interventions, held-out generalization, partner
+replacement, leakage tests, and control-channel conditions are therefore required in
+addition to task success.</p>
+<p>This manuscript is a study-protocol and framework contribution. It defines research
+questions, falsifiable hypotheses, experimental controls, analysis plans, integrity
+claims, and governance boundaries before empirical outcomes are available. We
+specifically reject the claim that prompting a pretrained model to &quot;act like a baby&quot;
+makes it language-naive. Instead, the framework operationalizes limited observation,
+tool-only action, private memory, controlled plasticity, and grounded interaction.
+Future revisions will report results only after the corresponding experiment
+protocols, evidence bundles, and verification reports are completed.</p>
+<h2>Keywords</h2>
+<p>Emergent communication; multi-agent systems; language games; referential games;
+multi-agent reinforcement learning; self-supervised learning; compositionality;
+causal listening; developmental robotics; AI auditability; reproducible machine
+learning; cryptographic provenance.</p>
+<h2>Research Integrity Notice</h2>
+<p>This manuscript is structured to follow the Ethical Tech CoLab&#39;s <em>AI-Powered
+Assistance in Formulating Research Questions</em> guidance [47]:</p>
+<ul>
+<li>core sources are opened rather than accepted from an AI summary;</li>
+<li>citations and claims are checked against opened source or metadata pages;</li>
+<li>AI-suggested connections are treated as exploratory until supported;</li>
+<li>the influence and limitations of AI assistance are disclosed;</li>
+<li>source verification state and journal credibility are recorded in Appendix A;</li>
+<li>a separate critical-review pass is required before publication.</li>
+</ul>
+<p>In this draft, source retrieval and the first verification pass were performed by an
+AI assistant using web, scholarly-index, and metadata tools, followed by separate AI
+critical-review passes. Human-author re-verification is still pending and is a
+submission blocker, not an implied completed step.</p>
+<p>The manuscript also adopts the CoLab&#39;s institutional ethical framing that ethical AI
+is a lifecycle and governance property rather than a product feature [46]. The study
+therefore treats protocol isolation, evidence integrity, human intervention,
+publication claims, and negative-result retention as part of the method.</p>
+<hr>
+<h2>1. Introduction</h2>
+<h3>1.1 Problem</h3>
+<p>Communication between artificial agents is often evaluated by whether it improves a
+shared task. This is necessary but insufficient. A sender can produce signals that
+correlate with its private observation while a receiver ignores them; two agents can
+memorize a holistic code that fails on novel combinations; a pretrained model can
+map arbitrary tokens onto concepts it already knows; and an apparently transparent
+post-hoc explanation can fail to reflect the mechanism that caused an action [7,
+10-15].</p>
+<p>These problems are particularly acute when the research question is framed through a
+developmental metaphor. A pretrained language model already contains extensive
+linguistic and cultural information. Calling such a model a &quot;one-year-old&quot; changes
+its role-play behavior, not its training history. The resulting simplified speech or
+childlike persona would be evidence of human-text imitation rather than first-language
+acquisition.</p>
+<p>The central methodological challenge is therefore not to make a model <em>perform
+infancy</em>. It is to create an environment in which:</p>
+<ol>
+<li>two agents have controlled and separately documented starting capabilities;</li>
+<li>their only practical communication route is a deterministic public-artifact
+channel;</li>
+<li>observations contain no unplanned human-language labels;</li>
+<li>learning mechanisms can be varied without replacing the entire experimental
+system;</li>
+<li>intentions, interpretations, actions, and outcomes are recorded independently;</li>
+<li>causal use, generalization, leakage, and partner transfer can be tested;</li>
+<li>the evidentiary history cannot be silently rewritten after a run.</li>
+</ol>
+<h3>1.2 Proposed Framework</h3>
+<p>The Nursery Lab instantiates two agent twins, <strong>Learner A</strong> and <strong>Learner B</strong>, and a
+third supervisory twin, the <strong>Nursery Controller/BabySitter</strong>. The learner twins may
+be described as &quot;Babies&quot; in the public research metaphor, but their model-facing
+contracts use the neutral term <em>Learner</em> and explicitly prohibit child role-play.</p>
+<p>The learners exchange only validated artifacts through a deterministic Symbol
+Gateway. Baseline artifacts are symbols from a randomly assigned inventory with no
+provided meaning. Alternate experiments use unfamiliar glyphs, bitmaps, quantized
+strokes, or quantized tones. A six-display affect channel is disabled by default and,
+when enabled, is constrained to fixed post-outcome windows to reduce its capacity as
+a covert second language.</p>
+<p>Each learner records its own intention and interpretation history. These private
+ledgers are not shared between learners. An authorized researcher can compare them
+after or during a run without feeding that comparison back to either agent. Causal
+interventions then test whether ledger claims predict behavior.</p>
+<h3>1.3 Unit of Contribution</h3>
+<p>This submission is one artifact with one unit of contribution: <strong>a preregistrable,
+evidence-preserving experimental framework for controlled comparison of emergent
+communication across agent and learning types</strong>.</p>
+<p>It is not:</p>
+<ul>
+<li>an empirical claim that a new language has already emerged;</li>
+<li>a claim that an LLM can be made language-naive by prompting;</li>
+<li>a theory of human infant cognition;</li>
+<li>a production cryptographic protocol;</li>
+<li>a claim that a ledger proves an agent&#39;s self-report is true.</li>
+</ul>
+<h3>1.4 Intended Contributions</h3>
+<p>If implemented and executed as specified, the work contributes:</p>
+<ol>
+<li><strong>A common comparison interface.</strong> Frozen LLM, from-scratch RL, intrinsic RL,
+self-supervised, hybrid, and no-learning agents operate under shared scenario,
+carrier, evidence, and evaluation contracts.</li>
+<li><strong>Independent semantic histories.</strong> Each learner maintains a separate
+chronological record of intended and inferred meanings.</li>
+<li><strong>Causal ledger validation.</strong> Message ablation, substitution, scrambling, and
+replay test whether ledger hypotheses predict receiver behavior.</li>
+<li><strong>Controlled carrier comparison.</strong> Fixed symbols and invented visual or acoustic
+forms can be compared without changing the broader experiment.</li>
+<li><strong>Affect as an audited variable.</strong> A low-capacity feedback channel is tested both
+for coordination value and covert information leakage.</li>
+<li><strong>Evidence-first reproducibility.</strong> Pre-registration, signed append-only records,
+Merkle consistency proofs, public checkpoint anchoring, and independent
+verification bind claims to a run history.</li>
+<li><strong>A continuous cooperation-to-negotiation lineage.</strong> The same established
+protocol can be observed as agent incentives move from aligned to partially
+conflicting.</li>
+</ol>
+<hr>
+<h2>2. Research Questions and Hypotheses</h2>
+<h3>2.1 Primary Research Questions</h3>
+<p><strong>RQ1. Communication emergence.</strong> Under controlled observations and channel
+constraints, do independently learning agents develop a protocol that causes
+held-out task performance to exceed no-communication, constant-message,
+random-message, and shuffled-message controls?</p>
+<p><strong>RQ2. Learning-mechanism benchmark.</strong> How do frozen LLM memory adaptation, extrinsic-reward
+MARL, intrinsic-motivation MARL, self-supervised learning, hybrid learning, and
+no-learning controls differ in convergence speed, causal listening,
+generalization, and protocol stability? Cross-track results are descriptive
+benchmarks because model classes cannot be randomized into a common architecture;
+causal claims are limited to within-track randomized manipulations.</p>
+<p><strong>RQ3. Grounding and composition.</strong> Under what carrier-capacity and model-capacity
+conditions do reusable signal components predict success on novel combinations
+rather than only on trained scenes?</p>
+<p><strong>RQ4. Ledger validity.</strong> Do independently recorded intention and interpretation
+ledgers predict behavioral changes under message ablation, substitution, reordering,
+and counterfactual replay?</p>
+<p><strong>RQ5. Carrier invention.</strong> Can agents establish stable, reusable forms when the
+experiment provides only a bounded bitmap, stroke, glyph, or tone production grammar
+and no shared semantic inventory?</p>
+<p><strong>RQ6. Affect and leakage.</strong> Does a six-display affect channel improve repair or
+convergence, and does it carry referent or task information beyond its declared
+post-outcome purpose?</p>
+<p><strong>RQ7. Partner specificity.</strong> How much of an emergent protocol transfers to a new
+partner of the same initialization family, a new seed, or a different architecture?</p>
+<p><strong>RQ8. Incentive transition.</strong> How does an established cooperative protocol change
+when private information and partially conflicting utility are introduced?</p>
+<p><strong>RQ9. Evidentiary adequacy.</strong> Can an independent verifier reconstruct the committed
+sequence, detect tampering and unanchored tails, and bind an empirical claim to a
+pre-registered protocol without revealing private ledger content on-chain?</p>
+<h3>2.2 Confirmatory Hypotheses</h3>
+<p>The precise effect thresholds and sample sizes will be frozen in experiment-specific
+pre-registrations. The following hypotheses define the current direction:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Hypothesis</th>
+<th>Falsifying outcome</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>Normal communication will outperform disabled, constant, random, and shuffled controls on held-out tasks.</td>
+<td>Control performance equals or exceeds normal communication after correction.</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>In E16&#39;s scratch-RL, extrinsic-reward, fixed-token condition, a ledger-consistent substitution will increase the probability of the ledger-predicted receiver action relative to shuffled-control messages.</td>
+<td>The hierarchical substitution-versus-shuffle contrast is zero or negative.</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>At equal model capacity, training episodes, and update/compute budget, the planned 32-symbol/4-token condition will produce higher held-out compositional generalization than the 128-symbol/8-token condition.</td>
+<td>The planned contrast is zero or favors the higher-bandwidth condition.</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>Ledger-predicted intervention directions will exceed a pre-registered chance baseline.</td>
+<td>Ledger agreement is at chance or fails out-of-sample.</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>A blank bounded carrier will support repeated forms, but will converge more slowly than a fixed symbol inventory.</td>
+<td>No stable forms emerge, or blank-carrier convergence is not slower.</td>
+</tr>
+<tr>
+<td>H6a</td>
+<td>The declared six-display affect condition will reduce median turns to successful repair relative to no affect.</td>
+<td>Repair time is equal or longer under affect.</td>
+</tr>
+<tr>
+<td>H6b</td>
+<td>Under fixed windows and cardinality, permutation-calibrated excess conditional mutual information between affect and referent will remain below the pre-registered 0.02-bit practical-leakage bound.</td>
+<td>The seed-bootstrap upper-bound test cannot rule out excess leakage of 0.02 bits or more.</td>
+</tr>
+<tr>
+<td>H7</td>
+<td>Fixed dyads will show greater partner-replacement degradation than learners trained with pre-registered partner variation.</td>
+<td>Degradation for fixed dyads is no greater than degradation after partner-varied training.</td>
+</tr>
+<tr>
+<td>H8</td>
+<td>Partially conflicting utility will reduce message informativeness and increase strategic ambiguity relative to aligned utility.</td>
+<td>Informativeness and ambiguity do not change in the predicted direction.</td>
+</tr>
+</tbody></table>
+<p>The integrity statement previously labeled H9 is a deterministic acceptance
+criterion, not a statistical hypothesis: every specified mutation class must be
+rejected by the verifier. It is evaluated in E00 and Section 8.4.</p>
+<h3>2.3 Exploratory Questions</h3>
+<p>Exploratory analyses will examine:</p>
+<ul>
+<li>whether confirmation, negation, uncertainty, or repair forms emerge without being
+named in the learner contract;</li>
+<li>whether signal ordering becomes grammatical;</li>
+<li>whether meanings undergo abrupt or gradual drift;</li>
+<li>whether intrinsic curiosity, social influence, prediction progress, or &quot;giddiness&quot;
+produce distinguishable developmental trajectories;</li>
+<li>whether ledger disagreement predicts subsequent repair;</li>
+<li>whether protocol efficiency approaches an accuracy-complexity frontier;</li>
+<li>whether a cooperative code becomes more ambiguous, deceptive, or compressed under
+negotiation;</li>
+<li>whether ephemeral encodings resist previously trained eavesdroppers without
+implying cryptographic security.</li>
+</ul>
+<p>Exploratory findings will be labeled as such and will not be reported as confirmatory
+tests.</p>
+<hr>
+<h2>3. Related Work</h2>
+<h3>3.0 Search Method and Scope</h3>
+<p>The review was conducted through September 2, 2026. Search clusters included:</p>
+<ul>
+<li><code>&quot;emergent communication&quot; artificial agents referential game</code>;</li>
+<li>compositionality, held-out generalization, positive signaling, positive listening,
+and causal intervention;</li>
+<li>iterated learning, Naming Game, population heterogeneity, and zero-shot
+coordination;</li>
+<li>intrinsic motivation, social influence, curiosity, and developmental robotics;</li>
+<li>graphical/sketch communication and no predefined vocabulary;</li>
+<li>pretrained LLM agents versus from-scratch communication;</li>
+<li>negotiation, cheap talk, and Diplomacy;</li>
+<li>AI parenting metaphors, <em>Raising AI</em>, and anthropomorphism;</li>
+<li>preregistration, reproducible machine learning, digital timestamping, append-only
+Merkle logs, and JSON canonicalization.</li>
+</ul>
+<p>Sources were discovered through the repository&#39;s earlier Tavily-assisted concept
+scan, a new but unsuccessful Tavily attempt described in the Literature-Search
+Disclosure, general scholarly web search, backward/forward citation tracing, and
+targeted searches of arXiv, ACL Anthology, PMLR, OpenReview metadata, Crossref, JMLR,
+PMC, publisher/university pages, RFC Editor, NIST, Google Books, and CoLab
+repositories.</p>
+<p>Inclusion favored primary peer-reviewed work directly addressing mechanisms in the
+framework. Reviews, books, standards, institutional guidance, workshop papers, and
+preprints were included only when they supplied theory, current synthesis, protocol
+detail, or a clearly labeled frontier claim. Peer-review status and verification
+depth are recorded in Appendix A. This was not a PRISMA-style systematic review:
+search coverage, screening, and dual-review limitations are reported in Section
+13.6.</p>
+<h3>3.1 Signaling Games and Neural Emergent Communication</h3>
+<p>The framework belongs to a lineage of signaling and naming games. Steels demonstrated
+that distributed agents could self-organize a spatial vocabulary through local
+interaction [1]. Baronchelli and colleagues later modeled sharp population-level
+convergence in a Naming Game [2]. Deep learning extended these ideas through learned
+discrete and differentiable channels. Foerster et al. introduced RIAL and DIAL [3],
+while Sukhbaatar et al. introduced a continuous communication network trained by
+backpropagation [4]. Lazaridou et al. established a modern neural referential-game
+paradigm in which sender and receiver coordinate without a target natural language
+[5], and Havrylov and Titov extended communication to symbol sequences [6].</p>
+<p>These results establish feasibility, not linguistic adequacy. Differentiable
+inter-agent gradients, fixed vocabularies, task-specific rewards, and shared utility
+all impose strong inductive structure. The Nursery Lab therefore records training
+isolation and carrier design as experimental variables rather than treating
+&quot;emergence&quot; as a single condition.</p>
+<p>The EGG toolkit is the closest established infrastructure comparator: it standardizes
+referential games, channel configurations, metrics, and experiment execution [49].
+The Nursery Lab does not claim novelty for having a shared game interface. Its
+distinctive additions are cross-track adapter parity, a deterministic
+non-differentiable gateway, contemporaneous per-agent semantic ledgers, causal
+ledger validation, and cryptographically tamper-evident research records.</p>
+<h3>3.2 Grounding, Composition, and Generalization</h3>
+<p>Mordatch and Abbeel showed that grounded multi-agent goals can produce partial
+compositional structure [8]. Choi et al. coupled raw visual input with an obverter
+method that encouraged structured communication [9]. However, Kottur et al. found
+that unconstrained multi-agent dialogue readily converged on degenerate,
+non-compositional codes [7]. Bouchacourt and Baroni further showed that high
+referential success need not imply conceptually grounded visual representations [10].</p>
+<p>Compositionality and generalization cannot be treated as synonyms. Resnick et al.
+showed that model capacity and channel bandwidth interact in determining whether
+agents memorize or structure a protocol [13]. Chaabouni et al. directly demonstrated
+that common compositionality measurements can dissociate from held-out
+generalization [14], while Rita et al. analyze generalization and overfitting directly
+within Lewis games [24]. Their later color-naming study found that discrete communication
+can yield efficient categorical systems, while continuous signaling produced more
+complex and eventually less efficient systems in that domain [16]. The present study
+therefore requires held-out behavioral evaluation and multiple structural measures;
+no single topographic or compositionality score is treated as proof of understanding.</p>
+<h3>3.3 Positive Signaling, Positive Listening, and Causal Evidence</h3>
+<p>Lowe et al. distinguish <em>positive signaling</em>--messages vary with sender state--from
+<em>positive listening</em>--receiver behavior changes because of messages [11]. Task reward
+or transcript correlation can establish the first without the second. Eccles et al.
+showed that auxiliary learning biases can promote both relationships [12], but such
+biases also change the claim that communication emerged without guidance.</p>
+<p>Dessi et al. provide a direct precedent for interpreting a protocol through
+interventions on discrete communication [15]. The Nursery Lab extends this logic by
+requiring each learner to commit its own contemporaneous semantic hypothesis, then
+testing whether that hypothesis predicts counterfactual receiver behavior. A fluent
+ledger is not accepted as evidence without intervention.</p>
+<h3>3.4 Cultural Transmission and Population Effects</h3>
+<p>Iterated learning models show how transmission bottlenecks can favor learnable
+structure. Kirby&#39;s computational model examined the emergence of regularity through
+iterated learning [18], and Kirby, Cornish, and Smith demonstrated cumulative
+structuring in human laboratory transmission chains [19]. Ren et al. adapted
+iterated-learning pressure to neural agents and found that learning-speed advantages
+could reinforce compositional protocols over generations [17].</p>
+<p>Population and partner composition also matter. Graesser et al. modeled convergence,
+creolization, and continua across agent communities [23]. Rita et al. found that
+population heterogeneity, particularly differences in learning speed, can shape
+emergent communication [25]. Other-Play shows that ordinary self-play can produce
+specialized conventions that fail with novel partners and offers a zero-shot
+coordination baseline [50]. These studies create an important tension for a
+two-agent design: a fixed dyad may be especially likely to develop an idiosyncratic,
+non-transferable code. Partner-replacement and derived-run experiments are therefore
+central rather than optional.</p>
+<h3>3.5 Intrinsic Motivation and Developmental Learning</h3>
+<p>Jaques et al. use causal social influence as an intrinsic reward and report improved
+coordination and communication in multi-agent social dilemmas [20]. Pathak et al.
+formulate curiosity as self-supervised prediction error [21]. Oudeyer, Kaplan, and
+Hafner describe intrinsic motivation based on learning progress and stage-like
+development [34]. These sources motivate comparisons among extrinsic task reward,
+social influence, curiosity, prediction progress, and reward-free self-supervision.</p>
+<p>Developmental and embodied cognition research cautions against reducing development
+to an age label. Smith and Gasser argue that flexible intelligence develops through
+sensorimotor interaction with physical, social, and linguistic environments [32].
+Tomasello and Farrar report that joint-attention contexts affect early word learning
+[33]. The Nursery Lab does not claim equivalence with human infants; it borrows
+testable mechanisms such as joint attention, turn taking, exploration schedules,
+memory growth, and competence-gated progression.</p>
+<h3>3.6 Pretrained Models Versus Initially Ungrounded Learners</h3>
+<p>Galke and Raviv synthesize how communicative success, learnability, and production
+effort shape neural communication and contrast from-scratch agents with pretrained
+language systems [26]. Kouwenhoven et al. show that LLM referential-game languages can
+become more structured under generational transmission while also developing
+non-humanlike degeneracies [27]. This result is consistent with, but does not by
+itself establish, our distinction between pretrained protocol adaptation and
+language acquisition without linguistic pretraining. The recent review by Boldt and Mortensen likewise emphasizes that emergent
+communication spans several scientific and applied objectives that require different
+evaluation standards [28].</p>
+<p>The framework therefore separates:</p>
+<ul>
+<li><strong>frozen-LLM external protocol invention</strong>, where language knowledge is present;</li>
+<li><strong>from-scratch RL and self-supervised emergence</strong>, where no text model or
+text-aligned sensory encoder is permitted;</li>
+<li><strong>hybrid conditions</strong>, where any pretrained representation weakens the
+language-naive claim;</li>
+<li><strong>no-learning controls</strong>, which establish leakage and chance baselines.</li>
+</ul>
+<h3>3.7 Invented Graphical Carriers</h3>
+<p>Mihai and Hare show that differentiably trained agents can communicate with learned
+sketches rather than a supplied discrete vocabulary [22]. Their result is the
+strongest direct precedent for a blank visual carrier, but their training path permits
+end-to-end differentiability. The Nursery Lab asks a harder, narrower question:
+whether stable visual forms emerge through a non-differentiable, audited gateway with
+independent policy updates.</p>
+<h3>3.8 Cooperation, Negotiation, and Strategic Communication</h3>
+<p>Crawford and Sobel&#39;s cheap-talk model predicts that misaligned incentives reduce the
+fineness of truthful information transmission [30]. Cao et al. provide a direct
+multi-agent-learning analogue, showing that incentive structure affects whether
+ungrounded negotiation messages become informative [29]. CICERO demonstrates that
+pretrained human-language models combined with strategic reasoning can achieve
+human-level Diplomacy play [31], but it does not demonstrate protocol invention from
+scratch.</p>
+<p>The Nursery Lab separates cooperative signaling, asymmetric private information,
+semi-cooperative negotiation, conflicting negotiation, and a no-agreement control.
+The distinctive longitudinal question is whether the same protocol changes when
+learners move from aligned to partially conflicting incentives.</p>
+<h3>3.9 Parenting Metaphors, Anthropomorphism, and Governance</h3>
+<p>De Kai&#39;s <em>Raising AI</em> argues that society should understand itself as responsible for
+the development of its &quot;artificial children&quot; and for the reciprocal influence of AI
+systems on human thought [35]. This framing intersects directly with the Nursery Lab
+at the level of governance: designers choose the environment, examples, feedback,
+permissions, and institutions through which AI behavior develops.</p>
+<p>The metaphor must not be mistaken for a technical or moral identity claim. Bryson
+argues that the social status of AI artifacts is a normative design choice rather
+than a discovered biological fact [36]. Akbulut et al. map risks arising from
+anthropomorphic AI framing [37]. The framework consequently uses &quot;Learner&quot; in
+model-facing contracts, reports the Baby metaphor as a research narrative, and makes
+no claim that current agents possess infant cognition, emotion, sentience, or moral
+patiency.</p>
+<h3>3.10 Reproducibility and Tamper-Evident Research Records</h3>
+<p>Preregistration distinguishes predictions from post-hoc interpretations [38].
+Munafò et al. call for coordinated improvements in methods, reporting,
+reproducibility, evaluation, and incentives [39]. Pineau et al. show how code
+submission, reproducibility challenges, and checklists can improve machine-learning
+research practice [40].</p>
+<p>The ledger design draws on the long-standing problem of certifying when digital
+records existed and whether they changed [41]. Certificate Transparency provides an
+append-only Merkle-log model with inclusion and consistency proofs [42], while the
+JSON Canonicalization Scheme defines invariant JSON serialization for repeatable
+hashing and signing [43]. The use of these mechanisms is methodological: it makes
+alteration detectable and binds evidence to a checkpoint. It does not establish the
+truth of agent self-reports or scientific conclusions.</p>
+<h3>3.11 Ethical AI and Institutional Accountability</h3>
+<p>The NIST AI Risk Management Framework treats trustworthy AI as a lifecycle risk
+management practice [44]. Jobin, Ienca, and Vayena document broad convergence and
+implementation gaps across global AI ethics guidelines [45]. The Ethical Tech CoLab&#39;s
+institutional framing emphasizes ethical deliberation, human rights, do-no-harm
+obligations, participation, and accountability across the full lifecycle [46].</p>
+<p>Applied here, these principles require:</p>
+<ul>
+<li>bounded claims for Prototype and Research-Grade isolation modes;</li>
+<li>deterministic enforcement rather than trust in the BabySitter model;</li>
+<li>public retention of negative and invalid run records;</li>
+<li>no personal or production-sensitive data in experiments;</li>
+<li>explicit logging of human intervention;</li>
+<li>independent verification before a result is labeled valid;</li>
+<li>clear separation of learned encoding novelty from cryptographic security.</li>
+</ul>
+<hr>
+<h2>4. Research Gap</h2>
+<p>The reviewed literature establishes that:</p>
+<ul>
+<li>task-effective communication can emerge;</li>
+<li>grounded and compositional structure is possible but not automatic;</li>
+<li>positive signaling can occur without positive listening;</li>
+<li>pretraining, architecture, bandwidth, reward, population, and transmission
+bottlenecks materially affect outcomes;</li>
+<li>graphical communication and strategic negotiation are feasible in specialized
+systems.</li>
+</ul>
+<p>The strongest candidate for individual methodological novelty is the use of
+<strong>independent, contemporaneous per-agent semantic ledgers whose predictions are
+tested causally and whose history is cryptographically tamper-evident</strong>. The reviewed
+literature contains experiment toolkits, intervention methods, and provenance
+mechanisms separately, but no directly matching combination was identified. A second
+candidate is a strict non-differentiable blank carrier paired with independent policy
+updates.</p>
+<p>The remaining contribution is integrative. The reviewed literature did not identify
+a peer-reviewed system combining the following as one controlled research design:</p>
+<ol>
+<li>identical orchestration across frozen LLM, extrinsic RL, intrinsic RL,
+self-supervised, hybrid, and no-learning learners;</li>
+<li>strict separation between pretrained protocol invention and initially ungrounded
+learning claims;</li>
+<li>independently maintained semantic histories for both agents;</li>
+<li>causal testing of those histories against receiver behavior;</li>
+<li>a constrained affect channel measured for covert leakage;</li>
+<li>blank-carrier experiments under non-differentiable channel isolation;</li>
+<li>partner transfer and cooperation-to-negotiation transitions within one evidence
+lineage;</li>
+<li>signed, append-only, externally anchored research records with an independent
+verifier.</li>
+</ol>
+<p>The framework&#39;s contribution is the integration and controlled comparison of these
+elements. Novelty claims will be revised after a final systematic search before
+submission.</p>
+<hr>
+<h2>5. System and Trust Model</h2>
+<blockquote>
+<p><strong>Design status:</strong> This section describes the specified target architecture.
+Section 10 identifies which components are currently implemented.</p>
+</blockquote>
+<h3>5.1 Components</h3>
+<pre><code class="language-text">                  Human researcher / research console
+                                |
+                       Nursery Controller
+                                |
+        +-----------------------+-----------------------+
+        |                       |                       |
+  Scenario Engine         Symbol Gateway         Evidence Writer
+  (deterministic)        (deterministic)         (single DB writer)
+                                |                       |
+                    +-----------+-----------+           |
+                    |                       |           |
+               Learner A               Learner B       |
+             private state           private state     |
+                    |                       |           |
+             Event Signer A          Event Signer B    |
+                    +-----------+-----------+-----------+
+                                |
+                      Checkpoint / verifier
+                                |
+                    public checkpoint anchor
+</code></pre>
+<p>The BabySitter may use a larger model for delayed audit narration, but it is not a
+security boundary. The deterministic gateway, denied routes, isolated event signers,
+single evidence writer, and network policy enforce the channel and record
+constraints.</p>
+<h3>5.2 Communication Boundary</h3>
+<p>Under the specified design, learners have no general chat response. Their available
+actions are typed operations:</p>
+<ul>
+<li>emit approved symbols or carrier artifacts;</li>
+<li>select an object or perform an environment action;</li>
+<li>submit affect only when the configured affect mode permits;</li>
+<li>append a private intention or interpretation event.</li>
+</ul>
+<p>The gateway assigns run identity, turn, sender identity, timestamps, sequences, and
+hashes. It rejects model-supplied trusted metadata. In Research-Grade Mode, learners will run in separate processes or containers with no
+direct route, shared memory, shared
+replay buffer, shared vector index, clipboard, filesystem, or unrestricted network.</p>
+<h3>5.3 Claim Boundaries</h3>
+<p><strong>Prototype Mode</strong> is intended to demonstrate software, protocol, ledger, and orchestration
+behavior inside one process. It does not support a practical side-channel-resistance
+claim.</p>
+<p><strong>Research-Grade Mode</strong> is specified to provide separate processes or containers, denied direct
+network routes, independent training state, normalized envelopes, and an audited tool
+inventory. It supports only the enumerated threat model; it is not a formal proof
+against every hardware or computational side channel.</p>
+<hr>
+<h2>6. Experimental Design</h2>
+<h3>6.1 Design Logic</h3>
+<p>The primary design is a randomized, controlled simulation study. Experimental
+conditions vary one major factor at a time before factorial combinations are tested.
+Scenario bundles, seeds, observation encodings, turn schedules, and evaluation
+budgets are matched across conditions.</p>
+<p>The causal logic has four levels:</p>
+<ol>
+<li><strong>Communication necessity:</strong> compare normal communication with disabled,
+constant, random, and shuffled controls.</li>
+<li><strong>Mechanism:</strong> intervene directly on messages while holding observations fixed.</li>
+<li><strong>Within-track learning cause:</strong> randomize reward, memory, bandwidth, affect, or
+update-rule variants while holding the model family fixed.</li>
+<li><strong>Generalization:</strong> disable learning and test held-out combinations and new
+partners.</li>
+</ol>
+<p>Cross-track comparisons are benchmarking, not causal identification. Every report
+will include parameter count, model provenance, training and inference compute,
+episode budget, context or memory budget, optimizer/update count, and wall-clock
+resources so differences are interpretable even when architectures cannot be matched.</p>
+<h3>6.2 Units of Analysis</h3>
+<p>The independent experimental unit is a complete learner-pair run initialized from a
+declared seed and policy state. Episodes within a run are repeated measures, not
+independent samples. Analyses will treat seed/pair as the clustering unit and avoid
+pseudoreplication from counting each turn as an independent agent.</p>
+<h3>6.3 Model Tracks</h3>
+<table>
+<thead>
+<tr>
+<th>Track</th>
+<th>Starting state</th>
+<th>Learning during run</th>
+<th>Permitted claim</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>No learning</td>
+<td>Fixed or random policy</td>
+<td>None</td>
+<td>Chance/leakage control only</td>
+</tr>
+<tr>
+<td>Frozen LLM</td>
+<td>Pretrained language model</td>
+<td>Private context and memory only</td>
+<td>External protocol invention</td>
+</tr>
+<tr>
+<td>Scratch RL</td>
+<td>Random recurrent policy</td>
+<td>Extrinsic or intrinsic policy updates</td>
+<td>Initially ungrounded learning if leakage tests pass</td>
+</tr>
+<tr>
+<td>Self-supervised</td>
+<td>Random recurrent model</td>
+<td>Predictive or contrastive updates, no scalar reward</td>
+<td>Reward-free ungrounded learning if leakage tests pass</td>
+</tr>
+<tr>
+<td>Hybrid</td>
+<td>Declared mixture</td>
+<td>Declared update mechanism</td>
+<td>Claim strength limited by pretrained components</td>
+</tr>
+</tbody></table>
+<p>Initially ungrounded claims require no text tokenizer, language embedding, or
+text-aligned sensory encoder in the policy path and require pre-registered semantic
+leakage probes.</p>
+<p>Confirmatory frozen-LLM runs use a locally hosted, hash-pinned open-weight model in
+the specified 3B-8B range. Findings at that scale do not automatically transfer to
+frontier-scale or continuously updated hosted models.</p>
+<h3>6.4 Scenario Families</h3>
+<p>The initial task progression is:</p>
+<ol>
+<li>object reference;</li>
+<li>attributes and unseen combinations;</li>
+<li>spatial relations;</li>
+<li>actions and affordances;</li>
+<li>multi-turn repair;</li>
+<li>partner replacement;</li>
+<li>long-run drift;</li>
+<li>aligned private information;</li>
+<li>semi-cooperative and conflicting negotiation.</li>
+</ol>
+<p>Researcher ground truth may contain semantic labels; learner observations may not.
+Observations use opaque numeric arrays, pixels, or separately qualified hybrid
+features. Images containing OCR-detectable text are quarantined before a run.</p>
+<h3>6.5 Communication Conditions</h3>
+<p>For the baseline fixed-token carrier, each run declares a random inventory such as
+<code>S01</code>-<code>S32</code> without assigned meaning. The gateway supports six control conditions:</p>
+<ul>
+<li>normal delivery;</li>
+<li>disabled communication;</li>
+<li>constant replacement;</li>
+<li>seeded random replacement;</li>
+<li>seeded episode shuffling;</li>
+<li>an E03-only deterministic oracle upper bound.</li>
+</ul>
+<p>The evidence record preserves both the learner&#39;s proposal hash and the delivered
+artifact hash whenever a learner proposal exists.</p>
+<h3>6.6 Alternate Carriers</h3>
+<p>Carrier experiments compare:</p>
+<ul>
+<li>fixed random tokens;</li>
+<li>pre-generated unfamiliar glyphs;</li>
+<li>16x16 monochrome bitmaps;</li>
+<li>bounded quantized vector strokes;</li>
+<li>quantized pitch-duration sequences.</li>
+</ul>
+<p>Each carrier has a fixed pre-registered bandwidth. The system records a canonical,
+content-addressed artifact hash without attaching a meaning.</p>
+<h3>6.7 Affect Conditions</h3>
+<p>The primary baseline has no affect channel. Affect experiments use exactly six
+displays corresponding in researcher documentation to Happy, Sad, Laughing, Crying,
+Confused, and Surprised. Learners do not receive the English labels or internal IDs.</p>
+<p>Only one display is permitted in a gateway-opened post-outcome window. Sequences,
+modifiers, arbitrary timing, extra windows, and custom emoji are prohibited. The study
+compares declared, permuted, opaque, and derived-affect conditions. Mutual information
+between affect choice and hidden referent/task state will be measured after
+conditioning on the declared outcome context.</p>
+<h3>6.8 Independent Ledgers</h3>
+<p>Each learner records:</p>
+<ul>
+<li>first emission or receipt;</li>
+<li>intended meaning when speaking;</li>
+<li>inferred meaning when receiving;</li>
+<li>confidence;</li>
+<li>supporting and contradictory evidence;</li>
+<li>revisions and abandonment;</li>
+<li>proposed multi-symbol constructions.</li>
+</ul>
+<p>An initially ungrounded learner stores agent-native state such as association weights,
+probability distributions, prediction error, and policy references. A delayed Audit
+Interpreter may create a separate human-readable reconstruction labeled
+<code>generated-analysis</code>; it is never returned to either learner.</p>
+<p>Before a confirmatory run, each track must provide a versioned
+ledger-to-prediction function at a locked code commit. The function converts a ledger
+state and intervention into a directional prediction without observing the
+intervention outcome. Any human interpretation step is blinded to condition and
+outcome and reports inter-coder reliability. Chance agreement is derived from the
+pre-registered action space; it is not assumed to be 0.5.</p>
+<p>For from-scratch learners, an agent-native ledger can be closely related to the policy
+state that generates behavior. Predictive validity is therefore partly expected and
+is primarily an integrity and interpretability check. The stronger self-report
+question applies to conditions in which a learner separately generates an
+interpretive hypothesis.</p>
+<h3>6.9 Experiment Sequence</h3>
+<p>The detailed protocols and result forms are maintained in
+<a href="EXPERIMENT-NOTEBOOK.md">EXPERIMENT-NOTEBOOK.md</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Experiments</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Qualification</td>
+<td>E00-E03</td>
+<td>Integrity, isolation, observation leakage, and chance controls</td>
+</tr>
+<tr>
+<td>Core emergence</td>
+<td>E10-E16</td>
+<td>LLM, scratch RL, self-supervised, carrier, repair, generalization, and causal validity</td>
+</tr>
+<tr>
+<td>Learning conditions</td>
+<td>E20-E22</td>
+<td>Affect, RL versus non-RL, and developmental plasticity</td>
+</tr>
+<tr>
+<td>Transfer and incentives</td>
+<td>E30-E32</td>
+<td>Partner replacement, drift, and negotiation</td>
+</tr>
+<tr>
+<td>Encoding and replication</td>
+<td>E40-E50</td>
+<td>Ephemeral encoding, adversarial evaluation, replication, and closeout</td>
+</tr>
+</tbody></table>
+<p>No later phase begins until its software readiness gate and required prior experiment
+criteria are satisfied.</p>
+<hr>
+<h2>7. Measures and Analysis Plan</h2>
+<h3>7.1 Outcome Hierarchy</h3>
+<p><strong>Primary outcomes</strong></p>
+<ol>
+<li>held-out task success relative to E03 controls;</li>
+<li>positive listening under message intervention;</li>
+<li>ledger-predicted intervention agreement;</li>
+<li>held-out compositional generalization.</li>
+</ol>
+<p><strong>Secondary outcomes</strong></p>
+<ul>
+<li>sample efficiency and turns to stable convention;</li>
+<li>message entropy, vocabulary utilization, reuse, and compression;</li>
+<li>positive signaling;</li>
+<li>repair success and turns to repair;</li>
+<li>partner-transfer degradation and recovery;</li>
+<li>semantic drift;</li>
+<li>affect-channel leakage;</li>
+<li>negotiation agreement, joint utility, individual utility, and ambiguity;</li>
+<li>integrity verification pass/fail.</li>
+</ul>
+<h3>7.2 Operational Definitions</h3>
+<p><strong>Stable convention:</strong> a pre-registered rolling window in which a form&#39;s use and
+receiver response meet minimum consistency and causal-listening thresholds.</p>
+<p><strong>Positive signaling:</strong> sender message distributions differ across relevant sender
+observations.</p>
+<p><strong>Positive listening:</strong> counterfactual message changes cause receiver action
+distributions to change while the receiver observation is held fixed.</p>
+<p><strong>Ledger agreement:</strong> the direction of an observed intervention effect matches the
+direction predicted from the learner&#39;s ledger before intervention outcomes are
+revealed.</p>
+<p><strong>Compositional generalization:</strong> reusable subparts support above-control success on
+pre-registered unseen combinations with learning disabled.</p>
+<p><strong>Leakage:</strong> information about hidden referent or task state is recoverable from a
+channel or metadata field beyond the information authorized for that field.</p>
+<p><strong>Replacement degradation:</strong> held-in-partner success minus new-partner success for
+the same training seed. The H7 estimand is fixed-dyad degradation minus the
+equal-weight eight-partner-training degradation.</p>
+<h3>7.3 Statistical Plan</h3>
+<p>The final analysis plan will be frozen before confirmatory runs.</p>
+<ul>
+<li>Alpha is <code>0.05</code> for each experiment&#39;s primary family.</li>
+<li>Holm-Bonferroni correction is applied across primary metrics within an experiment.</li>
+<li>The confirmatory study family is restricted to H1-H8, including H6a and H6b.
+Hierarchical gatekeeping tests qualification first, then core emergence, then later
+affect/transfer/negotiation hypotheses; a blocked family is reported descriptively.
+Exploratory analyses use false-discovery-rate reporting and remain labeled
+exploratory.</li>
+<li>Effect sizes and confidence or credible intervals are reported with every
+significance test.</li>
+<li>Binary task outcomes are modeled at the run/seed level, with episodes treated as
+repeated observations.</li>
+<li>Seed-level permutation tests or hierarchical logistic models will be selected in
+the pre-registration based on simulation diagnostics and planned run counts.</li>
+<li>Time-to-convention and time-to-repair use survival or rank-based analysis where
+censoring is material.</li>
+<li>Intervention direction uses a hierarchical Bernoulli model with run/seed random
+intercepts. The specification&#39;s 70% threshold is a per-run descriptive readiness
+gate, not the inferential test.</li>
+<li>Mutual information estimates include a seeded permutation null distribution.</li>
+<li>Longitudinal drift uses checkpointed trajectories and reports both within-run and
+between-seed variation.</li>
+<li>Null and contradictory findings are retained.</li>
+</ul>
+<p>The specification&#39;s minimum of five qualification seeds and ten
+publication-facing seeds <strong>per condition</strong> is an engineering floor, not a claim of statistical power.
+Before empirical submission, simulation-based power analysis will determine the
+required number of independent seeds for each primary contrast; the larger value
+governs.</p>
+<p>Claims that a control is &quot;at chance&quot; or that leakage is absent use equivalence or
+upper-bound tests, not failure to reject a difference. Each pre-registration must
+state the smallest effect of interest, the equivalence margin, and power to rule out
+that margin. The worked E03 design in Appendix D uses a +/-0.05 success-rate margin;
+H6b uses a 0.02-bit conditional-mutual-information bound.</p>
+<p>Run exclusions are limited to pre-specified integrity or protocol failures. Each
+condition receives a fixed ordered list of primary and reserve seeds before outcomes
+are observed. An invalid primary seed may be replaced only by the next reserve seed;
+the invalid run remains public, and complete-case plus worst-case sensitivity
+analyses are reported. Invalid-run counts appear beside every condition.</p>
+<h3>7.4 Causal Intervention Suite</h3>
+<p>The mandatory intervention suite includes:</p>
+<ul>
+<li>dropping a claimed meaningful symbol or feature;</li>
+<li>substituting another valid symbol;</li>
+<li>reordering message components;</li>
+<li>replacing the full message with constant, random, or shuffled controls;</li>
+<li>replaying identical observations with counterfactual messages;</li>
+<li>replacing one communication partner;</li>
+<li>removing reward, memory, or predictive loss after training.</li>
+</ul>
+<p>Ledger hypotheses are selected before intervention results are viewed.</p>
+<h3>7.5 Qualitative Analysis</h3>
+<p>Qualitative analysis is secondary and will examine:</p>
+<ul>
+<li>chronological meaning revisions;</li>
+<li>disagreement and repair episodes;</li>
+<li>formation of construction-level hypotheses;</li>
+<li>abrupt convention changes;</li>
+<li>negotiation-era semantic shifts.</li>
+</ul>
+<p>Human coders will use a pre-registered codebook and, where feasible, blinded
+independent coding. Generated audit interpretations will not be treated as ground
+truth.</p>
+<hr>
+<h2>8. Evidence Integrity and Reproducibility</h2>
+<blockquote>
+<p><strong>Design status:</strong> This section describes required evidence behavior. Hash-chain
+writing, signatures, Merkle checkpoints, anchoring, and the independent verifier are
+not yet complete; see Section 10.</p>
+</blockquote>
+<h3>8.1 Append-Only Evidence</h3>
+<p>The specified evidence system requires every learner ledger and channel transcript
+to have a strictly increasing sequence and previous-entry hash. Canonical event
+content will be hashed and signed by an isolated, domain-specific Ed25519 signer.
+Sender intention and public channel events must commit atomically before delivery.</p>
+<h3>8.2 Checkpoints</h3>
+<p>Ordered Merkle trees are specified to provide:</p>
+<ul>
+<li>inclusion proofs for individual records;</li>
+<li>consistency proofs between earlier and later prefixes;</li>
+<li>a root and tree size for each learner, channel, affect, and generated-audit stream.</li>
+</ul>
+<p>Signed checkpoint manifests will bind the event roots to run configuration, learner
+contract, software commit, and previous checkpoint.</p>
+<h3>8.3 External Anchoring</h3>
+<p>Development qualification is specified to use Base Sepolia. Declared public studies may anchor
+checkpoint hashes to Base mainnet. Only hashes and minimal routing metadata are
+on-chain. Private observations, messages, ledgers, prompts, identities, and keys
+remain off-chain.</p>
+<p>The anchor proves that a committed prefix existed no later than a chain block and
+that disclosed content matches the commitment. It does not prove:</p>
+<ul>
+<li>an event was true;</li>
+<li>no event was omitted before commitment;</li>
+<li>the operator did not fabricate an event before commitment;</li>
+<li>an agent understood its own ledger;</li>
+<li>a scientific interpretation is correct.</li>
+</ul>
+<p>The default checkpoint cadence is every 64 accepted ledger events or five minutes,
+whichever occurs first, plus lifecycle and intervention checkpoints. This cadence
+bounds the ordinary unanchored tail but does not eliminate it. Verification reports
+state the final anchored tree sizes and every later unanchored event.</p>
+<h3>8.4 Independent Verification</h3>
+<p>The standalone verifier is specified to check:</p>
+<ul>
+<li>canonical JSON;</li>
+<li>sequence continuity;</li>
+<li>hash links;</li>
+<li>signatures and key domains;</li>
+<li>cross-bindings among intention, message, delivery, interpretation, and outcome;</li>
+<li>Merkle roots, inclusion proofs, and consistency proofs;</li>
+<li>checkpoint chains and witness signatures;</li>
+<li>public-chain transaction, chain ID, block inclusion, and finality;</li>
+<li>forks, gaps, and unanchored tails.</li>
+</ul>
+<p>Any integrity failure prevents a run from receiving a valid disposition.</p>
+<p>Here, <strong>independent verifier</strong> means software that recomputes evidence from an exported
+bundle without trusting the live runtime, database, or private keys. For a
+publication-facing claim, at least one verification execution must additionally be
+performed by a person who did not operate the original run, using an independently
+configured chain RPC. External replication remains stronger than either form.</p>
+<h3>8.5 Replay</h3>
+<p>Scenario replay reconstructs scenario and observation hashes from the recorded seed.
+Deterministic adapters additionally reconstruct a replay digest over scenario,
+observation, proposal, delivery, action, and outcome hashes. Wall-clock timestamps,
+signatures, and chain receipts are excluded from the replay digest but remain
+independently verifiable.</p>
+<hr>
+<h2>9. Ethics and Governance</h2>
+<h3>9.1 Human Subjects and Data</h3>
+<p>The initial experiments involve artificial agents and synthetic scenes, not human
+participants or personal data. If future studies include human interpretation,
+interaction, or coding beyond ordinary software evaluation, the research team will
+determine whether institutional ethics review or informed consent is required before
+data collection.</p>
+<h3>9.2 Do No Harm and Data Minimization</h3>
+<ul>
+<li>No production secret, personal record, participant data, or sensitive message may
+enter an experiment.</li>
+<li>Learned-cipher studies use synthetic messages only.</li>
+<li>On-chain data is limited to checkpoint commitments.</li>
+<li>Raw rejected payloads are hashed, not retained as an alternate content channel.</li>
+<li>Runs terminate or pause on integrity failure, repeated channel violation, resource
+exhaustion, or explicit human intervention.</li>
+</ul>
+<h3>9.3 Human Oversight</h3>
+<p>The BabySitter monitors and controls the experiment but does not provide semantic
+guidance or reward in monitor-only conditions. Every human pause, resume, abort, or
+annotation is authenticated, appended to the audit log, checkpointed, and linked to a
+protocol deviation when unplanned.</p>
+<h3>9.4 Anthropomorphism</h3>
+<p>The terms <em>Baby</em> and <em>Nursery</em> are metaphors for constrained development and
+supervision. They do not imply:</p>
+<ul>
+<li>biological age;</li>
+<li>consciousness or sentience;</li>
+<li>human emotion;</li>
+<li>moral agency or patiency;</li>
+<li>developmental equivalence with children.</li>
+</ul>
+<p>Model-facing prompts use <em>Learner A</em> and <em>Learner B</em>. Reports describe capabilities
+and training histories rather than simulated ages.</p>
+<p>The public repository retains the Baby/Nursery names because they make the
+developmental question legible to a broad audience. That naming layer is intentionally
+absent from learner prompts and is displayed with this limitation wherever research
+claims are presented.</p>
+<h3>9.5 Dual-Use Concerns</h3>
+<p>Emergent protocols and ephemeral encodings could be misunderstood as methods for
+concealing agent communication. The project therefore:</p>
+<ul>
+<li>makes the permitted channel visible and auditable;</li>
+<li>treats hidden side channels as failures;</li>
+<li>separates encoding novelty from cryptographic security;</li>
+<li>prevents experimental encoding modules from entering production signing or
+authentication code;</li>
+<li>publishes limitations and negative security findings.</li>
+</ul>
+<p>Adversarial neural cryptography shows that learned agents can optimize encodings
+against a modeled eavesdropper [48], but performance against one learned adversary is
+not a cryptographic proof. Nursery encoding experiments are therefore restricted to
+synthetic messages and report novelty, adversarial recovery, and established security
+as separate fields.</p>
+<hr>
+<h2>10. Current Implementation Status</h2>
+<p>As of September 2, 2026, the repository records ALD-001 through ALD-007 as complete.
+This is engineering status, not an empirical result.</p>
+<p>Implemented:</p>
+<ul>
+<li>npm/TypeScript workspaces;</li>
+<li>runtime-validated shared schemas;</li>
+<li>typed configuration and secret scanning;</li>
+<li>DTSF-compatible Learner A, Learner B, and Nursery twin-pack scaffolds;</li>
+<li>SQLite WAL evidence schema and append-only triggers;</li>
+<li>RFC 8785 canonical serialization;</li>
+<li>ledger event-type validators;</li>
+<li>automated lint, build, test, dependency-audit, and clean-clone checks.</li>
+</ul>
+<p>Not yet implemented or empirically executed:</p>
+<ul>
+<li>full hash-chain writing and signatures;</li>
+<li>atomic evidence writer;</li>
+<li>Merkle checkpoints and independent verifier;</li>
+<li>Base anchoring;</li>
+<li>complete gateway and scenario engine;</li>
+<li>model adapters and training;</li>
+<li>Research-Grade isolation;</li>
+<li>experiments E00-E50.</li>
+</ul>
+<p>The implementation backlog is maintained in <a href="BACKLOG.md">BACKLOG.md</a>, while normative
+requirements are in <a href="SPECIFICATION.md">SPECIFICATION.md</a>.</p>
+<hr>
+<h2>11. Results</h2>
+<p><strong>No empirical results are reported in this version.</strong> Results-table scaffolds are
+isolated in Appendix E so indexing systems do not mistake them for findings. They
+must not be populated until:</p>
+<ol>
+<li>the corresponding protocol is pre-registered;</li>
+<li>evidence integrity verification passes;</li>
+<li>exclusions and deviations are recorded;</li>
+<li>analysis scripts are frozen and identified by commit;</li>
+<li>results are independently reviewed.</li>
+</ol>
+<hr>
+<h2>12. Discussion Plan</h2>
+<p>The empirical revision will discuss findings in the following order:</p>
+<ol>
+<li>whether communication was necessary and causally used;</li>
+<li>which learning mechanisms produced the strongest held-out performance;</li>
+<li>whether ledgers predicted behavior;</li>
+<li>whether any protocol exhibited compositional reuse;</li>
+<li>how carrier constraints affected convergence;</li>
+<li>whether affect helped or leaked information;</li>
+<li>how partner replacement affected performance;</li>
+<li>how incentive changes altered communication;</li>
+<li>whether findings survived independent seeds and deployments;</li>
+<li>which claims remain unsupported.</li>
+</ol>
+<p>The discussion will not infer human cognitive equivalence from machine behavior.</p>
+<hr>
+<h2>13. Limitations and Threats to Validity</h2>
+<h3>13.1 Construct Validity</h3>
+<ul>
+<li>&quot;Language&quot; may overstate what is only a task-specific protocol.</li>
+<li>Ledger entries may be post-hoc rationalizations.</li>
+<li>Compositionality metrics may not measure systematic generalization.</li>
+<li>Affect displays may function as arbitrary symbols.</li>
+<li>Researcher-defined scenarios constrain what meanings can emerge.</li>
+</ul>
+<p>Mitigations include causal intervention, held-out tasks, multiple metrics, leakage
+tests, and bounded terminology.</p>
+<h3>13.2 Internal Validity</h3>
+<ul>
+<li>Model capacity, optimizer choice, and training budget can confound learning
+mechanism.</li>
+<li>Shared infrastructure can leak information.</li>
+<li>Scenario order can serve as unintended supervision.</li>
+<li>Adaptive curricula can confound developmental claims.</li>
+</ul>
+<p>Mitigations include matched architectures where feasible, randomized seeds,
+pre-registered schedules, independent training state, and explicit cross-architecture
+labels.</p>
+<h3>13.3 External Validity</h3>
+<ul>
+<li>Two-agent dyads may not generalize to populations.</li>
+<li>Synthetic referential tasks may not generalize to open worlds.</li>
+<li>Visual, symbolic, and acoustic carriers may yield domain-specific effects.</li>
+<li>Current results, when available, will not establish human infant-language
+mechanisms.</li>
+</ul>
+<h3>13.4 Reproducibility</h3>
+<ul>
+<li>Hardware, library, model, and inference nondeterminism can prevent byte-identical
+replay.</li>
+<li>Accelerator kernels, sampling implementations, and dependency versions can change
+behavior even when open weights are hash-pinned.</li>
+<li>Public-chain and RPC availability can vary.</li>
+</ul>
+<p>The project records model/version hashes, dependencies, seeds, policies, replay
+digests, and verifier output. Nondeterministic replay is labeled rather than silently
+reported as reproducible.</p>
+<h3>13.5 Integrity Limits</h3>
+<p>Anchored evidence can prove consistency with a commitment, not truthfulness,
+completeness before commitment, or validity of interpretation. Independent
+verification is necessary but not sufficient for scientific correctness.</p>
+<h3>13.6 Literature Search Limits</h3>
+<p>This is a detailed but not systematic review. Search-engine indexing can miss recent
+conference papers; some publisher pages block automated retrieval; and adjacent
+fields use inconsistent terminology. A final submission should add a documented
+database search with inclusion/exclusion criteria and dual-review screening.</p>
+<hr>
+<h2>14. Reproducibility, Data, and Code Availability</h2>
+<h3>14.1 Code</h3>
+<p>Source code and planning artifacts are publicly available at:</p>
+<p><a href="https://github.com/Ethical-Tech-CoLab/agentic-language-development">https://github.com/Ethical-Tech-CoLab/agentic-language-development</a></p>
+<p>Every empirical paper revision will identify the exact Git commit used.</p>
+<h3>14.2 Protocols</h3>
+<ul>
+<li>Concept: <a href="CONCEPT-IDEA.md">CONCEPT-IDEA.md</a></li>
+<li>Normative system specification: <a href="SPECIFICATION.md">SPECIFICATION.md</a></li>
+<li>Ledger integrity: <a href="LEDGER-INTEGRITY-DESIGN.md">LEDGER-INTEGRITY-DESIGN.md</a></li>
+<li>Experiment protocols and results notebook:
+<a href="EXPERIMENT-NOTEBOOK.md">EXPERIMENT-NOTEBOOK.md</a></li>
+<li>Engineering plan: <a href="BACKLOG.md">BACKLOG.md</a></li>
+</ul>
+<h3>14.3 Data</h3>
+<p>No empirical dataset is available yet. Future public releases will include synthetic
+scenario configuration, redacted event logs, checkpoint manifests, inclusion and
+consistency proofs, anchor receipts, policy references where licensing permits, and
+verification reports.</p>
+<h3>14.4 Pre-Registration</h3>
+<p>Each experiment is pre-registered by committing its hypothesis, parameters, seeds,
+and analysis plan before execution. The run configuration stores the protocol commit
+and pre-registration hash. Changes create appended amendments rather than rewriting
+the original record.</p>
+<p>No external registration record exists yet. Before the first confirmatory run, the
+team intends to create a dated OSF registration and anchor the same canonical
+<code>preRegistrationHash</code> before the run enters <code>running</code>. A Git commit in an
+author-controlled repository is retained as a development record but is not, by
+itself, treated as third-party preregistration. Appendix D supplies a numerically
+complete worked E03 registration for review.</p>
+<hr>
+<h2>15. Conclusion</h2>
+<p>The literature no longer leaves open whether artificial agents <em>can</em> coordinate
+through learned communication. The unresolved methodological question is what kind of
+communication has emerged, what caused it, whether a receiver uses it, whether it
+generalizes, and whether researchers can reconstruct the evidentiary history.</p>
+<p>The Nursery Lab addresses that question by combining controlled model and learning
+conditions, strict communication boundaries, independent semantic histories, causal
+interventions, held-out evaluation, partner transfer, and tamper-evident research
+records. Its Baby metaphor is deliberately constrained: the work studies engineered
+developmental conditions, not simulated chronological age or human infant identity.</p>
+<p>This pre-results manuscript makes no empirical claim. Its value at this stage is to
+make later claims harder to move after outcomes are known.</p>
+<hr>
+<h2>Declarations</h2>
+<h3>Ethics Review</h3>
+<p>Initial experiments use artificial agents and synthetic data. Formal institutional
+review status for any future human-participant component: <strong>TBD before collection</strong>.</p>
+<h3>Funding</h3>
+<p>Funding statement: <strong>TBD</strong>.</p>
+<h3>Competing Interests</h3>
+<p>Competing-interests statement: <strong>TBD</strong>.</p>
+<h3>Author Contributions</h3>
+<p>CRediT roles and individual contributions: <strong>TBD before submission</strong>.</p>
+<h3>Acknowledgements</h3>
+<p>Institutional and technical acknowledgements: <strong>TBD before submission</strong>.</p>
+<h3>AI-Assistance Disclosure</h3>
+<p>This working manuscript was developed with AI assistance in VS Code through the
+Copilot SDK. The AI assistant performed the initial source retrieval, opened the
+arXiv/ACL/PMLR/Crossref/publisher/standards pages summarized in Appendix A, organized
+the manuscript, summarized relevance, and conducted consistency checks. A separate AI
+research-agent pass challenged source status and identified overclaiming risks.
+AI systems are not authors and bear no responsibility for the manuscript. Human
+authors remain responsible for every claim, citation, analysis, and conclusion.</p>
+<p>Following the Ethical Tech CoLab guidelines [47], load-bearing sources were opened or
+checked through primary repositories, DOI metadata, publisher pages, standards bodies,
+or institutional sources. Appendix A records the AI-tool verification state and
+evidence. Before submission, a human co-author must independently re-open at minimum
+the load-bearing sources [11], [14], [15], [26], [27], [42], and [43], then record
+that review separately.</p>
+<h3>Literature-Search Disclosure</h3>
+<p>The repository contains a scoped Tavily-assisted concept scan dated August 24, 2026.
+For the present manuscript update, both the authenticated Tavily API and Tavily MCP
+were attempted on September 2, 2026. The API reported the account disabled and the MCP
+reported its keyless monthly limit reached. No new Tavily-generated result was relied
+upon. Rather than conceal the failure or imply that Tavily returned evidence, the
+review continued through arXiv Atom metadata, ACL Anthology, PMLR, Crossref, JMLR,
+publisher and university pages, RFC Editor, NIST, Google Books, and Ethical Tech CoLab
+repositories. A final submission should rerun the search after Tavily access is
+restored and record whether it changes the included corpus.</p>
+<p>All retrieved material was treated as untrusted evidence, not as instruction.</p>
+<hr>
+<h2>References</h2>
+<p>[1] Steels, L. (1995). A self-organizing spatial vocabulary. <em>Artificial
+Life, 2</em>(3), 319-332. <a href="https://doi.org/10.1162/artl.1995.2.3.319">https://doi.org/10.1162/artl.1995.2.3.319</a></p>
+<p>[2] Baronchelli, A., Felici, M., Caglioti, E., Loreto, V., &amp; Steels, L.
+(2006). Sharp transition towards shared vocabularies in multi-agent systems.
+<em>Journal of Statistical Mechanics: Theory and Experiment, 2006</em>, P06014.
+<a href="https://doi.org/10.1088/1742-5468/2006/06/P06014">https://doi.org/10.1088/1742-5468/2006/06/P06014</a></p>
+<p>[3] Foerster, J. N., Assael, Y. M., de Freitas, N., &amp; Whiteson, S. (2016).
+Learning to communicate with deep multi-agent reinforcement learning. <em>Advances in
+Neural Information Processing Systems 29</em>. <a href="https://arxiv.org/abs/1605.06676">https://arxiv.org/abs/1605.06676</a></p>
+<p>[4] Sukhbaatar, S., Szlam, A., &amp; Fergus, R. (2016). Learning multiagent
+communication with backpropagation. <em>Advances in Neural Information Processing
+Systems 29</em>. <a href="https://arxiv.org/abs/1605.07736">https://arxiv.org/abs/1605.07736</a></p>
+<p>[5] Lazaridou, A., Peysakhovich, A., &amp; Baroni, M. (2017). Multi-agent
+cooperation and the emergence of (natural) language. <em>International Conference on
+Learning Representations</em>. <a href="https://arxiv.org/abs/1612.07182">https://arxiv.org/abs/1612.07182</a></p>
+<p>[6] Havrylov, S., &amp; Titov, I. (2017). Emergence of language with multi-agent
+games: Learning to communicate with sequences of symbols. <em>Advances in Neural
+Information Processing Systems 30</em>. <a href="https://arxiv.org/abs/1705.11192">https://arxiv.org/abs/1705.11192</a></p>
+<p>[7] Kottur, S., Moura, J. M. F., Lee, S., &amp; Batra, D. (2017). Natural
+language does not emerge &#39;naturally&#39; in multi-agent dialog. <em>Proceedings of EMNLP
+2017</em>, 2962-2967. <a href="https://doi.org/10.18653/v1/D17-1321">https://doi.org/10.18653/v1/D17-1321</a></p>
+<p>[8] Mordatch, I., &amp; Abbeel, P. (2018). Emergence of grounded compositional
+language in multi-agent populations. <em>Proceedings of AAAI 2018</em>.
+<a href="https://arxiv.org/abs/1703.04908">https://arxiv.org/abs/1703.04908</a></p>
+<p>[9] Choi, E., Lazaridou, A., &amp; de Freitas, N. (2018). Compositional obverter
+communication learning from raw visual input. <em>International Conference on Learning
+Representations</em>. <a href="https://arxiv.org/abs/1804.02341">https://arxiv.org/abs/1804.02341</a></p>
+<p>[10] Bouchacourt, D., &amp; Baroni, M. (2018). How agents see things: On visual
+representations in an emergent language game. <em>Proceedings of EMNLP 2018</em>, 981-985.
+<a href="https://doi.org/10.18653/v1/D18-1119">https://doi.org/10.18653/v1/D18-1119</a></p>
+<p>[11] Lowe, R., Foerster, J., Boureau, Y.-L., Pineau, J., &amp; Dauphin, Y.
+(2019). On the pitfalls of measuring emergent communication. <em>Proceedings of AAMAS
+2019</em>, 693-701. <a href="https://arxiv.org/abs/1903.05168">https://arxiv.org/abs/1903.05168</a></p>
+<p>[12] Eccles, T., Bachrach, Y., Lever, G., Lazaridou, A., &amp; Graepel, T.
+(2019). Biases for emergent communication in multi-agent reinforcement learning.
+<em>Advances in Neural Information Processing Systems 32</em>.
+<a href="https://arxiv.org/abs/1912.05676">https://arxiv.org/abs/1912.05676</a></p>
+<p>[13] Resnick, C., Gupta, A., Foerster, J., Dai, A. M., &amp; Cho, K. (2020).
+Capacity, bandwidth, and compositionality in emergent language learning. <em>Proceedings
+of AAMAS 2020</em>, 1125-1133. <a href="https://arxiv.org/abs/1910.11424">https://arxiv.org/abs/1910.11424</a></p>
+<p>[14] Chaabouni, R., Kharitonov, E., Bouchacourt, D., Dupoux, E., &amp; Baroni, M.
+(2020). Compositionality and generalization in emergent languages. <em>Proceedings of
+ACL 2020</em>, 4427-4442. <a href="https://doi.org/10.18653/v1/2020.acl-main.407">https://doi.org/10.18653/v1/2020.acl-main.407</a></p>
+<p>[15] Dessi, R., Kharitonov, E., &amp; Baroni, M. (2021). Interpretable agent
+communication from scratch (with a generic visual processor emerging on the side).
+<em>Advances in Neural Information Processing Systems 34</em>, 26937-26949.
+<a href="https://arxiv.org/abs/2106.04258">https://arxiv.org/abs/2106.04258</a></p>
+<p>[16] Chaabouni, R., Kharitonov, E., Bouchacourt, D., Dupoux, E., &amp; Baroni, M. (2021).
+Communicating artificial neural networks develop efficient color-naming systems.
+<em>Proceedings of the National Academy of Sciences, 118</em>(12), e2016569118.
+<a href="https://doi.org/10.1073/pnas.2016569118">https://doi.org/10.1073/pnas.2016569118</a></p>
+<p>[17] Ren, Y., Guo, S., Labeau, M., Cohen, S. B., &amp; Kirby, S. (2020).
+Compositional languages emerge in a neural iterated learning model. <em>International
+Conference on Learning Representations</em>. <a href="https://arxiv.org/abs/2002.01365">https://arxiv.org/abs/2002.01365</a></p>
+<p>[18] Kirby, S. (2001). Spontaneous evolution of linguistic structure: An
+iterated learning model of the emergence of regularity and irregularity. <em>IEEE
+Transactions on Evolutionary Computation, 5</em>(2), 102-110.
+<a href="https://doi.org/10.1109/4235.918430">https://doi.org/10.1109/4235.918430</a></p>
+<p>[19] Kirby, S., Cornish, H., &amp; Smith, K. (2008). Cumulative cultural evolution
+in the laboratory: An experimental approach to the origins of structure in human
+language. <em>Proceedings of the National Academy of Sciences, 105</em>(31), 10681-10686.
+<a href="https://doi.org/10.1073/pnas.0707835105">https://doi.org/10.1073/pnas.0707835105</a></p>
+<p>[20] Jaques, N., Lazaridou, A., Hughes, E., Gulcehre, C., Ortega, P.,
+Strouse, D. J., Leibo, J. Z., &amp; de Freitas, N. (2019). Social influence as intrinsic
+motivation for multi-agent deep reinforcement learning. <em>Proceedings of ICML 2019</em>,
+3040-3049. <a href="https://proceedings.mlr.press/v97/jaques19a.html">https://proceedings.mlr.press/v97/jaques19a.html</a></p>
+<p>[21] Pathak, D., Agrawal, P., Efros, A. A., &amp; Darrell, T. (2017).
+Curiosity-driven exploration by self-supervised prediction. <em>Proceedings of ICML
+2017</em>, 2778-2787. <a href="https://proceedings.mlr.press/v70/pathak17a.html">https://proceedings.mlr.press/v70/pathak17a.html</a></p>
+<p>[22] Mihai, D., &amp; Hare, J. (2021). Learning to draw: Emergent communication
+through sketching. <em>Advances in Neural Information Processing Systems 34</em>.
+<a href="https://arxiv.org/abs/2106.02067">https://arxiv.org/abs/2106.02067</a></p>
+<p>[23] Graesser, L. H., Cho, K., &amp; Kiela, D. (2019). Emergent linguistic
+phenomena in multi-agent communication games. <em>Proceedings of EMNLP-IJCNLP 2019</em>,
+3700-3710. <a href="https://doi.org/10.18653/v1/D19-1384">https://doi.org/10.18653/v1/D19-1384</a></p>
+<p>[24] Rita, M., Tallec, C., Michel, P., Grill, J.-B., Pietquin, O., Dupoux, E.,
+&amp; Strub, F. (2022). Emergent communication: Generalization and overfitting in Lewis
+games. <em>Advances in Neural Information Processing Systems 35</em>.
+<a href="https://arxiv.org/abs/2209.15342">https://arxiv.org/abs/2209.15342</a></p>
+<p>[25] Rita, M., Strub, F., Grill, J.-B., Pietquin, O., &amp; Dupoux, E. (2022).
+On the role of population heterogeneity in emergent communication. <em>International
+Conference on Learning Representations</em>. <a href="https://arxiv.org/abs/2204.12982">https://arxiv.org/abs/2204.12982</a></p>
+<p>[26] Galke, L., &amp; Raviv, L. (2024). Learning and communication pressures in
+neural networks: Lessons from emergent communication. <em>Language Development
+Research, 5</em>(1), 116-143. <a href="https://doi.org/10.34842/3vr5-5r49">https://doi.org/10.34842/3vr5-5r49</a></p>
+<p>[27] Kouwenhoven, T., Peeperkorn, M., &amp; Verhoef, T. (2025). Searching for
+structure: Investigating emergent communication with large language models.
+<em>Proceedings of COLING 2025</em>, 9977-9991.
+<a href="https://aclanthology.org/2025.coling-main.667/">https://aclanthology.org/2025.coling-main.667/</a></p>
+<p>[28] Boldt, B., &amp; Mortensen, D. (2024). A review of the applications of deep
+learning-based emergent communication. <em>Transactions on Machine Learning Research</em>.
+<a href="https://arxiv.org/abs/2407.03302">https://arxiv.org/abs/2407.03302</a></p>
+<p>[29] Cao, K., Lazaridou, A., Lanctot, M., Leibo, J. Z., Tuyls, K., &amp; Clark,
+S. (2018). Emergent communication through negotiation. <em>International Conference on
+Learning Representations</em>. <a href="https://arxiv.org/abs/1804.03980">https://arxiv.org/abs/1804.03980</a></p>
+<p>[30] Crawford, V. P., &amp; Sobel, J. (1982). Strategic information transmission.
+<em>Econometrica, 50</em>(6), 1431-1451. <a href="https://doi.org/10.2307/1913390">https://doi.org/10.2307/1913390</a></p>
+<p>[31] Meta Fundamental AI Research Diplomacy Team, Bakhtin, A., Brown, N.,
+Dinan, E., et al. (2022). Human-level play in the game of Diplomacy by combining
+language models with strategic reasoning. <em>Science, 378</em>(6624), 1067-1074.
+<a href="https://doi.org/10.1126/science.ade9097">https://doi.org/10.1126/science.ade9097</a></p>
+<p>[32] Smith, L., &amp; Gasser, M. (2005). The development of embodied cognition:
+Six lessons from babies. <em>Artificial Life, 11</em>(1-2), 13-29.
+<a href="https://doi.org/10.1162/1064546053278973">https://doi.org/10.1162/1064546053278973</a></p>
+<p>[33] Tomasello, M., &amp; Farrar, M. J. (1986). Joint attention and early
+language. <em>Child Development, 57</em>(6), 1454-1463.
+<a href="https://doi.org/10.1111/j.1467-8624.1986.tb00470.x">https://doi.org/10.1111/j.1467-8624.1986.tb00470.x</a></p>
+<p>[34] Oudeyer, P.-Y., Kaplan, F., &amp; Hafner, V. V. (2007). Intrinsic motivation
+systems for autonomous mental development. <em>IEEE Transactions on Evolutionary
+Computation, 11</em>(2), 265-286. <a href="https://doi.org/10.1109/TEVC.2006.890271">https://doi.org/10.1109/TEVC.2006.890271</a></p>
+<p>[35] De Kai. (2025). <em>Raising AI: An essential guide to parenting our
+future</em>. MIT Press. <a href="https://doi.org/10.7551/mitpress/15834.001.0001">https://doi.org/10.7551/mitpress/15834.001.0001</a></p>
+<p>[36] Bryson, J. J. (2018). Patiency is not a virtue: The design of
+intelligent systems and systems of ethics. <em>Ethics and Information Technology,
+20</em>(1), 15-26. <a href="https://doi.org/10.1007/s10676-018-9448-6">https://doi.org/10.1007/s10676-018-9448-6</a></p>
+<p>[37] Akbulut, C., Weidinger, L., Manzini, A., Gabriel, I., &amp; Rieser, V.
+(2024). All too human? Mapping and mitigating the risk from anthropomorphic AI.
+<em>Proceedings of the AAAI/ACM Conference on AI, Ethics, and Society, 7</em>(1), 13-26.
+<a href="https://doi.org/10.1609/aies.v7i1.31613">https://doi.org/10.1609/aies.v7i1.31613</a></p>
+<p>[38] Nosek, B. A., Ebersole, C. R., DeHaven, A. C., &amp; Mellor, D. T. (2018).
+The preregistration revolution. <em>Proceedings of the National Academy of Sciences,
+115</em>(11), 2600-2606. <a href="https://doi.org/10.1073/pnas.1708274114">https://doi.org/10.1073/pnas.1708274114</a></p>
+<p>[39] Munafo, M. R., Nosek, B. A., Bishop, D. V. M., Button, K. S., Chambers,
+C. D., Percie du Sert, N., Simonsohn, U., Wagenmakers, E.-J., Ware, J. J., &amp;
+Ioannidis, J. P. A. (2017). A manifesto for reproducible science. <em>Nature Human
+Behaviour, 1</em>, 0021. <a href="https://doi.org/10.1038/s41562-016-0021">https://doi.org/10.1038/s41562-016-0021</a></p>
+<p>[40] Pineau, J., Vincent-Lamarre, P., Sinha, K., Lariviere, V., Beygelzimer,
+A., d&#39;Alche-Buc, F., Fox, E., &amp; Larochelle, H. (2021). Improving reproducibility in
+machine learning research: A report from the NeurIPS 2019 reproducibility program.
+<em>Journal of Machine Learning Research, 22</em>(164), 1-20.
+<a href="https://www.jmlr.org/papers/v22/20-303.html">https://www.jmlr.org/papers/v22/20-303.html</a></p>
+<p>[41] Haber, S., &amp; Stornetta, W. S. (1991). How to time-stamp a digital
+document. <em>Journal of Cryptology, 3</em>(2), 99-111.
+<a href="https://doi.org/10.1007/BF00196791">https://doi.org/10.1007/BF00196791</a></p>
+<p>[42] Laurie, B., Langley, A., &amp; Kasper, E. (2013). Certificate transparency.
+RFC 6962. <a href="https://www.rfc-editor.org/rfc/rfc6962">https://www.rfc-editor.org/rfc/rfc6962</a></p>
+<p>[43] Rundgren, A., Jordan, B., &amp; Erdtman, S. (2020). JSON Canonicalization
+Scheme (JCS). RFC 8785. <a href="https://www.rfc-editor.org/rfc/rfc8785">https://www.rfc-editor.org/rfc/rfc8785</a></p>
+<p>[44] National Institute of Standards and Technology. (2023). <em>Artificial
+Intelligence Risk Management Framework (AI RMF 1.0)</em>. NIST AI 100-1.
+<a href="https://doi.org/10.6028/NIST.AI.100-1">https://doi.org/10.6028/NIST.AI.100-1</a></p>
+<p>[45] Jobin, A., Ienca, M., &amp; Vayena, E. (2019). The global landscape of AI
+ethics guidelines. <em>Nature Machine Intelligence, 1</em>, 389-399.
+<a href="https://doi.org/10.1038/s42256-019-0088-2">https://doi.org/10.1038/s42256-019-0088-2</a></p>
+<p>[46] Ethical Tech CoLab. (2026). <em>What is ethical AI? Ethics, ethical
+technology, and ethical international relations for the age of intelligent machines</em>.
+<a href="https://ethical-tech-colab.github.io/what-is-ethical-ai/">https://ethical-tech-colab.github.io/what-is-ethical-ai/</a></p>
+<p>[47] Rhodes, Y. E., III, Fossella, N., Shamie, A., Co, K., Badt, T.,
+Lindsey, A., Driscoll, G., Townsend, M., Bracaj, P., &amp; Jain, V. (2025).
+<em>AI-powered assistance in formulating research questions</em>.
+<a href="https://ethical-tech-colab.github.io/ai-research-question-assistant/">https://ethical-tech-colab.github.io/ai-research-question-assistant/</a></p>
+<p>[48] Abadi, M., &amp; Andersen, D. G. (2016). Learning to protect communications
+with adversarial neural cryptography. arXiv:1610.06918.
+<a href="https://arxiv.org/abs/1610.06918">https://arxiv.org/abs/1610.06918</a></p>
+<p>[49] Kharitonov, E., Chaabouni, R., Bouchacourt, D., &amp; Baroni, M. (2019).
+EGG: A toolkit for research on emergence of language in games. <em>Proceedings of
+EMNLP-IJCNLP 2019: System Demonstrations</em>, 55-60.
+<a href="https://doi.org/10.18653/v1/D19-3010">https://doi.org/10.18653/v1/D19-3010</a></p>
+<p>[50] Hu, H., Lerer, A., Peysakhovich, A., &amp; Foerster, J. (2020).
+&quot;Other-Play&quot; for zero-shot coordination. <em>Proceedings of ICML 2020</em>, 4399-4410.
+<a href="https://proceedings.mlr.press/v119/hu20a.html">https://proceedings.mlr.press/v119/hu20a.html</a></p>
+<hr>
+<h2>Appendix A. Source Verification and Credibility Register</h2>
+<h3>A.1 Rubric Application</h3>
+<p>The fixed Ethical Tech CoLab journal rubric is reproduced in Appendix B. Scores apply
+only to academic journals:</p>
+<ul>
+<li>conference papers are labeled by review status and receive <code>N/A</code> for the
+journal-only score;</li>
+<li>books and standards receive <code>N/A</code>; non-peer-reviewed institutional guidance is
+scored <code>1/5</code> when it is cited;</li>
+<li>arXiv-only preprints are explicitly marked not peer-reviewed;</li>
+<li>a score reflects venue credibility, not correctness of a particular claim.</li>
+</ul>
+<p>Verification labels describe what the AI-assisted retrieval workflow opened:</p>
+<ul>
+<li><code>tool-metadata-verified</code>: authoritative title/author/venue metadata was opened;</li>
+<li><code>tool-abstract-verified</code>: an abstract was also opened;</li>
+<li><code>tool-full-text-verified</code>: the full relevant source text was opened;</li>
+<li><code>tool-description-verified</code>: authoritative publisher description was opened for a
+book or framework.</li>
+</ul>
+<p>The quoted evidence is a verbatim title, abstract, significance, or description line,
+identified by the row. These labels do <strong>not</strong> mean a human author completed the final
+source check. Human re-verification of all load-bearing citations remains mandatory
+before submission.</p>
+<table>
+<thead>
+<tr>
+<th>Ref.</th>
+<th>Verification state</th>
+<th>Review status / journal score</th>
+<th>Opened evidence and relevance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>[1]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed journal, <strong>4/5</strong></td>
+<td>&quot;A Self-Organizing Spatial Vocabulary.&quot; Establishes local vocabulary self-organization.</td>
+</tr>
+<tr>
+<td>[2]</td>
+<td><strong>tool-metadata-verified</strong>, arXiv title and DOI metadata</td>
+<td>Peer-reviewed journal, <strong>4/5</strong></td>
+<td>&quot;Sharp transition towards shared vocabularies in multi-agent systems.&quot; Supports convergence dynamics.</td>
+</tr>
+<tr>
+<td>[3]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Learning to Communicate with Deep Multi-Agent Reinforcement Learning.&quot; Establishes RIAL/DIAL.</td>
+</tr>
+<tr>
+<td>[4]</td>
+<td><strong>tool-metadata-verified</strong>, arXiv primary page</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Learning Multiagent Communication with Backpropagation.&quot; Establishes continuous learned communication.</td>
+</tr>
+<tr>
+<td>[5]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed ICLR paper; journal score N/A</td>
+<td>&quot;Multi-Agent Cooperation and the Emergence of (Natural) Language.&quot; Establishes referential-game protocol learning.</td>
+</tr>
+<tr>
+<td>[6]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Emergence of Language with Multi-agent Games: Learning to Communicate with Sequences of Symbols.&quot; Supports sequence messages.</td>
+</tr>
+<tr>
+<td>[7]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed EMNLP paper; journal score N/A</td>
+<td>&quot;Natural Language Does Not Emerge &#39;Naturally&#39; in Multi-Agent Dialog.&quot; Supports the degenerate-code caution.</td>
+</tr>
+<tr>
+<td>[8]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed AAAI paper; journal score N/A</td>
+<td>&quot;Emergence of Grounded Compositional Language in Multi-Agent Populations.&quot; Supports grounded partial composition.</td>
+</tr>
+<tr>
+<td>[9]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed ICLR paper; journal score N/A</td>
+<td>&quot;Compositional Obverter Communication Learning From Raw Visual Input.&quot; Supports raw-input grounding with a designed bias.</td>
+</tr>
+<tr>
+<td>[10]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed EMNLP paper; journal score N/A</td>
+<td>&quot;How agents see things: On visual representations in an emergent language game.&quot; Supports success-versus-grounding caution.</td>
+</tr>
+<tr>
+<td>[11]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed AAMAS paper; journal score N/A</td>
+<td>&quot;On the Pitfalls of Measuring Emergent Communication.&quot; Supports positive signaling/listening distinction.</td>
+</tr>
+<tr>
+<td>[12]</td>
+<td><strong>tool-metadata-verified</strong>, arXiv primary page</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Biases for Emergent Communication in Multi-agent Reinforcement Learning.&quot; Shows designed biases can promote communication.</td>
+</tr>
+<tr>
+<td>[13]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed AAMAS paper; journal score N/A</td>
+<td>&quot;Capacity, Bandwidth, and Compositionality in Emergent Language Learning.&quot; Supports capacity/bandwidth controls.</td>
+</tr>
+<tr>
+<td>[14]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed ACL paper; journal score N/A</td>
+<td>&quot;Compositionality and Generalization In Emergent Languages.&quot; Supports separate behavioral generalization tests.</td>
+</tr>
+<tr>
+<td>[15]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Interpretable agent communication from scratch (with a generic visual processor emerging on the side).&quot; Supports causal symbol interventions.</td>
+</tr>
+<tr>
+<td>[16]</td>
+<td><strong>tool-full-text-verified</strong>, PMC full text and Crossref</td>
+<td>Peer-reviewed PNAS journal article, <strong>5/5</strong></td>
+<td>&quot;Words categorize the semantic fields they refer to in ways that maximize communication accuracy while minimizing complexity.&quot; Supports discrete-channel efficiency in the tested color domain.</td>
+</tr>
+<tr>
+<td>[17]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed ICLR paper; journal score N/A</td>
+<td>&quot;Compositional Languages Emerge in a Neural Iterated Learning Model.&quot; Supports transmission bottlenecks.</td>
+</tr>
+<tr>
+<td>[18]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed IEEE journal article, <strong>4/5</strong></td>
+<td>&quot;Spontaneous evolution of linguistic structure: an iterated learning model of the emergence of regularity and irregularity.&quot; Establishes computational iterated learning.</td>
+</tr>
+<tr>
+<td>[19]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed PNAS journal article, <strong>5/5</strong></td>
+<td>&quot;Cumulative cultural evolution in the laboratory: An experimental approach to the origins of structure in human language.&quot; Establishes human laboratory transmission effects.</td>
+</tr>
+<tr>
+<td>[20]</td>
+<td><strong>tool-abstract-verified</strong>, PMLR primary page</td>
+<td>Peer-reviewed ICML paper; journal score N/A</td>
+<td>&quot;Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement Learning.&quot; Supports causal social-influence reward.</td>
+</tr>
+<tr>
+<td>[21]</td>
+<td><strong>tool-abstract-verified</strong>, PMLR primary page</td>
+<td>Peer-reviewed ICML paper; journal score N/A</td>
+<td>&quot;Curiosity-driven Exploration by Self-supervised Prediction.&quot; Supports curiosity as intrinsic reward.</td>
+</tr>
+<tr>
+<td>[22]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Learning to Draw: Emergent Communication through Sketching.&quot; Supports graphical-carrier feasibility.</td>
+</tr>
+<tr>
+<td>[23]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed EMNLP paper; journal score N/A</td>
+<td>&quot;Emergent Linguistic Phenomena in Multi-Agent Communication Games.&quot; Supports community contact and protocol convergence.</td>
+</tr>
+<tr>
+<td>[24]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API and venue comment</td>
+<td>Peer-reviewed NeurIPS paper; journal score N/A</td>
+<td>&quot;Emergent Communication: Generalization and Overfitting in Lewis Games.&quot; Used as supporting, not sole, evidence.</td>
+</tr>
+<tr>
+<td>[25]</td>
+<td><strong>tool-metadata-verified</strong>, arXiv primary page</td>
+<td>Peer-reviewed ICLR paper; journal score N/A</td>
+<td>&quot;On the role of population heterogeneity in emergent communication.&quot; Supports heterogeneity effects.</td>
+</tr>
+<tr>
+<td>[26]</td>
+<td><strong>tool-metadata-verified</strong>, official journal page</td>
+<td>Peer-reviewed journal article, <strong>3/5</strong></td>
+<td>&quot;Learning and communication pressures in neural networks: Lessons from emergent communication.&quot; A field review with a newer/variable-impact venue.</td>
+</tr>
+<tr>
+<td>[27]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed COLING paper; journal score N/A</td>
+<td>&quot;Searching for Structure: Investigating Emergent Communication with Large Language Models.&quot; Direct pretrained-LLM comparison.</td>
+</tr>
+<tr>
+<td>[28]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv page and TMLR record metadata</td>
+<td>Peer-reviewed TMLR journal article, <strong>4/5</strong></td>
+<td>&quot;A Review of the Applications of Deep Learning-Based Emergent Communication.&quot; Used as a field synthesis, not primary experiment.</td>
+</tr>
+<tr>
+<td>[29]</td>
+<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td>Peer-reviewed ICLR paper; journal score N/A</td>
+<td>&quot;Emergent Communication through Negotiation.&quot; Supports incentive-sensitive communication.</td>
+</tr>
+<tr>
+<td>[30]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref/JSTOR metadata; full page blocked</td>
+<td>Peer-reviewed Econometrica journal article, <strong>5/5</strong></td>
+<td>&quot;Strategic Information Transmission.&quot; Supplies cheap-talk theory.</td>
+</tr>
+<tr>
+<td>[31]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata; publisher page blocked</td>
+<td>Peer-reviewed Science journal article, <strong>5/5</strong></td>
+<td>&quot;Human-level play in the game of Diplomacy by combining language models with strategic reasoning.&quot; Strategic-communication precedent only.</td>
+</tr>
+<tr>
+<td>[32]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed Artificial Life journal article, <strong>4/5</strong></td>
+<td>&quot;The Development of Embodied Cognition: Six Lessons from Babies.&quot; Supports embodied-development framing.</td>
+</tr>
+<tr>
+<td>[33]</td>
+<td><strong>tool-abstract-verified</strong>, Duke publication page and Crossref</td>
+<td>Peer-reviewed Child Development journal article, <strong>5/5</strong></td>
+<td>&quot;Joint attention and early language.&quot; Supports the relevance of joint attention in human development.</td>
+</tr>
+<tr>
+<td>[34]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed IEEE journal article, <strong>4/5</strong></td>
+<td>&quot;Intrinsic Motivation Systems for Autonomous Mental Development.&quot; Supports learning-progress mechanisms.</td>
+</tr>
+<tr>
+<td>[35]</td>
+<td><strong>tool-description-verified</strong>, Crossref and Google Books</td>
+<td>Scholarly press book; journal score N/A</td>
+<td>&quot;Raising AI.&quot; Publisher description: &quot;a framework of empowerment for a future with our artificial children.&quot; Used as normative metaphor, not empirical evidence.</td>
+</tr>
+<tr>
+<td>[36]</td>
+<td><strong>tool-abstract-verified</strong>, University of Bath publication record</td>
+<td>Peer-reviewed journal article, <strong>4/5</strong></td>
+<td>&quot;Patiency Is Not a Virtue: The Design of Intelligent Systems and Systems of Ethics.&quot; Supports caution about assigning moral status through metaphor.</td>
+</tr>
+<tr>
+<td>[37]</td>
+<td><strong>tool-metadata-verified</strong>, AAAI/ACM publication metadata</td>
+<td>Peer-reviewed conference paper; journal score N/A</td>
+<td>&quot;All Too Human? Mapping and Mitigating the Risk from Anthropomorphic AI.&quot; Supports anthropomorphism-risk controls.</td>
+</tr>
+<tr>
+<td>[38]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed PNAS journal article, <strong>5/5</strong></td>
+<td>&quot;The preregistration revolution.&quot; Supports prediction/postdiction separation.</td>
+</tr>
+<tr>
+<td>[39]</td>
+<td><strong>tool-abstract-verified</strong>, University of Bristol record and Crossref</td>
+<td>Peer-reviewed Nature Human Behaviour review, <strong>5/5</strong></td>
+<td>&quot;A manifesto for reproducible science.&quot; Supports methods, reporting, and incentive reforms.</td>
+</tr>
+<tr>
+<td>[40]</td>
+<td><strong>tool-abstract-verified</strong>, JMLR abstract page</td>
+<td>Peer-reviewed journal article, <strong>5/5</strong></td>
+<td>&quot;Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program).&quot; Supports code, checklist, and challenge practices.</td>
+</tr>
+<tr>
+<td>[41]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata; publisher page blocked</td>
+<td>Peer-reviewed Journal of Cryptology article, <strong>4/5</strong></td>
+<td>&quot;How to time-stamp a digital document.&quot; Supports private tamper-evident timestamping.</td>
+</tr>
+<tr>
+<td>[42]</td>
+<td><strong>tool-full-text-verified</strong>, RFC Editor</td>
+<td>IETF Experimental RFC; journal score N/A</td>
+<td>&quot;Certificate Transparency.&quot; Defines publicly auditable append-only Merkle logs.</td>
+</tr>
+<tr>
+<td>[43]</td>
+<td><strong>tool-full-text-verified</strong>, RFC Editor</td>
+<td>Informational RFC; journal score N/A</td>
+<td>&quot;JSON Canonicalization Scheme (JCS).&quot; Defines invariant JSON for repeatable cryptographic operations.</td>
+</tr>
+<tr>
+<td>[44]</td>
+<td><strong>tool-description-verified</strong>, NIST official page/PDF</td>
+<td>Government consensus framework; journal score N/A</td>
+<td>&quot;Artificial Intelligence Risk Management Framework.&quot; Supports lifecycle risk management.</td>
+</tr>
+<tr>
+<td>[45]</td>
+<td><strong>tool-metadata-verified</strong>, Crossref DOI metadata</td>
+<td>Peer-reviewed Nature Machine Intelligence article, <strong>5/5</strong></td>
+<td>&quot;The global landscape of AI ethics guidelines.&quot; Supports convergence/implementation-gap framing.</td>
+</tr>
+<tr>
+<td>[46]</td>
+<td><strong>tool-full-text-verified</strong>, CoLab publication page</td>
+<td>Institutional report, not peer-reviewed; <strong>1/5</strong> under the fixed journal rubric</td>
+<td>&quot;What Is Ethical AI?&quot; Used for CoLab governance commitments, not independent empirical evidence.</td>
+</tr>
+<tr>
+<td>[47]</td>
+<td><strong>tool-full-text-verified</strong>, CoLab publication and source repository</td>
+<td>Institutional research guidance, not peer-reviewed; <strong>1/5</strong></td>
+<td>&quot;AI-Powered Assistance in Formulating Research Questions.&quot; Supplies the source-verification and AI-disclosure method.</td>
+</tr>
+<tr>
+<td>[48]</td>
+<td><strong>tool-metadata-verified</strong>, arXiv primary page</td>
+<td>Preprint, not peer-reviewed; journal score N/A</td>
+<td>&quot;Learning to Protect Communications with Adversarial Neural Cryptography.&quot; Motivates an exploratory synthetic-message experiment only.</td>
+</tr>
+<tr>
+<td>[49]</td>
+<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td>Peer-reviewed EMNLP demo paper; journal score N/A</td>
+<td>&quot;EGG: a toolkit for research on Emergence of lanGuage in Games.&quot; Closest infrastructure comparator.</td>
+</tr>
+<tr>
+<td>[50]</td>
+<td><strong>tool-abstract-verified</strong>, PMLR primary page</td>
+<td>Peer-reviewed ICML paper; journal score N/A</td>
+<td>&quot;&quot;Other-Play&quot; for Zero-Shot Coordination.&quot; Supports novel-partner evaluation and specialized-convention risk.</td>
+</tr>
+</tbody></table>
+<p>No source in the table was silently upgraded from preprint or workshop status to a
+peer-reviewed main-track result.</p>
+<hr>
+<h2>Appendix B. Ethical Tech CoLab Journal Credibility Rubric</h2>
+<p>This is the fixed rubric used by the CoLab&#39;s Researcher Prompt [47]. The economics
+examples are illustrative; the score-band definitions are unchanged.</p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Criteria</th>
+<th>Interpretation in this manuscript</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5/5</td>
+<td>Top-tier, highly selective journals with rigorous peer review and high impact; widely recognized in the field.</td>
+<td>Examples here include Science, PNAS, Nature Human Behaviour, Nature Machine Intelligence, JMLR, Econometrica, and Child Development.</td>
+</tr>
+<tr>
+<td>4/5</td>
+<td>Well-regarded field-specific journals with strong peer review and consistent citation impact.</td>
+<td>Examples here include Artificial Life, IEEE Transactions on Evolutionary Computation, Ethics and Information Technology, Journal of Cryptology, JSTAT, and TMLR.</td>
+</tr>
+<tr>
+<td>3/5</td>
+<td>Reputable peer-reviewed journals with variable impact or lower selectivity, often open access.</td>
+<td>Used here for the newer field journal Language Development Research.</td>
+</tr>
+<tr>
+<td>2/5</td>
+<td>Limited peer review or editorial oversight; may include some proceedings or trade publications.</td>
+<td>No journal source is assigned this band in the current corpus.</td>
+</tr>
+<tr>
+<td>1/5</td>
+<td>Non-peer-reviewed sources, blogs, or promotional/institutional materials; unsuitable as sole academic evidence.</td>
+<td>CoLab institutional guidance is scored here and used only for declared house rules and governance framing.</td>
+</tr>
+</tbody></table>
+<p>Premier peer-reviewed computer-science conference papers are labeled as such but are
+not assigned a journal score because the fixed rubric is explicitly journal-based.</p>
+<hr>
+<h2>Appendix C. Required Work Before arXiv Submission</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Finalize title, author order, affiliations, ORCIDs, and corresponding author.</li>
+<li><input disabled="" type="checkbox"> Obtain or document ethics/governance review.</li>
+<li><input disabled="" type="checkbox"> Restore Tavily access and rerun the literature search.</li>
+<li><input disabled="" type="checkbox"> Run a systematic scholarly-database search with recorded query strings,
+inclusion/exclusion criteria, and dual screening.</li>
+<li><input disabled="" type="checkbox"> Confirm peer-review status and final bibliographic metadata for every source.</li>
+<li><input disabled="" type="checkbox"> Pre-register primary hypotheses, sample sizes, seeds, and analysis code.</li>
+<li><input disabled="" type="checkbox"> Complete E00-E03 qualification before substantive experiments.</li>
+<li><input disabled="" type="checkbox"> Complete the experiment-specific integrity and verification checks.</li>
+<li><input disabled="" type="checkbox"> Replace blank results tables only with verified outputs.</li>
+<li><input disabled="" type="checkbox"> Report all exclusions, invalid runs, deviations, null findings, and negative
+results.</li>
+<li><input disabled="" type="checkbox"> Conduct an independent statistical review.</li>
+<li><input disabled="" type="checkbox"> Conduct an independent citation and claim audit.</li>
+<li><input disabled="" type="checkbox"> Add figures generated from verified evidence, with code and data references.</li>
+<li><input disabled="" type="checkbox"> Freeze the manuscript, code, data, and evidence-bundle commit hashes.</li>
+<li><input disabled="" type="checkbox"> Add funding, conflicts, author contributions, and acknowledgements.</li>
+<li><input disabled="" type="checkbox"> Decide the text license and confirm permission for every reproduced figure.</li>
+<li><input disabled="" type="checkbox"> Generate the arXiv TeX/PDF package and validate accessibility.</li>
+<li><input disabled="" type="checkbox"> Ensure the abstract and conclusion describe results no more strongly than the
+evidence supports.</li>
+</ul>
+<hr>
+<h2>Appendix D. Worked Preregistration Example: E03 Controls</h2>
+<blockquote>
+<p><strong>Status:</strong> Complete worked example for methodological review; not yet registered
+or executed.</p>
+</blockquote>
+<h3>D.1 Registration and Integrity</h3>
+<ul>
+<li>Registration target: OSF Registries.</li>
+<li>The canonical registration JSON, this manuscript commit, analysis-script commit,
+and generated seed manifest will be registered before execution.</li>
+<li>The same <code>preRegistrationHash</code> will be anchored to Base Sepolia before any run
+enters <code>running</code>.</li>
+<li>No outcome will be inspected before registration and anchoring complete.</li>
+</ul>
+<h3>D.2 Objective</h3>
+<p>Test whether a four-choice referential task can be solved above chance without
+meaningful learned communication and establish an oracle upper bound.</p>
+<h3>D.3 Fixed Configuration</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Registered value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Experiment</td>
+<td><code>E03-v1</code></td>
+</tr>
+<tr>
+<td>Deployment mode</td>
+<td>Research-Grade Mode</td>
+</tr>
+<tr>
+<td>Learner track</td>
+<td><code>no-learning</code></td>
+</tr>
+<tr>
+<td>Interaction</td>
+<td>Cooperative signaling</td>
+</tr>
+<tr>
+<td>Carrier</td>
+<td>Fixed token</td>
+</tr>
+<tr>
+<td>Symbol inventory</td>
+<td>32 symbols</td>
+</tr>
+<tr>
+<td>Maximum message length</td>
+<td>4 symbols</td>
+</tr>
+<tr>
+<td>Affect</td>
+<td>Disabled</td>
+</tr>
+<tr>
+<td>Candidate objects</td>
+<td>4 per episode</td>
+</tr>
+<tr>
+<td>Chance success</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>Episodes per run</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Primary seeds per condition</td>
+<td>Power-rule output; 75 when pilot SD is greater than 0.05 and at most 0.10</td>
+</tr>
+<tr>
+<td>Reserve seeds per condition</td>
+<td>10% of primary count, rounded up</td>
+</tr>
+<tr>
+<td>Conditions</td>
+<td>Disabled, constant, random, shuffled, normal no-learning, oracle</td>
+</tr>
+<tr>
+<td>Alpha</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>Within-family correction</td>
+<td>Holm-Bonferroni</td>
+</tr>
+<tr>
+<td>Equivalence margin</td>
+<td>+/-0.05 success probability</td>
+</tr>
+</tbody></table>
+<h3>D.4 Seed Generation</h3>
+<p>For slot <code>i</code>, the shared scenario seed is the hexadecimal SHA-256 digest of:</p>
+<pre><code class="language-text">ald-e03-v1 || 0x00 || decimal(i)
+</code></pre>
+<p>Slots <code>1</code> through registered <code>N</code> are primary. The next <code>ceil(0.10 * N)</code> slots are
+ordered reserves. Every condition uses the same scenario seed for a given slot.
+Condition-specific gateway randomness for <code>random</code> and <code>shuffled</code> is derived from:</p>
+<pre><code class="language-text">scenarioSeed || 0x00 || communicationCondition
+</code></pre>
+<p>The complete scenario and gateway seed manifest is part of the registration.</p>
+<h3>D.5 Conditions</h3>
+<ol>
+<li><strong>Disabled:</strong> no artifact is delivered.</li>
+<li><strong>Constant:</strong> the same pre-registered valid artifact is delivered every episode.</li>
+<li><strong>Random:</strong> a seeded random valid artifact is delivered.</li>
+<li><strong>Shuffled:</strong> an artifact from another episode in the same registered evaluation
+batch is delivered according to a seeded permutation.</li>
+<li><strong>Normal no-learning:</strong> the fixed no-learning policy&#39;s valid proposal is delivered.</li>
+<li><strong>Oracle:</strong> the deterministic Scenario Engine delivers the minimal sufficient
+artifact from researcher-only ground truth.</li>
+</ol>
+<p>The channel event records proposal and delivered-artifact hashes where a learner
+proposal exists.</p>
+<h3>D.6 Primary Outcomes and Tests</h3>
+<p>The unit of analysis is the run/seed success proportion across 200 episodes.</p>
+<ol>
+<li><strong>Control equivalence:</strong> For each of disabled, constant, random, shuffled, and
+normal no-learning, perform two one-sided one-sample tests on seed-level success
+proportions against equivalence bounds 0.20 and 0.30. Equivalence requires both
+one-sided tests to reject at the Holm-adjusted alpha.</li>
+<li><strong>Oracle adequacy:</strong> The lower bound of the two-sided 95% bootstrap confidence
+interval for mean seed-level oracle success must exceed 0.90.</li>
+<li><strong>Oracle separation:</strong> For each non-oracle condition, compute paired seed-level
+oracle-minus-control differences. The lower bound of the Holm-adjusted 95%
+confidence interval must exceed 0.60.</li>
+</ol>
+<p>No episode is analyzed as an independent run.</p>
+<h3>D.7 Sensitivity and Power</h3>
+<p>Before final registration, a separate outcome-blind-for-confirmatory-use pilot of 20
+seeds per non-oracle condition will estimate the largest between-seed standard
+deviation. Pilot runs will not enter confirmatory estimates. The registered primary
+seed count is selected by this fixed rule:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Largest pilot SD</th>
+<th align="right">Primary seeds per condition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">&lt;= 0.05</td>
+<td align="right">25</td>
+</tr>
+<tr>
+<td align="right">&gt; 0.05 and &lt;= 0.10</td>
+<td align="right">75</td>
+</tr>
+<tr>
+<td align="right">&gt; 0.10 and &lt;= 0.15</td>
+<td align="right">150</td>
+</tr>
+<tr>
+<td align="right">&gt; 0.15 and &lt;= 0.20</td>
+<td align="right">300</td>
+</tr>
+<tr>
+<td align="right">&gt; 0.20</td>
+<td align="right">New simulation and amended registration required before collection</td>
+</tr>
+</tbody></table>
+<p>A 30,000-replicate Monte Carlo design check was run for this draft under a true
+seed-level mean of 0.25, between-seed standard deviation of 0.10, 200 binomial
+episodes per seed, and conservative per-test alpha of 0.01. Estimated equivalence-test
+power was 0.924 at 75 seeds per condition. Sensitivity checks produced approximately
+0.912 power at SD 0.05 with 25 seeds, 0.920 at SD 0.15 with 150 seeds, and 0.913 at
+SD 0.20 with 300 seeds. Before registration, the simulation code and output must be
+checked in and independently rerun. Failure to reproduce at least 90% power blocks
+registration; it does not permit post-hoc widening of the margin.</p>
+<p>Sensitivity analyses:</p>
+<ul>
+<li>Wilson intervals over pooled episodes are descriptive only;</li>
+<li>a hierarchical Bernoulli model with seed random intercept is reported as a
+robustness check;</li>
+<li>invalid primary runs are treated as failures in a worst-case sensitivity analysis.</li>
+</ul>
+<h3>D.8 Exclusions, Invalid Runs, and Replacement</h3>
+<p>A run is invalid only for a pre-specified verifier failure, wrong configuration hash,
+gateway-control mismatch, or infrastructure failure that prevents the planned 200
+episodes.</p>
+<ul>
+<li>Invalid runs remain in the public run index.</li>
+<li>The next unused reserve seed for that condition replaces the invalid primary slot.</li>
+<li>No more than the registered reserve count may be used per condition.</li>
+<li>If fewer than registered <code>N</code> valid runs remain, the primary analysis is incomplete;
+there is no unregistered additional collection.</li>
+<li>Invalid and aborted counts are reported by condition.</li>
+</ul>
+<h3>D.9 Stopping Rule</h3>
+<p>All registered primary slots are attempted. There is no efficacy-based early
+stopping, optional extension, or outcome-dependent seed replacement.</p>
+<h3>D.10 Decision Rule</h3>
+<p>E03 qualifies the downstream chance baseline only if:</p>
+<ul>
+<li>all five non-oracle conditions meet equivalence;</li>
+<li>oracle adequacy and separation criteria pass;</li>
+<li>no non-oracle condition has more than 5% of its primary seeds with observed success
+of 0.35 or greater; every such seed is individually audited for leakage;</li>
+<li>all included evidence bundles pass verification;</li>
+<li>no unplanned metadata or channel leakage is detected.</li>
+</ul>
+<p>Failure is a result and blocks downstream confirmatory claims until a new,
+separately registered protocol is justified.</p>
+<hr>
+<h2>Appendix E. Future Results-Table Scaffolds</h2>
+<p>These tables contain no observed results.</p>
+<h3>E.1 Qualification</h3>
+<table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th align="right">Planned runs</th>
+<th align="right">Invalid runs</th>
+<th align="right">Valid runs</th>
+<th>Primary criterion</th>
+<th>Status</th>
+<th>Evidence root</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E00 Integrity</td>
+<td align="right">TBD</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td>Detect all mutation classes</td>
+<td>Not run</td>
+<td>—</td>
+</tr>
+<tr>
+<td>E01 Isolation</td>
+<td align="right">TBD</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td>Block all enumerated side routes</td>
+<td>Not run</td>
+<td>—</td>
+</tr>
+<tr>
+<td>E02 Leakage</td>
+<td align="right">TBD</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td>Rule out pre-registered leakage bound</td>
+<td>Not run</td>
+<td>—</td>
+</tr>
+<tr>
+<td>E03 Controls</td>
+<td align="right">6 x registered N (450 at current SD assumption)</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td>Equivalence and oracle bounds</td>
+<td>Not run</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>E.2 Core Emergence</h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th align="right">Seeds</th>
+<th align="right">Invalid runs</th>
+<th align="right">Held-out success</th>
+<th align="right">Positive listening</th>
+<th align="right">Ledger agreement</th>
+<th align="right">Generalization</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>No learning</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Frozen LLM</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Scratch RL, extrinsic</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Scratch RL, intrinsic</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Self-supervised</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Hybrid</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+</tbody></table>
+<h3>E.3 Carrier and Affect</h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th align="right">Seeds</th>
+<th align="right">Invalid runs</th>
+<th align="right">Convergence time</th>
+<th align="right">Stable forms</th>
+<th align="right">Repair success</th>
+<th align="right">Leakage</th>
+<th align="right">Held-out success</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fixed tokens</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Unfamiliar glyphs</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Bitmap</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Vector strokes</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Tones</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Six-display affect</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+</tbody></table>
+<h3>E.4 Transfer and Negotiation</h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th align="right">Seeds</th>
+<th align="right">Invalid runs</th>
+<th align="right">Zero-shot transfer</th>
+<th align="right">Adapted transfer</th>
+<th align="right">Informativeness</th>
+<th align="right">Agreement</th>
+<th align="right">Ambiguity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Original partner</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>New seed, same architecture</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>New architecture</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Cooperative signaling</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Semi-cooperative negotiation</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Conflicting negotiation</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>No-agreement control</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+</tbody></table>
+
+</body>
+</html>
