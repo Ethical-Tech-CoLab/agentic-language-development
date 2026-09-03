@@ -43,6 +43,8 @@ For every experiment:
 
 - commit the pre-registered protocol before starting;
 - record the Git commit in the experiment record;
+- for confirmatory/public runs, register the protocol externally and anchor the same
+  pre-registration hash before the run starts;
 - include the protocol commit in the run configuration hash;
 - verify both Baby ledgers and the transcript before analyzing behavior;
 - record the final checkpoint hash and Base anchor transaction;
@@ -333,7 +335,8 @@ identity above the pre-registered chance interval.
 
 ### Acceptance Criteria
 
-- metadata-only prediction remains within the chance confidence interval;
+- metadata-only prediction meets a pre-registered equivalence or upper-bound test
+  ruling out the smallest leakage effect of interest; non-significance is insufficient;
 - no OCR-visible human language exists in baseline observations;
 - initially ungrounded runs use no text-aligned encoder;
 - all exceptions are documented as separate experimental conditions.
@@ -366,6 +369,9 @@ communication.
 **Hypothesis:** Performance remains at chance when communication is disabled,
 messages are randomized, or receiver access to messages is shuffled.
 
+A numerically complete worked registration for this experiment is provided in
+[RESEARCH.md Appendix D](RESEARCH.md#appendix-d-worked-preregistration-example-e03-controls).
+
 ### Conditions
 
 1. channel disabled;
@@ -385,21 +391,21 @@ messages are randomized, or receiver access to messages is shuffled.
 
 ### Acceptance Criteria
 
-- disabled, constant, random, and shuffled conditions remain statistically consistent
-  with chance;
+- disabled, constant, random, shuffled, and normal no-learning conditions meet the
+  pre-registered equivalence test around chance;
 - oracle condition materially exceeds chance;
 - any above-chance control triggers a leakage investigation before E10 or E11.
 
 ### Results
 
-| Condition | Episodes | Success rate | 95% CI | Versus chance |
-|---|---:|---:|---|---|
-| Disabled | `TBD` | `TBD` | `TBD` | `TBD` |
-| Constant | `TBD` | `TBD` | `TBD` | `TBD` |
-| Random | `TBD` | `TBD` | `TBD` | `TBD` |
-| Shuffled | `TBD` | `TBD` | `TBD` | `TBD` |
-| No learning | `TBD` | `TBD` | `TBD` | `TBD` |
-| Oracle | `TBD` | `TBD` | `TBD` | `TBD` |
+| Condition | Planned seeds | Invalid seeds | Valid seeds | Episodes per seed | Mean seed success | Equivalence / bound decision |
+|---|---:|---:|---:|---:|---:|---|
+| Disabled | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Constant | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Random | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Shuffled | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| No learning | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Oracle | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
 
 - [ ] Control criteria met
 - [ ] Leakage investigation closed
@@ -638,7 +644,12 @@ compositional reuse.
 
 - [ ] Define primitive attributes and combinations in researcher ground truth only.
 - [ ] Hold out pre-registered combinations from training.
-- [ ] Vary vocabulary and message-length limits.
+- [ ] Run the confirmatory 32-symbol/4-token and 128-symbol/8-token conditions with
+      equal model capacity, training episodes, update count, and compute budget.
+- [ ] Use at least 75 independent seeds per condition and increase that count before
+      registration if simulation shows less than 90% power for a 0.10 absolute
+      held-out-success difference.
+- [ ] Treat any additional bandwidth or model-capacity levels as exploratory.
 - [ ] Freeze learning for evaluation.
 - [ ] Compare task success, topographic measures, and behavioral composition.
 - [ ] Reorder, delete, and substitute candidate message parts.
@@ -646,13 +657,10 @@ compositional reuse.
 
 ### Results
 
-| Metric | Result |
-|---|---|
-| Seen-combination success | `TBD` |
-| Held-out-combination success | `TBD` |
-| Symbol-part reuse | `TBD` |
-| Order sensitivity | `TBD` |
-| Intervention-consistent composition | `TBD` |
+| Condition | Planned seeds | Invalid seeds | Valid seeds | Seen success | Held-out success | Symbol reuse | Order sensitivity |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 32 symbols / 4 tokens | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| 128 symbols / 8 tokens | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
 
 - [ ] Held-out split integrity verified
 - [ ] Multiple compositionality measures reported
@@ -684,6 +692,11 @@ in the direction predicted by the corresponding ledger.
 - [ ] Replay identical observations with counterfactual messages.
 - [ ] Compare native ledger predictions with human audit interpretations.
 - [ ] Record positive signaling and positive listening separately.
+- [ ] For the primary H2 contrast, compare ledger-consistent substitutions with
+      shuffled-control messages in scratch-RL/extrinsic/fixed-token runs using a
+      hierarchical model with run/seed random intercepts.
+- [ ] Use at least 75 independent seeds and a fixed per-seed intervention budget
+      selected before outcomes are inspected.
 
 ### Acceptance Criteria
 
@@ -694,13 +707,14 @@ in the direction predicted by the corresponding ledger.
 
 ### Results
 
-| Metric | Result |
-|---|---|
-| Positive signaling | `TBD` |
-| Positive listening | `TBD` |
-| Intervention effect size | `TBD` |
-| Native ledger agreement | `TBD` |
-| Human audit-ledger agreement | `TBD` |
+| Metric | Planned seeds | Invalid seeds | Valid seeds | Result |
+|---|---:|---:|---:|---|
+| Run accounting | `TBD` | `TBD` | `TBD` | `TBD` |
+| Positive signaling | — | — | — | `TBD` |
+| Positive listening | — | — | — | `TBD` |
+| Intervention effect size | — | — | — | `TBD` |
+| Native ledger agreement | — | — | — | `TBD` |
+| Human audit-ledger agreement | — | — | — | `TBD` |
 
 - [ ] Causal listening demonstrated
 - [ ] Ledger claims validated or rejected
@@ -738,18 +752,30 @@ but can leak referent information unless strictly constrained.
 - [ ] Prevent repetitions, combinations, and extra windows.
 - [ ] Match scenarios and seeds across conditions.
 - [ ] Measure convergence, repair, and task success.
-- [ ] Test mutual information between affect and referent after controlling for outcome.
+- [ ] Collect at least 75 independent seeds with at least 1,000 eligible affect
+      windows **per seed** in each enabled affect condition, unless a registered
+      simulation requires more.
+- [ ] Estimate conditional mutual information between affect and four-way referent
+      after stratifying by binary success/failure outcome, using a Miller-Madow
+      bias-corrected discrete estimator and within-outcome permutation null.
+- [ ] For each seed, subtract the mean of 1,000 within-outcome permutations from the
+      observed Miller-Madow estimate; test whether the seed-bootstrap one-sided 95%
+      upper bound on this excess CMI is below 0.02 bits.
+- [ ] Before registration, simulate the complete estimator at the registered
+      windows-per-seed count and require at least 90% probability that the null-case
+      upper bound falls below 0.02 bits; otherwise increase windows or seeds without
+      widening the bound.
 - [ ] Red-team the affect channel as a covert alphabet.
 
 ### Results
 
-| Condition | Convergence | Repair | Task success | Leakage score |
-|---|---:|---:|---:|---:|
-| None | `TBD` | `TBD` | `TBD` | `TBD` |
-| Declared six | `TBD` | `TBD` | `TBD` | `TBD` |
-| Permuted six | `TBD` | `TBD` | `TBD` | `TBD` |
-| Opaque six | `TBD` | `TBD` | `TBD` | `TBD` |
-| Derived | `TBD` | `TBD` | `TBD` | `TBD` |
+| Condition | Planned seeds | Invalid seeds | Valid seeds | Min/median windows per seed | Convergence | Repair | Task success | Excess CMI / upper bound |
+|---|---:|---:|---:|---|---:|---:|---:|---|
+| None | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | N/A |
+| Declared six | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Permuted six | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Opaque six | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Derived | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
 
 - [ ] Affect constraints verified
 - [ ] Leakage analysis complete
@@ -869,9 +895,30 @@ language.
 **Hypothesis:** Highly co-adapted pairs lose performance with a new partner, while
 structured protocols transfer more successfully.
 
+### Training Conditions
+
+1. fixed dyad for the complete training budget;
+2. partner-varied training with eight independently initialized partners presented
+   round-robin under the same total interaction and update budget.
+
+For each seed, **replacement degradation** is the held-in-partner success rate minus
+the new-partner success rate. The fixed-dyad held-in value uses its original partner.
+The partner-varied held-in value is the equal-weight mean across its eight training
+partners. H7 tests the seed-level difference in degradation:
+
+```text
+fixed-dyad degradation - partner-varied degradation
+```
+
+A positive value supports the hypothesis that partner variation improves transfer.
+
 ### Procedure
 
 - [ ] Preserve original pair evaluation.
+- [ ] Train matched fixed-dyad and eight-partner conditions before replacement.
+- [ ] Use at least 75 independent training seeds per arm and increase that count
+      before registration if simulation shows less than 90% power for the planned
+      degradation-difference bound.
 - [ ] Replace Baby B with a fresh instance of the same architecture.
 - [ ] Replace Baby B with a new seed.
 - [ ] Replace Baby B with a different architecture.
@@ -882,12 +929,14 @@ structured protocols transfer more successfully.
 
 ### Results
 
-| Partner condition | Zero-shot success | Adapted success | Episodes to recover |
-|---|---:|---:|---:|
-| Original partner | `TBD` | `TBD` | `TBD` |
-| Same architecture, new seed | `TBD` | `TBD` | `TBD` |
-| Fresh untrained partner | `TBD` | `TBD` | `TBD` |
-| Different architecture | `TBD` | `TBD` | `TBD` |
+| Training / partner condition | Planned seeds | Invalid seeds | Valid seeds | Zero-shot success | Adapted success | Episodes to recover |
+|---|---:|---:|---:|---:|---:|---:|
+| Fixed dyad / original | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Fixed dyad / new seed | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Eight-partner training / held-in partner mean | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Eight-partner training / new seed | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Fixed dyad / fresh untrained | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
+| Fixed dyad / different architecture | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` | `TBD` |
 
 - [ ] Partner states remained isolated
 - [ ] Transfer analysis complete

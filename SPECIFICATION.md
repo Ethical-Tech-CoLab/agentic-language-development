@@ -1399,6 +1399,13 @@ A run MAY NOT enter `preregistered` (§7.1) until:
   and analysis plan (canonical JSON, SHA-256, same domain-separation pattern as
   LEDGER-INTEGRITY-DESIGN.md).
 
+For a confirmatory or publication-facing run, the canonical pre-registration
+artifact MUST also be registered with an external timestamping/registration service
+(OSF Registries is the default) and its `preRegistrationHash` MUST be anchored before
+the run enters `running`. The external registration URL and pre-run anchor receipt
+are included in the run manifest. Qualification-only development runs MAY use a
+Base-Sepolia pre-run anchor without OSF, but MUST be labeled non-confirmatory.
+
 The run's `ExperimentRecord.disposition` and the matching EXPERIMENT-NOTEBOOK.md
 run record MUST agree; the Verifier's `VerificationReport` is authoritative for
 **integrity** (did the evidence chain hold), while the notebook is authoritative
@@ -1416,9 +1423,11 @@ alone (resolves Q14). The mandatory suite, run during `evaluating`:
 | Substitution | Swap a symbol for another in-inventory symbol | Receiver behavior shifts toward the substituted symbol's ledger-claimed meaning |
 | Scrambling control | Replay with a shuffled post-hoc symbol-to-meaning mapping (offline analysis only, never live) | Ledger-predicted accuracy collapses toward chance, confirming the ledger is not a post-hoc rationalization |
 
-Default pass threshold: ledger-predicted direction matches observed behavior
-change in ≥ 70% of probed instances, with a binomial test against the E03 chance
-baseline at α = 0.05.
+Default descriptive readiness threshold: within each run, ledger-predicted direction
+matches observed behavior change in at least 70% of probed instances. This is not an
+inferential test. Confirmatory inference MUST account for probe clustering within
+run/seed using a hierarchical Bernoulli model or a pre-registered seed-level
+equivalent against the E03 chance baseline at alpha = 0.05.
 
 ### 15.3 Evaluation Baselines and Statistics
 
@@ -1432,6 +1441,11 @@ policy:
   for ordinal comparisons);
 - minimum seeds: 5 per condition for qualification-stage experiments (E00-E03),
   10 per condition for any publication-facing claim (E10 onward).
+
+Any conclusion that performance is equivalent to chance or that leakage is absent
+MUST use a pre-registered equivalence/non-inferiority bound or Bayes-factor criterion
+with power or sensitivity analysis. A non-significant difference alone cannot satisfy
+a no-leakage or at-chance acceptance criterion.
 
 Affect-channel leakage (§9.3) and cipher novelty-versus-security separation
 (CONCEPT-IDEA.md §19.2, formalized below) use the same α and correction
