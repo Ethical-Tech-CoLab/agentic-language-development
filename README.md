@@ -9,6 +9,7 @@
 | [Open the experiment notebook](EXPERIMENT-NOTEBOOK.md)
 | [Read the specification](SPECIFICATION.md)
 | [Open the backlog](BACKLOG.md)
+| [Read the research manuscript](RESEARCH.md)
 
 ## Overview
 
@@ -113,6 +114,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md) | Ordered experiment protocols, checklists, result tables, deviations, and publication review |
 | [SPECIFICATION.md](SPECIFICATION.md) | Normative architecture, protocols, schemas, APIs, isolation controls, lifecycle, and acceptance criteria |
 | [BACKLOG.md](BACKLOG.md) | Milestones, critical path, epics, dependency-ordered stories, readiness gates, and requirement coverage |
+| [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
 
 The notebook is ready for pre-registration. No experiment results are claimed yet.
 

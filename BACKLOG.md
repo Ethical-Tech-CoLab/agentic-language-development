@@ -921,7 +921,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `EXPERIMENT-NOTEBOOK.md` [§4. Study Metadata](EXPERIMENT-NOTEBOOK.md#4-study-metadata)
 - **Scope:** Bind a notebook experiment and sealed hypothesis/parameters to RunConfig, create append-only versioned Experiment Records, and export `experiment-record.json` with disposition/checkpoint/anchor/verifier/deviation references.
 - **Acceptance criteria:**
-  - [ ] A run cannot start without a bound experiment ID, protocol commit, and canonical pre-registration hash, which cannot be altered.
+  - [ ] A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run anchor receipt.
   - [ ] Pre-registration creates Experiment Record version `1`; later disposition/evidence changes append higher versions without updating prior rows.
   - [ ] Every evidence bundle contains the latest record plus its version history and references resolvable by an independent reviewer.
 
