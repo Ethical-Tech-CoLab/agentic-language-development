@@ -10,6 +10,11 @@
  * It is deliberately not a language-acquisition claim of any kind (SPEC §6.1
  * claim boundary) and exposes no `updatePolicy` method (SPEC §6.2: absent for
  * the no-learning and frozen-llm tracks).
+ *
+ * A receiver turn may carry no delivered message: SPEC §9.6's `disabled`
+ * control delivers nothing, and §8.2 forbids an interpretation event when
+ * there is no channel event to reference. The selection is uniform either way
+ * for this track; the intention event then records `symbols: []`.
  */
 import {
   HASH_DOMAINS,
@@ -73,7 +78,12 @@ export class NoLearningAdapter implements LearnerAdapter {
 
   private state: AdapterState | undefined;
   private observation: ParsedObservation | undefined;
-  private lastReceivedSymbols: string[] = [];
+  /**
+   * The message delivered on one turn, bound to that turn: with
+   * `ledgerLagTurns: 0` (SPEC §8.2) a message belongs to the turn that
+   * delivered it, so it is never carried into a later turn that had none.
+   */
+  private lastReceived: { turn: number; symbols: string[] } | undefined;
   private readonly emitted = new Set<string>();
   private readonly received = new Set<string>();
   private outcomes = 0;
@@ -110,7 +120,7 @@ export class NoLearningAdapter implements LearnerAdapter {
       seedHash: domainHash(HASH_DOMAINS.seed, context.seed),
     };
     this.observation = undefined;
-    this.lastReceivedSymbols = [];
+    this.lastReceived = undefined;
     this.emitted.clear();
     this.received.clear();
     this.outcomes = 0;
@@ -195,7 +205,8 @@ export class NoLearningAdapter implements LearnerAdapter {
       subjectId: `candidate:${objectRef}`,
       content: {
         artifactRef: `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`,
-        symbols: [...this.lastReceivedSymbols],
+        // §9.6 `disabled`: an empty list when nothing was delivered.
+        symbols: [...this.receivedSymbols(turnBudget.turn)],
         selection: objectRef,
         policy: 'uniform-random',
       },
@@ -210,7 +221,7 @@ export class NoLearningAdapter implements LearnerAdapter {
   ): Promise<LedgerDraftEnvelope> {
     const state = this.requireState();
     const symbols = extractSymbols(delivery);
-    this.lastReceivedSymbols = symbols;
+    this.lastReceived = { turn: delivery.turn, symbols };
 
     await this.recordFirstUse(state, symbols, 'term.first_received', this.received);
 
@@ -278,6 +289,14 @@ export class NoLearningAdapter implements LearnerAdapter {
       });
       await state.ledger.append(draft);
     }
+  }
+
+  /** The symbols delivered on `turn`; empty when nothing was (§9.6). */
+  private receivedSymbols(turn: number): readonly string[] {
+    const received = this.lastReceived;
+    return received !== undefined && received.turn === turn
+      ? received.symbols
+      : [];
   }
 
   private requireState(): AdapterState {

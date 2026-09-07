@@ -8,6 +8,12 @@
   },
   "include": ["behavior/**/*.ts"],
   "references": [
-    { "path": "../../../packages/types" }
+    { "path": "../../../packages/types" },
+    { "path": "../../../packages/gateway" },
+    { "path": "../../../packages/evidence" },
+    { "path": "../../../packages/hashing" },
+    { "path": "../../../packages/checkpoint" },
+    { "path": "../../../packages/verifier" },
+    { "path": "../../../packages/orchestrator" }
   ]
 }

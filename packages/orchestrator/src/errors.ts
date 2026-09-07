@@ -5,7 +5,7 @@
  * (SPEC §12.3) can map it to a response body without string matching, in the
  * same style as `@ald/evidence` and `@ald/gateway`.
  */
-import type { RunEvent, RunState } from '@ald/types';
+import type { BabyRole, RunEvent, RunState } from '@ald/types';
 
 export type RuntimeErrorCode =
   | 'unknown-run'
@@ -15,7 +15,8 @@ export type RuntimeErrorCode =
   | 'invalid-run-state'
   | 'verifier-not-configured'
   | 'anchor-policy'
-  | 'unsupported-condition';
+  | 'unsupported-condition'
+  | 'adapter-failure';
 
 export class NurseryRuntimeError extends Error {
   constructor(
@@ -110,5 +111,72 @@ export class AnchorPolicyError extends NurseryRuntimeError {
 export class UnsupportedConditionError extends NurseryRuntimeError {
   constructor(message: string) {
     super('unsupported-condition', message);
+  }
+}
+
+/** The `LearnerAdapter` methods the turn loop calls (SPEC §6.2, §8.1). */
+export const ADAPTER_METHODS = [
+  'observe',
+  'act',
+  'receive',
+  'onOutcome',
+  'updatePolicy',
+] as const;
+
+export type AdapterMethod = (typeof ADAPTER_METHODS)[number];
+
+/**
+ * SPEC §10.3, §14.5: an adapter's own error text is recorded, but never its
+ * payload and never at unbounded length — a Baby must not be able to write
+ * arbitrary content into the audit stream through a thrown message.
+ */
+export const ADAPTER_FAILURE_MESSAGE_LIMIT = 200;
+
+/** First line of an error's message, truncated to the audit limit. */
+export function adapterFailureMessage(cause: unknown): string {
+  const raw =
+    cause instanceof Error
+      ? cause.message
+      : typeof cause === 'string'
+        ? cause
+        : '';
+  const firstLine = raw.split('\n', 1)[0] ?? '';
+  return firstLine.length > ADAPTER_FAILURE_MESSAGE_LIMIT
+    ? `${firstLine.slice(0, ADAPTER_FAILURE_MESSAGE_LIMIT)}…`
+    : firstLine;
+}
+
+/**
+ * SPEC §14.5 bullet 4: an adapter crash that survived its retry budget. The
+ * runtime never lets this escape `step()` — it is the internal signal that the
+ * turn must be forfeited, audited, and paused (never retried again, which
+ * would be both an unbounded loop and a timing side channel, §10.3).
+ */
+export class AdapterFailureError extends NurseryRuntimeError {
+  /** `name` of the adapter's own error, for the machine-readable audit entry. */
+  readonly errorName: string;
+
+  /** First line of the adapter's message, truncated; never a payload. */
+  readonly detail: string;
+
+  constructor(
+    readonly role: BabyRole,
+    readonly method: AdapterMethod,
+    /** How many times the call was attempted, retries included. */
+    readonly attempts: number,
+    /** The adapter's own last error, kept for the caller's own logging. */
+    readonly adapterError: unknown,
+  ) {
+    const errorName =
+      adapterError instanceof Error ? adapterError.name : typeof adapterError;
+    const detail = adapterFailureMessage(adapterError);
+    super(
+      'adapter-failure',
+      `adapter for ${role} failed ${attempts} time(s) in ${method}(): ` +
+        `${errorName}${detail === '' ? '' : `: ${detail}`} ` +
+        '(SPECIFICATION.md §14.5)',
+    );
+    this.errorName = errorName;
+    this.detail = detail;
   }
 }

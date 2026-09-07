@@ -22,6 +22,14 @@
  * (SPEC §8.1 step 9), so each Baby must hold a sender policy and a receiver
  * policy privately and update whichever it used on a given turn.
  *
+ * A receiver turn may arrive with no delivered message at all: SPEC §9.6's
+ * `disabled` control delivers nothing, and §8.2 forbids an interpretation
+ * event when there is no channel event to reference. The receiver then acts on
+ * the empty message — a uniform choice over the offered candidates, because no
+ * symbol means no information — records `symbols: []` in its intention event,
+ * and contributes no REINFORCE update, since there is no symbol row to credit.
+ * The sender half of such a turn is updated normally.
+ *
  * Initialization is all-zero logits, i.e. an exactly uniform policy. That is a
  * deliberate substitute for random initialization: it is reproducible, its
  * hash is recorded in the evidence bundle like any other checkpoint, and it
@@ -130,6 +138,27 @@ interface ReceiverTurnMemory {
 
 type TurnMemory = SenderTurnMemory | ReceiverTurnMemory;
 
+/**
+ * What this Baby holds in hand for one receiver turn.
+ *
+ * `turn` binds the message to the turn it was delivered on:
+ * `ledgerLagTurns: 0` (SPEC §8.2) means an interpretation belongs to the turn
+ * that delivered it, so a message from an earlier turn is never carried into a
+ * later one. A turn with no delivery — the §9.6 `disabled` control — has no
+ * symbols and no channel event to reference.
+ */
+interface ReceivedMessage {
+  turn: number;
+  symbols: string[];
+  symbolIndices: number[];
+  channelEventHash: string | null;
+}
+
+/** The empty message a receiver holds when nothing was delivered (§9.6). */
+function emptyMessage(turn: number): ReceivedMessage {
+  return { turn, symbols: [], symbolIndices: [], channelEventHash: null };
+}
+
 interface HypothesisRecord {
   version: number;
   hypothesisRef: string;
@@ -165,9 +194,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   private thetaReceiver: number[][][] = [];
   private baseline = 0;
   private observation: ParsedObservation | undefined;
-  private lastReceived:
-    | { symbols: string[]; symbolIndices: number[]; channelEventHash: string }
-    | undefined;
+  private lastReceived: ReceivedMessage | undefined;
   private readonly pending = new Map<number, TurnMemory>();
   private readonly hypotheses = new Map<string, HypothesisRecord>();
   private readonly emitted = new Set<string>();
@@ -328,7 +355,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     if (candidateRefs === undefined || candidateRefs.length === 0) {
       throw new LearnerStateError('A receiver turn requires candidateRefs');
     }
-    const received = this.requireReceived();
+    // SPEC §9.6 `disabled`: no artifact is delivered, so the receiver acts
+    // with an empty message. `candidateScores` then sums over no symbol rows
+    // and the softmax is exactly uniform over the candidates: no symbol, no
+    // information, chance behavior — which is what the control measures.
+    const received = this.receivedFor(turnBudget.turn);
     const candidateTypeCodes = this.receiverCandidateTypeCodes(
       candidateRefs.length,
     );
@@ -344,6 +375,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       publicArtifact: { objectRef },
     };
     const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`;
+    const channelRef =
+      received.channelEventHash === null
+        ? undefined
+        : `channel:${received.channelEventHash}`;
 
     const draft = buildAgentNativeDraft({
       eventType: 'intention.recorded',
@@ -358,7 +393,8 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         associationWeights: roundAll(probs, 6),
       },
       blindingNonce: state.nonces.next(),
-      evidenceRefs: [artifactRef, `channel:${received.channelEventHash}`],
+      evidenceRefs:
+        channelRef === undefined ? [artifactRef] : [artifactRef, channelRef],
     });
 
     this.remember({
@@ -370,7 +406,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       actionIndex,
       probs,
       confidence: at(probs, actionIndex),
-      primaryEvidenceRef: `channel:${received.channelEventHash}`,
+      primaryEvidenceRef: channelRef ?? artifactRef,
     });
 
     return { proposal, privateLedgerDraft: draft };
@@ -394,6 +430,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       return index;
     });
     this.lastReceived = {
+      turn: delivery.turn,
       symbols,
       symbolIndices,
       channelEventHash: delivery.channelEventHash,
@@ -492,6 +529,15 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       highestTurn = Math.max(highestTurn, turn);
       const memory = this.pending.get(turn);
       if (memory === undefined || memory.reward === undefined) {
+        continue;
+      }
+      if (memory.role === 'receiver' && memory.symbolIndices.length === 0) {
+        // SPEC §9.6 `disabled`: nothing was delivered, so there is no symbol
+        // row to credit and no receiver trajectory to reinforce. The baseline
+        // is left alone as well — an empty-message turn carries no evidence
+        // about the policy, and moving the baseline would change the exported
+        // policy hash for a turn the policy did not act on.
+        this.pending.delete(turn);
         continue;
       }
       const reward = memory.reward;
@@ -816,17 +862,20 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     return this.observation;
   }
 
-  private requireReceived(): {
-    symbols: string[];
-    symbolIndices: number[];
-    channelEventHash: string;
-  } {
-    if (this.lastReceived === undefined) {
-      throw new LearnerStateError(
-        'receive() must be called before a receiver turn (SPEC §8.1 step 6)',
-      );
-    }
-    return this.lastReceived;
+  /**
+   * The message this Baby is answering on `turn`.
+   *
+   * A receiver turn without a delivery is legitimate — the §9.6 `disabled`
+   * control delivers nothing at all — so the absence of a message is not an
+   * error, it is the empty message. Binding the lookup to the turn keeps
+   * `ledgerLagTurns: 0` honest: a message delivered on an earlier turn is
+   * never reused as if it had just arrived.
+   */
+  private receivedFor(turn: number): ReceivedMessage {
+    const received = this.lastReceived;
+    return received !== undefined && received.turn === turn
+      ? received
+      : emptyMessage(turn);
   }
 }
 

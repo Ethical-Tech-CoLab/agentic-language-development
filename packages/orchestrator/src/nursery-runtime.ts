@@ -22,6 +22,23 @@
  * What the runtime therefore contributes is ordering, budgets, counters, and
  * the audited side effects of §7.2 — plus the turn record (`turns` stream)
  * that carries the §14.3 replay tuple.
+ *
+ * Two failure policies live here because nothing else can own them:
+ *
+ * - §14.5 adapter failure. Every adapter call `step()` makes goes through
+ *   `#callAdapter`, which retries a crashing call `retryBudget` times
+ *   (default `1`) and then reports an `AdapterFailureError`. `step()` turns
+ *   that into a forfeited turn: a `safety-trigger` audit entry with reason
+ *   code `adapter-failure`, one turn record with a null action, and the §7.2
+ *   pause — never an unbounded retry loop, and never a turn left without a
+ *   record. A crash is not a channel violation, so no `channel.rejected`
+ *   event is written for it and the §9.4 rejection counter is untouched; an
+ *   over-budget turn, by contrast, keeps its §8.3 `timeout` rejection.
+ * - §7.2 `sealing-blocked` recovery. `retrySeal` re-runs only the export,
+ *   anchor, and verification work; `abandonSeal` records the governance
+ *   decision that makes the `invalid` disposition permanent. Both rely on the
+ *   seal's evidence half being written exactly once per run (`#sealEvidence`),
+ *   which is also what makes `seal` itself idempotent on re-entry.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -39,6 +56,7 @@ import {
   TurnProposalEnvelopeSchema,
   TurnRecordSchema,
   fixedTokenInventory,
+  ledgerStreamForRole,
   otherRole,
   type AgentActionProposal,
   type AnchorPublisher,
@@ -83,6 +101,7 @@ import {
   deriveSeedHex,
   formatChainViolation,
   hashCanonical,
+  hashCarrierMark,
   parseCanonicalJson,
   SeededPrng,
   validateChain,
@@ -112,6 +131,7 @@ import {
 } from '@ald/gateway';
 
 import {
+  AdapterFailureError,
   AnchorPolicyError,
   ConfigurationMismatchError,
   DuplicateRunError,
@@ -120,6 +140,7 @@ import {
   UnknownRunError,
   UnsupportedConditionError,
   VerifierNotConfiguredError,
+  type AdapterMethod,
 } from './errors.js';
 import { RuntimePrivateLedgerClient } from './private-ledger.js';
 import {
@@ -145,6 +166,30 @@ export const DEFAULT_BATCH_SIZE = 50;
 
 /** Reason code of the §7.2 governance decision that skips anchoring. */
 export const ANCHORING_SKIPPED_REASON = 'anchoring-skipped-prototype-mode';
+
+/** SPEC §14.5 default retry budget for a crashing adapter call. */
+export const DEFAULT_ADAPTER_RETRY_BUDGET = 1;
+
+/** Reason code of the §14.5 safety trigger an adapter crash writes. */
+export const ADAPTER_FAILURE_REASON = 'adapter-failure';
+
+/**
+ * Reason code recorded when a safety trigger fired in a state §7.2 offers no
+ * `pause` transition out of (`evaluating`, `sealing`, ...).
+ */
+export const PAUSE_NOT_AVAILABLE_REASON = 'pause-not-available';
+
+/** Reason code of the audited §7.2 `sealing-blocked --seal-retry--> sealing` row. */
+export const SEAL_RETRY_REASON = 'seal-retry';
+
+/** Reason code of the audited §7.2 `sealing-blocked` abandonment row. */
+export const SEAL_ABANDONED_REASON = 'seal-recovery-abandoned';
+
+/** Deviation recorded when an operator abandons export/anchor recovery (§7.2). */
+export const SEAL_ABANDONED_DEVIATION =
+  'seal-recovery-abandoned: an operator abandoned export/anchor recovery, so ' +
+  'the unanchored status and the invalid disposition are permanent ' +
+  '(SPECIFICATION.md §7.2)';
 
 /** Deviation recorded in the Experiment Record when anchoring is skipped. */
 export const ANCHORING_SKIPPED_DEVIATION =
@@ -201,6 +246,13 @@ export interface NurseryRuntimeOptions {
   batchSize?: number;
   /** Actor id recorded on runtime-initiated interventions. */
   actorId?: string;
+  /**
+   * SPEC §14.5: how many times a crashing adapter call is retried before the
+   * turn is forfeited and the run pauses. Default `1`; `0` disables the retry.
+   * There is no unbounded setting — an unbounded retry loop is exactly what
+   * §14.5 forbids.
+   */
+  retryBudget?: number;
 }
 
 /** One prepared episode of a §9.6 `shuffled` batch. */
@@ -279,6 +331,41 @@ function forfeitOutcome(reason: string, reasonCode: string): Outcome {
   return { success: false, reward: 0, details: { reason, reasonCode } };
 }
 
+/**
+ * SPEC §14.5: the forfeited-turn outcome of an adapter crash. It is shaped
+ * like a rejection because the turn produced no action — but a crash is not a
+ * channel violation, so no `channel.rejected` event is written for it and the
+ * §9.4 rejection counter is left alone.
+ */
+function adapterFailureOutcome(
+  role: BabyRole,
+  phase: TurnRecord['phase'],
+): Outcome {
+  return {
+    success: false,
+    reward: 0,
+    details: { reason: ADAPTER_FAILURE_REASON, role, phase },
+  };
+}
+
+/**
+ * Everything one turn has established so far. `step()` fills it as the §8.1
+ * phases run and always writes exactly one turn record from it — on the
+ * accepted, rejected, forfeited, and adapter-failure exits alike.
+ */
+interface TurnScratch {
+  turn: number;
+  phase: TurnRecord['phase'];
+  split: ScenarioSplit;
+  sender: BabyRole;
+  receiver: BabyRole;
+  instance: ScenarioInstance | undefined;
+  observations: Record<BabyRole, Observation> | undefined;
+  channelEvent: ChannelEvent | null;
+  babyProposalHash: Sha256Hash | null;
+  deliveredArtifactHash: Sha256Hash | undefined;
+}
+
 /** `sha256:`-prefixed form; `RunConfigSchema` also accepts bare hex. */
 function strictHash(value: string): Sha256Hash {
   const lowered = value.toLowerCase();
@@ -300,6 +387,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   readonly #actorId: string;
   readonly #anchorPolicy: 'required' | 'skip';
   readonly #evaluationTurnsDefault: number;
+  readonly #retryBudget: number;
 
   constructor(options: NurseryRuntimeOptions) {
     this.#options = options;
@@ -308,6 +396,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     this.#anchorPolicy = options.anchorPolicy ?? 'required';
     this.#evaluationTurnsDefault =
       options.evaluationTurnsDefault ?? DEFAULT_EVALUATION_TURNS;
+    const retryBudget = options.retryBudget ?? DEFAULT_ADAPTER_RETRY_BUDGET;
+    if (!Number.isInteger(retryBudget) || retryBudget < 0) {
+      throw new RunConfigurationError([
+        {
+          path: 'retryBudget',
+          message: 'retryBudget must be a non-negative integer (SPEC §14.5)',
+        },
+      ]);
+    }
+    this.#retryBudget = retryBudget;
   }
 
   // -------------------------------------------------------------------------
@@ -428,6 +526,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // One turn (SPEC §8.1)
   // -------------------------------------------------------------------------
 
+  /**
+   * One turn (SPEC §8.1). Exactly one turn record is appended and exactly one
+   * `TurnResult` returned on every exit path — accepted, gateway-rejected,
+   * forfeited, and adapter crash (§14.5) alike. The §8.1 phases themselves run
+   * in `#executeTurn`; what stays here is the evidence and the §7.2 side
+   * effects the turn owes regardless of how it ended.
+   */
   async step(runId: string): Promise<TurnResult> {
     const run = this.#requireRun(runId);
     run.lifecycle.assertAcceptsTurn();
@@ -436,110 +541,62 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.lifecycle.state === 'evaluating' ? 'evaluating' : 'running';
     const turn = run.turn;
     const sender = senderForTurn(turn, run.config.roleReversalPeriod);
-    const receiver = otherRole(sender);
-    const split: ScenarioSplit = phase === 'evaluating' ? 'evaluation' : 'train';
-
-    const slot = await this.#slotFor(run, turn, phase, split);
-    const instance =
-      slot?.instance ??
-      run.engine.generate(this.#episodeIndex(run, phase), split, {
-        sender,
-        receiver,
-      });
-
-    // §8.1 step 1 / §10.1: the only observation a Baby ever sees comes from
-    // the engine's builder and is re-checked by the hygiene filter here, so
-    // there is no path into an adapter that bypasses the gate.
-    const observations: Record<BabyRole, Observation> = {
-      'baby-a': assertObservationHygiene(
-        run.engine.observationFor(instance, runId, turn, 'baby-a'),
-      ),
-      'baby-b': assertObservationHygiene(
-        run.engine.observationFor(instance, runId, turn, 'baby-b'),
-      ),
-    };
-    for (const role of BABY_ROLES) {
-      await run.adapters[role].observe(observations[role]);
-    }
-
-    const turnContext: GatewayTurnContext = {
+    const scratch: TurnScratch = {
       turn,
+      phase,
+      split: phase === 'evaluating' ? 'evaluation' : 'train',
       sender,
-      recipient: receiver,
-      ...this.#batchBinding(run, turn),
+      receiver: otherRole(sender),
+      instance: undefined,
+      observations: undefined,
+      channelEvent: null,
+      babyProposalHash: null,
+      deliveredArtifactHash: undefined,
     };
 
-    let channelEvent: ChannelEvent | null = null;
-    let babyProposalHash: Sha256Hash | null = null;
-    let deliveredArtifactHash: Sha256Hash;
-    let action: AgentActionProposal | null = null;
     let outcome: Outcome;
+    let action: AgentActionProposal | null = null;
     let pauseRequested = false;
+    let failure: AdapterFailureError | undefined;
 
-    if (run.config.communicationCondition === 'oracle') {
-      // §9.6 `oracle`: the artifact is generated from researcher-only ground
-      // truth and no learner output is used at all.
-      const artifact = run.engine.oracleArtifact(instance);
-      const control = await run.gateway.submitControlArtifact(
-        turnContext,
-        artifact,
-      );
-      channelEvent = control.channelEvent;
-      deliveredArtifactHash = control.channelEvent.publicArtifactHash;
-      action = run.engine.oracleAction(instance, artifact);
-      outcome = run.engine.evaluate(instance, action);
-    } else {
-      const submission = await this.#submitSender(run, turnContext, slot, sender);
-      channelEvent = submission.channelEvent;
-
-      if (submission.kind === 'rejected') {
-        // §8.3, §9.4: a rejected proposal forfeits the turn; the Scenario
-        // Engine records a null action, never a retry.
-        deliveredArtifactHash = submission.channelEvent.publicArtifactHash;
-        outcome = forfeitOutcome('forfeit', submission.reasonCode);
-        pauseRequested = submission.pauseRequested;
-      } else {
-        babyProposalHash = submission.babyProposalHash;
-        deliveredArtifactHash = submission.deliveredArtifactHash;
-        const receiverTurn = await this.#runReceiver(
-          run,
-          turnContext,
-          receiver,
-          instance,
-          submission,
-        );
-        outcome = receiverTurn.outcome;
-        action = receiverTurn.action;
-        pauseRequested = receiverTurn.pauseRequested;
+    try {
+      const executed = await this.#executeTurn(run, scratch);
+      outcome = executed.outcome;
+      action = executed.action;
+      pauseRequested = executed.pauseRequested;
+    } catch (error) {
+      // §14.5: an adapter that crashed through its whole retry budget
+      // forfeits the turn. Anything else is a runtime or evidence fault and
+      // still propagates — the runtime never swallows an integrity error.
+      if (!(error instanceof AdapterFailureError)) {
+        throw error;
       }
+      failure = error;
+      outcome = adapterFailureOutcome(failure.role, phase);
     }
 
-    // §8.1 step 7: only the approved nonverbal outcome reaches a Baby.
-    for (const role of BABY_ROLES) {
-      await run.adapters[role].onOutcome({
+    const instance = this.#instanceFor(run, scratch);
+    const observations = this.#observationsFor(run, scratch, instance);
+
+    if (failure !== undefined) {
+      // §14.5: every trigger writes a `safety-trigger` entry with a
+      // machine-readable reason code. The adapter's message is truncated and
+      // its payload is never recorded (§10.3).
+      await run.writer.appendInterventionEvent({
         runId,
-        turn,
-        role: role === sender ? 'sender' : 'receiver',
-        success: outcome.success,
-        reward:
-          run.config.learningSignal === 'extrinsic-task' ? outcome.reward : null,
-        payload: [outcome.success ? 1 : 0],
+        eventType: 'safety-trigger',
+        actorId: this.#actorId,
+        reasonCode: ADAPTER_FAILURE_REASON,
+        details: {
+          turn,
+          phase,
+          role: failure.role,
+          method: failure.method,
+          attempts: failure.attempts,
+          errorName: failure.errorName,
+          message: failure.detail,
+        },
       });
-    }
-
-    // §8.1 step 8 / §7.2: `updatePolicy` is disabled once evaluation starts.
-    if (phase === 'running') {
-      for (const role of BABY_ROLES) {
-        const adapter = run.adapters[role];
-        if (adapter.updatePolicy) {
-          run.policyRefs[role] = await adapter.updatePolicy({
-            runId,
-            turns: [turn],
-            learningSignal: run.config.learningSignal,
-          });
-          await this.#writePolicyFile(run, role, 'latest');
-        }
-      }
     }
 
     const recordedOutcome: Record<string, unknown> = {
@@ -553,7 +610,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       runId,
       turn,
       phase,
-      roles: { sender, receiver },
+      roles: { sender, receiver: scratch.receiver },
       communicationCondition: run.config.communicationCondition,
       scenarioRef: instance.scenarioRef,
       scenarioStateHash: instance.stateHash,
@@ -561,9 +618,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         babyA: hashObservation(observations['baby-a']),
         babyB: hashObservation(observations['baby-b']),
       },
-      babyProposalHash,
-      deliveredArtifactHash,
-      channelEventHash: channelEvent?.entryHash ?? null,
+      babyProposalHash: scratch.babyProposalHash,
+      // §11.5: a turn that delivered nothing — a rejection, a `disabled`
+      // channel, or a crashed adapter — records the carrier mark of `null`.
+      deliveredArtifactHash:
+        scratch.deliveredArtifactHash ??
+        hashCarrierMark(run.config.carrierMode, null),
+      channelEventHash: scratch.channelEvent?.entryHash ?? null,
       actionHash: hashCanonical(HASH_DOMAINS.action, action),
       outcomeHash: hashCanonical(HASH_DOMAINS.outcome, recordedOutcome),
       outcome: recordedOutcome,
@@ -577,16 +638,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.evaluationCount += 1;
     }
 
-    // LEDGER §9: a checkpoint every `checkpointEventInterval` accepted
-    // events. The time-based trigger belongs to the Checkpoint Service.
-    if (
-      this.#eventTotal(run) - run.lastCheckpointEventTotal >=
-      run.config.checkpointEventInterval
-    ) {
-      await this.#checkpoint(run, 'event-interval');
-    }
+    await this.#checkpointEventBoundaries(run);
 
-    if (pauseRequested) {
+    if (failure !== undefined || pauseRequested) {
+      // §14.5: a safety trigger pauses; it never silently continues.
       await this.#autoPause(run, turn);
     } else if (
       phase === 'running' &&
@@ -610,10 +665,210 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       turn,
       phase,
       outcome,
-      channelEvent,
+      channelEvent: scratch.channelEvent,
       turnRecord,
       state: run.lifecycle.state,
     };
+  }
+
+  /**
+   * SPEC §8.1 steps 1-8. Every adapter call it makes goes through
+   * `#callAdapter`, so an adapter crash surfaces as one `AdapterFailureError`
+   * that `step()` turns into a forfeited, audited, paused turn (§14.5) rather
+   * than an exception that would leave the turn without a record.
+   */
+  async #executeTurn(
+    run: RunRuntime,
+    scratch: TurnScratch,
+  ): Promise<{
+    outcome: Outcome;
+    action: AgentActionProposal | null;
+    pauseRequested: boolean;
+  }> {
+    const runId = run.runId;
+    const { turn, phase, split, sender, receiver } = scratch;
+
+    const slot = await this.#slotFor(run, turn, phase, split);
+    const instance =
+      slot?.instance ??
+      run.engine.generate(this.#episodeIndex(run, phase), split, {
+        sender,
+        receiver,
+      });
+    scratch.instance = instance;
+
+    // §8.1 step 1 / §10.1: the only observation a Baby ever sees comes from
+    // the engine's builder and is re-checked by the hygiene filter here, so
+    // there is no path into an adapter that bypasses the gate.
+    const observations: Record<BabyRole, Observation> = {
+      'baby-a': assertObservationHygiene(
+        run.engine.observationFor(instance, runId, turn, 'baby-a'),
+      ),
+      'baby-b': assertObservationHygiene(
+        run.engine.observationFor(instance, runId, turn, 'baby-b'),
+      ),
+    };
+    scratch.observations = observations;
+    for (const role of BABY_ROLES) {
+      await this.#callAdapter(run, role, 'observe', () =>
+        run.adapters[role].observe(observations[role]),
+      );
+    }
+
+    const turnContext: GatewayTurnContext = {
+      turn,
+      sender,
+      recipient: receiver,
+      ...this.#batchBinding(run, turn),
+    };
+
+    let action: AgentActionProposal | null = null;
+    let outcome: Outcome;
+    let pauseRequested = false;
+
+    if (run.config.communicationCondition === 'oracle') {
+      // §9.6 `oracle`: the artifact is generated from researcher-only ground
+      // truth and no learner output is used at all.
+      const artifact = run.engine.oracleArtifact(instance);
+      const control = await run.gateway.submitControlArtifact(
+        turnContext,
+        artifact,
+      );
+      scratch.channelEvent = control.channelEvent;
+      scratch.deliveredArtifactHash = control.channelEvent.publicArtifactHash;
+      action = run.engine.oracleAction(instance, artifact);
+      outcome = run.engine.evaluate(instance, action);
+    } else {
+      const submission = await this.#submitSender(run, turnContext, slot, sender);
+      scratch.channelEvent = submission.channelEvent;
+
+      if (submission.kind === 'rejected') {
+        // §8.3, §9.4: a rejected proposal forfeits the turn; the Scenario
+        // Engine records a null action, never a retry.
+        scratch.deliveredArtifactHash =
+          submission.channelEvent.publicArtifactHash;
+        outcome = forfeitOutcome('forfeit', submission.reasonCode);
+        pauseRequested = submission.pauseRequested;
+      } else {
+        scratch.babyProposalHash = submission.babyProposalHash;
+        scratch.deliveredArtifactHash = submission.deliveredArtifactHash;
+        const receiverTurn = await this.#runReceiver(
+          run,
+          turnContext,
+          receiver,
+          instance,
+          submission,
+        );
+        outcome = receiverTurn.outcome;
+        action = receiverTurn.action;
+        pauseRequested = receiverTurn.pauseRequested;
+      }
+    }
+
+    // §8.1 step 7: only the approved nonverbal outcome reaches a Baby.
+    for (const role of BABY_ROLES) {
+      await this.#callAdapter(run, role, 'onOutcome', () =>
+        run.adapters[role].onOutcome({
+          runId,
+          turn,
+          role: role === sender ? 'sender' : 'receiver',
+          success: outcome.success,
+          reward:
+            run.config.learningSignal === 'extrinsic-task'
+              ? outcome.reward
+              : null,
+          payload: [outcome.success ? 1 : 0],
+        }),
+      );
+    }
+
+    // §8.1 step 8 / §7.2: `updatePolicy` is disabled once evaluation starts.
+    if (phase === 'running') {
+      for (const role of BABY_ROLES) {
+        const adapter = run.adapters[role];
+        const update = adapter.updatePolicy;
+        if (update) {
+          run.policyRefs[role] = await this.#callAdapter(
+            run,
+            role,
+            'updatePolicy',
+            () =>
+              update.call(adapter, {
+                runId,
+                turns: [turn],
+                learningSignal: run.config.learningSignal,
+              }),
+          );
+          await this.#writePolicyFile(run, role, 'latest');
+        }
+      }
+    }
+
+    return { outcome, action, pauseRequested };
+  }
+
+  /**
+   * SPEC §14.5 bullet 4: one adapter call, retried at most `retryBudget`
+   * times, then reported as an `AdapterFailureError`. A
+   * `TurnDeadlineExceededError` is never retried here — §8.3 already fixes
+   * what an over-budget turn costs (a `channel.rejected` event with reason
+   * `timeout` and a forfeited turn), and retrying it would reopen exactly the
+   * timing side channel §10.3 closes.
+   */
+  async #callAdapter<T>(
+    run: RunRuntime,
+    role: BabyRole,
+    method: AdapterMethod,
+    call: () => Promise<T>,
+  ): Promise<T> {
+    const attempts = this.#retryBudget + 1;
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        return await call();
+      } catch (error) {
+        if (error instanceof TurnDeadlineExceededError) {
+          throw error;
+        }
+        lastError = error;
+      }
+    }
+    throw new AdapterFailureError(role, method, attempts, lastError);
+  }
+
+  /**
+   * The episode this turn ran, for the turn record. It is regenerated when an
+   * adapter crashed before the turn had one (the §9.6 `shuffled` pre-pass):
+   * `ScenarioEngine.generate` is a pure function of the seed, the split, and
+   * the episode index, so the record still names the episode the turn was
+   * about.
+   */
+  #instanceFor(run: RunRuntime, scratch: TurnScratch): ScenarioInstance {
+    return (
+      scratch.instance ??
+      run.engine.generate(this.#episodeIndex(run, scratch.phase), scratch.split, {
+        sender: scratch.sender,
+        receiver: scratch.receiver,
+      })
+    );
+  }
+
+  /** The per-Baby observations of this turn, for the turn record's hashes. */
+  #observationsFor(
+    run: RunRuntime,
+    scratch: TurnScratch,
+    instance: ScenarioInstance,
+  ): Record<BabyRole, Observation> {
+    return (
+      scratch.observations ?? {
+        'baby-a': assertObservationHygiene(
+          run.engine.observationFor(instance, run.runId, scratch.turn, 'baby-a'),
+        ),
+        'baby-b': assertObservationHygiene(
+          run.engine.observationFor(instance, run.runId, scratch.turn, 'baby-b'),
+        ),
+      }
+    );
   }
 
   /** Steps until the run stops accepting turns, then seals it if it can. */
@@ -785,15 +1040,107 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // Sealing (SPEC §7.2 `sealing`, §11.9, LEDGER §15)
   // -------------------------------------------------------------------------
 
+  /**
+   * SPEC §7.2 `sealing --export + anchor complete--> sealed`.
+   *
+   * Idempotent on re-entry: a run that already reached `sealed` or
+   * `aborted-sealed` is returned as it is, and the seal evidence itself
+   * (`policy.checkpointed`, `run.sealed`, the final checkpoint) is written
+   * only if it is not in the store yet. That is what makes the
+   * `sealing-blocked` recovery of `retrySeal` safe — the export, anchor, and
+   * verification work is resumed without a second `run.sealed` event or a
+   * second final checkpoint (§7.2 "Resume only export/anchor/verification
+   * work").
+   */
   async seal(runId: string): Promise<RunSummary> {
     const run = this.#requireRun(runId);
+    if (
+      run.lifecycle.state === 'sealed' ||
+      run.lifecycle.state === 'aborted-sealed'
+    ) {
+      return this.#summary(run);
+    }
     if (run.lifecycle.state !== 'sealing') {
       throw new RunStateError(runId, run.lifecycle.state, 'sealing');
     }
+    return this.#runSealSteps(run);
+  }
 
-    await this.#policyCheckpoint(run, run.turn);
-    await this.#appendRunSealedEvents(run);
-    const manifest = await this.#checkpoint(run, 'run-sealed');
+  /**
+   * SPEC §7.2 `sealing-blocked --retry succeeds--> sealing`: re-run only the
+   * export, anchor, and verification work of the seal. The seal evidence is
+   * not rewritten (see `seal`), so a retry never forks the ledger tail.
+   */
+  async retrySeal(runId: string): Promise<RunSummary> {
+    const run = this.#requireRun(runId);
+    if (!run.lifecycle.canApply('seal-retry')) {
+      throw new RunStateError(runId, run.lifecycle.state, 'seal-retry');
+    }
+    run.lifecycle.apply('seal-retry');
+    // §14.2: the recovery attempt is itself audited, so the record shows how
+    // many times the export/anchor path was tried.
+    await run.writer.appendInterventionEvent({
+      runId,
+      eventType: 'recovery',
+      actorId: this.#actorId,
+      reasonCode: SEAL_RETRY_REASON,
+      details: {
+        checkpointManifestRef: run.finalCheckpointHash ?? GENESIS_HASH,
+        deviations: run.deviations.length,
+      },
+    });
+    return this.#runSealSteps(run);
+  }
+
+  /**
+   * SPEC §7.2 `sealing-blocked --operator abandons recovery-->
+   * aborted-sealed`: append an audited governance decision; the `invalid`
+   * disposition and the unanchored status are permanent.
+   *
+   * No further checkpoint is created: the run's final checkpoint is the one
+   * the blocked seal already produced and exported, and `intervention` is not
+   * a checkpoint tree (LEDGER §8), so the governance decision is preserved by
+   * its own hash chain. The bundle is re-exported so the decision is in it.
+   */
+  async abandonSeal(
+    runId: string,
+    intervention: Intervention,
+  ): Promise<RunSummary> {
+    const run = this.#requireRun(runId);
+    if (!run.lifecycle.canApply('abandon-recovery')) {
+      throw new RunStateError(runId, run.lifecycle.state, 'abandon-recovery');
+    }
+    run.lifecycle.apply('abandon-recovery');
+    await run.writer.appendInterventionEvent({
+      runId,
+      eventType: 'governance-decision',
+      actorId: intervention.actorId,
+      reasonCode: intervention.reasonCode,
+      details: {
+        ...(intervention.details ?? {}),
+        outcome: SEAL_ABANDONED_REASON,
+        checkpointManifestRef: run.finalCheckpointHash ?? GENESIS_HASH,
+      },
+    });
+    if (!run.deviations.includes(SEAL_ABANDONED_DEVIATION)) {
+      run.deviations.push(SEAL_ABANDONED_DEVIATION);
+    }
+    this.#appendExperimentRecord(run, {
+      disposition: 'invalid',
+      checkpointManifestRef: run.finalCheckpointHash ?? GENESIS_HASH,
+      anchorTxRef: run.anchorReceipt?.transactionHash ?? UNANCHORED_TX_REF,
+      verifierReportRef: 'not-run',
+      deviations: [...run.deviations],
+    });
+    await this.#exportBundle(run);
+    await this.#writeExperimentRecordFile(run);
+    return this.#summary(run);
+  }
+
+  /** The export/anchor/verify half of the seal, shared with `retrySeal`. */
+  async #runSealSteps(run: RunRuntime): Promise<RunSummary> {
+    const runId = run.runId;
+    const manifest = await this.#sealEvidence(run);
     run.finalCheckpointHash = manifest.checkpointHash;
 
     const anchor = await this.#anchor(run, manifest);
@@ -853,6 +1200,56 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.lifecycle.apply('abandon-recovery');
     }
     return this.#summary(run);
+  }
+
+  /**
+   * The seal's evidence half — the per-Baby policy checkpoint, the `run.sealed`
+   * ledger events, and the final checkpoint — written exactly once per run.
+   *
+   * Re-entry after a `sealing-blocked` recovery detects the existing artifacts
+   * from the ledger tail and the last checkpoint's reason and returns that
+   * final manifest unchanged, so no run acquires two `run.sealed` events or
+   * two final checkpoints (LEDGER §15: sequences are never reused, and a
+   * second tail would be indistinguishable from a fork).
+   */
+  async #sealEvidence(run: RunRuntime): Promise<CheckpointManifest> {
+    const existing = this.#finalCheckpoint(run);
+    if (existing !== undefined && this.#runSealedEventsPresent(run)) {
+      return existing;
+    }
+    await this.#policyCheckpoint(run, run.turn);
+    await this.#appendRunSealedEvents(run);
+    return this.#checkpoint(run, 'run-sealed');
+  }
+
+  /** The last checkpoint, if it is a final one (`run-sealed`/`run-aborted`). */
+  #finalCheckpoint(run: RunRuntime): CheckpointManifest | undefined {
+    const last = run.writer.readCheckpoints(run.runId).at(-1);
+    if (
+      last !== undefined &&
+      (last.reason === 'run-sealed' || last.reason === 'run-aborted')
+    ) {
+      return last;
+    }
+    return undefined;
+  }
+
+  /** True when both Baby ledgers already end in their `run.sealed` event. */
+  #runSealedEventsPresent(run: RunRuntime): boolean {
+    return BABY_ROLES.every((role) => {
+      const events = run.writer.readEvents(
+        run.runId,
+        ledgerStreamForRole(role),
+      );
+      const last = events.at(-1);
+      if (last === undefined) {
+        return false;
+      }
+      const parsed = parseCanonicalJson(last.canonicalJson) as {
+        eventType?: unknown;
+      };
+      return parsed.eventType === 'run.sealed';
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -1050,14 +1447,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     let envelope: TurnProposalEnvelope;
     try {
-      envelope = await run.gateway.withTurnDeadline(
-        run.adapters[sender].act({
-          turn: turnContext.turn,
-          role: 'sender',
-          responseBudgetMs: run.config.turnResponseBudgetMs,
-          availableActions: [...run.gateway.carrierProtocol.allowedKinds],
-        }),
-        run.config.turnResponseBudgetMs,
+      envelope = await this.#callAdapter(run, sender, 'act', () =>
+        run.gateway.withTurnDeadline(
+          run.adapters[sender].act({
+            turn: turnContext.turn,
+            role: 'sender',
+            responseBudgetMs: run.config.turnResponseBudgetMs,
+            availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+          }),
+          run.config.turnResponseBudgetMs,
+        ),
       );
     } catch (error) {
       if (error instanceof TurnDeadlineExceededError) {
@@ -1084,8 +1483,20 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     // §8.2 with `ledgerLagTurns: 0`: the interpretation event is committed
     // in the same turn cycle, before the receiver's own proposal.
+    //
+    // Under the §9.6 `disabled` control there is no delivery at all, so there
+    // is nothing to interpret and no interpretation event may exist: the
+    // receiver still acts, with no message in hand. Every track must therefore
+    // accept a receiver turn whose delivered message is empty (see
+    // `@ald/learners`: the receiver policy falls back to a uniform choice).
     if (submission.delivery !== null) {
-      const interpretation = await adapter.receive(submission.delivery);
+      const delivery = submission.delivery;
+      const interpretation = await this.#callAdapter(
+        run,
+        receiver,
+        'receive',
+        () => adapter.receive(delivery),
+      );
       try {
         await run.gateway.submitInterpretation(
           turnContext,
@@ -1106,15 +1517,17 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     let envelope: TurnProposalEnvelope;
     try {
-      envelope = await run.gateway.withTurnDeadline(
-        adapter.act({
-          turn: turnContext.turn,
-          role: 'receiver',
-          responseBudgetMs: run.config.turnResponseBudgetMs,
-          availableActions: ['select_object'],
-          candidateRefs: instance.candidateRefs,
-        }),
-        run.config.turnResponseBudgetMs,
+      envelope = await this.#callAdapter(run, receiver, 'act', () =>
+        run.gateway.withTurnDeadline(
+          adapter.act({
+            turn: turnContext.turn,
+            role: 'receiver',
+            responseBudgetMs: run.config.turnResponseBudgetMs,
+            availableActions: ['select_object'],
+            candidateRefs: instance.candidateRefs,
+          }),
+          run.config.turnResponseBudgetMs,
+        ),
       );
     } catch (error) {
       if (!(error instanceof TurnDeadlineExceededError)) {
@@ -1216,19 +1629,22 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       });
       episodeIndex += 1;
 
-      await run.adapters[slotSender].observe(
-        assertObservationHygiene(
-          run.engine.observationFor(instance, run.runId, slotTurn, slotSender),
-        ),
+      const slotObservation = assertObservationHygiene(
+        run.engine.observationFor(instance, run.runId, slotTurn, slotSender),
       );
-      const envelope = await run.gateway.withTurnDeadline(
-        run.adapters[slotSender].act({
-          turn: slotTurn,
-          role: 'sender',
-          responseBudgetMs: run.config.turnResponseBudgetMs,
-          availableActions: [...run.gateway.carrierProtocol.allowedKinds],
-        }),
-        run.config.turnResponseBudgetMs,
+      await this.#callAdapter(run, slotSender, 'observe', () =>
+        run.adapters[slotSender].observe(slotObservation),
+      );
+      const envelope = await this.#callAdapter(run, slotSender, 'act', () =>
+        run.gateway.withTurnDeadline(
+          run.adapters[slotSender].act({
+            turn: slotTurn,
+            role: 'sender',
+            responseBudgetMs: run.config.turnResponseBudgetMs,
+            availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+          }),
+          run.config.turnResponseBudgetMs,
+        ),
       );
 
       const validation = run.gateway.carrierProtocol.validate(
@@ -1282,16 +1698,23 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     return { batchArtifacts: batch.artifacts, batchIndex };
   }
 
-  /** SPEC §9.4/§14.5: the automatic pause a rejection streak triggers. */
+  /**
+   * SPEC §9.4/§14.5: the automatic pause a safety trigger causes — a
+   * rejection streak, or an adapter that crashed through its retry budget.
+   * The transition, its mandatory checkpoint, and nothing else: the trigger's
+   * own `safety-trigger` entry is written by whoever detected it (the Gateway
+   * for a rejection streak, `step()` for an adapter crash).
+   */
   async #autoPause(run: RunRuntime, turn: number): Promise<void> {
     if (!run.lifecycle.canApply('pause')) {
-      // The §7.2 table has no pause out of this state; the Gateway already
-      // committed the `safety-trigger` entry, so record why nothing paused.
+      // The §7.2 table has no pause out of this state; the trigger's own
+      // `safety-trigger` entry is already committed, so record why nothing
+      // paused rather than silently continuing.
       await run.writer.appendInterventionEvent({
         runId: run.runId,
         eventType: 'safety-trigger',
         actorId: this.#actorId,
-        reasonCode: 'pause-not-available',
+        reasonCode: PAUSE_NOT_AVAILABLE_REASON,
         details: { turn, state: run.lifecycle.state },
       });
       return;
@@ -1312,6 +1735,32 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const manifest = await run.checkpoints.createCheckpoint(run.runId, reason);
     run.lastCheckpointEventTotal = this.#eventTotal(run);
     return manifest;
+  }
+
+  /**
+   * LEDGER §9: a checkpoint every `checkpointEventInterval` accepted events on
+   * the three mandatory chains. The time-based half of that rule belongs to
+   * the Checkpoint Service.
+   *
+   * One turn can commit many events at once — the atomic sender ledger/channel
+   * pair, the receiver's interpretation and selection, and every hypothesis or
+   * first-use event the adapters append through their private ledger client —
+   * so a single turn may carry the total past several interval boundaries. The
+   * counter therefore advances one whole interval at a time and the boundary is
+   * re-tested: a turn that crosses two boundaries produces two checkpoints
+   * instead of silently skipping one, and the schedule stays aligned to
+   * absolute event counts instead of drifting later after every trigger.
+   */
+  async #checkpointEventBoundaries(run: RunRuntime): Promise<void> {
+    const interval = run.config.checkpointEventInterval;
+    if (interval <= 0) {
+      return;
+    }
+    while (this.#eventTotal(run) - run.lastCheckpointEventTotal >= interval) {
+      const boundary = run.lastCheckpointEventTotal + interval;
+      await run.checkpoints.createCheckpoint(run.runId, 'event-interval');
+      run.lastCheckpointEventTotal = boundary;
+    }
   }
 
   /** LEDGER §9: sizes of the three mandatory chains. */

@@ -9,4 +9,8 @@ behaviorPack:
 state:
   seed: 303
 capabilities:
-  - "scaffold"
+  - "run-lifecycle"
+  - "evidence-routes"
+  - "verification-routes"
+  - "session-snapshot"
+  - "prototype-mode"

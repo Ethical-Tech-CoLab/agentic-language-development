@@ -8,6 +8,9 @@
   },
   "include": ["behavior/**/*.ts"],
   "references": [
-    { "path": "../../../packages/types" }
+    { "path": "../../../packages/types" },
+    { "path": "../../../packages/gateway" },
+    { "path": "../../../packages/orchestrator" },
+    { "path": "../nursery" }
   ]
 }

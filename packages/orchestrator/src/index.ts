@@ -59,3 +59,4 @@ export {
 
 export * from './experiments/index.js';
 export * from './production.js';
+export * from './registry.js';

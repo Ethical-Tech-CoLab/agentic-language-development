@@ -9,4 +9,5 @@ behaviorPack:
 state:
   seed: 202
 capabilities:
-  - "scaffold"
+  - "learner-routes"
+  - "prototype-mode"

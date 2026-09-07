@@ -7,6 +7,12 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@ald/types": "*"
+    "@ald/checkpoint": "*",
+    "@ald/evidence": "*",
+    "@ald/gateway": "*",
+    "@ald/hashing": "*",
+    "@ald/orchestrator": "*",
+    "@ald/types": "*",
+    "@ald/verifier": "*"
   }
 }
