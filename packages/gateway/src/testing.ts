@@ -15,6 +15,7 @@
  * (SPEC §4.2 Symbol Gateway ⇄ Evidence Writer boundary).
  */
 import {
+  AffectEventSchema,
   AnchorReceiptSchema,
   AuditLedgerEntrySchema,
   babyIdForRole,
@@ -31,6 +32,8 @@ import {
   RunConfigSchema,
   STREAM_SIGNER,
   TurnRecordSchema,
+  type AffectAppendRequest,
+  type AffectEvent,
   type AnchorReceipt,
   type AuditLedgerAppendRequest,
   type AuditLedgerEntry,
@@ -58,6 +61,7 @@ import {
   type RunMetadataRecord,
   type Sha256Hash,
   type SignerDomain,
+  type SignerPublicKey,
   type SignerRegistry,
   type StoredEvent,
   type TurnCommitRequest,
@@ -535,6 +539,42 @@ export class InMemoryEvidenceWriter implements EvidenceWriter {
       this.append(request.runId, 'audit', entry);
       return entry;
     });
+  }
+
+  appendAffectEvent(request: AffectAppendRequest): Promise<AffectEvent> {
+    return this.serialize(async () => {
+      this.assertKnownRun(request.runId);
+      const head = this.chainHead(request.runId, 'affect');
+      const signer = this.signers.signer(STREAM_SIGNER.affect);
+      const unsigned = {
+        version: 1 as const,
+        runId: request.runId,
+        sequence: head.size + 1,
+        turn: request.turn,
+        windowId: request.windowId,
+        sender: request.sender,
+        displayId: request.displayId,
+        affectMode: request.affectMode,
+        deliveredAt: request.deliveredAt,
+        previousEntryHash: head.lastEntryHash,
+        recordedAt: this.clock.now(),
+        writerKeyId: signer.keyId,
+      };
+      const entryHash = computeEntryHash('affect', unsigned);
+      const event = AffectEventSchema.parse({
+        ...unsigned,
+        entryHash,
+        writerSignature: await signer.sign(entryHash),
+      });
+      this.append(request.runId, 'affect', event);
+      return event;
+    });
+  }
+
+  /** Public keys of the single registry this double is bound to. */
+  readRunSigners(runId: string): SignerPublicKey[] {
+    this.assertKnownRun(runId);
+    return this.signers.publicKeys();
   }
 
   insertCheckpointManifest(manifest: CheckpointManifest): void {

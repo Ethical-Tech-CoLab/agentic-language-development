@@ -16,7 +16,8 @@
     "lint": "eslint packages twins",
     "book:research": "node scripts/build-research-book.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
-    "check": "npm run lint && npm run build && npm test && npm run scan:secrets"
+    "check": "npm run lint && npm run lint:contracts && npm run build && npm test && npm run scan:secrets",
+    "lint:contracts": "node scripts/lint-learner-contracts.mjs"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^1.0.8",

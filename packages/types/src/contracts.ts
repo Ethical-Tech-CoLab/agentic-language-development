@@ -35,6 +35,7 @@ import type {
   TurnRecord,
 } from './schemas-integrity.js';
 import type {
+  AffectEvent,
   AffectStateMeasurement,
   AgentActionProposal,
   ChannelEvent,
@@ -64,7 +65,9 @@ export function roleForBabyId(babyId: BabyId): BabyRole {
   return babyId === 'A' ? 'baby-a' : 'baby-b';
 }
 
-export function ledgerStreamForRole(role: BabyRole): EventStream {
+export type LedgerStream = 'baby-a-ledger' | 'baby-b-ledger';
+
+export function ledgerStreamForRole(role: BabyRole): LedgerStream {
   return role === 'baby-a' ? 'baby-a-ledger' : 'baby-b-ledger';
 }
 
@@ -142,6 +145,8 @@ export interface EvidenceReader {
   readCheckpoints(runId: string): CheckpointManifest[];
   readAnchorReceipts(runId: string): AnchorReceipt[];
   readExperimentRecords(runId: string): ExperimentRecord[];
+  /** Public keys recorded at `registerRun`; never private material. */
+  readRunSigners(runId: string): SignerPublicKey[];
 }
 
 // ---------------------------------------------------------------------------
@@ -239,6 +244,17 @@ export interface AuditLedgerAppendRequest {
   content: AuditLedgerEntry['content'];
 }
 
+/** One allowlisted affect display delivered in a Gateway-opened window (SPEC §9.3, §11.6). */
+export interface AffectAppendRequest {
+  runId: string;
+  turn: number;
+  windowId: string;
+  sender: BabyRole;
+  displayId: AffectEvent['displayId'];
+  affectMode: AffectEvent['affectMode'];
+  deliveredAt: string;
+}
+
 export interface EvidenceWriter extends EvidenceReader {
   /** Inserts `run_metadata`; returns the canonical configuration hash. */
   registerRun(config: RunConfig): { configurationHash: Sha256Hash };
@@ -255,6 +271,7 @@ export interface EvidenceWriter extends EvidenceReader {
   appendAuditLedgerEntry(
     request: AuditLedgerAppendRequest,
   ): Promise<AuditLedgerEntry>;
+  appendAffectEvent(request: AffectAppendRequest): Promise<AffectEvent>;
   insertCheckpointManifest(manifest: CheckpointManifest): void;
   insertAnchorReceipt(receipt: AnchorReceipt): void;
   appendExperimentRecord(record: ExperimentRecord): void;
@@ -451,6 +468,8 @@ export interface PrivateLedgerClient {
 export interface LearnerContract {
   version: string;
   text: string;
+  /** Track the contract governs, e.g. `scratch-rl` (SPEC §6.4 file naming). */
+  track?: LearnerTrackId;
 }
 
 export interface LearnerInitContext {

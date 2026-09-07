@@ -15,8 +15,9 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@ald/types": "*",
+    "@ald/evidence": "*",
     "@ald/hashing": "*",
-    "@ald/evidence": "*"
+    "@ald/types": "*",
+    "viem": "^2.56.3"
   }
 }

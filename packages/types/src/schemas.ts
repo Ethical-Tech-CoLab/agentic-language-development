@@ -93,6 +93,7 @@ export const RunConfigSchema = z
     roleReversalPeriod: positiveInteger,
     turnResponseBudgetMs: z.number().int().min(1_000),
     maxTurnsPerRun: positiveInteger,
+    evaluationTurns: positiveInteger.optional(), // evaluation-phase budget; runtime default 200
     maxConsecutiveRejections: positiveInteger,
     ledgerLagTurns: z.number().int().min(0).max(2),
     curriculumMode: z.enum(['fixed-schedule', 'adaptive-guided']),
@@ -223,33 +224,67 @@ export const ToneProposalSchema = z.object({
     .max(8),
 });
 
-const actionArtifactSchemas = {
-  emit_symbols: z.object({ symbols: z.array(nonEmptyString).min(1).max(16) }),
-  emit_glyphs: z.object({ glyphs: z.array(nonEmptyString).min(1).max(16) }),
-  emit_bitmap: z.object({ bitmap: BitmapProposalSchema }),
-  emit_canvas: z.object({ strokes: z.array(StrokeSchema).min(1).max(64) }),
-  emit_tones: z.object({ tones: ToneProposalSchema }),
-  select_object: z.object({ objectRef: nonEmptyString }),
-  perform_action: z.object({ actionRef: nonEmptyString }),
-  submit_affect: z.object({ displayId: z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) }),
-} as const;
+const affectDisplayIdSchema = z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']);
 
-const actionVariants = Object.entries(actionArtifactSchemas).map(
-  ([kind, publicArtifact]) =>
-    z.object({
-      kind: z.literal(kind),
-      publicArtifact,
+/** Tool names a Baby may call (SPEC §6.3), in declaration order. */
+export const AGENT_ACTION_KINDS = [
+  'emit_symbols',
+  'emit_glyphs',
+  'emit_bitmap',
+  'emit_canvas',
+  'emit_tones',
+  'select_object',
+  'perform_action',
+  'submit_affect',
+] as const;
+
+export type AgentActionKind = (typeof AGENT_ACTION_KINDS)[number];
+
+/**
+ * SPEC §11.3 discriminated by `kind`. Each variant is spelled out with a
+ * literal discriminant so `proposal.kind === 'select_object'` narrows
+ * `publicArtifact` for consumers.
+ */
+export const AgentActionProposalSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('emit_symbols'),
+    publicArtifact: z.object({
+      symbols: z.array(nonEmptyString).min(1).max(16),
     }),
-);
-
-export const AgentActionProposalSchema = z.discriminatedUnion(
-  'kind',
-  actionVariants as [
-    (typeof actionVariants)[number],
-    (typeof actionVariants)[number],
-    ...(typeof actionVariants)[number][],
-  ],
-);
+  }),
+  z.object({
+    kind: z.literal('emit_glyphs'),
+    publicArtifact: z.object({
+      glyphs: z.array(nonEmptyString).min(1).max(16),
+    }),
+  }),
+  z.object({
+    kind: z.literal('emit_bitmap'),
+    publicArtifact: z.object({ bitmap: BitmapProposalSchema }),
+  }),
+  z.object({
+    kind: z.literal('emit_canvas'),
+    publicArtifact: z.object({
+      strokes: z.array(StrokeSchema).min(1).max(64),
+    }),
+  }),
+  z.object({
+    kind: z.literal('emit_tones'),
+    publicArtifact: z.object({ tones: ToneProposalSchema }),
+  }),
+  z.object({
+    kind: z.literal('select_object'),
+    publicArtifact: z.object({ objectRef: nonEmptyString }),
+  }),
+  z.object({
+    kind: z.literal('perform_action'),
+    publicArtifact: z.object({ actionRef: nonEmptyString }),
+  }),
+  z.object({
+    kind: z.literal('submit_affect'),
+    publicArtifact: z.object({ displayId: affectDisplayIdSchema }),
+  }),
+]);
 
 export const LedgerEventDraftSchema = z.object({
   eventType: nonEmptyString,
