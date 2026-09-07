@@ -62,6 +62,25 @@ export interface LoadedCheckpoint {
   trees: Map<string, CheckpointTree>;
 }
 
+/**
+ * The empty tree an auxiliary stream has before its first event: a manifest
+ * omits auxiliary trees of size 0 (LEDGER §8, bundle format §6), so the
+ * verifier reads the omission back as size 0 with the documented empty root.
+ */
+export function emptyCheckpointTree(
+  treeName: string,
+  stream: EventStream,
+): CheckpointTree {
+  return {
+    treeName,
+    stream,
+    treeSize: 0,
+    storedRoot: EMPTY_MERKLE_ROOT,
+    leafHashes: [],
+    rebuilt: true,
+  };
+}
+
 /** `treeName` → stream, from `run-manifest.json` `streams[]` (bundle §7). */
 export function treeNameIndex(manifest: RunManifest): Map<string, EventStream> {
   const index = new Map<string, EventStream>();
@@ -542,8 +561,15 @@ export async function verifyProofs(
       );
       continue;
     }
-    const fromTree = from.trees.get(proof.treeName);
     const toTree = to.trees.get(proof.treeName);
+    // Bundle format §6: an auxiliary tree absent from an earlier manifest is
+    // the empty tree (size 0, EMPTY_MERKLE_ROOT), so a proof from that
+    // checkpoint to one where the tree first appears is well-formed.
+    const fromTree =
+      from.trees.get(proof.treeName) ??
+      (toTree !== undefined && toTree.stream !== undefined
+        ? emptyCheckpointTree(proof.treeName, toTree.stream)
+        : undefined);
     if (fromTree === undefined || toTree === undefined) {
       fail(
         'consistency-proof-tree-unknown',

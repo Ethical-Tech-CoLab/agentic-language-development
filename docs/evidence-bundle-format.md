@@ -111,7 +111,10 @@ RFC 6962 ordered tree over leaves in sequence order:
 Checkpoint `0` is created at run initialization with `previousCheckpointHash`
 equal to the genesis hash. `auxiliaryTrees` is always present; it contains an
 entry for each auxiliary stream that has at least one event (`affect`, `audit`,
-`turns`). A verifier MUST reject any auxiliary tree whose name is not declared
+`turns`). A verifier MUST read an auxiliary tree that is absent from a
+manifest as the empty tree (`treeSize: 0`, the empty root), so a consistency
+proof from such a checkpoint to a later one where the tree first appears is
+well-formed with `fromSize: 0`. A verifier MUST reject any auxiliary tree whose name is not declared
 in `run-manifest.json` `streams[].treeName` with a signer whose public key is
 listed in `signers`.
 

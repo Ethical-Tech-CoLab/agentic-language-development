@@ -390,8 +390,14 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
       continue;
     }
     for (const [treeName, stream] of FIXTURE_TREES) {
-      const fromReference = treeReferenceOf(from, treeName);
       const toReference = treeReferenceOf(to, treeName);
+      // Bundle format §6: a tree absent from the earlier manifest is the
+      // empty tree, so the proof spans fromSize 0 (regression: turns-0-1).
+      const fromReference =
+        treeReferenceOf(from, treeName) ??
+        (toReference === undefined
+          ? undefined
+          : { treeSize: 0, merkleRoot: EMPTY_MERKLE_ROOT, lastEntryHash: GENESIS_HASH });
       if (fromReference === undefined || toReference === undefined) {
         continue;
       }
