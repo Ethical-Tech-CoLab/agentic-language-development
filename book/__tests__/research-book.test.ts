@@ -31,7 +31,12 @@ describe('research page-turn book', () => {
     expect(manifest.aspect).toBeCloseTo(0.7727, 4);
     expect(manifest.sourceSha256).toBe(
       createHash('sha256')
-        .update(await readFile(join(root, 'RESEARCH.md'), 'utf8'))
+        .update(
+          (await readFile(join(root, 'RESEARCH.md'), 'utf8')).replace(
+            /\r\n?/gu,
+            '\n',
+          ),
+        )
         .digest('hex'),
     );
 

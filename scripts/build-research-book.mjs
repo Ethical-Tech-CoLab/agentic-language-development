@@ -238,11 +238,18 @@ async function renderPages() {
   }
 }
 
+function normalizeLineEndings(text) {
+  // The manifest hash must not depend on checkout line endings (Windows CRLF).
+  return text.replace(/\r\n?/gu, '\n');
+}
+
 async function stampManifest(markdown) {
   const manifestPath = join(pagesDir, 'manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   manifest.source = 'RESEARCH.md';
-  manifest.sourceSha256 = createHash('sha256').update(markdown).digest('hex');
+  manifest.sourceSha256 = createHash('sha256')
+    .update(normalizeLineEndings(markdown))
+    .digest('hex');
   await writeFile(
     manifestPath,
     `${JSON.stringify(manifest, null, 2)}\n`,
