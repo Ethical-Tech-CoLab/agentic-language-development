@@ -12,6 +12,7 @@
     "@ald/gateway": "*",
     "@ald/hashing": "*",
     "@ald/orchestrator": "*",
+    "@ald/scenario": "*",
     "@ald/types": "*",
     "@ald/verifier": "*"
   }

@@ -10,7 +10,7 @@
  * §4.2 Baby-to-Baby isolation guarantee (also closing the second half of
  * ALD-029 criterion 1), and a session snapshot/restore/delta round trip.
  */
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -227,6 +227,7 @@ const NURSERY_CASES: RouteCase[] = [
   { method: 'POST', path: '/runs/:id/pause', roles: ['researcher-operator'] },
   { method: 'POST', path: '/runs/:id/resume', roles: ['researcher-operator'] },
   { method: 'POST', path: '/runs/:id/abort', roles: ['researcher-operator'] },
+  { method: 'POST', path: '/runs/:id/annotate', roles: ['researcher-operator'] },
   {
     method: 'GET',
     path: '/runs/:id/verification-report',
@@ -419,7 +420,7 @@ describe('Response and error envelope (SPEC §12.3)', () => {
     expect(second.response.body).toMatchObject({ error: { code: 'CONFLICT' } });
   });
 
-  it('501 NOT_IMPLEMENTED for baby-a /reset', async () => {
+  it('409 CONFLICT (not 501) for baby-a /reset (SPEC §12.3 has no server-fault member)', async () => {
     const babyA = await createBabyA();
     const res = await babyA.handleRequest(
       request({
@@ -430,8 +431,35 @@ describe('Response and error envelope (SPEC §12.3)', () => {
       }),
       new Map(),
     );
-    expect(res.response.status).toBe(501);
-    expect(res.response.body).toMatchObject({ error: { code: 'NOT_IMPLEMENTED' } });
+    expect(res.response.status).toBe(409);
+    expect(res.response.body).toMatchObject({ error: { code: 'CONFLICT' } });
+  });
+
+  it('400 INVALID_REQUEST (not an unhandled rejection) for malformed percent-encoding in a path parameter', async () => {
+    const nursery = await createNurseryHarness();
+    // No auth headers at all: the malformed segment must be rejected by
+    // `matchPath` before `authenticate` runs (SPEC §12.3 has no server-fault
+    // member, so this must never surface as an unhandled `URIError`).
+    const res = await nursery.pack.handleRequest(
+      request({ method: 'GET', path: '/runs/%E0%A4%A/transcript' }),
+      new Map(),
+    );
+    expect(res.response.status).toBe(400);
+    expect(res.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
+  });
+
+  it('400 INVALID_REQUEST for a runId that would escape the configured bundle root', async () => {
+    const nursery = await createNurseryHarness();
+    const config = noLearningRunConfig({
+      runId: '../../ald-escaped-bundle',
+      experimentId: 'E03',
+      randomSeed: 'seed-run-id-escape',
+      maxTurnsPerRun: 2,
+      evaluationTurns: 2,
+    });
+    const res = await createRunViaRoute(nursery, config);
+    expect(res.response.status).toBe(400);
+    expect(res.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
   });
 });
 
@@ -642,6 +670,241 @@ describe('Full prototype-mode lifecycle (SPEC §7.2, §12.5, §12.6)', () => {
       run: { state: 'aborted-sealed' },
     });
   });
+
+  it('POST /runs/:id/annotate records an audited annotate event (SPEC §14.2)', async () => {
+    const nursery = await createNurseryHarness();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-annotate',
+        maxTurnsPerRun: 2,
+        evaluationTurns: 2,
+      }),
+    );
+
+    const annotated = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/annotate`,
+        headers: { ...authHeaders('researcher-operator'), 'x-ald-actor': 'test-operator' },
+        body: { reasonCode: 'manual-note', details: { note: 'looks fine' } },
+      }),
+      new Map(),
+    );
+    expect(annotated.response.status).toBe(200);
+    expect(annotated.response.body).toMatchObject({
+      ok: true,
+      event: { eventType: 'annotate', reasonCode: 'manual-note' },
+    });
+
+    const audit = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/audit`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    const events = (
+      audit.response.body as { audit: { eventType: string; reasonCode: string }[] }
+    ).audit;
+    expect(
+      events.some(
+        (event) => event.eventType === 'annotate' && event.reasonCode === 'manual-note',
+      ),
+    ).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ledger role-based filtering (SPEC §12.2)
+// ---------------------------------------------------------------------------
+
+describe('Ledger role-based filtering (SPEC §12.2)', () => {
+  it('GET /runs/:id/ledgers exposes audit-layer content only to researcher-viewer, full content to researcher-operator', async () => {
+    const nursery = await createNurseryHarness();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-ledger-filter',
+        maxTurnsPerRun: 5,
+        evaluationTurns: 5,
+      }),
+    );
+    await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/step`,
+        headers: authHeaders('internal-controller'),
+      }),
+      new Map(),
+    );
+
+    const asViewer = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/ledgers`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    expect(asViewer.response.status).toBe(200);
+    const viewerBody = asViewer.response.body as {
+      ledgers: {
+        babyA: { contentSchema: string }[];
+        babyB: { contentSchema: string }[];
+      };
+      agentNativeEventCounts: { babyA: number; babyB: number };
+    };
+    expect(
+      viewerBody.ledgers.babyA.every(
+        (event) => event.contentSchema === 'human-audit-ledger',
+      ),
+    ).toBe(true);
+    expect(
+      viewerBody.ledgers.babyB.every(
+        (event) => event.contentSchema === 'human-audit-ledger',
+      ),
+    ).toBe(true);
+    // The `no-learning` track's own ledger content is agent-native; the
+    // audit layer exposes only its count, never its content (SPEC §12.2).
+    expect(viewerBody.agentNativeEventCounts.babyA).toBeGreaterThan(0);
+    expect(viewerBody.agentNativeEventCounts.babyB).toBeGreaterThan(0);
+
+    const asOperator = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/ledgers`,
+        headers: authHeaders('researcher-operator'),
+      }),
+      new Map(),
+    );
+    expect(asOperator.response.status).toBe(200);
+    const operatorBody = asOperator.response.body as {
+      ledgers: {
+        babyA: { contentSchema: string }[];
+        babyB: { contentSchema: string }[];
+      };
+    };
+    // researcher-operator is granted the raw agent-native internals too
+    // (SPEC §12.2: "unless also granted researcher-operator").
+    expect(
+      operatorBody.ledgers.babyA.some(
+        (event) => event.contentSchema === 'agent-native-ledger',
+      ),
+    ).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Human-view audit coverage (SPEC §14.2)
+// ---------------------------------------------------------------------------
+
+describe('Human-view audit coverage (SPEC §14.2)', () => {
+  it('GET /runs records a human-view event for every listed run', async () => {
+    const nursery = await createNurseryHarness();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-human-view-list',
+        maxTurnsPerRun: 2,
+        evaluationTurns: 2,
+      }),
+    );
+
+    const listed = await nursery.pack.handleRequest(
+      request({ method: 'GET', path: '/runs', headers: authHeaders('researcher-viewer') }),
+      new Map(),
+    );
+    expect(listed.response.status).toBe(200);
+
+    const audit = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/audit`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    const events = (
+      audit.response.body as { audit: { eventType: string; reasonCode: string }[] }
+    ).audit;
+    expect(
+      events.some(
+        (event) => event.eventType === 'human-view' && event.reasonCode === 'read-run-list',
+      ),
+    ).toBe(true);
+  });
+
+  it('GET /session/delta records a human-view event for every reported run', async () => {
+    const nursery = await createNurseryHarness();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-human-view-delta',
+        maxTurnsPerRun: 5,
+        evaluationTurns: 5,
+      }),
+    );
+    const snapshot = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: '/session/snapshot',
+        headers: authHeaders('researcher-operator'),
+      }),
+      new Map(),
+    );
+    const snapshotId = (snapshot.response.body as { snapshotId: string }).snapshotId;
+    await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/step`,
+        headers: authHeaders('internal-controller'),
+      }),
+      new Map(),
+    );
+
+    const delta = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: '/session/delta',
+        headers: authHeaders('researcher-viewer'),
+        query: { since: snapshotId },
+      }),
+      new Map(),
+    );
+    expect(delta.response.status).toBe(200);
+
+    const audit = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/audit`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    const events = (
+      audit.response.body as { audit: { eventType: string; reasonCode: string }[] }
+    ).audit;
+    expect(
+      events.some(
+        (event) =>
+          event.eventType === 'human-view' && event.reasonCode === 'read-session-delta',
+      ),
+    ).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -721,6 +984,53 @@ describe('Session snapshot, restore, and delta (SPEC §12.6, §14.4)', () => {
     );
     expect(missingDelta.response.status).toBe(404);
   });
+
+  it('rejects a traversing snapshotId instead of reading a file outside bundleRoot (SPEC §13.2)', async () => {
+    const nursery = await createNurseryHarness();
+    const outsideDir = await tempDir('ald-outside-session-');
+    await writeFile(join(outsideDir, 'evil.json'), '[]', 'utf8');
+    const traversal = `../${outsideDir}/evil`;
+
+    const restored = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: '/session/restore',
+        headers: authHeaders('researcher-operator'),
+        body: { snapshotId: traversal },
+      }),
+      new Map(),
+    );
+    expect(restored.response.status).toBe(400);
+    expect(restored.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
+    expect(JSON.stringify(restored.response.body)).not.toContain(outsideDir);
+
+    const delta = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: '/session/delta',
+        headers: authHeaders('researcher-viewer'),
+        query: { since: traversal },
+      }),
+      new Map(),
+    );
+    expect(delta.response.status).toBe(400);
+    expect(delta.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
+  });
+
+  it('404 for a well-formed but absent snapshot never echoes the server-absolute path', async () => {
+    const nursery = await createNurseryHarness();
+    const missing = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: '/session/delta',
+        headers: authHeaders('researcher-viewer'),
+        query: { since: 'well-formed-but-absent' },
+      }),
+      new Map(),
+    );
+    expect(missing.response.status).toBe(404);
+    expect(JSON.stringify(missing.response.body)).not.toContain(nursery.bundleRoot);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -739,7 +1049,10 @@ function observationBody(runId: string) {
       // shape `resolveGameShape`'s default (`attributeCount: 2`) parses as a
       // sender view (SPEC §11.2; `@ald/learners` game.ts).
       payload: [[0, 0, 1]],
-      scenarioRef: 'scenario:routes-test',
+      // Must satisfy `SCENARIO_REF_PATTERN` (`@ald/scenario`) now that
+      // `/observe` runs `assertObservationHygiene`: `scn:<16 hex>` is the
+      // opaque form `ReferentialScenarioEngine` mints (SPEC §11.2).
+      scenarioRef: 'scn:0123456789abcdef',
     },
   };
 }
@@ -898,6 +1211,191 @@ describe('Baby routes (SPEC §12.4)', () => {
     // The `no-learning` track's own ledger content is agent-native; the
     // audit layer exposes only its count, never its content (SPEC §12.4).
     expect(body.agentNativeEventCount).toBeGreaterThan(0);
+  });
+
+  it('POST /observe fails closed on a hygiene violation and audits the rejection (SPEC §10.1, ALD-038)', async () => {
+    const nursery = await createNurseryHarness();
+    const babyA = await createBabyA();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-hygiene-reject',
+        maxTurnsPerRun: 5,
+        evaluationTurns: 5,
+      }),
+    );
+
+    const observed = await babyA.handleRequest(
+      request({
+        method: 'POST',
+        path: '/observe',
+        headers: authHeaders('internal-controller'),
+        body: {
+          runId,
+          observation: {
+            runId,
+            turn: 0,
+            recipient: 'baby-a',
+            encoding: 'opaque-numeric',
+            payload: [[0, 0, 1]],
+            // Human-language, non-opaque scenarioRef: banned tokens plus the
+            // wrong shape for `SCENARIO_REF_PATTERN` (SPEC §10.1, §11.2).
+            scenarioRef: 'target-is-the-red-circle',
+          },
+        },
+      }),
+      new Map(),
+    );
+    expect(observed.response.status).toBe(400);
+    expect(observed.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
+
+    const audit = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/audit`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    const events = (
+      audit.response.body as { audit: { eventType: string; reasonCode: string }[] }
+    ).audit;
+    expect(
+      events.some(
+        (event) =>
+          event.eventType === 'annotate' &&
+          event.reasonCode === 'observation-hygiene-rejected',
+      ),
+    ).toBe(true);
+  });
+
+  it("POST /observe rejects an observation whose nested recipient names the other Baby, even with no top-level naming (SPEC §4.2)", async () => {
+    const nursery = await createNurseryHarness();
+    const babyA = await createBabyA();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-nested-recipient',
+        maxTurnsPerRun: 5,
+        evaluationTurns: 5,
+      }),
+    );
+
+    // No top-level `role`/`babyId`/`recipient` key at all — only the nested
+    // `observation.recipient` names the other Baby, which `guardOtherBaby`
+    // alone (top-level keys only) would miss.
+    const body = observationBody(runId) as Record<string, unknown>;
+    (body['observation'] as Record<string, unknown>)['recipient'] = 'baby-b';
+
+    const res = await babyA.handleRequest(
+      request({
+        method: 'POST',
+        path: '/observe',
+        headers: authHeaders('internal-controller'),
+        body,
+      }),
+      new Map(),
+    );
+    expect(res.response.status).toBe(403);
+    expect(res.response.body).toMatchObject({ error: { code: 'FORBIDDEN' } });
+  });
+
+  it('Baby tool routes refuse a paused or terminal run with 409 CONFLICT, not a silent adapter mutation (SPEC §7.2)', async () => {
+    const nursery = await createNurseryHarness();
+    const babyA = await createBabyA();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'seed-gate-paused',
+        maxTurnsPerRun: 5,
+        evaluationTurns: 5,
+      }),
+    );
+
+    const paused = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/pause`,
+        headers: authHeaders('researcher-operator'),
+        body: { reasonCode: 'gate-test' },
+      }),
+      new Map(),
+    );
+    expect(paused.response.status).toBe(200);
+
+    const actedWhilePaused = await babyA.handleRequest(
+      request({
+        method: 'POST',
+        path: '/act',
+        headers: authHeaders('internal-gateway'),
+        body: {
+          runId,
+          turnBudget: {
+            turn: 0,
+            role: 'sender',
+            responseBudgetMs: 1000,
+            availableActions: ['emit_symbols'],
+          },
+        },
+      }),
+      new Map(),
+    );
+    expect(actedWhilePaused.response.status).toBe(409);
+    expect(actedWhilePaused.response.body).toMatchObject({ error: { code: 'CONFLICT' } });
+
+    const resumed = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/resume`,
+        headers: authHeaders('researcher-operator'),
+        body: { reasonCode: 'gate-test-resume' },
+      }),
+      new Map(),
+    );
+    expect(resumed.response.status).toBe(200);
+
+    const aborted = await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/abort`,
+        headers: authHeaders('researcher-operator'),
+        body: { reasonCode: 'gate-test-abort' },
+      }),
+      new Map(),
+    );
+    expect(aborted.response.status).toBe(200);
+    expect(aborted.response.body).toMatchObject({ run: { state: 'aborted-sealed' } });
+
+    const outcomeAfterAbort = await babyA.handleRequest(
+      request({
+        method: 'POST',
+        path: '/outcome',
+        headers: authHeaders('internal-controller'),
+        body: {
+          runId,
+          outcome: {
+            runId,
+            turn: 0,
+            role: 'sender',
+            success: true,
+            reward: 999,
+            payload: [1],
+          },
+        },
+      }),
+      new Map(),
+    );
+    expect(outcomeAfterAbort.response.status).toBe(409);
+    expect(outcomeAfterAbort.response.body).toMatchObject({ error: { code: 'CONFLICT' } });
   });
 });
 

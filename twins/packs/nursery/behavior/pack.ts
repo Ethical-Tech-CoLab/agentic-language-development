@@ -13,7 +13,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 import {
   RunConfigSchema,
@@ -23,6 +23,7 @@ import {
   type CheckpointService,
   type Clock,
   type Intervention,
+  type LedgerEvent,
   type RunSummary,
   type SignerRegistry,
   type StateMutation,
@@ -41,10 +42,12 @@ import {
 import { EvidenceCheckpointService } from '@ald/checkpoint';
 import { verifyBundle } from '@ald/verifier';
 import { InMemorySignerRegistry } from '@ald/hashing';
+import { RUN_ID_PATTERN } from '@ald/scenario';
 import {
   asRecord,
   createRouter,
   failure,
+  InvalidRequestError,
   requireString,
   success,
   type RouteDefinition,
@@ -61,6 +64,7 @@ export const NURSERY_ROUTE_PATTERNS = [
   '/runs/:id/pause',
   '/runs/:id/resume',
   '/runs/:id/abort',
+  '/runs/:id/annotate',
   '/runs/:id/verification-report',
   '/runs/:id/verify',
   '/session/snapshot',
@@ -111,6 +115,125 @@ function parseIntervention(body: unknown, actorId: string): Intervention {
 }
 
 /**
+ * SPEC §13.2 fixes the evidence layout as `evidence/runs/<run-id>/`; a
+ * traversing `runId` (`../`, an absolute path, a NUL byte) escapes that
+ * layout because `NurseryRuntimeImpl` derives the bundle directory with a
+ * bare `join(bundleRoot, 'runs', runId)` (no containment check of its own).
+ * `RUN_ID_PATTERN` (`@ald/scenario`, already the allowlist §10.1 enforces on
+ * every Observation's `runId`) is necessary but not sufficient here — it
+ * still admits `/` and `.` — so this also rejects the path-traversal
+ * metacharacters directly, before `createRun` ever touches the filesystem.
+ */
+function assertPathSafeRunId(runId: string): void {
+  if (
+    !RUN_ID_PATTERN.test(runId) ||
+    runId.includes('/') ||
+    runId.includes('\\') ||
+    runId.includes('..') ||
+    runId.includes('\0')
+  ) {
+    throw new InvalidRequestError(
+      `"runId" must be a path-safe opaque identifier (SPEC §13.2); got ${JSON.stringify(runId)}`,
+    );
+  }
+}
+
+/**
+ * Opaque shape `POST /session/snapshot` mints (see its handler below):
+ * an ISO timestamp with `:`/`.` replaced by `-`, then `-`, then 8 lowercase
+ * hex characters. Deliberately does not admit `/`, `\`, or `.` at all, so a
+ * traversal segment cannot be built from allowed characters regardless of
+ * the resolved-path check that follows.
+ */
+const SNAPSHOT_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/u;
+
+/**
+ * SPEC §12.2/§12.6: `/session/restore` and `/session/delta` take a
+ * caller-supplied snapshot id and read `<bundleRoot>/session/<id>.json`.
+ * Validates the id against the exact minted shape and then requires the
+ * resolved path to still live inside `<bundleRoot>/session` — belt and
+ * suspenders against a traversal segment, since the pattern above already
+ * excludes every character a traversal needs.
+ */
+function resolveSnapshotPath(bundleRoot: string, snapshotId: string): string {
+  if (!SNAPSHOT_ID_PATTERN.test(snapshotId)) {
+    throw new InvalidRequestError(
+      '"snapshotId" must be an opaque identifier minted by POST /session/snapshot',
+    );
+  }
+  const sessionDir = resolve(bundleRoot, 'session');
+  const candidate = resolve(sessionDir, `${snapshotId}.json`);
+  if (!candidate.startsWith(`${sessionDir}${sep}`)) {
+    throw new InvalidRequestError(
+      '"snapshotId" must resolve inside the session directory',
+    );
+  }
+  return candidate;
+}
+
+/** True for a `readFile` rejection caused by a missing file. */
+function isMissingFileError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    (error as NodeJS.ErrnoException).code === 'ENOENT'
+  );
+}
+
+/**
+ * Reads and parses a minted session snapshot file. Never surfaces the
+ * server-absolute path or raw file bytes in an error message (SPEC §12.3) —
+ * `mapError`'s generic `SyntaxError`/`ENOENT` handling would otherwise leak
+ * both for this one call site, since Node's `JSON.parse` message embeds the
+ * offending bytes and an `ENOENT` message embeds the absolute path.
+ */
+async function readSnapshotFile(
+  snapshotPath: string,
+  snapshotId: string,
+): Promise<RunSummary[]> {
+  let raw: string;
+  try {
+    raw = await readFile(snapshotPath, 'utf8');
+  } catch (error) {
+    if (isMissingFileError(error)) {
+      throw new SnapshotNotFoundError(snapshotId);
+    }
+    throw error;
+  }
+  try {
+    return JSON.parse(raw) as RunSummary[];
+  } catch {
+    throw new InvalidRequestError(
+      `snapshot "${snapshotId}" is not valid JSON`,
+    );
+  }
+}
+
+/** Mapped to `404 NOT_FOUND` with a fixed message (never the absolute path). */
+class SnapshotNotFoundError extends Error {
+  constructor(readonly snapshotId: string) {
+    super(`snapshot "${snapshotId}" was not found`);
+    this.name = 'SnapshotNotFoundError';
+  }
+}
+
+/**
+ * SPEC §12.2: `researcher-viewer` reads "ledgers (audit layer only, not raw
+ * agent-native internals unless also granted `researcher-operator`)" —
+ * exactly the filter the Baby packs' own `GET /ledger` route already applies
+ * to its single stream. This applies it to both streams for the nursery's
+ * aggregate route.
+ */
+function auditLayerOnly(events: readonly LedgerEvent[]): LedgerEvent[] {
+  return events.filter((event) => event.contentSchema === 'human-audit-ledger');
+}
+
+function agentNativeCount(events: readonly LedgerEvent[]): number {
+  return events.filter((event) => event.contentSchema === 'agent-native-ledger')
+    .length;
+}
+
+/**
  * `writeProofFiles` reads only already-committed, already-signed evidence
  * (SPEC §13.3-§13.5) — it never signs anything itself — so a throwaway
  * signer registry is safe here; it is never used to produce evidence.
@@ -143,6 +266,7 @@ const routes: RouteDefinition[] = [
     handler: async ({ body, context }) => {
       const { runtime } = internalsFrom(context);
       const config = RunConfigSchema.parse(body);
+      assertPathSafeRunId(config.runId);
       const run = await runtime.createRun(config);
       return success({ run }, 201);
     },
@@ -165,9 +289,19 @@ const routes: RouteDefinition[] = [
     method: 'GET',
     pattern: '/runs',
     roles: ['researcher-viewer'],
-    handler: ({ context }) => {
+    handler: async ({ actorId, context }) => {
       const { runtime } = internalsFrom(context);
-      return success({ runs: runtime.listRuns() });
+      const runs = runtime.listRuns();
+      // SPEC §14.2: "every human read is logged as a low-noise
+      // `audit.human_view` event"; non-blocking, one per reported run.
+      await Promise.all(
+        runs.map((run) =>
+          runtime
+            .recordHumanView(run.runId, { actorId, reasonCode: 'read-run-list' })
+            .catch(() => undefined),
+        ),
+      );
+      return success({ runs });
     },
   },
   {
@@ -205,14 +339,32 @@ const routes: RouteDefinition[] = [
     method: 'GET',
     pattern: '/runs/:id/ledgers',
     roles: ['researcher-viewer'],
-    handler: async ({ params, actorId, context }) => {
+    // SPEC §12.2: `researcher-viewer` may read "ledgers (audit layer only,
+    // not raw agent-native internals unless also granted
+    // `researcher-operator`)"; `roleSatisfies` lets a `researcher-operator`
+    // credential reach this route too (it may do everything a viewer may),
+    // so `role` (the *authenticated* role, not the route's requirement) is
+    // what decides which shape comes back.
+    handler: async ({ params, actorId, role, context }) => {
       const { runtime } = internalsFrom(context);
       const runId = params['id'] ?? '';
       const ledgers = runtime.ledgers(runId);
       await runtime
         .recordHumanView(runId, { actorId, reasonCode: 'read-ledgers' })
         .catch(() => undefined);
-      return success({ ledgers });
+      if (role === 'researcher-operator') {
+        return success({ ledgers });
+      }
+      return success({
+        ledgers: {
+          babyA: auditLayerOnly(ledgers.babyA),
+          babyB: auditLayerOnly(ledgers.babyB),
+        },
+        agentNativeEventCounts: {
+          babyA: agentNativeCount(ledgers.babyA),
+          babyB: agentNativeCount(ledgers.babyB),
+        },
+      });
     },
   },
   {
@@ -283,6 +435,24 @@ const routes: RouteDefinition[] = [
     },
   },
   {
+    method: 'POST',
+    pattern: '/runs/:id/annotate',
+    roles: ['researcher-operator'],
+    // SPEC §12.2 grants `researcher-operator` "annotation routes"; §14.2
+    // names `annotate` as one of the four human interventions that must be
+    // role-gated and written to `intervention_log`.
+    // `NurseryRuntimeImpl.annotate` already implements the §14.2 checkpoint
+    // semantics — this route is its only entry point.
+    handler: async ({ params, body, actorId, context }) => {
+      const { runtime } = internalsFrom(context);
+      const event = await runtime.annotate(
+        params['id'] ?? '',
+        parseIntervention(body, actorId),
+      );
+      return success({ event });
+    },
+  },
+  {
     method: 'GET',
     pattern: '/runs/:id/verification-report',
     roles: ['researcher-viewer'],
@@ -346,11 +516,16 @@ const routes: RouteDefinition[] = [
       const { runtime, bundleRoot } = internalsFrom(context);
       const record = asRecord(body, 'session/restore body');
       const snapshotId = requireString(record, 'snapshotId');
-      const raw = await readFile(
-        join(bundleRoot, 'session', `${snapshotId}.json`),
-        'utf8',
-      );
-      const runs = JSON.parse(raw) as RunSummary[];
+      const snapshotPath = resolveSnapshotPath(bundleRoot, snapshotId);
+      let runs: RunSummary[];
+      try {
+        runs = await readSnapshotFile(snapshotPath, snapshotId);
+      } catch (error) {
+        if (error instanceof SnapshotNotFoundError) {
+          return failure('NOT_FOUND', error.message);
+        }
+        throw error;
+      }
       const restored: RunSummary[] = [];
       for (const entry of runs) {
         restored.push(await runtime.recover(entry.runId));
@@ -362,7 +537,7 @@ const routes: RouteDefinition[] = [
     method: 'GET',
     pattern: '/session/delta',
     roles: ['researcher-viewer'],
-    handler: async ({ request, context }) => {
+    handler: async ({ request, actorId, context }) => {
       const { runtime, bundleRoot } = internalsFrom(context);
       const since = request.query['since'];
       if (since === undefined || since.length === 0) {
@@ -371,11 +546,16 @@ const routes: RouteDefinition[] = [
           '"since" query parameter (a snapshotId) is required',
         );
       }
-      const raw = await readFile(
-        join(bundleRoot, 'session', `${since}.json`),
-        'utf8',
-      );
-      const prior = JSON.parse(raw) as RunSummary[];
+      const snapshotPath = resolveSnapshotPath(bundleRoot, since);
+      let prior: RunSummary[];
+      try {
+        prior = await readSnapshotFile(snapshotPath, since);
+      } catch (error) {
+        if (error instanceof SnapshotNotFoundError) {
+          return failure('NOT_FOUND', error.message);
+        }
+        throw error;
+      }
       const priorByRunId = new Map(prior.map((run) => [run.runId, run]));
       const changed = runtime.listRuns().filter((run) => {
         const before = priorByRunId.get(run.runId);
@@ -385,6 +565,18 @@ const routes: RouteDefinition[] = [
           before.turn !== run.turn
         );
       });
+      // SPEC §14.2: non-blocking, one human-view event per run this read
+      // actually reported a delta for.
+      await Promise.all(
+        changed.map((run) =>
+          runtime
+            .recordHumanView(run.runId, {
+              actorId,
+              reasonCode: 'read-session-delta',
+            })
+            .catch(() => undefined),
+        ),
+      );
       return success({ since, changed });
     },
   },

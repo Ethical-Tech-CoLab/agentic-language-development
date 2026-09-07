@@ -9,6 +9,7 @@
   "dependencies": {
     "@ald/gateway": "*",
     "@ald/orchestrator": "*",
+    "@ald/scenario": "*",
     "@ald/types": "*"
   }
 }

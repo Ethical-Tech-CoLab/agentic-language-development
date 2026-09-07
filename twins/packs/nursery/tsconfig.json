@@ -14,6 +14,7 @@
     { "path": "../../../packages/hashing" },
     { "path": "../../../packages/checkpoint" },
     { "path": "../../../packages/verifier" },
-    { "path": "../../../packages/orchestrator" }
+    { "path": "../../../packages/orchestrator" },
+    { "path": "../../../packages/scenario" }
   ]
 }

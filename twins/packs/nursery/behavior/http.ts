@@ -152,6 +152,20 @@ export function actorIdFor(request: TwinRequest, role: Role): string {
 // Route matching
 // ---------------------------------------------------------------------------
 
+/**
+ * Thrown by {@link matchPath} when a `:param` segment is not validly
+ * percent-encoded (SPEC §12.3). `createRouter`'s route loop catches this
+ * specifically, before authentication, and maps it to `400 INVALID_REQUEST`
+ * rather than letting `decodeURIComponent`'s `URIError` escape the router as
+ * a rejected promise — the §12.3 code/status set has no server-fault member.
+ */
+export class MalformedPathError extends Error {
+  constructor(readonly segment: string) {
+    super(`Path segment "${segment}" is not validly percent-encoded`);
+    this.name = 'MalformedPathError';
+  }
+}
+
 /** Matches a `/runs/:id/step`-style pattern against a request path. */
 export function matchPath(
   pattern: string,
@@ -167,7 +181,11 @@ export function matchPath(
     const patternPart = patternParts[index] ?? '';
     const pathPart = pathParts[index] ?? '';
     if (patternPart.startsWith(':')) {
-      params[patternPart.slice(1)] = decodeURIComponent(pathPart);
+      try {
+        params[patternPart.slice(1)] = decodeURIComponent(pathPart);
+      } catch {
+        throw new MalformedPathError(pathPart);
+      }
     } else if (patternPart !== pathPart) {
       return undefined;
     }
@@ -214,6 +232,13 @@ export function success(
   return { response, mutations: [] };
 }
 
+/**
+ * SPEC §12.3's closed error-code union. `NOT_IMPLEMENTED`/501 deliberately
+ * has no member here: the spec's status list is 200/201/400/401/403/404/409/
+ * 422 only, so a route with no operative implementation answers in-envelope
+ * (typically `409 CONFLICT`) rather than a code a conformant client is not
+ * required to recognize.
+ */
 export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'INVALID_REQUEST'
@@ -221,8 +246,7 @@ export type ApiErrorCode =
   | 'CHANNEL_REJECTED'
   | 'UNAUTHENTICATED'
   | 'FORBIDDEN'
-  | 'CONFLICT'
-  | 'NOT_IMPLEMENTED';
+  | 'CONFLICT';
 
 const STATUS_FOR_ERROR_CODE: Record<ApiErrorCode, number> = {
   NOT_FOUND: 404,
@@ -232,7 +256,6 @@ const STATUS_FOR_ERROR_CODE: Record<ApiErrorCode, number> = {
   UNAUTHENTICATED: 401,
   FORBIDDEN: 403,
   CONFLICT: 409,
-  NOT_IMPLEMENTED: 501,
 };
 
 export function failure(
@@ -514,7 +537,15 @@ export function createRouter(
   return async (request, context) => {
     let sawPathMatch = false;
     for (const route of routes) {
-      const params = matchPath(route.pattern, request.path);
+      let params: Record<string, string> | undefined;
+      try {
+        params = matchPath(route.pattern, request.path);
+      } catch (error) {
+        if (error instanceof MalformedPathError) {
+          return failure('INVALID_REQUEST', error.message);
+        }
+        throw error;
+      }
       if (params === undefined) {
         continue;
       }
