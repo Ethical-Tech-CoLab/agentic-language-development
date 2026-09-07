@@ -1,21 +1,56 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/types" },
-    { "path": "packages/config" },
-    { "path": "packages/hashing" },
-    { "path": "packages/evidence" },
-    { "path": "packages/merkle" },
-    { "path": "packages/lifecycle" },
-    { "path": "packages/scenario" },
-    { "path": "packages/learners" },
-    { "path": "packages/gateway" },
-    { "path": "packages/checkpoint" },
-    { "path": "packages/anchor" },
-    { "path": "packages/verifier" },
-    { "path": "packages/orchestrator" },
-    { "path": "twins/packs/baby-a" },
-    { "path": "twins/packs/baby-b" },
-    { "path": "twins/packs/nursery" }
+    {
+      "path": "packages/types"
+    },
+    {
+      "path": "packages/config"
+    },
+    {
+      "path": "packages/hashing"
+    },
+    {
+      "path": "packages/evidence"
+    },
+    {
+      "path": "packages/merkle"
+    },
+    {
+      "path": "packages/lifecycle"
+    },
+    {
+      "path": "packages/scenario"
+    },
+    {
+      "path": "packages/learners"
+    },
+    {
+      "path": "packages/gateway"
+    },
+    {
+      "path": "packages/checkpoint"
+    },
+    {
+      "path": "packages/anchor"
+    },
+    {
+      "path": "packages/verifier"
+    },
+    {
+      "path": "packages/analysis"
+    },
+    {
+      "path": "packages/orchestrator"
+    },
+    {
+      "path": "twins/packs/baby-a"
+    },
+    {
+      "path": "twins/packs/baby-b"
+    },
+    {
+      "path": "twins/packs/nursery"
+    }
   ]
 }

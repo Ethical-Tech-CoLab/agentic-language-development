@@ -15,14 +15,18 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@ald/types": "*",
-    "@ald/hashing": "*",
+    "@ald/analysis": "*",
+    "@ald/anchor": "*",
+    "@ald/checkpoint": "*",
     "@ald/config": "*",
     "@ald/evidence": "*",
-    "@ald/merkle": "*",
-    "@ald/lifecycle": "*",
-    "@ald/scenario": "*",
+    "@ald/gateway": "*",
+    "@ald/hashing": "*",
     "@ald/learners": "*",
-    "@ald/gateway": "*"
+    "@ald/lifecycle": "*",
+    "@ald/merkle": "*",
+    "@ald/scenario": "*",
+    "@ald/types": "*",
+    "@ald/verifier": "*"
   }
 }

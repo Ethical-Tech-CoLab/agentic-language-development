@@ -263,15 +263,15 @@ export interface RunToCompletionOptions {
 /**
  * Streams whose committed prefix the runtime re-validates before a resume.
  *
- * `channel` is absent because `validateChain` reads `previousEntryHash` and a
- * channel event names that link `previousChannelHash` (SPEC §11.5). This
- * pre-check exists only so the `safety-trigger` audit entry can be written
+ * This pre-check exists so the `safety-trigger` audit entry can be written
  * before `EvidenceWriter.recover` blocks the run; `recover` itself re-walks
- * every stream, channel included, and is authoritative.
+ * every stream and is authoritative. `validateChain` honours each stream's
+ * own link field (`previousChannelHash` for the channel, SPEC §11.5).
  */
 const PRECHECKED_STREAMS: readonly EventStream[] = [
   'baby-a-ledger',
   'baby-b-ledger',
+  'channel',
   'turns',
 ];
 

@@ -400,6 +400,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
       RUN_CONFIG_DEFAULTS.turnResponseBudgetMs,
     maxTurnsPerRun:
       overrides.maxTurnsPerRun ?? RUN_CONFIG_DEFAULTS.maxTurnsPerRun,
+    ...(overrides.evaluationTurns === undefined
+      ? {}
+      : { evaluationTurns: overrides.evaluationTurns }),
     maxConsecutiveRejections:
       overrides.maxConsecutiveRejections ??
       RUN_CONFIG_DEFAULTS.maxConsecutiveRejections,

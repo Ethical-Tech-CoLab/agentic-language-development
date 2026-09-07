@@ -56,3 +56,6 @@ export {
   treeNameForStream,
   type SimpleCheckpointServiceOptions,
 } from './testing.js';
+
+export * from './experiments/index.js';
+export * from './production.js';

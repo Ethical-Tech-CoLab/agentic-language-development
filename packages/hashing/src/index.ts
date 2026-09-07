@@ -10,6 +10,8 @@ export {
   buildSignedEvent,
   formatChainViolation,
   isSignedStream,
+  LINK_FIELDS,
+  linkFieldFor,
   nextSequence,
   parseJsonlEvents,
   previousHashFor,

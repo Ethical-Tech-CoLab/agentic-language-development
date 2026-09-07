@@ -383,7 +383,7 @@ describe('link helpers', () => {
   });
 
   it('signs with the stream domain and refuses cross-domain signers', async () => {
-    const unsigned = { version: 1, runId: RUN_ID, sequence: 1, previousEntryHash: GENESIS_HASH };
+    const unsigned = { version: 1, runId: RUN_ID, sequence: 1, previousChannelHash: GENESIS_HASH };
     const signed = await buildSignedEvent(
       'channel',
       unsigned,
@@ -408,7 +408,7 @@ describe('link helpers', () => {
       'channel',
       {
         sequence: 1,
-        previousEntryHash: GENESIS_HASH,
+        previousChannelHash: GENESIS_HASH,
         entryHash: `sha256:${'b'.repeat(64)}`,
         writerSignature: 'ed25519:stale',
       },

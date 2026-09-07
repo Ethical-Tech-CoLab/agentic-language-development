@@ -104,6 +104,25 @@ export function isSignedStream(stream: EventStream): stream is SignedEventStream
  * checks, because the stored `entryHash` (which the link and signature
  * commit to) is unchanged.
  */
+/**
+ * Name of the previous-hash link field in each stream's events. Every stream
+ * uses `previousEntryHash` except the channel transcript, whose schema
+ * (SPEC §11.5) names the link `previousChannelHash`.
+ */
+export const LINK_FIELDS: Record<EventStream, 'previousEntryHash' | 'previousChannelHash'> = {
+  'baby-a-ledger': 'previousEntryHash',
+  'baby-b-ledger': 'previousEntryHash',
+  channel: 'previousChannelHash',
+  affect: 'previousEntryHash',
+  audit: 'previousEntryHash',
+  turns: 'previousEntryHash',
+  intervention: 'previousEntryHash',
+};
+
+export function linkFieldFor(stream: EventStream): 'previousEntryHash' | 'previousChannelHash' {
+  return LINK_FIELDS[stream];
+}
+
 export function validateChain(
   stream: EventStream,
   events: readonly Record<string, unknown>[],
@@ -111,6 +130,7 @@ export function validateChain(
 ): ChainValidationResult {
   const violations: ChainViolation[] = [];
   const signed = isSignedStream(stream);
+  const linkField = linkFieldFor(stream);
   const requireSignatures = options.requireSignatures ?? false;
   const seen = new Set<number>();
   let previousEntryHash = GENESIS_HASH;
@@ -139,7 +159,7 @@ export function validateChain(
         ? rawSequence
         : null;
     const entryHash = event['entryHash'];
-    const linkHash = event['previousEntryHash'];
+    const linkHash = event[linkField];
 
     const malformed: string[] = [];
     if (sequence === null) {
@@ -149,7 +169,7 @@ export function validateChain(
       malformed.push('entryHash must be sha256:<64 hex>');
     }
     if (!isSha256Hash(linkHash)) {
-      malformed.push('previousEntryHash must be sha256:<64 hex>');
+      malformed.push(`${linkField} must be sha256:<64 hex>`);
     }
     if (malformed.length > 0) {
       report(
@@ -205,7 +225,7 @@ export function validateChain(
       report(
         sequence,
         'previous-hash-mismatch',
-        `previousEntryHash ${linkHash} does not match ${previousEntryHash}`,
+        `${linkField} ${linkHash} does not match ${previousEntryHash}`,
       );
     }
 
