@@ -12,6 +12,7 @@ import { canonicalJson } from '@ald/hashing';
 import type { VerificationReport } from '@ald/types';
 
 import { CHECK_NAMES } from './checks.js';
+import { describeRedacted, safeEndpoint } from './redact.js';
 import { createJsonRpcChainReader } from './rpc.js';
 import {
   VERIFIER_VERSION,
@@ -45,11 +46,16 @@ export type CliParseResult =
   | { ok: true; help: true }
   | { ok: false; message: string };
 
+/**
+ * An empty value is rejected here rather than deep inside `buildReport`,
+ * where `VerificationReportSchema.verifierVersion` (a non-empty string) would
+ * otherwise throw a `ZodError` out of `runCli` and produce no report at all.
+ */
 function requireValue(
   flag: string,
   value: string | undefined,
 ): { ok: true; value: string } | { ok: false; message: string } {
-  if (value === undefined || value.startsWith('--')) {
+  if (value === undefined || value.length === 0 || value.startsWith('--')) {
     return { ok: false, message: `${flag} requires a value` };
   }
   return { ok: true, value };
@@ -227,21 +233,31 @@ export async function runCli(
         chainId: options.chainId,
       });
     } catch (error) {
+      // Origin only: `--rpc-url` is credential-bearing (see ./redact.ts).
       io.stderr(
-        `ald-verify: cannot reach ${options.rpcUrl}: ${error instanceof Error ? error.message : String(error)}\n`,
+        `ald-verify: cannot reach ${safeEndpoint(options.rpcUrl)}: ${describeRedacted(error)}\n`,
       );
       return 1;
     }
   }
 
-  const { report, details } = await verifyBundleDetailed(options.bundleDir, {
-    verifierVersion: options.verifierVersion,
-    now: () => new Date().toISOString(),
-    chainReader,
-    allowUnanchored: options.allowUnanchored,
-    writeReport: options.writeReport,
-  });
+  let verification;
+  try {
+    verification = await verifyBundleDetailed(options.bundleDir, {
+      verifierVersion: options.verifierVersion,
+      now: () => new Date().toISOString(),
+      chainReader,
+      allowUnanchored: options.allowUnanchored,
+      writeReport: options.writeReport,
+    });
+  } catch (error) {
+    // `runCli` promises an exit code (LEDGER §14 item 12), so an unexpected
+    // error becomes a reported failure rather than an unhandled rejection.
+    io.stderr(`ald-verify: verification failed: ${describeRedacted(error)}\n`);
+    return 1;
+  }
 
+  const { report, details } = verification;
   io.stdout(
     options.json
       ? `${canonicalJson(report)}\n`

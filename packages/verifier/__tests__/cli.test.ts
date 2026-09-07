@@ -153,6 +153,25 @@ describe('CLI argument parsing', () => {
     });
   });
 
+  it('rejects an empty --verifier-version instead of throwing a ZodError', async () => {
+    expect(parseArgs(['/tmp/bundle', '--verifier-version', ''])).toEqual({
+      ok: false,
+      message: '--verifier-version requires a value',
+    });
+
+    const out: string[] = [];
+    const err: string[] = [];
+    const code = await runCli([fixture.bundleDir, '--verifier-version', ''], {
+      stdout: (text) => out.push(text),
+      stderr: (text) => err.push(text),
+    });
+
+    expect(code).toBe(1);
+    expect(out).toEqual([]);
+    expect(err.join('')).toContain('--verifier-version requires a value');
+    expect(err.join('')).toContain(USAGE);
+  });
+
   it('prints usage for --help without verifying anything', async () => {
     const lines: string[] = [];
     const code = await runCli(['--help'], {

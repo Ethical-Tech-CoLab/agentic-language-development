@@ -25,8 +25,11 @@ export {
   type VerificationChecks,
 } from './checks.js';
 export {
+  CHAIN_NOT_CHECKED_CODE,
   NETWORK_CHAIN_IDS,
+  SAFE_TAG_CONFIRMATION_PROXY,
   expectedInputData,
+  requiredConfirmations,
   verifyAnchors,
   type AnchorVerificationInput,
   type AnchorVerificationResult,
@@ -45,14 +48,31 @@ export { LINK_FIELDS, walkStream } from './chain-walk.js';
 export {
   loadStreams,
   verifyCrossBindings,
+  type CrossBindingOptions,
   type LoadedStream,
   type LoadedStreams,
   type StreamEntry,
 } from './streams.js';
 export {
+  REQUIRED_STREAMS,
+  STREAM_FILES,
+  expectedHashDomain,
+  expectedSignerDomain,
+  expectedTreeName,
+} from './bundle-layout.js';
+export {
+  UNANCHORED_TX_REF,
+  acceptedLearnerContractVersions,
   verifyExperimentRecord,
+  type ExperimentRecordBindings,
   type ExperimentRecordVerification,
 } from './experiment-record.js';
+export {
+  rebuildPromptBundleHash,
+  verifyPromptBundle,
+  type PromptBundleVerification,
+} from './prompts.js';
+export { describeRedacted, redactUrls, safeEndpoint } from './redact.js';
 export {
   createJsonRpcChainReader,
   type JsonRpcChainReaderOptions,
@@ -67,13 +87,18 @@ export {
   type CliParseResult,
 } from './cli.js';
 export {
+  bundlePath,
+  containedBundlePath,
   formatIssues,
   listJsonFiles,
   readCanonicalJsonFile,
   readTextFile,
   stripTrailingNewline,
+  unknownFieldDetail,
+  type ContainedPath,
   type FileFailureCode,
   type FileResult,
+  type PathFailureReason,
   type SchemaIssue,
   type SchemaLike,
 } from './bundle-io.js';

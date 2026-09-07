@@ -23,6 +23,7 @@ import {
   RunConfigSchema,
   RunManifestSchema,
   VerificationReportSchema,
+  type RunConfig,
   type RunManifest,
   type VerificationReport,
 } from '@ald/types';
@@ -32,10 +33,13 @@ import {
   bundlePath,
   formatIssues,
   readCanonicalJsonFile,
+  unknownFieldDetail,
 } from './bundle-io.js';
 import { VerificationAccumulator, ALLOWED_UNANCHORED_NOTE } from './checks.js';
 import { verifyCheckpoints, verifyProofs } from './checkpoints.js';
 import { verifyExperimentRecord } from './experiment-record.js';
+import { verifyPromptBundle } from './prompts.js';
+import { describeRedacted } from './redact.js';
 import { loadStreams, verifyCrossBindings, type LoadedStreams } from './streams.js';
 import { normalizeHash } from './values.js';
 
@@ -107,6 +111,7 @@ function finalVerifiedSizes(streams: LoadedStreams): Record<string, number> {
 
 function buildReport(
   runId: string,
+  checkedAt: string,
   accumulator: VerificationAccumulator,
   sizes: Record<string, number>,
   options: VerifyBundleOptions,
@@ -114,7 +119,7 @@ function buildReport(
   return VerificationReportSchema.parse({
     version: 1,
     runId,
-    checkedAt: options.now(),
+    checkedAt,
     verifierVersion: options.verifierVersion,
     checks: accumulator.checks(),
     gaps: accumulator.gaps,
@@ -124,26 +129,93 @@ function buildReport(
   });
 }
 
+/**
+ * Writes the report next to the bundle it describes. A completed verification
+ * is never discarded because the destination is unwritable (a read-only mount,
+ * a published bundle owned by someone else): the failure is returned so the
+ * caller can record it as a gap and still return the report (LEDGER §14 item
+ * 12 requires a machine-readable report).
+ */
 async function persist(
   bundleDir: string,
   report: VerificationReport,
   options: VerifyBundleOptions,
-): Promise<void> {
+): Promise<string | undefined> {
   if (options.writeReport === false) {
-    return;
+    return undefined;
   }
-  await writeFile(
-    bundlePath(bundleDir, 'verification-report.json'),
-    `${canonicalJson(report)}\n`,
-    'utf8',
+  try {
+    await writeFile(
+      bundlePath(bundleDir, 'verification-report.json'),
+      `${canonicalJson(report)}\n`,
+      'utf8',
+    );
+    return undefined;
+  } catch (error) {
+    return describeRedacted(error);
+  }
+}
+
+/**
+ * Persists the report and, when the write fails, rebuilds it with a
+ * `report-write-failed` gap so the returned artifact says so. The gap is
+ * informational: an unwritable directory is not an integrity failure of the
+ * bundle, so a good bundle on a read-only mount still exits 0.
+ */
+async function persistOrNote(
+  bundleDir: string,
+  report: VerificationReport,
+  runId: string,
+  checkedAt: string,
+  accumulator: VerificationAccumulator,
+  sizes: Record<string, number>,
+  options: VerifyBundleOptions,
+): Promise<VerificationReport> {
+  const failure = await persist(bundleDir, report, options);
+  if (failure === undefined) {
+    return report;
+  }
+  accumulator.gap(
+    'report-write-failed',
+    `verification-report.json could not be written: ${failure}`,
   );
+  return buildReport(runId, checkedAt, accumulator, sizes, options);
+}
+
+/**
+ * Compares one manifest field with its authoritative copy in the hash-bound
+ * run configuration (bundle format §7: the manifest "binds the run"; the
+ * exporter copies these fields verbatim from the `RunConfig`, so any
+ * disagreement is proof of post-export tampering).
+ */
+function bindManifestField(
+  accumulator: VerificationAccumulator,
+  field: string,
+  manifestValue: string | undefined,
+  configValue: string | undefined,
+  { hash = false }: { hash?: boolean } = {},
+): void {
+  const left = hash ? normalizeHash(manifestValue) : manifestValue;
+  const right = hash ? normalizeHash(configValue) : configValue;
+  if (left !== right) {
+    accumulator.failStructural(
+      'manifest-configuration-mismatch',
+      `run-manifest.json ${field} ${String(manifestValue)} does not match configuration/run-config.json ${String(configValue)}`,
+    );
+  }
+}
+
+export interface ManifestAndConfiguration {
+  manifest: RunManifest;
+  /** `undefined` when `configuration/run-config.json` is unusable. */
+  config?: RunConfig | undefined;
 }
 
 /** Step 1 of LEDGER §14 for the two files that bind the whole bundle. */
 async function verifyManifestAndConfiguration(
   bundleDir: string,
   accumulator: VerificationAccumulator,
-): Promise<RunManifest | undefined> {
+): Promise<ManifestAndConfiguration | undefined> {
   const raw = await readCanonicalJsonFile(bundlePath(bundleDir, 'run-manifest.json'));
   if (!raw.ok) {
     if (raw.code === 'canonical-json-invalid') {
@@ -163,6 +235,17 @@ async function verifyManifestAndConfiguration(
     return undefined;
   }
   const manifest = parsed.data;
+
+  // `run-manifest.json` is the document that binds the run (bundle format §7)
+  // and is committed by no hash, so unbound content riding inside it is
+  // rejected structurally rather than silently stripped by the schema.
+  const manifestUnknownFields = unknownFieldDetail(raw.value, manifest);
+  if (manifestUnknownFields !== undefined) {
+    accumulator.failStructural(
+      'manifest-unknown-field',
+      `run-manifest.json: ${manifestUnknownFields}`,
+    );
+  }
 
   if (manifest.runIdHash !== hashRunId(manifest.runId)) {
     accumulator.failStructural(
@@ -196,7 +279,7 @@ async function verifyManifestAndConfiguration(
         `configuration/run-config.json: ${configRaw.detail}`,
       );
     }
-    return manifest;
+    return { manifest };
   }
 
   const config = RunConfigSchema.safeParse(configRaw.value);
@@ -205,14 +288,24 @@ async function verifyManifestAndConfiguration(
       'schema-invalid',
       `configuration/run-config.json: ${formatIssues(config.error.issues)}`,
     );
-    return manifest;
+    return { manifest };
   }
 
-  const configurationHash = hashCanonical(HASH_DOMAINS.runConfig, config.data);
+  // Bundle format §7: `configurationHash` MUST equal the hash of
+  // `configuration/run-config.json` — the file's own canonical bytes, not the
+  // schema's projection of them, which would silently drop injected keys.
+  const configurationHash = hashCanonical(HASH_DOMAINS.runConfig, configRaw.value);
   if (configurationHash !== normalizeHash(manifest.configurationHash)) {
     accumulator.failStructural(
       'configuration-hash-mismatch',
       `configuration/run-config.json hashes to ${configurationHash}, run-manifest.json declares ${manifest.configurationHash}`,
+    );
+  }
+  const unknownFields = unknownFieldDetail(configRaw.value, config.data);
+  if (unknownFields !== undefined) {
+    accumulator.failStructural(
+      'configuration-unknown-field',
+      `configuration/run-config.json: ${unknownFields}`,
     );
   }
   if (config.data.runId !== manifest.runId) {
@@ -234,7 +327,54 @@ async function verifyManifestAndConfiguration(
     );
   }
 
-  return manifest;
+  // The remaining provenance and lineage fields the exporter copies from the
+  // configuration (packages/evidence/src/export.ts `buildRunManifest`).
+  // SPEC §7.4 requires parent lineage to agree between the child RunConfig and
+  // its run manifest; SPEC §15.1 makes protocolGitCommit/preRegistrationHash
+  // the pre-registration binding. `learnerContractVersions` has no second copy
+  // in the bundle and so cannot be cross-checked here.
+  bindManifestField(
+    accumulator,
+    'promptBundleHash',
+    manifest.promptBundleHash,
+    config.data.promptBundleHash,
+    { hash: true },
+  );
+  bindManifestField(
+    accumulator,
+    'scenarioBundleHash',
+    manifest.scenarioBundleHash,
+    config.data.scenarioBundleHash,
+    { hash: true },
+  );
+  bindManifestField(
+    accumulator,
+    'preRegistrationHash',
+    manifest.preRegistrationHash,
+    config.data.preRegistrationHash,
+    { hash: true },
+  );
+  bindManifestField(
+    accumulator,
+    'protocolGitCommit',
+    manifest.protocolGitCommit,
+    config.data.protocolGitCommit,
+  );
+  bindManifestField(
+    accumulator,
+    'parentRunId',
+    manifest.parentRunId,
+    config.data.parentRunId,
+  );
+  bindManifestField(
+    accumulator,
+    'derivedFromCheckpointHash',
+    manifest.derivedFromCheckpointHash,
+    config.data.derivedFromCheckpointHash,
+    { hash: true },
+  );
+
+  return { manifest, config: config.data };
 }
 
 /**
@@ -280,18 +420,32 @@ export async function verifyBundleDetailed(
 ): Promise<DetailedVerification> {
   const accumulator = new VerificationAccumulator();
   const allowUnanchored = options.allowUnanchored === true;
+  const checkedAt = options.now();
 
-  const manifest = await verifyManifestAndConfiguration(bundleDir, accumulator);
-  if (manifest === undefined) {
+  const bound = await verifyManifestAndConfiguration(bundleDir, accumulator);
+  if (bound === undefined) {
     accumulator.markAllUnverified();
-    const report = buildReport(UNKNOWN_RUN_ID, accumulator, {}, options);
-    await persist(bundleDir, report, options);
-    return { report, details: emptyDetails() };
+    const report = buildReport(UNKNOWN_RUN_ID, checkedAt, accumulator, {}, options);
+    return {
+      report: await persistOrNote(
+        bundleDir,
+        report,
+        UNKNOWN_RUN_ID,
+        checkedAt,
+        accumulator,
+        {},
+        options,
+      ),
+      details: emptyDetails(),
+    };
   }
+  const { manifest, config } = bound;
 
   const streams = await loadStreams(bundleDir, manifest, accumulator);
 
-  const crossBindingFailures = verifyCrossBindings(streams);
+  const crossBindingFailures = verifyCrossBindings(streams, {
+    ledgerLagTurns: config?.ledgerLagTurns,
+  });
   for (const failure of crossBindingFailures) {
     accumulator.failStructural('cross-binding', failure);
   }
@@ -309,11 +463,16 @@ export async function verifyBundleDetailed(
     accumulator,
   );
 
+  if (config !== undefined) {
+    await verifyPromptBundle(bundleDir, manifest, config, checkpoints, accumulator);
+  }
+
   const anchors = await verifyAnchors({
     bundleDir,
     checkpoints,
     accumulator,
     chainReader: options.chainReader,
+    config,
     allowUnanchored,
   });
 
@@ -332,15 +491,29 @@ export async function verifyBundleDetailed(
   const experimentRecord = await verifyExperimentRecord(
     bundleDir,
     manifest,
+    { checkpoints, receipts: anchors.receipts, config },
     accumulator,
   );
 
   const sizes = finalVerifiedSizes(streams);
-  const report = buildReport(manifest.runId, accumulator, sizes, options);
-  await persist(bundleDir, report, options);
+  const report = buildReport(
+    manifest.runId,
+    checkedAt,
+    accumulator,
+    sizes,
+    options,
+  );
 
   return {
-    report,
+    report: await persistOrNote(
+      bundleDir,
+      report,
+      manifest.runId,
+      checkedAt,
+      accumulator,
+      sizes,
+      options,
+    ),
     details: {
       crossBindingFailures,
       streamSizes: Object.fromEntries(

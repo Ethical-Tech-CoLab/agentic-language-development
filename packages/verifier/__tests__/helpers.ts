@@ -77,6 +77,45 @@ export async function writeJsonFile(
   await writeFile(path, `${canonicalJson(value)}\n`, 'utf8');
 }
 
+/** Reads, mutates, and rewrites one canonical JSON bundle artifact. */
+export async function mutateJsonFile<T>(
+  path: string,
+  mutate: (value: T) => void,
+): Promise<void> {
+  const value = await readJsonFile<T>(path);
+  mutate(value);
+  await writeJsonFile(path, value);
+}
+
+/** Reads, mutates, and rewrites `run-manifest.json`. */
+export async function mutateManifest(
+  bundleDir: string,
+  mutate: (manifest: Record<string, unknown>) => void,
+): Promise<void> {
+  await mutateJsonFile<Record<string, unknown>>(
+    join(bundleDir, 'run-manifest.json'),
+    mutate,
+  );
+}
+
+/** The `streams[]` declaration for one stream of a manifest under mutation. */
+export function streamDeclarationOf(
+  manifest: Record<string, unknown>,
+  stream: string,
+): Record<string, unknown> {
+  const declarations = manifest['streams'];
+  if (!Array.isArray(declarations)) {
+    throw new Error('run-manifest.json has no streams[]');
+  }
+  const found = (declarations as Record<string, unknown>[]).find(
+    (declaration) => declaration['stream'] === stream,
+  );
+  if (found === undefined) {
+    throw new Error(`run-manifest.json declares no ${stream} stream`);
+  }
+  return found;
+}
+
 /** Reads, mutates, and rewrites one JSONL stream file. */
 export async function mutateJsonl(
   path: string,

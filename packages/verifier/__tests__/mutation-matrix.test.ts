@@ -10,7 +10,12 @@ import { merkleLeafHashes, merkleRoot } from '@ald/merkle';
 import { SIGNER_KEY_IDS, type CheckpointManifest } from '@ald/types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { verifyBundle, verifyBundleDetailed, type ChainReader } from '@ald/verifier';
+import {
+  UNANCHORED_TX_REF,
+  verifyBundle,
+  verifyBundleDetailed,
+  type ChainReader,
+} from '@ald/verifier';
 
 import {
   buildFixtureBundle,
@@ -432,9 +437,11 @@ describe('anchor mutations (LEDGER §17)', () => {
         const report = await verifyBundle(dir, OPTIONS);
         expect(report.exitCode).toBe(1);
         expect(report.checks.anchorChainIdMatches).toBe(false);
+        // Both the receipt's own network/chainId consistency and the binding
+        // to run-config.json's anchorNetwork fire.
         expect(
           gapsMatching(report.gaps, 'anchor-chain-id-mismatch').length,
-        ).toBe(1);
+        ).toBe(2);
       },
     );
   });
@@ -571,6 +578,19 @@ describe('unanchored final ledger tail (LEDGER §17)', () => {
     await withMutatedBundle(
       async (dir) => {
         await writeJsonFile(join(dir, 'anchors', 'base-receipts.json'), []);
+        // A genuinely unanchored run records the all-zero placeholder
+        // (UNANCHORED_TX_REF), so the experiment record is made consistent
+        // with the removed receipt; a dangling anchorTxRef is its own case.
+        const path = join(dir, 'experiment-record.json');
+        const file = await readJsonFile<{
+          current: Record<string, unknown>;
+          history: Record<string, unknown>[];
+        }>(path);
+        for (const record of file.history) {
+          record['anchorTxRef'] = UNANCHORED_TX_REF;
+        }
+        file.current = file.history[file.history.length - 1] ?? {};
+        await writeJsonFile(path, file);
       },
       async (dir) => {
         const strict = await verifyBundle(dir, OPTIONS);

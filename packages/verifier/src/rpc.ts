@@ -12,6 +12,7 @@ import type {
   ChainTransaction,
   ChainTransactionReceipt,
 } from './anchors.js';
+import { redactUrls, safeEndpoint } from './redact.js';
 
 interface JsonRpcResponse {
   result?: unknown;
@@ -55,13 +56,17 @@ async function call(
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
   });
   if (!response.ok) {
+    // Only the origin: a managed endpoint carries its API key in the URL and
+    // this message is recorded verbatim as a report gap (see ./redact.ts).
     throw new Error(
-      `${method} failed: HTTP ${String(response.status)} from ${url}`,
+      `${method} failed: HTTP ${String(response.status)} from ${safeEndpoint(url)}`,
     );
   }
   const body = (await response.json()) as JsonRpcResponse;
   if (body.error) {
-    throw new Error(`${method} failed: ${body.error.message ?? 'RPC error'}`);
+    throw new Error(
+      `${method} failed: ${redactUrls(body.error.message ?? 'RPC error')}`,
+    );
   }
   return body.result ?? null;
 }
@@ -87,6 +92,7 @@ export async function createJsonRpcChainReader(
 
   return {
     chainId,
+    endpointLabel: safeEndpoint(url),
     async getTransaction(
       transactionHash: string,
     ): Promise<ChainTransaction | null> {
@@ -116,8 +122,17 @@ export async function createJsonRpcChainReader(
       if (blockNumber === null) {
         return null;
       }
+      // `status` is a QUANTITY, so a provider may encode success as `0x1`,
+      // `0x01`, or `0X1`; the verifier is required to be provider-agnostic
+      // (SPEC §19 ADR-01) and every other quantity here already goes through
+      // `hexToNumber`. An absent or unparseable status is unknown, not a
+      // revert, and surfaces as `anchor-tx-unmined`.
+      const status = hexToNumber(raw['status']);
+      if (status === null) {
+        return null;
+      }
       return {
-        status: raw['status'] === '0x1' ? 'success' : 'reverted',
+        status: status === 1 ? 'success' : 'reverted',
         blockNumber,
         blockHash: asHexString(raw['blockHash']) ?? '',
       };

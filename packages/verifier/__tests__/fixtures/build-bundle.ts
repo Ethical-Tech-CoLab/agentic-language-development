@@ -73,6 +73,27 @@ export const FIXTURE_TREES: readonly [string, EventStream][] = [
 ];
 
 export const FIXTURE_TURNS = 12;
+
+/**
+ * Learner contract the fixture run references. `exportRunBundle` writes
+ * `text` verbatim to `prompts/learner-contract.<track>.v<version>.md`
+ * (packages/evidence/src/export.ts), and `promptBundleHash` over
+ * `{ <track>: <text> }` is what the runtime binds into the run configuration
+ * (packages/orchestrator/src/nursery-runtime.ts `#bindHash`,
+ * packages/learners/src/contracts.ts `promptBundleHash`), so the bundle is
+ * self-consistent for the verifier's prompts/ rebuild.
+ */
+export const FIXTURE_CONTRACT = {
+  track: 'no-learning',
+  version: '1',
+  text: '# no-learning learner contract (fixture)\n',
+} as const;
+
+/** `hashCanonical(promptBundle, { <track>: <text> })` for the fixture. */
+export const FIXTURE_PROMPT_BUNDLE_HASH = hashCanonical(
+  HASH_DOMAINS.promptBundle,
+  { [FIXTURE_CONTRACT.track]: FIXTURE_CONTRACT.text },
+);
 export const FIXTURE_ANCHOR_TX = `0x${'ab'.repeat(32)}`;
 export const FIXTURE_ANCHOR_TO = `0x${'22'.repeat(20)}`;
 export const FIXTURE_CHAIN_ID = 84_532;
@@ -161,6 +182,7 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
     babyA: { track: 'no-learning' },
     babyB: { track: 'no-learning' },
     learningSignal: 'none',
+    promptBundleHash: FIXTURE_PROMPT_BUNDLE_HASH,
   });
   const { configurationHash } = writer.registerRun(config);
   const runIdHash = hashRunId(runId);
@@ -329,13 +351,7 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
 
   await exportRunBundle(writer, runId, bundleDir, {
     softwareCommit: 'git:fixture',
-    learnerContracts: [
-      {
-        track: 'no-learning',
-        version: '1',
-        text: '# no-learning learner contract (fixture)\n',
-      },
-    ],
+    learnerContracts: [{ ...FIXTURE_CONTRACT }],
     overwrite: true,
   });
 

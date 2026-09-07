@@ -34,9 +34,11 @@ import {
 
 import {
   bundlePath,
+  containedBundlePath,
   formatIssues,
   listJsonFiles,
   readCanonicalJsonFile,
+  unknownFieldDetail,
 } from './bundle-io.js';
 import type { VerificationAccumulator } from './checks.js';
 import type { LoadedStreams } from './streams.js';
@@ -236,7 +238,15 @@ export async function verifyCheckpoints(
 
   for (const file of files) {
     const relative = `checkpoints/${file}`;
-    const raw = await readCanonicalJsonFile(bundlePath(directory, file));
+    const contained = containedBundlePath(bundleDir, 'checkpoints', file);
+    if (!contained.ok) {
+      accumulator.failStructural(
+        'checkpoint-file-outside-bundle',
+        `${relative}: ${contained.detail}`,
+      );
+      continue;
+    }
+    const raw = await readCanonicalJsonFile(contained.path);
     if (!raw.ok) {
       if (raw.code === 'canonical-json-invalid') {
         accumulator.fail('canonicalJsonValid', raw.code, `${relative}: ${raw.detail}`);
@@ -256,6 +266,20 @@ export async function verifyCheckpoints(
     }
     const checkpoint = parsed.data;
 
+    // Bundle format §6 defines `checkpointHash` over the manifest *as written
+    // in the file* minus exactly two named fields, so the rebuild has to use
+    // the raw parsed value: a zod projection would silently drop injected
+    // keys and reproduce a digest the file's own bytes do not have.
+    const rawValue = raw.value as Record<string, unknown>;
+    const unknownFields = unknownFieldDetail(rawValue, checkpoint);
+    if (unknownFields !== undefined) {
+      accumulator.fail(
+        'checkpointHashesRebuilt',
+        'checkpoint-unknown-field',
+        `${relative}: ${unknownFields}`,
+      );
+    }
+
     if (checkpoint.checkpointSequence !== expectedSequence) {
       accumulator.failStructural(
         'checkpoint-sequence-gap',
@@ -273,7 +297,7 @@ export async function verifyCheckpoints(
 
     const rebuiltHash = hashCanonical(
       HASH_DOMAINS.checkpoint,
-      omitFields(checkpoint, MANIFEST_SIGNATURE_FIELDS),
+      omitFields(rawValue, MANIFEST_SIGNATURE_FIELDS),
     );
     if (rebuiltHash !== checkpoint.checkpointHash) {
       accumulator.fail(
@@ -313,6 +337,27 @@ export async function verifyCheckpoints(
       accumulator.failStructural(
         'checkpoint-configuration-mismatch',
         `${relative}: runConfigurationHash ${checkpoint.runConfigurationHash} does not match the run manifest`,
+      );
+    }
+    // LEDGER §13: the checkpoint commits the prompt bundle the run used, and
+    // the manifest copies it from the hash-bound configuration, so the two
+    // MUST agree.
+    if (
+      normalizeHash(checkpoint.promptBundleHash) !==
+      normalizeHash(manifest.promptBundleHash)
+    ) {
+      accumulator.failStructural(
+        'checkpoint-prompt-bundle-mismatch',
+        `${relative}: promptBundleHash ${checkpoint.promptBundleHash} does not match the run manifest`,
+      );
+    }
+    // LEDGER §8 records `softwareCommit` per checkpoint, so a run resumed
+    // under an upgraded build legitimately differs from the exporting build in
+    // the manifest. Reported as a note, never as a failure.
+    if (checkpoint.softwareCommit !== manifest.softwareCommit) {
+      accumulator.gap(
+        'checkpoint-software-commit-differs',
+        `${relative}: softwareCommit ${checkpoint.softwareCommit} differs from the run manifest's ${manifest.softwareCommit}`,
       );
     }
 
@@ -412,7 +457,21 @@ export async function verifyProofs(
 
   for (const file of inclusionFiles) {
     const relative = `proofs/inclusion/${file}`;
-    const raw = await readCanonicalJsonFile(bundlePath(inclusionDir, file));
+    const contained = containedBundlePath(
+      bundleDir,
+      'proofs',
+      'inclusion',
+      file,
+    );
+    if (!contained.ok) {
+      accumulator.fail(
+        'inclusionProofsValid',
+        'proof-file-outside-bundle',
+        `${relative}: ${contained.detail}`,
+      );
+      continue;
+    }
+    const raw = await readCanonicalJsonFile(contained.path);
     if (!raw.ok) {
       if (raw.code === 'canonical-json-invalid') {
         accumulator.fail('canonicalJsonValid', raw.code, `${relative}: ${raw.detail}`);
@@ -434,6 +493,12 @@ export async function verifyProofs(
     const fail = (code: string, detail: string): void => {
       accumulator.fail('inclusionProofsValid', code, `${relative}: ${detail}`);
     };
+
+    const unknownFields = unknownFieldDetail(raw.value, proof);
+    if (unknownFields !== undefined) {
+      fail('proof-unknown-field', unknownFields);
+      continue;
+    }
 
     const checkpoint = checkpointBySequence(checkpoints, proof.checkpointSequence);
     if (checkpoint === undefined) {
@@ -529,7 +594,21 @@ export async function verifyProofs(
 
   for (const file of consistencyFiles) {
     const relative = `proofs/consistency/${file}`;
-    const raw = await readCanonicalJsonFile(bundlePath(consistencyDir, file));
+    const contained = containedBundlePath(
+      bundleDir,
+      'proofs',
+      'consistency',
+      file,
+    );
+    if (!contained.ok) {
+      accumulator.fail(
+        'consistencyProofsValid',
+        'proof-file-outside-bundle',
+        `${relative}: ${contained.detail}`,
+      );
+      continue;
+    }
+    const raw = await readCanonicalJsonFile(contained.path);
     if (!raw.ok) {
       if (raw.code === 'canonical-json-invalid') {
         accumulator.fail('canonicalJsonValid', raw.code, `${relative}: ${raw.detail}`);
@@ -551,6 +630,12 @@ export async function verifyProofs(
     const fail = (code: string, detail: string): void => {
       accumulator.fail('consistencyProofsValid', code, `${relative}: ${detail}`);
     };
+
+    const unknownFields = unknownFieldDetail(raw.value, proof);
+    if (unknownFields !== undefined) {
+      fail('proof-unknown-field', unknownFields);
+      continue;
+    }
 
     const from = checkpointBySequence(checkpoints, proof.fromCheckpointSequence);
     const to = checkpointBySequence(checkpoints, proof.toCheckpointSequence);

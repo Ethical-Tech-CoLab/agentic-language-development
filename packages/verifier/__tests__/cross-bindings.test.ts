@@ -199,4 +199,62 @@ describe('verifyCrossBindings', () => {
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('is not a channel event in this bundle');
   });
+
+  it('rejects a turn record bound to another turn\'s channel event', () => {
+    // Bundle format §3: the reference is to *the turn's* channel event, so
+    // hash membership alone must not satisfy the binding.
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        channel: [{ ...acceptedChannelEvent(), turn: 1 }],
+        turns: [{ sequence: 5, turn: 5, channelEventHash: CHANNEL_HASH }],
+      }),
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain(
+      "references the channel event of turn 1, not this record's turn 5",
+    );
+  });
+
+  it('accepts a turn record whose channel event carries the same turn', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        channel: [{ ...acceptedChannelEvent(), turn: 5 }],
+        turns: [{ sequence: 5, turn: 5, channelEventHash: CHANNEL_HASH }],
+      }),
+    );
+
+    expect(failures).toEqual([]);
+  });
+
+  it('rejects an interpretation recorded outside the ledgerLagTurns window', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        babyB: [{ ...interpretation(), turn: 12 }],
+        channel: [{ ...acceptedChannelEvent(), turn: 2 }],
+      }),
+      { ledgerLagTurns: 0 },
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain(
+      'interprets the channel event of turn 2 at turn 12',
+    );
+  });
+
+  it('accepts a lagged interpretation permitted by ledgerLagTurns (SPEC §8.2)', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        babyB: [{ ...interpretation(), turn: 4 }],
+        channel: [{ ...acceptedChannelEvent(), turn: 2 }],
+      }),
+      { ledgerLagTurns: 2 },
+    );
+
+    expect(failures).toEqual([]);
+  });
 });

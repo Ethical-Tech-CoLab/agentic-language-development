@@ -248,6 +248,68 @@ describe('createJsonRpcChainReader', () => {
     ]);
   });
 
+  it('never puts the endpoint URL or its API key in a thrown message', async () => {
+    const secret = 'A1b2C3_SECRET_KEY';
+    const url = `https://user:pw@base-sepolia.example.invalid/v2/${secret}?key=${secret}`;
+    const failing = (async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    })) as unknown as typeof fetch;
+
+    await expect(
+      createJsonRpcChainReader(url, { fetchImpl: failing }),
+    ).rejects.toThrow(/HTTP 401 from https:\/\/base-sepolia\.example\.invalid$/u);
+
+    const reader = await createJsonRpcChainReader(url, {
+      chainId: 84_532,
+      fetchImpl: failing,
+    });
+    expect(reader.endpointLabel).toBe('https://base-sepolia.example.invalid');
+
+    let message = '';
+    try {
+      await reader.getTransaction(`0x${'ab'.repeat(32)}`);
+      throw new Error('the reader must reject on HTTP 401');
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toContain('eth_getTransactionByHash failed: HTTP 401');
+    expect(message).not.toContain(secret);
+    expect(message).not.toContain('user:pw');
+  });
+
+  it('reads receipt status as a quantity, not a literal string', async () => {
+    // SPEC §19 ADR-01: the verifier MUST be provider-agnostic, and `status` is
+    // a QUANTITY, so `0x01` and `0X1` are the same success as `0x1`.
+    async function statusOf(status: unknown): Promise<string | null> {
+      const reader = await createJsonRpcChainReader('https://rpc.invalid', {
+        chainId: 84_532,
+        fetchImpl: stubFetch(
+          {
+            eth_getTransactionReceipt: {
+              ...(status === undefined ? {} : { status }),
+              blockNumber: '0x1',
+              blockHash: `0x${'cd'.repeat(32)}`,
+            },
+          },
+          [],
+        ),
+      });
+      const receipt = await reader.getTransactionReceipt(`0x${'ab'.repeat(32)}`);
+      return receipt === null ? null : receipt.status;
+    }
+
+    await expect(statusOf('0x1')).resolves.toBe('success');
+    await expect(statusOf('0x01')).resolves.toBe('success');
+    await expect(statusOf('0X1')).resolves.toBe('success');
+    await expect(statusOf('0x0')).resolves.toBe('reverted');
+    // An absent or unparseable status is unknown, and surfaces upstream as
+    // `anchor-tx-unmined` rather than as a claimed revert.
+    await expect(statusOf(undefined)).resolves.toBeNull();
+    await expect(statusOf('not-a-quantity')).resolves.toBeNull();
+  });
+
   it('returns null for an unknown transaction and trusts an explicit chain id', async () => {
     const calls: RpcCall[] = [];
     const reader = await createJsonRpcChainReader('https://rpc.invalid', {

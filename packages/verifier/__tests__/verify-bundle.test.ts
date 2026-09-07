@@ -56,7 +56,11 @@ describe('verifyBundle on an unchanged bundle', () => {
       OPTIONS,
     );
 
-    expect(report.gaps).toEqual([]);
+    // Bundle format §8 requires the report to record whether chain retrieval
+    // ran; offline that is the one gap an otherwise clean bundle carries.
+    expect(report.gaps).toEqual([
+      expect.stringContaining('anchor-chain-not-checked') as unknown as string,
+    ]);
     expect(report.forks).toEqual([]);
     expect(report.exitCode).toBe(0);
     for (const name of CHECK_NAMES) {
