@@ -31,7 +31,11 @@ import {
   ADAPTER_FAILURE_MESSAGE_LIMIT,
   adapterFailureMessage,
 } from '../src/errors.js';
-import { createNurseryRuntime, simpleCheckpointFactory } from '../src/index.js';
+import {
+  SAFETY_ESCALATION_REASON,
+  createNurseryRuntime,
+  simpleCheckpointFactory,
+} from '../src/index.js';
 import {
   FakeAnchorPublisher,
   SOFTWARE_COMMIT,
@@ -323,7 +327,7 @@ describe('adapter failure policy (SPEC §14.5, ALD-025, ALD-026)', () => {
     expect(harness.runtime.transcript(runId)).toHaveLength(1);
   }, 60_000);
 
-  it('records pause-not-available when the crash lands in evaluating', async () => {
+  it('escalates to the §7.2 abort row when the crash lands in evaluating', async () => {
     // Turn 0 is the only training turn; act calls 2 and 3 are the initial call
     // and the retry of the first evaluation turn, where §7.2 has no `pause`.
     harness = await createHarness({
@@ -357,17 +361,35 @@ describe('adapter failure policy (SPEC §14.5, ALD-025, ALD-026)', () => {
           event.reasonCode === 'pause-not-available',
       );
     expect(blocked).toHaveLength(1);
-    expect(blocked[0]?.details).toMatchObject({ state: 'evaluating' });
+    expect(blocked[0]?.details).toMatchObject({
+      state: 'evaluating',
+      trigger: 'adapter-failure',
+    });
 
-    // The run continued through its whole evaluation budget, and the crashed
-    // turn is recorded like any other.
+    // §7.2 offers `evaluating --abort--> aborting`, and §14.5 forbids a
+    // trigger that neither pauses nor stops: the run ends instead of drawing
+    // held-out episodes with a live trigger.
+    const escalation = harness.runtime
+      .auditLog(runId)
+      .filter(
+        (event) =>
+          event.eventType === 'abort' &&
+          event.reasonCode === SAFETY_ESCALATION_REASON,
+      );
+    expect(escalation).toHaveLength(1);
+
+    // The crashed turn is still recorded like any other, and nothing ran
+    // after it.
     const records = harness.runtime.turnRecords(runId);
-    expect(records).toHaveLength(5);
+    expect(records).toHaveLength(2);
     const forfeited = records.filter(
       (record) => record.outcome.details?.['reason'] === 'adapter-failure',
     );
     expect(forfeited).toHaveLength(1);
     expect(summary.state).toBe('aborted-sealed');
+    expect(harness.runtime.experimentRecords(runId).at(-1)?.disposition).toBe(
+      'aborted',
+    );
   }, 60_000);
 
   it('honours a retryBudget of zero and rejects an invalid one', async () => {

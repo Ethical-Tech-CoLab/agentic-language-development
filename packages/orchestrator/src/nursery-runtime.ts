@@ -75,6 +75,7 @@ import {
   type InterventionEvent,
   type LearnerAdapter,
   type LearnerAdapterFactory,
+  type LearnerVisibleRunConfig,
   type LedgerEvent,
   type LedgerEventDraft,
   type NurseryRuntime,
@@ -137,6 +138,7 @@ import {
   DuplicateRunError,
   RunConfigurationError,
   RunStateError,
+  SignerRegistryMismatchError,
   UnknownRunError,
   UnsupportedConditionError,
   VerifierNotConfiguredError,
@@ -195,6 +197,42 @@ export const SEAL_ABANDONED_DEVIATION =
 export const ANCHORING_SKIPPED_DEVIATION =
   'anchoring-skipped-prototype-mode: no Base anchor was submitted, so this run ' +
   'can never be marked valid (SPECIFICATION.md §7.2, §13.4)';
+
+/**
+ * Reason code of the §7.2 escalation a safety trigger takes when the current
+ * state offers no `pause` row: the `abort` row of `evaluating` (§14.5 — a
+ * trigger never silently continues, and never circles its own budget).
+ */
+export const SAFETY_ESCALATION_REASON = 'safety-trigger-escalated-abort';
+
+/**
+ * Reason code of the §14.5 safety trigger a nonzero Verifier exit writes at
+ * seal time ("a Verifier run returns nonzero against the live evidence
+ * export").
+ */
+export const VERIFIER_NONZERO_REASON = 'verifier-nonzero';
+
+/** Deviation recorded when the Verifier returned nonzero at seal time. */
+export const VERIFIER_NONZERO_DEVIATION =
+  'verifier-nonzero: the Verifier returned a nonzero exit code against the ' +
+  'exported evidence, so this run can never be marked valid ' +
+  '(SPECIFICATION.md §14.5, §15.1)';
+
+/**
+ * Reason code of the audited governance decision that ends an aborted run's
+ * blocked seal at `aborted-sealed` (§7.2 abort row: an abort is never
+ * republished as a valid, sealed run).
+ */
+export const ABORT_SEAL_COMPLETED_REASON = 'abort-seal-completed';
+
+/**
+ * Reason code of the §14.5 safety trigger `recover()` writes when the injected
+ * signer registry does not hold the keys the run registered (LEDGER §11, §15).
+ */
+export const SIGNER_MISMATCH_REASON = 'signer-registry-mismatch';
+
+/** Reason code of the §9.4 rejection-streak trigger, for the pause audit. */
+export const REJECTION_STREAK_REASON = 'max-consecutive-rejections';
 
 export interface NurseryRuntimeOptions {
   /** Open evidence store shared by every run of this runtime (LEDGER §3). */
@@ -301,6 +339,12 @@ interface RunRuntime {
   /** `size` sum of the three mandatory chains at the last checkpoint. */
   lastCheckpointEventTotal: number;
   nonces: SeededPrng;
+  /**
+   * SPEC §11.4: the turn a private ledger event an adapter appends belongs to.
+   * It is the runtime's own cursor except inside the §9.6 `shuffled` pre-pass,
+   * which acts for a future slot while the cursor still names the batch head.
+   */
+  privateLedgerTurn: number | undefined;
   batch: EpisodeBatch | undefined;
   deviations: string[];
   anchorReceipt: AnchorReceipt | undefined;
@@ -364,6 +408,36 @@ interface TurnScratch {
   channelEvent: ChannelEvent | null;
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash | undefined;
+}
+
+/**
+ * SPEC §9.4/§11.3: what the Gateway is asked to reject when an adapter
+ * returned something that is not a §11.3 envelope at all. The Gateway commits
+ * a domain-separated hash of the rejected payload, so a value that cannot be
+ * canonicalized (`undefined`, a cycle, a non-finite number) is committed as
+ * `null` rather than escaping the rejection framework as an exception.
+ */
+function rejectablePayload(value: unknown): TurnProposalEnvelope {
+  try {
+    canonicalJson(value);
+    return value as TurnProposalEnvelope;
+  } catch {
+    return null as unknown as TurnProposalEnvelope;
+  }
+}
+
+/**
+ * SPEC §4.3 / §9.5 / §10.1: the run configuration as a Learner may see it.
+ * `randomSeed` is withheld — with the seed and the public Scenario Engine an
+ * adapter could regenerate researcher-only ground truth and the other Baby's
+ * private seed, and the per-Baby seed the runtime derives from it is a
+ * one-way derivation.
+ */
+function learnerVisibleConfig(config: RunConfig): LearnerVisibleRunConfig {
+  // `void` marks the withheld field as deliberately unread.
+  const { randomSeed, ...visible } = config;
+  void randomSeed;
+  return visible;
 }
 
 /** `sha256:`-prefixed form; `RunConfigSchema` also accepts bare hex. */
@@ -498,6 +572,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lastOutcome: undefined,
       lastCheckpointEventTotal: 0,
       nonces: new SeededPrng(runConfig.randomSeed).derive('nursery/nonce'),
+      privateLedgerTurn: undefined,
       batch: undefined,
       deviations: [],
       anchorReceipt: undefined,
@@ -641,24 +716,23 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     await this.#checkpointEventBoundaries(run);
 
     if (failure !== undefined || pauseRequested) {
-      // §14.5: a safety trigger pauses; it never silently continues.
-      await this.#autoPause(run, turn);
-    } else if (
-      phase === 'running' &&
-      run.turn >= run.config.maxTurnsPerRun
-    ) {
-      await this.#policyCheckpoint(run, turn);
-      run.lifecycle.apply('begin-evaluation');
-    } else if (
-      phase === 'evaluating' &&
-      run.evaluationCount >= run.evaluationTurns
-    ) {
-      run.lifecycle.apply('evaluation-complete');
-    } else if (
-      phase === 'running' &&
-      run.turn % run.config.checkpointEventInterval === 0
-    ) {
-      await this.#policyCheckpoint(run, turn);
+      // §14.5: a safety trigger pauses; it never silently continues. The
+      // stage/budget transition this turn owed is not skipped by the pause —
+      // `#autoPause` re-applies it when it cannot pause, and `resume()`
+      // applies it before the run accepts another turn (§7.2, §18: a pause
+      // never buys a turn beyond `maxTurnsPerRun`/`evaluationTurns`).
+      await this.#autoPause(
+        run,
+        turn,
+        failure === undefined ? REJECTION_STREAK_REASON : ADAPTER_FAILURE_REASON,
+      );
+    } else if (!(await this.#applyStageTransitions(run, turn))) {
+      if (
+        phase === 'running' &&
+        run.turn % run.config.checkpointEventInterval === 0
+      ) {
+        await this.#policyCheckpoint(run, turn);
+      }
     }
 
     return {
@@ -939,6 +1013,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     // by the operator who resumed, so the counter starts again.
     run.gateway.resetRejectionCounter();
     run.lifecycle.apply('resume-complete');
+    // §7.2/§18: the stage transition the paused turn owed is applied before
+    // the run accepts another turn, so a pause on the last budgeted turn
+    // cannot buy an extra training or evaluation turn.
+    await this.#applyStageTransitions(run, run.turn);
     return this.#summary(run);
   }
 
@@ -946,12 +1024,21 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * SPEC §14.2 `annotate`: an operator note on a live run. It is an audited
    * intervention like pause and resume — same actor, same reason code, same
    * mandatory checkpoint — but it does not change the run state.
+   *
+   * SPEC §7.1: a terminal run takes no note at all, and once the run's final
+   * checkpoint exists the note is recorded without a checkpoint (like
+   * `recordHumanView`). A manifest chained after the exported and anchored
+   * final one would displace the tip that was anchored, and is what let a
+   * blocked seal acquire a second `run.sealed` tail (LEDGER §15).
    */
   async annotate(
     runId: string,
     intervention: Intervention,
   ): Promise<InterventionEvent> {
     const run = this.#requireRun(runId);
+    if (run.lifecycle.isTerminal) {
+      throw new RunStateError(runId, run.lifecycle.state, 'running');
+    }
     const event = await run.writer.appendInterventionEvent({
       runId,
       eventType: 'annotate',
@@ -961,7 +1048,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         ? {}
         : { details: intervention.details }),
     });
-    await this.#checkpoint(run, 'intervention');
+    if (this.#finalCheckpoint(run) === undefined) {
+      await this.#checkpoint(run, 'intervention');
+    }
     return event;
   }
 
@@ -1137,18 +1226,30 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     return this.#summary(run);
   }
 
-  /** The export/anchor/verify half of the seal, shared with `retrySeal`. */
+  /**
+   * The export/anchor/verify half of the seal, shared with `retrySeal`.
+   *
+   * SPEC §7.2/§7.3, §11.9: an abort is carried through the recovery. The
+   * run's own final checkpoint says how the seal was reached, so a retry of a
+   * blocked *abort* keeps the `aborted` disposition and ends at
+   * `aborted-sealed` — it never republishes an aborted run as `sealed`/
+   * `valid`, whatever the anchor and the Verifier then say.
+   */
   async #runSealSteps(run: RunRuntime): Promise<RunSummary> {
     const runId = run.runId;
     const manifest = await this.#sealEvidence(run);
     run.finalCheckpointHash = manifest.checkpointHash;
+    const aborted = manifest.reason === 'run-aborted';
+    const openDisposition: ExperimentRecord['disposition'] = aborted
+      ? 'aborted'
+      : 'invalid';
 
     const anchor = await this.#anchor(run, manifest);
     if (anchor.blocked) {
       // §7.2: export or anchor unavailable after bounded retry.
       run.lifecycle.apply('seal-blocked');
       this.#appendExperimentRecord(run, {
-        disposition: 'invalid',
+        disposition: openDisposition,
         checkpointManifestRef: manifest.checkpointHash,
         anchorTxRef: UNANCHORED_TX_REF,
         verifierReportRef: 'not-run',
@@ -1161,7 +1262,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     const anchored = anchor.receipt?.status === 'confirmed';
     this.#appendExperimentRecord(run, {
-      disposition: 'invalid',
+      disposition: openDisposition,
       checkpointManifestRef: manifest.checkpointHash,
       anchorTxRef: anchor.receipt?.transactionHash ?? UNANCHORED_TX_REF,
       verifierReportRef: 'pending-verification',
@@ -1176,11 +1277,18 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const report = this.#options.verifier
       ? await this.#options.verifier(run.bundleDir)
       : undefined;
+    if (report !== undefined && report.exitCode !== 0) {
+      await this.#recordVerifierFailure(run, report);
+    }
 
     // §15.1: the Verifier is authoritative for integrity, so a run is only
     // `valid` once it is anchored *and* the report passed.
     this.#appendExperimentRecord(run, {
-      disposition: anchored && report?.exitCode === 0 ? 'valid' : 'invalid',
+      disposition: aborted
+        ? 'aborted'
+        : anchored && report?.exitCode === 0
+          ? 'valid'
+          : 'invalid',
       checkpointManifestRef: manifest.checkpointHash,
       anchorTxRef: anchor.receipt?.transactionHash ?? UNANCHORED_TX_REF,
       verifierReportRef: report
@@ -1190,7 +1298,24 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     });
     await this.#writeExperimentRecordFile(run);
 
-    if (anchored) {
+    if (aborted) {
+      // §7.2 abort row: the terminal state of an aborted run is
+      // `aborted-sealed`. From `sealing` that is reached through the
+      // `seal-blocked --abandon-recovery-->` pair, and the decision is
+      // audited so the record shows why the run ended there.
+      await run.writer.appendInterventionEvent({
+        runId,
+        eventType: 'governance-decision',
+        actorId: this.#actorId,
+        reasonCode: ABORT_SEAL_COMPLETED_REASON,
+        details: {
+          checkpointManifestRef: manifest.checkpointHash,
+          anchored,
+        },
+      });
+      run.lifecycle.apply('seal-blocked');
+      run.lifecycle.apply('abandon-recovery');
+    } else if (anchored) {
       run.lifecycle.apply('seal-complete');
     } else {
       // §7.2: an unanchorable run is `sealing-blocked`, and an operator who
@@ -1200,6 +1325,33 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.lifecycle.apply('abandon-recovery');
     }
     return this.#summary(run);
+  }
+
+  /**
+   * SPEC §14.5: "a Verifier run returns nonzero against the live evidence
+   * export" is an automated safety trigger, and every trigger writes a
+   * `safety-trigger` audit entry with a machine-readable reason code. The
+   * matching §15.1 deviation is recorded so the Experiment Record carries it.
+   */
+  async #recordVerifierFailure(
+    run: RunRuntime,
+    report: VerificationReport,
+  ): Promise<void> {
+    await run.writer.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'safety-trigger',
+      actorId: this.#actorId,
+      reasonCode: VERIFIER_NONZERO_REASON,
+      details: {
+        exitCode: report.exitCode,
+        gaps: report.gaps.length,
+        forks: report.forks.length,
+        reportHash: hashCanonical(HASH_DOMAINS.runManifest, report),
+      },
+    });
+    if (!run.deviations.includes(VERIFIER_NONZERO_DEVIATION)) {
+      run.deviations.push(VERIFIER_NONZERO_DEVIATION);
+    }
   }
 
   /**
@@ -1215,41 +1367,68 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async #sealEvidence(run: RunRuntime): Promise<CheckpointManifest> {
     const existing = this.#finalCheckpoint(run);
     if (existing !== undefined && this.#runSealedEventsPresent(run)) {
+      run.finalCheckpointHash = existing.checkpointHash;
       return existing;
     }
     await this.#policyCheckpoint(run, run.turn);
     await this.#appendRunSealedEvents(run);
-    return this.#checkpoint(run, 'run-sealed');
+    const manifest = await this.#checkpoint(run, 'run-sealed');
+    run.finalCheckpointHash = manifest.checkpointHash;
+    return manifest;
   }
 
-  /** The last checkpoint, if it is a final one (`run-sealed`/`run-aborted`). */
+  /**
+   * The run's final checkpoint (`run-sealed`/`run-aborted`), wherever it sits
+   * in the manifest chain.
+   *
+   * It is deliberately not "the last checkpoint": §14.2 mandates a checkpoint
+   * for the very operator actions performed while a blocked seal is being
+   * chased, and a manifest written after the final one must not make the seal
+   * evidence look absent (LEDGER §15 — a second tail is indistinguishable
+   * from a fork). `finalCheckpointHash` is the in-memory fast path; the scan
+   * is what a recovered or re-entered run relies on.
+   */
   #finalCheckpoint(run: RunRuntime): CheckpointManifest | undefined {
-    const last = run.writer.readCheckpoints(run.runId).at(-1);
-    if (
-      last !== undefined &&
-      (last.reason === 'run-sealed' || last.reason === 'run-aborted')
-    ) {
-      return last;
+    const checkpoints = run.writer.readCheckpoints(run.runId);
+    const stored = run.finalCheckpointHash;
+    if (stored !== undefined) {
+      const known = checkpoints.find(
+        (manifest) => manifest.checkpointHash === stored,
+      );
+      if (known !== undefined) {
+        return known;
+      }
     }
-    return undefined;
+    return checkpoints.find(
+      (manifest) =>
+        manifest.reason === 'run-sealed' || manifest.reason === 'run-aborted',
+    );
   }
 
-  /** True when both Baby ledgers already end in their `run.sealed` event. */
+  /**
+   * True when both Baby ledgers already carry their `run.sealed` event —
+   * anywhere in the chain, since §14.2 interventions and the recovery path
+   * may have appended events after it (LEDGER §15).
+   */
   #runSealedEventsPresent(run: RunRuntime): boolean {
-    return BABY_ROLES.every((role) => {
-      const events = run.writer.readEvents(
-        run.runId,
-        ledgerStreamForRole(role),
-      );
-      const last = events.at(-1);
-      if (last === undefined) {
-        return false;
-      }
-      const parsed = parseCanonicalJson(last.canonicalJson) as {
-        eventType?: unknown;
-      };
-      return parsed.eventType === 'run.sealed';
-    });
+    return BABY_ROLES.every((role) =>
+      run.writer
+        .readEvents(run.runId, ledgerStreamForRole(role))
+        .some((event) => {
+          const parsed = parseCanonicalJson(event.canonicalJson) as {
+            eventType?: unknown;
+          };
+          return parsed.eventType === 'run.sealed';
+        }),
+    );
+  }
+
+  /** LEDGER §15: the run already carries a complete, immutable seal tail. */
+  #sealEvidenceExists(run: RunRuntime): boolean {
+    return (
+      this.#finalCheckpoint(run) !== undefined &&
+      this.#runSealedEventsPresent(run)
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -1260,10 +1439,36 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * Rebuilds one run from the evidence store after a restart: verify the
    * committed prefix, continue at the next unused sequence, reload the
    * per-Baby policies, and record an explicit recovery event.
+   *
+   * SPEC §7.1/§7.3 and LEDGER §15 bound what recovery may do:
+   *
+   * - the signer registry that is about to sign the recovered tail must hold
+   *   the keys the run registered; a mismatch is an audited safety trigger and
+   *   a refusal, never a silently unverifiable tail;
+   * - a run whose seal evidence exists (a `run-sealed`/`run-aborted`
+   *   checkpoint plus `run.sealed` on both ledgers) is never reopened. Its
+   *   state is reconstructed from that evidence and `recover()` is a read-only
+   *   no-op: no recovery intervention, no recovery checkpoint, and therefore
+   *   no second `run.sealed` or second final checkpoint later.
    */
   async recover(runId: string): Promise<RunSummary> {
     const existing = this.#runs.get(runId);
     const run = existing ?? this.#reconstruct(runId);
+
+    const mismatches = this.#signerMismatches(run);
+    if (mismatches.length > 0) {
+      // §14.5: the trigger is audited (the intervention stream is unsigned,
+      // so this cannot itself extend a signed chain), then the recovery is
+      // refused before any signed event is written.
+      await run.writer.appendInterventionEvent({
+        runId,
+        eventType: 'safety-trigger',
+        actorId: this.#actorId,
+        reasonCode: SIGNER_MISMATCH_REASON,
+        details: { domains: mismatches },
+      });
+      throw new SignerRegistryMismatchError(runId, mismatches);
+    }
 
     const report = await this.#verifyCommittedPrefix(run);
     if (!report.ok) {
@@ -1281,6 +1486,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ).length;
     run.lastCheckpointEventTotal = this.#eventTotal(run);
     run.batch = undefined;
+
+    const sealCheckpoint = this.#finalCheckpoint(run);
+    if (sealCheckpoint !== undefined) {
+      run.finalCheckpointHash = sealCheckpoint.checkpointHash;
+    }
+    if (run.lifecycle.isTerminal || this.#sealEvidenceExists(run)) {
+      // §7.1: a terminal run is complete and immutable; a blocked seal keeps
+      // its exported final checkpoint as the tip for `retrySeal`.
+      return this.#summary(run);
+    }
 
     const policyRestored: Record<string, boolean> = {};
     for (const role of BABY_ROLES) {
@@ -1303,13 +1518,32 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     });
     await this.#checkpoint(run, 'recovery');
 
-    if (
-      run.lifecycle.state === 'evaluating' &&
-      run.evaluationCount >= run.evaluationTurns
-    ) {
-      run.lifecycle.apply('evaluation-complete');
-    }
+    await this.#applyStageTransitions(run, run.turn);
     return this.#summary(run);
+  }
+
+  /**
+   * LEDGER §11/§15: signer domains whose public key in the injected registry
+   * is not the key the run registered. Signing a recovered tail with an
+   * unregistered key makes every later event unverifiable, and the tail can
+   * never be re-signed.
+   */
+  #signerMismatches(run: RunRuntime): string[] {
+    const registered = run.writer.readRunSigners(run.runId);
+    if (registered.length === 0) {
+      return [];
+    }
+    const current = new Map(
+      run.signers.publicKeys().map((key) => [key.domain, key]),
+    );
+    const mismatches: string[] = [];
+    for (const signer of registered) {
+      const held = current.get(signer.domain);
+      if (held === undefined || held.publicKey !== signer.publicKey) {
+        mismatches.push(signer.domain);
+      }
+    }
+    return mismatches;
   }
 
   // -------------------------------------------------------------------------
@@ -1632,20 +1866,52 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       const slotObservation = assertObservationHygiene(
         run.engine.observationFor(instance, run.runId, slotTurn, slotSender),
       );
-      await this.#callAdapter(run, slotSender, 'observe', () =>
-        run.adapters[slotSender].observe(slotObservation),
+      // SPEC §11.4: every private ledger event an adapter appends inside this
+      // slot's calls belongs to the slot's turn, not to the batch head the
+      // runtime's own cursor still names.
+      const produced = await this.#withPrivateLedgerTurn(
+        run,
+        slotTurn,
+        async () => {
+          await this.#callAdapter(run, slotSender, 'observe', () =>
+            run.adapters[slotSender].observe(slotObservation),
+          );
+          // §11.3: the envelope is validated inside the `#callAdapter`
+          // boundary, so a malformed one becomes a committed rejection rather
+          // than a `TypeError` escaping `step()` with no turn record.
+          return this.#callAdapter(run, slotSender, 'act', async () => {
+            const value: unknown = await run.gateway.withTurnDeadline(
+              run.adapters[slotSender].act({
+                turn: slotTurn,
+                role: 'sender',
+                responseBudgetMs: run.config.turnResponseBudgetMs,
+                availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+              }),
+              run.config.turnResponseBudgetMs,
+            );
+            const parsed = TurnProposalEnvelopeSchema.safeParse(value);
+            return parsed.success
+              ? { envelope: parsed.data, malformed: undefined }
+              : { envelope: undefined, malformed: value };
+          });
+        },
       );
-      const envelope = await this.#callAdapter(run, slotSender, 'act', () =>
-        run.gateway.withTurnDeadline(
-          run.adapters[slotSender].act({
-            turn: slotTurn,
-            role: 'sender',
-            responseBudgetMs: run.config.turnResponseBudgetMs,
-            availableActions: [...run.gateway.carrierProtocol.allowedKinds],
-          }),
-          run.config.turnResponseBudgetMs,
-        ),
-      );
+
+      const envelope = produced.envelope;
+      if (envelope === undefined) {
+        // The Gateway owns rejection evidence for a malformed submission too:
+        // it reads the value defensively and commits `invalid-envelope`.
+        const rejected = await run.gateway.submitProposal(
+          { turn: slotTurn, sender: slotSender, recipient: slotReceiver },
+          rejectablePayload(produced.malformed),
+        );
+        batch.slots.push(
+          rejected.kind === 'rejected'
+            ? { turn: slotTurn, instance, rejection: rejected }
+            : { turn: slotTurn, instance },
+        );
+        continue;
+      }
 
       const validation = run.gateway.carrierProtocol.validate(
         envelope.proposal,
@@ -1676,6 +1942,25 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     return batch.slots.find((slot) => slot.turn === turn);
   }
 
+  /**
+   * Binds the turn stamped on the private ledger events an adapter appends
+   * during `call` (SPEC §11.4). The runtime's own cursor is restored
+   * afterwards on every path, so only the pre-pass ever overrides it.
+   */
+  async #withPrivateLedgerTurn<T>(
+    run: RunRuntime,
+    turn: number,
+    call: () => Promise<T>,
+  ): Promise<T> {
+    const previous = run.privateLedgerTurn;
+    run.privateLedgerTurn = turn;
+    try {
+      return await call();
+    } finally {
+      run.privateLedgerTurn = previous;
+    }
+  }
+
   #batchSize(run: RunRuntime): number {
     return (
       this.#options.batchSize ??
@@ -1701,27 +1986,91 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   /**
    * SPEC §9.4/§14.5: the automatic pause a safety trigger causes — a
    * rejection streak, or an adapter that crashed through its retry budget.
-   * The transition, its mandatory checkpoint, and nothing else: the trigger's
-   * own `safety-trigger` entry is written by whoever detected it (the Gateway
-   * for a rejection streak, `step()` for an adapter crash).
+   * The trigger's own `safety-trigger` entry is written by whoever detected it
+   * (the Gateway for a rejection streak, `step()` for an adapter crash); what
+   * happens here is the §7.2 consequence:
+   *
+   * - `pause` where the table offers it, with its mandatory checkpoint;
+   * - otherwise the audited `pause-not-available` entry, then the run's own
+   *   budget transition, and — if the run would otherwise keep taking turns
+   *   with a live trigger — the `abort` row §7.2 offers out of `evaluating`.
    */
-  async #autoPause(run: RunRuntime, turn: number): Promise<void> {
-    if (!run.lifecycle.canApply('pause')) {
-      // The §7.2 table has no pause out of this state; the trigger's own
-      // `safety-trigger` entry is already committed, so record why nothing
-      // paused rather than silently continuing.
-      await run.writer.appendInterventionEvent({
-        runId: run.runId,
-        eventType: 'safety-trigger',
-        actorId: this.#actorId,
-        reasonCode: PAUSE_NOT_AVAILABLE_REASON,
-        details: { turn, state: run.lifecycle.state },
-      });
+  async #autoPause(
+    run: RunRuntime,
+    turn: number,
+    trigger: string,
+  ): Promise<void> {
+    if (run.lifecycle.canApply('pause')) {
+      run.lifecycle.apply('pause');
+      await this.#checkpoint(run, 'pause');
+      run.lifecycle.apply('pause-complete');
+      // The stage transition this turn owed is applied by `resume()`, so the
+      // pause cannot hand the run an extra turn on either budget.
       return;
     }
-    run.lifecycle.apply('pause');
-    await this.#checkpoint(run, 'pause');
-    run.lifecycle.apply('pause-complete');
+
+    // The §7.2 table has no pause out of this state; the trigger's own
+    // `safety-trigger` entry is already committed, so record why nothing
+    // paused rather than silently continuing.
+    const state = run.lifecycle.state;
+    await run.writer.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'safety-trigger',
+      actorId: this.#actorId,
+      reasonCode: PAUSE_NOT_AVAILABLE_REASON,
+      details: { turn, state, trigger },
+    });
+
+    // The budget still ends the run exactly where §7.2 says it does: an
+    // exhausted evaluation budget seals, it does not escalate.
+    if (await this.#applyStageTransitions(run, turn)) {
+      return;
+    }
+
+    // §7.2 offers `evaluating --abort--> aborting`, and §14.5 forbids a
+    // trigger that neither pauses nor stops: escalate instead of letting the
+    // run keep drawing held-out episodes with a live trigger.
+    if (run.lifecycle.canApply('abort')) {
+      await this.abort(run.runId, {
+        actorId: this.#actorId,
+        reasonCode: SAFETY_ESCALATION_REASON,
+        details: { turn, state, trigger },
+      });
+    }
+  }
+
+  /**
+   * SPEC §7.2 stage transitions — `running --begin-evaluation--> evaluating`
+   * and `evaluating --evaluation-complete--> sealing`.
+   *
+   * They are applied from the run's own state and counters rather than from
+   * the branch that executed the turn, so the §18 budgets hold whatever else
+   * the turn triggered: a §14.5 pause defers them to `resume()`, a trigger
+   * with no `pause` row applies them before escalating, and neither can buy a
+   * turn beyond `maxTurnsPerRun` or `evaluationTurns`.
+   *
+   * @returns true when a transition was applied.
+   */
+  async #applyStageTransitions(
+    run: RunRuntime,
+    turn: number,
+  ): Promise<boolean> {
+    if (
+      run.lifecycle.state === 'running' &&
+      run.turn >= run.config.maxTurnsPerRun
+    ) {
+      await this.#policyCheckpoint(run, turn);
+      run.lifecycle.apply('begin-evaluation');
+      return true;
+    }
+    if (
+      run.lifecycle.state === 'evaluating' &&
+      run.evaluationCount >= run.evaluationTurns
+    ) {
+      run.lifecycle.apply('evaluation-complete');
+      return true;
+    }
+    return false;
   }
 
   // -------------------------------------------------------------------------
@@ -1898,24 +2247,41 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // Anchoring (LEDGER §10, SPEC §13.4)
   // -------------------------------------------------------------------------
 
+  /**
+   * LEDGER §10, SPEC §13.4. The publisher owns the single append-only receipt
+   * row: it inserts exactly once at a terminal decision and returns the stored
+   * receipt, and when it gives up waiting it returns an *unstored* `submitted`
+   * receipt and keeps its pending sidecar as the resume handle. The runtime
+   * therefore never writes a receipt row itself, and treats anything but
+   * `confirmed` as an unavailable anchor — the §7.2 `sealing-blocked` path,
+   * from which `retrySeal` can still record the confirmation later.
+   */
   async #anchor(
     run: RunRuntime,
     manifest: CheckpointManifest,
   ): Promise<{ receipt?: AnchorReceipt; blocked: boolean }> {
     const publisher = this.#options.anchorPublisher;
     if (publisher) {
+      let receipt: AnchorReceipt;
       try {
         const submitted = await publisher.submit(manifest);
-        const receipt = await publisher.awaitConfirmation(submitted);
-        run.writer.insertAnchorReceipt(receipt);
-        run.anchorReceipt = receipt;
-        return { receipt, blocked: false };
+        receipt = await publisher.awaitConfirmation(submitted);
       } catch (error) {
-        run.deviations.push(
-          `anchor-unavailable: ${error instanceof Error ? error.message : String(error)}`,
+        this.#recordAnchorUnavailable(
+          run,
+          error instanceof Error ? error.message : String(error),
         );
         return { blocked: true };
       }
+      if (receipt.status !== 'confirmed') {
+        this.#recordAnchorUnavailable(
+          run,
+          `receipt status is "${receipt.status}"`,
+        );
+        return { receipt, blocked: true };
+      }
+      run.anchorReceipt = receipt;
+      return { receipt, blocked: false };
     }
 
     // §7.2: skipping the anchor is an audited governance decision and a
@@ -1935,6 +2301,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.deviations.push(ANCHORING_SKIPPED_DEVIATION);
     }
     return { blocked: false };
+  }
+
+  /** §7.2 `sealing-blocked` deviation, recorded once per distinct cause. */
+  #recordAnchorUnavailable(run: RunRuntime, detail: string): void {
+    const deviation = `anchor-unavailable: ${detail}`;
+    if (!run.deviations.includes(deviation)) {
+      run.deviations.push(deviation);
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -2095,7 +2469,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       runId: run.runId,
       role,
       babyId: babyIdForRole(role),
-      config: run.config,
+      config: learnerVisibleConfig(run.config),
       learnerContract: contract,
       // §6.2: the per-Baby seed is private and is never shared with the
       // other Baby or with the Gateway.
@@ -2105,7 +2479,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         run.writer,
         run.runId,
         babyIdForRole(role),
-        () => run.turn,
+        // SPEC §11.4: the turn being executed — the slot's turn inside the
+        // §9.6 `shuffled` pre-pass, the runtime's cursor everywhere else.
+        () => run.privateLedgerTurn ?? run.turn,
       ),
       ...(initialPolicy === undefined ? {} : { initialPolicy }),
     });
@@ -2150,10 +2526,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const trainingCount = records.filter(
       (record) => record.phase === 'running',
     ).length;
-    const state: RunState =
-      evaluationCount > 0 || trainingCount >= config.maxTurnsPerRun
+    const experimentRecords = writer.readExperimentRecords(runId);
+    const state =
+      this.#terminalStateFrom(writer, runId, experimentRecords) ??
+      (evaluationCount > 0 || trainingCount >= config.maxTurnsPerRun
         ? 'evaluating'
-        : 'running';
+        : 'running');
 
     const symbolInventory = fixedTokenInventory(config.symbolInventorySize ?? 32);
     const run: RunRuntime = {
@@ -2181,14 +2559,86 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lastOutcome: undefined,
       lastCheckpointEventTotal: 0,
       nonces: new SeededPrng(config.randomSeed).derive('nursery/nonce'),
+      privateLedgerTurn: undefined,
       batch: undefined,
-      deviations: [],
+      // §11.9: the deviations already published for this run stay published,
+      // so a later record written after recovery does not drop them.
+      deviations: [...(experimentRecords.at(-1)?.deviations ?? [])],
       anchorReceipt: undefined,
       finalCheckpointHash: undefined,
       policiesDirCreated: false,
     };
     this.#runs.set(runId, run);
     return run;
+  }
+
+  /**
+   * SPEC §7.1/§7.2: the state a run that already ended is rebuilt at, derived
+   * from evidence a later event cannot erase — the preserved fork artifacts,
+   * the `run-sealed`/`run-aborted` checkpoint together with `run.sealed` on
+   * both ledgers, the current Experiment Record disposition (§11.9), and the
+   * last governance decision. `undefined` means the run never ended, and the
+   * turn-record counts decide as before.
+   */
+  #terminalStateFrom(
+    writer: SqliteEvidenceWriter,
+    runId: string,
+    experimentRecords: readonly ExperimentRecord[],
+  ): RunState | undefined {
+    if (writer.readForkArtifacts(runId).length > 0) {
+      return 'forked-invalid';
+    }
+
+    const sealCheckpoint = writer
+      .readCheckpoints(runId)
+      .find(
+        (manifest) =>
+          manifest.reason === 'run-sealed' || manifest.reason === 'run-aborted',
+      );
+    if (sealCheckpoint === undefined) {
+      return undefined;
+    }
+    const sealedLedgers = BABY_ROLES.every((role) =>
+      writer.readEvents(runId, ledgerStreamForRole(role)).some((event) => {
+        const parsed = parseCanonicalJson(event.canonicalJson) as {
+          eventType?: unknown;
+        };
+        return parsed.eventType === 'run.sealed';
+      }),
+    );
+    if (!sealedLedgers) {
+      return undefined;
+    }
+
+    const current = experimentRecords.at(-1);
+    if (current?.disposition === 'valid') {
+      return 'sealed';
+    }
+    if (
+      current?.disposition === 'aborted' &&
+      current.anchorTxRef !== UNANCHORED_TX_REF
+    ) {
+      return 'aborted-sealed';
+    }
+
+    const decisions = writer
+      .readEvents(runId, 'intervention')
+      .map((event) => InterventionEventSchema.parse(
+        parseCanonicalJson(event.canonicalJson),
+      ))
+      .filter((event) => event.eventType === 'governance-decision');
+    const ended = decisions.some((event) => {
+      const outcome = event.details['outcome'];
+      return (
+        outcome === SEAL_ABANDONED_REASON ||
+        event.reasonCode === ABORT_SEAL_COMPLETED_REASON ||
+        event.reasonCode === ANCHORING_SKIPPED_REASON
+      );
+    });
+    // §7.2: a seal that was neither abandoned nor anchored is still
+    // `sealing-blocked` — non-terminal, accepts no turn, and `retrySeal` may
+    // resume the export/anchor work over the existing final checkpoint.
+    return ended ? 'aborted-sealed' : 'sealing-blocked';
   }
 
   #assertConditionSupported(config: RunConfig): void {

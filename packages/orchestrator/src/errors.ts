@@ -16,6 +16,7 @@ export type RuntimeErrorCode =
   | 'verifier-not-configured'
   | 'anchor-policy'
   | 'unsupported-condition'
+  | 'signer-registry-mismatch'
   | 'adapter-failure';
 
 export class NurseryRuntimeError extends Error {
@@ -104,6 +105,29 @@ export class VerifierNotConfiguredError extends NurseryRuntimeError {
 export class AnchorPolicyError extends NurseryRuntimeError {
   constructor(message: string) {
     super('anchor-policy', message);
+  }
+}
+
+/**
+ * LEDGER-INTEGRITY-DESIGN.md §11/§15: the signer registry handed to the
+ * runtime does not hold the keys the run registered, so every event it signed
+ * from here on would be unverifiable — and an already-committed tail can never
+ * be re-signed. Recovery refuses rather than producing one.
+ */
+export class SignerRegistryMismatchError extends NurseryRuntimeError {
+  readonly domains: readonly string[];
+
+  constructor(
+    readonly runId: string,
+    domains: readonly string[],
+  ) {
+    super(
+      'signer-registry-mismatch',
+      `run "${runId}" registered different public keys for signer domain(s) ` +
+        `${domains.join(', ')}; recovery would sign an unverifiable tail ` +
+        '(LEDGER-INTEGRITY-DESIGN.md §11, §15)',
+    );
+    this.domains = Object.freeze([...domains]);
   }
 }
 

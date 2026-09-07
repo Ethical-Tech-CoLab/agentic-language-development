@@ -432,9 +432,26 @@ export function slowFactory(delayMs: number): LearnerAdapterFactory {
   return { track: 'no-learning', create: () => new SlowAdapter(delayMs) };
 }
 
+/** What the publisher double reports and where it stores the receipt row. */
+export interface FakeAnchorPublisherOptions {
+  /**
+   * Terminal status `awaitConfirmation` reports. `confirmed` and `failed` are
+   * terminal decisions and are stored; `submitted` models the publisher
+   * giving up on the confirmation poll, which stores nothing (the pending
+   * sidecar stays the resume handle).
+   */
+  finalStatus?: AnchorReceipt['status'];
+  /**
+   * The store that owns the single append-only receipt row, resolved lazily
+   * because the runtime is built before the harness exists. `BaseAnchorPublisher`
+   * inserts exactly once at a terminal decision; the runtime never does.
+   */
+  evidence?: () => { insertAnchorReceipt(receipt: AnchorReceipt): void } | undefined;
+}
+
 /**
  * A Base Anchor Publisher double: `submit` returns a `submitted` receipt and
- * `awaitConfirmation` the confirmed one, binding `inputData` to the 32-byte
+ * `awaitConfirmation` the terminal one, binding `inputData` to the 32-byte
  * checkpoint digest exactly as `docs/evidence-bundle-format.md` §8 requires.
  */
 export class FakeAnchorPublisher implements AnchorPublisher {
@@ -442,7 +459,10 @@ export class FakeAnchorPublisher implements AnchorPublisher {
 
   readonly submitted: AnchorReceipt[] = [];
 
-  constructor(private readonly failing = false) {}
+  constructor(
+    private readonly failing = false,
+    private readonly finalStatus: AnchorReceipt['status'] = 'confirmed',
+  ) {}
 
   submit(manifest: CheckpointManifest): Promise<AnchorReceipt> {
     if (this.failing) {
@@ -473,26 +493,42 @@ export class FakeAnchorPublisher implements AnchorPublisher {
   }
 
   awaitConfirmation(receipt: AnchorReceipt): Promise<AnchorReceipt> {
+    if (this.finalStatus === 'submitted') {
+      // The confirmation-poll budget ran out: not a terminal decision, so no
+      // row is stored and the unstored `submitted` receipt comes back.
+      return Promise.resolve(receipt);
+    }
     return Promise.resolve({
       ...receipt,
       blockNumber: 1_234_567,
       blockHash: `0x${'3'.repeat(64)}`,
-      status: 'confirmed',
+      status: this.finalStatus,
       confirmations: 1,
     });
   }
 }
 
-/** Binds a publisher double to one run id (the receipt schema requires it). */
+/**
+ * Binds a publisher double to one run id (the receipt schema requires it).
+ * Like `BaseAnchorPublisher`, the publisher — never the runtime — inserts the
+ * single append-only receipt row, and only at a terminal decision.
+ */
 export function anchorPublisherFor(
   runId: string,
   failing = false,
+  options: FakeAnchorPublisherOptions = {},
 ): AnchorPublisher {
-  const inner = new FakeAnchorPublisher(failing);
+  const inner = new FakeAnchorPublisher(failing, options.finalStatus);
   return {
     network: inner.network,
     submit: async (manifest) => ({ ...(await inner.submit(manifest)), runId }),
-    awaitConfirmation: (receipt) => inner.awaitConfirmation(receipt),
+    awaitConfirmation: async (receipt) => {
+      const settled = await inner.awaitConfirmation(receipt);
+      if (settled.status !== 'submitted') {
+        options.evidence?.()?.insertAnchorReceipt(settled);
+      }
+      return settled;
+    },
   };
 }
 

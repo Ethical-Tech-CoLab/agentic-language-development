@@ -39,7 +39,11 @@ describe('anchored seal path (ALD-071)', () => {
     const proofWriter = createSimpleProofWriterFor(() => harness);
     harness = await createHarness({
       anchorPolicy: 'required',
-      anchorPublisher: anchorPublisherFor(runId),
+      // The publisher owns the receipt row, exactly as `BaseAnchorPublisher`
+      // does; the runtime never writes one.
+      anchorPublisher: anchorPublisherFor(runId, false, {
+        evidence: () => harness?.runtime.writerFor(runId),
+      }),
       verifier: fakeVerifier(runId),
       proofWriter,
     });
