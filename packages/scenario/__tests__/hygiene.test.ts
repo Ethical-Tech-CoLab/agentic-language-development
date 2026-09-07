@@ -172,6 +172,59 @@ describe('§10.1 prohibited categories', () => {
     );
   });
 
+  describe('whitespace-free prose evades RUN_ID_PATTERN alone (regression)', () => {
+    // RUN_ID_PATTERN forbids whitespace, so a whitespace-free English
+    // sentence is pattern-valid; the prose heuristic — evaluated on the same
+    // camel/snake/kebab/dot/colon/slash split the token scan uses — is what
+    // must still catch it. See hygiene.ts `looksLikeProse`.
+    it.each([
+      'theRedCircleIsTheTarget',
+      'the.red.circle',
+      'select-left-object',
+    ])('rejects %s', (runId) => {
+      expect(reasons({ ...CLEAN, runId })).not.toEqual([]);
+    });
+
+    it('rejects a joined sentence that uses no banned vocabulary at all', () => {
+      // Distinct from the cases above: none of these words are on
+      // BANNED_LANGUAGE_TOKENS, so only the fixed prose heuristic — not the
+      // token scan — can catch them. Before the fix, RUN_ID_PATTERN's ban on
+      // whitespace meant `looksLikeProse` could never see more than one
+      // "word" here and these were accepted outright.
+      expect(reasons({ ...CLEAN, runId: 'moveToPositionThenWaitForSignal' })).toContain(
+        'prose-string',
+      );
+      expect(
+        reasons({ ...CLEAN, runId: 'do-not-trust-your-partner-this-round' }),
+      ).toContain('prose-string');
+      expect(
+        reasons({ ...CLEAN, runId: 'hello.world.this.is.a.secret.message' }),
+      ).toContain('prose-string');
+    });
+
+    it('still accepts a clean, conventional runId', () => {
+      expect(reasons({ ...CLEAN, runId: 'run-e03-0007' })).toEqual([]);
+    });
+
+    it('does not flag the hyphenated run ids already used elsewhere in the monorepo', () => {
+      // These decode to several all-alphabetic segments too, but contain no
+      // closed-class function word, so the stopword-gated heuristic leaves
+      // them valid. Regression guard: packages/orchestrator/__tests__ and
+      // twins/packs/__tests__ drive real runs through this filter with ids
+      // in exactly this shape.
+      for (const runId of [
+        'e03-disabled-s4',
+        'repro-1',
+        'run-append-only',
+        'run-adapter-crash-evaluating',
+        'run-adapter-crash-outcome',
+        'run-disabled-scratch-rl',
+      ]) {
+        expect(reasons({ ...CLEAN, runId })).toEqual([]);
+      }
+    });
+  });
+
   it('rejects a string outside the recipient and encoding allowlists', () => {
     expect(reasons({ ...CLEAN, recipient: 'baby-c' })).toContain('string-value');
     expect(reasons({ ...CLEAN, encoding: 'text' })).toContain('string-value');
@@ -237,6 +290,13 @@ describe('scanForHumanLanguage', () => {
       1,
     );
     expect(scanForHumanLanguage(['🎯'])).toEqual(['🎯']);
+  });
+
+  it('flags a whitespace-free joined sentence the same as its spaced form', () => {
+    expect(scanForHumanLanguage('pickTheItemThatMatchesTheSenderHint')).toEqual([
+      'pickTheItemThatMatchesTheSenderHint',
+    ]);
+    expect(scanForHumanLanguage('run-append-only')).toEqual([]);
   });
 
   it('accepts extra tokens and survives a cyclic structure', () => {

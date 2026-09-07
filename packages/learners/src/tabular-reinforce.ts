@@ -99,9 +99,13 @@ export interface TabularReinforceOptions extends GameShapeOptions {
   /** Softmax temperature for action sampling (default `1.0`). */
   temperature?: number;
   /**
-   * The single intrinsic reward this reference track implements. When set (or
-   * when `RunConfig.learningSignal` is `intrinsic-prediction-progress`) the
-   * task reward is never read.
+   * The single intrinsic reward this reference track implements. Setting
+   * this to `'prediction-progress'` and configuring
+   * `RunConfig.learningSignal: 'intrinsic-prediction-progress'` are two
+   * halves of one contract, not two independent switches: `init()` throws
+   * `LearnerConfigurationError` unless both are set together or both are
+   * left unset (SPEC §11.1 `learningSignal`). When both are set, the task
+   * reward is never read.
    */
   intrinsicMode?: 'prediction-progress';
 }
@@ -883,19 +887,31 @@ function isSupportedLearningSignal(value: string): value is RewardMode {
   return (SUPPORTED_LEARNING_SIGNALS as readonly string[]).includes(value);
 }
 
+/**
+ * `intrinsicMode` and `RunConfig.learningSignal` are one contract, not two
+ * independent switches (SPEC §11.1 `learningSignal`; §6.2 — tracks differ
+ * only in the reward/update-rule fields of `UpdateBatch`). `updatePolicy`
+ * requires `batch.learningSignal === state.rewardMode`, and the batch signal
+ * a caller can supply is always `RunConfig.learningSignal` — so any
+ * combination where the resolved reward mode disagrees with the configured
+ * signal would initialize cleanly and then reject every `updatePolicy` call.
+ * Rejecting the mismatch here, at `init()`, surfaces the misconfiguration
+ * once instead of mid-run.
+ */
 function resolveRewardMode(
-  config: RunConfig,
+  config: Pick<RunConfig, 'learningSignal'>,
   options: TabularReinforceOptions,
 ): RewardMode {
-  if (options.intrinsicMode === 'prediction-progress') {
-    if (
-      config.learningSignal !== 'intrinsic-prediction-progress' &&
-      config.learningSignal !== 'extrinsic-task'
-    ) {
-      throw new LearnerConfigurationError(
-        `learningSignal ${config.learningSignal} cannot drive intrinsicMode prediction-progress`,
-      );
-    }
+  const intrinsicModeSet = options.intrinsicMode === 'prediction-progress';
+  const intrinsicSignal = config.learningSignal === 'intrinsic-prediction-progress';
+  if (intrinsicModeSet !== intrinsicSignal) {
+    throw new LearnerConfigurationError(
+      intrinsicModeSet
+        ? `intrinsicMode "prediction-progress" requires learningSignal "intrinsic-prediction-progress", got "${config.learningSignal}"`
+        : 'learningSignal "intrinsic-prediction-progress" requires intrinsicMode "prediction-progress" to be configured',
+    );
+  }
+  if (intrinsicSignal) {
     return 'intrinsic-prediction-progress';
   }
   if (isSupportedLearningSignal(config.learningSignal)) {

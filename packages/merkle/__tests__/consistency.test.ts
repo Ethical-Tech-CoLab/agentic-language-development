@@ -310,4 +310,62 @@ describe('verifyConsistency rejects non-prefix trees (ALD-012 acceptance 3)', ()
       expect(verifyConsistency(input)).toBe(false);
     }
   });
+
+  it('rejects fromSize/toSize at or beyond 2**32 instead of truncating them', () => {
+    // fn/sn (and the RFC 6962-bis step-1 power-of-two test) are driven by
+    // the 32-bit operators `>>>` and `&`; without an explicit upper bound,
+    // fromSize/toSize >= 2**32 would be silently reduced modulo 2**32, so
+    // this exact genuine 4-to-8 proof would (wrongly) verify against
+    // declared sizes inflated by 2**32.
+    const eight = leaves(8);
+    const fromRoot = merkleRoot(eight.slice(0, 4));
+    const toRoot = merkleRoot(eight);
+    const genuinePath = consistencyProof(eight, 4);
+
+    expect(
+      verifyConsistency({
+        fromSize: 4 + 2 ** 32,
+        toSize: 8 + 2 ** 32,
+        fromRoot,
+        toRoot,
+        path: genuinePath,
+      }),
+    ).toBe(false);
+
+    expect(
+      verifyConsistency({
+        fromSize: 4,
+        toSize: 8 + 2 ** 32,
+        fromRoot,
+        toRoot,
+        path: genuinePath,
+      }),
+    ).toBe(false);
+
+    // Values within the representable range are unaffected.
+    expect(
+      verifyConsistency({ fromSize: 4, toSize: 8, fromRoot, toRoot, path: genuinePath }),
+    ).toBe(true);
+  });
+
+  it('rejects a path longer than any tree of the declared size could produce', () => {
+    const toSize = 40;
+    const prefix = ALL.slice(0, toSize);
+    const genuinePath = consistencyProof(prefix, 10);
+    const overlong = [
+      ...genuinePath,
+      ...genuinePath,
+      ...genuinePath,
+      ...genuinePath,
+    ];
+    expect(
+      verifyConsistency({
+        fromSize: 10,
+        toSize,
+        fromRoot: TREE.rootAt(10),
+        toRoot: TREE.rootAt(toSize),
+        path: overlong,
+      }),
+    ).toBe(false);
+  });
 });

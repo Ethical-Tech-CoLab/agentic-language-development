@@ -337,6 +337,31 @@ describe('TabularReinforceAdapter learning signals', () => {
     ).rejects.toThrow(UnsupportedLearningSignalError);
   });
 
+  it('rejects intrinsicMode paired with an extrinsic-task run at init, rather than at the first updatePolicy call', async () => {
+    // Regression: resolveRewardMode used to whitelist this combination at
+    // init (returning rewardMode 'intrinsic-prediction-progress'), but
+    // UpdateBatch.learningSignal always mirrors RunConfig.learningSignal, so
+    // every updatePolicy call was guaranteed to throw
+    // UnsupportedLearningSignalError instead. init() must now reject the
+    // mismatch itself.
+    await expect(
+      initAdapter(
+        { ...TRAINING_OPTIONS, intrinsicMode: 'prediction-progress' },
+        { learningSignal: 'extrinsic-task' },
+      ),
+    ).rejects.toThrow(LearnerConfigurationError);
+  });
+
+  it('rejects an intrinsic-prediction-progress run configured without intrinsicMode, at init', async () => {
+    // The two halves of the contract (the adapter option and the run's
+    // declared learningSignal) must agree in both directions.
+    await expect(
+      initAdapter(TRAINING_OPTIONS, {
+        learningSignal: 'intrinsic-prediction-progress',
+      }),
+    ).rejects.toThrow(LearnerConfigurationError);
+  });
+
   it('reports the highest batch turn in the policy checkpoint reference', async () => {
     const { adapter, config } = await initAdapter(TRAINING_OPTIONS);
     const checkpoint = await adapter.updatePolicy({

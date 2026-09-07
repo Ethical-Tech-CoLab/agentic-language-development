@@ -243,6 +243,62 @@ describe('assertToolOnlyProposal (SPEC §6.3, §11.3)', () => {
       LearnerConformanceError,
     );
   });
+
+  it('rejects a publicArtifact key that is not part of the kind\'s schema, even when it names no trusted field', () => {
+    // Regression: assertToolOnlyProposal used to constrain only the
+    // envelope's and the proposal's own key sets, never publicArtifact's, so
+    // a non-trusted free-text field riding alongside the tool call (e.g. a
+    // side channel between Babies) passed unnoticed (SPEC §6.3, §11.3).
+    expect(() =>
+      assertToolOnlyProposal(
+        {
+          ...valid,
+          proposal: {
+            ...valid.proposal,
+            publicArtifact: { symbols: ['S01'], sideChannel: 'candidate 2' },
+          },
+        },
+        'unit',
+      ),
+    ).toThrow(/publicArtifact for kind "emit_symbols" must hold exactly symbols/u);
+  });
+
+  it('rejects a trusted field hidden as a non-enumerable own property', () => {
+    // Regression: assertNoTrustedFields used to walk with Object.entries,
+    // which only sees own *enumerable* properties, so a trusted field
+    // defined non-enumerably was invisible to it even though Object.keys
+    // still matched the schema's field set.
+    const publicArtifact: Record<string, unknown> = { symbols: ['S01'] };
+    Object.defineProperty(publicArtifact, 'runId', {
+      value: 'leaked-run',
+      enumerable: false,
+    });
+    expect(Object.keys(publicArtifact)).toEqual(['symbols']);
+    expect(() =>
+      assertToolOnlyProposal(
+        { ...valid, proposal: { ...valid.proposal, publicArtifact } },
+        'unit',
+      ),
+    ).toThrow(/trusted field/u);
+  });
+
+  it('rejects a trusted field planted on the publicArtifact prototype', () => {
+    // Regression: assertNoTrustedFields never walked the prototype chain,
+    // so a trusted field inherited rather than owned was invisible to it —
+    // and also invisible to Object.keys, so it would not even trip the
+    // artifact key-set check.
+    const publicArtifact = Object.assign(
+      Object.create({ runId: 'leaked-run', timestamp: 'leaked-ts' }),
+      { symbols: ['S01'] },
+    );
+    expect(Object.keys(publicArtifact)).toEqual(['symbols']);
+    expect(() =>
+      assertToolOnlyProposal(
+        { ...valid, proposal: { ...valid.proposal, publicArtifact } },
+        'unit',
+      ),
+    ).toThrow(/trusted field/u);
+  });
 });
 
 describe('runLearnerAdapterConformance', () => {

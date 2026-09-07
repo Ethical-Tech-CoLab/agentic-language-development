@@ -17,6 +17,7 @@ export {
 export {
   MerkleTree,
   consistencyProof,
+  createRangeRootCache,
   inclusionProof,
   merkleRoot,
   type RangeRootCache,

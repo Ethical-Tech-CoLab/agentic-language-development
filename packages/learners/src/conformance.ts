@@ -26,6 +26,7 @@
  * the run — belongs to `@ald/gateway` (SPEC §9.4) and is out of scope here.
  */
 import {
+  AgentActionProposalSchema,
   GENESIS_HASH,
   HASH_DOMAINS,
   LedgerDraftEnvelopeSchema,
@@ -77,6 +78,47 @@ export const FORBIDDEN_PROPOSAL_KEYS = [
   'hash',
   'timestamp',
 ] as const;
+
+/**
+ * The exact `publicArtifact` field set permitted for each tool `kind`,
+ * derived from `AgentActionProposalSchema` (SPEC §6.3, §11.3) so this stays
+ * in lock-step with `@ald/types` rather than duplicating its field list.
+ * `z.object()` schemas strip unknown keys on `.parse()` rather than
+ * rejecting them, so a raw (unparsed) proposal can carry an extra field the
+ * schema would silently have discarded — `assertToolOnlyProposal` checks the
+ * raw key set against this map before any parsing happens.
+ */
+const PUBLIC_ARTIFACT_FIELDS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
+  AgentActionProposalSchema.options.map(
+    (option) =>
+      [
+        option.shape.kind.value,
+        new Set(Object.keys(option.shape.publicArtifact.shape)),
+      ] as const,
+  ),
+);
+
+/**
+ * Own keys of `value` at every level of its prototype chain (excluding
+ * `Object.prototype` itself), via `Reflect.ownKeys` rather than
+ * `Object.keys`/`Object.entries` — so a trusted-metadata field hidden as a
+ * non-enumerable own property, or planted on the object's prototype instead
+ * of as an own property, is still found (SPEC §11.3: "no proposal contains a
+ * trusted metadata field ... anywhere inside it").
+ */
+function ownKeysDeep(value: object): string[] {
+  const keys = new Set<string>();
+  let current: object | null = value;
+  while (current !== null && current !== Object.prototype) {
+    for (const key of Reflect.ownKeys(current)) {
+      if (typeof key === 'string') {
+        keys.add(key);
+      }
+    }
+    current = Object.getPrototypeOf(current);
+  }
+  return [...keys];
+}
 
 export interface ConformanceOptions {
   episodes?: number;
@@ -455,7 +497,50 @@ export function assertToolOnlyProposal(
       `${where}: a proposal must hold exactly kind and publicArtifact, found ${proposalKeys.join(', ')}`,
     );
   }
+
+  const { kind, publicArtifact } = proposal as {
+    kind: unknown;
+    publicArtifact: unknown;
+  };
+  if (typeof kind !== 'string') {
+    throw new LearnerConformanceError(`${where}: proposal.kind must be a string`);
+  }
+  const allowedArtifactFields = PUBLIC_ARTIFACT_FIELDS.get(kind);
+  if (allowedArtifactFields === undefined) {
+    throw new LearnerConformanceError(
+      `${where}: proposal.kind "${kind}" is not a recognized tool (SPEC §6.3)`,
+    );
+  }
+  if (
+    typeof publicArtifact !== 'object' ||
+    publicArtifact === null ||
+    Array.isArray(publicArtifact)
+  ) {
+    throw new LearnerConformanceError(`${where}: proposal.publicArtifact must be an object`);
+  }
+
+  // Checked before the artifact key-set match below: a field that is both
+  // an extra key and a trusted-metadata name (e.g. an injected `runId`) is
+  // diagnosed as the trusted-field violation it is, not as a generic
+  // "wrong keys" mismatch.
   assertNoTrustedFields(proposal, where, 'proposal');
+
+  // Object.keys, not ownKeysDeep: a hidden (non-enumerable or
+  // prototype-carried) key that is not a trusted-field name would silently
+  // vanish under `JSON.stringify`, so it can never reach a receiver or the
+  // channel-event hash preimage either — the key-set check only needs to
+  // police what is actually visible there.
+  const artifactKeys = Object.keys(publicArtifact).sort();
+  const expectedKeys = [...allowedArtifactFields].sort();
+  const artifactKeysMatch =
+    artifactKeys.length === expectedKeys.length &&
+    artifactKeys.every((key, index) => key === expectedKeys[index]);
+  if (!artifactKeysMatch) {
+    throw new LearnerConformanceError(
+      `${where}: publicArtifact for kind "${kind}" must hold exactly ${expectedKeys.join(', ')}, found ${artifactKeys.join(', ')}`,
+    );
+  }
+
   return envelope as TurnProposalEnvelope;
 }
 
@@ -473,7 +558,7 @@ function assertNoTrustedFields(
   if (typeof value !== 'object' || value === null) {
     return;
   }
-  for (const [key, nested] of Object.entries(value)) {
+  for (const key of ownKeysDeep(value)) {
     if (
       FORBIDDEN_PROPOSAL_KEYS.some(
         (forbidden) => forbidden.toLowerCase() === key.toLowerCase(),
@@ -483,6 +568,7 @@ function assertNoTrustedFields(
         `${where}: ${path}.${key} is a runtime-assigned trusted field and must not appear in a proposal`,
       );
     }
+    const nested = (value as Record<string, unknown>)[key];
     assertNoTrustedFields(nested, where, `${path}.${key}`);
   }
 }

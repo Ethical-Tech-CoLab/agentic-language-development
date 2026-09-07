@@ -48,8 +48,12 @@ export {
   type GatewayErrorStatus,
 } from './errors.js';
 export {
+  DEFAULT_COMPLEXITY_BUDGET,
   findTrustedMetadataKey,
+  isWithinComplexityBudget,
+  PayloadTooComplexError,
   TRUSTED_METADATA_KEYS,
+  type ComplexityBudget,
   type TrustedMetadataKey,
 } from './inspect.js';
 export {

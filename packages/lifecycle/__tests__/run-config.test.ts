@@ -182,14 +182,21 @@ describe('buildRunConfig defaults (SPEC §18)', () => {
 });
 
 describe('carrier-scoped defaults (SPEC §11.1, §9.1, §9.2)', () => {
-  it('populates the fixed-token bounds only for fixed-token', () => {
+  it('populates the symbol-inventory bounds for fixed-token and fixed-glyph only', () => {
     const fixedToken = buildRunConfig({ ...BASE, carrierMode: 'fixed-token' });
     expect(fixedToken.symbolInventorySize).toBe(32);
     expect(fixedToken.maxSymbolsPerMessage).toBe(4);
     expect(fixedToken.maxStrokes).toBeUndefined();
 
+    // §9.2: fixed-glyph states its default bound the same way as fixed-token
+    // ("32 glyphs, 4 per message"), so it takes the same §18 defaults.
+    const fixedGlyph = buildRunConfig({ ...BASE, carrierMode: 'fixed-glyph' });
+    expect(fixedGlyph.symbolInventorySize).toBe(32);
+    expect(fixedGlyph.maxSymbolsPerMessage).toBe(4);
+    expect(fixedGlyph.maxStrokes).toBeUndefined();
+
     for (const carrierMode of CARRIERS.filter(
-      (carrier) => carrier !== 'fixed-token',
+      (carrier) => carrier !== 'fixed-token' && carrier !== 'fixed-glyph',
     )) {
       const config = buildRunConfig({ ...BASE, carrierMode });
       expect(config.symbolInventorySize).toBeUndefined();
@@ -372,8 +379,22 @@ describe('symmetricTracks agreement (SPEC §18)', () => {
 });
 
 describe('carrier-specific field rules (SPEC §11.1)', () => {
-  it('rejects symbolInventorySize and maxSymbolsPerMessage on another carrier', () => {
-    const base = buildRunConfig({ ...BASE, carrierMode: 'fixed-glyph' });
+  it('accepts symbolInventorySize and maxSymbolsPerMessage on fixed-glyph', () => {
+    // §9.2: fixed-glyph has the same declared symbol/glyph inventory shape
+    // as fixed-token ("32 glyphs, 4 per message"), so it may pre-register
+    // either bound explicitly.
+    valid(
+      buildRunConfig({
+        ...BASE,
+        carrierMode: 'fixed-glyph',
+        symbolInventorySize: 16,
+        maxSymbolsPerMessage: 6,
+      }),
+    );
+  });
+
+  it('rejects symbolInventorySize and maxSymbolsPerMessage on a carrier with its own fixed bound', () => {
+    const base = buildRunConfig({ ...BASE, carrierMode: 'generative-canvas' });
     expect(paths({ ...base, symbolInventorySize: 32 })).toEqual([
       'symbolInventorySize',
     ]);
@@ -596,6 +617,63 @@ describe('warnings (SPEC §10.4, §15.3)', () => {
     );
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('evaluationSeeds is 3');
+  });
+
+  it('flags the Sepolia finality default carried over onto base-mainnet without rejecting it', () => {
+    const config = {
+      ...buildRunConfig({ ...BASE, anchorNetwork: 'base-sepolia' }),
+      anchorNetwork: 'base-mainnet' as const,
+    };
+    const { warnings } = valid(config);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('base-mainnet');
+    expect(warnings[0]).toContain('safe');
+  });
+
+  it('does not flag a mainnet run that declares a non-default finality policy', () => {
+    const { warnings } = valid(
+      buildRunConfig({
+        ...BASE,
+        anchorNetwork: 'base-mainnet',
+        finalityPolicy: 'provider-specific-32-block',
+      }),
+    );
+    expect(warnings).toEqual([]);
+  });
+
+  it('does not flag base-sepolia at its own default finality policy', () => {
+    expect(
+      valid(buildRunConfig({ ...BASE, anchorNetwork: 'base-sepolia' })).warnings,
+    ).toEqual([]);
+  });
+});
+
+describe('finalityPolicy defaults by anchorNetwork (SPEC §13.4, §18)', () => {
+  it('defaults base-sepolia to 1-confirmation', () => {
+    const config = buildRunConfig({ ...BASE, anchorNetwork: 'base-sepolia' });
+    expect(config.finalityPolicy).toBe('1-confirmation');
+  });
+
+  it('defaults base-mainnet to safe-tag rather than the Sepolia default', () => {
+    const config = buildRunConfig({ ...BASE, anchorNetwork: 'base-mainnet' });
+    expect(config.finalityPolicy).toBe('safe-tag');
+  });
+
+  it('honours an explicit finalityPolicy override on either network', () => {
+    expect(
+      buildRunConfig({
+        ...BASE,
+        anchorNetwork: 'base-mainnet',
+        finalityPolicy: '1-confirmation',
+      }).finalityPolicy,
+    ).toBe('1-confirmation');
+    expect(
+      buildRunConfig({
+        ...BASE,
+        anchorNetwork: 'base-sepolia',
+        finalityPolicy: 'safe-tag',
+      }).finalityPolicy,
+    ).toBe('safe-tag');
   });
 });
 

@@ -23,6 +23,7 @@ import {
   AffectEventSchema,
   AnchorReceiptSchema,
   AuditLedgerEntrySchema,
+  AUXILIARY_TREES,
   babyIdForRole,
   ChannelEventSchema,
   CheckpointManifestSchema,
@@ -32,6 +33,7 @@ import {
   HASH_DOMAINS,
   InterventionEventSchema,
   LedgerEventSchema,
+  MANDATORY_TREES,
   MANIFEST_SIGNATURE_FIELDS,
   roleForBabyId,
   RunConfigSchema,
@@ -67,6 +69,7 @@ import {
   type SignerPublicKey,
   type SignerRegistry,
   type StoredEvent,
+  type TreeReference,
   type TurnCommitRequest,
   type TurnCommitResult,
   type TurnRecord,
@@ -188,6 +191,30 @@ const SQLITE_CONFLICT_CODES = new Set([
   'SQLITE_CONSTRAINT_PRIMARYKEY',
   'SQLITE_CONSTRAINT_UNIQUE',
 ]);
+
+/**
+ * Domain check for a stream name read back out of the store. It tests the
+ * `EVENT_STREAMS` list rather than writing `value in STREAM_TABLES`, because
+ * `in` is true for every inherited `Object.prototype` key (`constructor`,
+ * `toString`, …) of an object literal — the same trap `isSignedStream` in
+ * `@ald/hashing` avoids with `Object.prototype.hasOwnProperty.call`.
+ */
+function isEventStream(value: string): value is EventStream {
+  return (EVENT_STREAMS as readonly string[]).includes(value);
+}
+
+/** Checkpoint tree name (LEDGER §8) → the stream it commits, both ways. */
+const STREAM_FOR_AUXILIARY_TREE = new Map<string, EventStream>(
+  Object.entries(AUXILIARY_TREES).map(([stream, tree]) => [
+    tree,
+    stream as EventStream,
+  ]),
+);
+
+const MANDATORY_TREE_STREAMS = Object.entries(MANDATORY_TREES) as [
+  EventStream,
+  (typeof MANDATORY_TREES)[keyof typeof MANDATORY_TREES],
+][];
 
 function isUniquenessConflict(error: unknown): boolean {
   return (
@@ -1066,9 +1093,20 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
    * Re-verifies the whole committed prefix of every stream of a run without
    * touching a single row: recomputes each entry hash from the stored
    * canonical JSON, walks the previous-hash links from genesis, verifies each
-   * writer signature against the public key recorded in `run_signers`, and
+   * writer signature against the public key recorded in `run_signers`,
+   * cross-checks every stream against the last checkpoint manifest, and
    * reports every preserved fork. A run with any finding is blocked for
    * writing until {@link acknowledgeIntegrityReview}.
+   *
+   * LEDGER §15 ("load the last valid entry **and checkpoint hashes**; verify
+   * the committed prefix before accepting new writes; … never truncate or
+   * reuse a sequence number"): a walk of the surviving rows alone cannot see
+   * a lost tail, because the shortened prefix is internally perfect —
+   * sequence density, previous-hash links and signatures all still hold.
+   * Only the checkpoint the store already holds knows how long the committed
+   * prefix was, so {@link checkpointPrefixViolations} is what stops the
+   * writer from re-issuing a sequence number a checkpoint already bound to a
+   * different entry hash.
    */
   async recover(runId: string): Promise<RecoveryReport> {
     if (!this.readRunMetadata(runId)) {
@@ -1077,12 +1115,14 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
 
     const chainViolations: string[] = [];
     const heads: ChainHead[] = [];
+    const rowsByStream = new Map<EventStream, StreamRow[]>();
     const publicKeys = new Map(
       this.readRunSigners(runId).map((signer) => [signer.domain, signer]),
     );
 
     for (const stream of EVENT_STREAMS) {
       const rows = this.streamRows(runId, stream);
+      rowsByStream.set(stream, rows);
       heads.push(this.chainHead(runId, stream));
       let previous = GENESIS_HASH;
 
@@ -1149,7 +1189,10 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
       }
     }
 
-    const forks = this.collectForks(runId);
+    chainViolations.push(...this.checkpointPrefixViolations(runId, rowsByStream));
+
+    const { forks, violations } = this.collectForks(runId);
+    chainViolations.push(...violations);
     const ok = chainViolations.length === 0 && forks.length === 0;
 
     if (ok) {
@@ -1551,14 +1594,134 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
     })();
   }
 
-  private collectForks(runId: string): ForkReport[] {
-    const grouped = new Map<string, ForkReport>();
+  /**
+   * Verifies every stream against the highest checkpoint manifest the store
+   * holds for the run (LEDGER §15; SPEC §7.3 "on restart, the runtime MUST
+   * load the last valid entry/checkpoint hashes, verify the committed prefix,
+   * continue with the next sequence number … sequence numbers are never
+   * reused or truncated").
+   *
+   * For each mandatory tree (`babyA`, `babyB`, `channel`) and each auxiliary
+   * tree the manifest actually carries, the current stream must be at least
+   * `treeSize` entries long and must still store the committed
+   * `lastEntryHash` at sequence `treeSize`. A shortfall means the checkpointed
+   * prefix no longer exists, and a mismatch at that sequence means the
+   * prefix was rewritten; both are chain violations, so the run is
+   * integrity-blocked and `assertWritableRun` refuses every further append
+   * until a research-integrity review is recorded. That is what keeps a
+   * checkpointed sequence number from being handed out a second time.
+   *
+   * A manifest committing an empty tree (`treeSize === 0`) constrains
+   * nothing and is skipped. Recovery reports, never raises: a manifest row
+   * that no longer parses becomes a violation rather than an exception.
+   */
+  private checkpointPrefixViolations(
+    runId: string,
+    rowsByStream: ReadonlyMap<EventStream, readonly StreamRow[]>,
+  ): string[] {
+    const row = this.db
+      .prepare<
+        [string],
+        { checkpoint_sequence: number; canonical_json: string }
+      >(
+        `SELECT checkpoint_sequence, canonical_json FROM checkpoint_manifests
+          WHERE run_id = ? ORDER BY checkpoint_sequence DESC LIMIT 1`,
+      )
+      .get(runId);
 
-    for (const artifact of this.readForkArtifacts(runId)) {
-      const stream = artifact.stream as EventStream;
-      if (!(stream in STREAM_TABLES)) {
+    if (!row) {
+      return [];
+    }
+
+    const violations: string[] = [];
+    let manifest: CheckpointManifest;
+    try {
+      manifest = CheckpointManifestSchema.parse(JSON.parse(row.canonical_json));
+    } catch {
+      violations.push(
+        `checkpoint #${row.checkpoint_sequence}: canonical_json is not a valid checkpoint manifest`,
+      );
+      return violations;
+    }
+
+    const label = `checkpoint #${manifest.checkpointSequence}`;
+    const check = (
+      stream: EventStream,
+      treeName: string,
+      reference: TreeReference,
+    ): void => {
+      if (reference.treeSize === 0) {
+        return;
+      }
+      const rows = rowsByStream.get(stream) ?? [];
+      if (rows.length < reference.treeSize) {
+        violations.push(
+          `${label}: ${treeName} commits treeSize ${reference.treeSize} but ${stream} now holds ${rows.length} entries`,
+        );
+        return;
+      }
+      const committed = rows.find(
+        (candidate) => candidate.sequence === reference.treeSize,
+      );
+      if (!committed) {
+        violations.push(
+          `${label}: ${treeName} commits ${stream}#${reference.treeSize}, which is missing`,
+        );
+        return;
+      }
+      if (committed.entry_hash !== reference.lastEntryHash) {
+        violations.push(
+          `${label}: ${treeName} commits lastEntryHash ${reference.lastEntryHash} at ${stream}#${reference.treeSize}, which now stores ${committed.entry_hash}`,
+        );
+      }
+    };
+
+    for (const [stream, treeName] of MANDATORY_TREE_STREAMS) {
+      check(stream, treeName, manifest[treeName]);
+    }
+
+    for (const [treeName, reference] of Object.entries(
+      manifest.auxiliaryTrees,
+    )) {
+      const stream = STREAM_FOR_AUXILIARY_TREE.get(treeName);
+      if (stream === undefined) {
+        violations.push(`${label}: commits unknown auxiliary tree ${treeName}`);
         continue;
       }
+      check(stream, treeName, reference);
+    }
+
+    return violations;
+  }
+
+  /**
+   * Groups the preserved fork artifacts of a run into one report per forked
+   * sequence (LEDGER §15).
+   *
+   * The stream guard uses {@link isEventStream} rather than the `in`
+   * operator: `'constructor' in STREAM_TABLES` is true for any object
+   * literal, so an `in` check admits every `Object.prototype` key, and
+   * `STREAM_TABLES['constructor']` is `undefined`, which used to be
+   * interpolated straight into `FROM undefined` and made `recover()` raise a
+   * `SqliteError` instead of returning a report. Recovery reports malformed
+   * input, it never raises on it, so an out-of-domain `stream` becomes a
+   * chain violation (which blocks the run) and the artifact is skipped.
+   */
+  private collectForks(runId: string): {
+    forks: ForkReport[];
+    violations: string[];
+  } {
+    const grouped = new Map<string, ForkReport>();
+    const violations: string[] = [];
+
+    for (const artifact of this.readForkArtifacts(runId)) {
+      if (!isEventStream(artifact.stream)) {
+        violations.push(
+          `fork artifact ${artifact.stream}#${artifact.sequence}: ${artifact.stream} is not a known event stream`,
+        );
+        continue;
+      }
+      const stream: EventStream = artifact.stream;
       const key = `${artifact.stream}#${artifact.sequence}`;
       const report = grouped.get(key) ?? {
         stream,
@@ -1585,11 +1748,12 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
       report.entryHashes.sort();
     }
 
-    return [...grouped.values()].sort((left, right) =>
+    const forks = [...grouped.values()].sort((left, right) =>
       left.stream === right.stream
         ? left.sequence - right.sequence
         : left.stream.localeCompare(right.stream),
     );
+    return { forks, violations };
   }
 
   private streamRows(

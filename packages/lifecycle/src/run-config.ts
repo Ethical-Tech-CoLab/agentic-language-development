@@ -1,7 +1,8 @@
 /**
  * Run configuration construction and validation (SPECIFICATION.md §11.1
  * Run Configuration, §9.1/§9.2 carrier bounds, §10.4 training isolation,
- * §15.3 evaluation seeds, §18 Experiment Variable Registry; BACKLOG ALD-023).
+ * §13.4 Base Sepolia/mainnet anchoring policy, §15.3 evaluation seeds, §18
+ * Experiment Variable Registry; BACKLOG ALD-023).
  *
  * `RunConfigSchema` in `@ald/types` owns field presence, ranges, the
  * track/learning-signal matrix, the oracle/E03 restriction, and the
@@ -52,9 +53,9 @@ export class RunConfigValidationError extends Error {
 
 /**
  * SPEC §18 defaults for every field whose default does not depend on another
- * field. Carrier-scoped bounds, the learning signal, and `symmetricTracks` are
- * derived in {@link buildRunConfig} instead, because §18 states them
- * conditionally.
+ * field. Carrier-scoped bounds, the learning signal, `symmetricTracks`, and
+ * `finalityPolicy` are derived in {@link buildRunConfig} instead, because §18
+ * states them conditionally.
  */
 export const RUN_CONFIG_DEFAULTS = {
   version: 1,
@@ -99,6 +100,34 @@ const QUALIFICATION_EVALUATION_SEEDS = 5;
 /** §9.1: the absolute Gateway ceiling, regardless of configuration. */
 const MAX_SYMBOLS_PER_MESSAGE_CEILING = 16;
 
+/**
+ * §9.1, §9.2: carriers with a declared, bounded symbol/glyph inventory — the
+ * `fixed-token` baseline (default inventory 32, default 4 per message) and
+ * its `fixed-glyph` alternate, whose §9.2 default bound is stated the same
+ * way ("32 glyphs, 4 per message"). The other alternate carriers
+ * (`generative-bitmap`, `generative-canvas`, `generative-tone`) each have
+ * their own fixed physical bound instead (§9.2) and do not take these
+ * fields.
+ */
+const SYMBOL_INVENTORY_CARRIERS = [
+  'fixed-token',
+  'fixed-glyph',
+] as const satisfies readonly RunConfig['carrierMode'][];
+
+function hasSymbolInventory(carrierMode: RunConfig['carrierMode']): boolean {
+  return (
+    SYMBOL_INVENTORY_CARRIERS as readonly RunConfig['carrierMode'][]
+  ).includes(carrierMode);
+}
+
+/**
+ * §18: mainnet anchoring must wait for the `safe` block tag rather than the
+ * Sepolia development default of one confirmation (SPECIFICATION.md §13.4;
+ * LEDGER-INTEGRITY-DESIGN.md §10). Carrying `1-confirmation` over onto
+ * mainnet would report a checkpoint anchored-final a single block deep.
+ */
+const MAINNET_FINALITY_POLICY = 'safe-tag';
+
 /** §11.1: learning signals a `hybrid` track may declare. */
 const HYBRID_LEARNING_SIGNALS = [
   'extrinsic-task',
@@ -122,19 +151,21 @@ function experimentIndex(experimentId: string): number {
 function collectCrossFieldErrors(config: RunConfig): RunConfigError[] {
   const errors: RunConfigError[] = [];
 
-  // §11.1: `symbolInventorySize` and `maxSymbolsPerMessage` are fixed-token
-  // only; §9.2 gives the alternate carriers their own fixed bounds instead.
-  if (config.carrierMode !== 'fixed-token') {
+  // §11.1, §9.2: `symbolInventorySize` and `maxSymbolsPerMessage` belong to
+  // the two carriers with a declared symbol/glyph inventory (`fixed-token`
+  // and `fixed-glyph`); the other alternate carriers give their own fixed
+  // bound instead.
+  if (!hasSymbolInventory(config.carrierMode)) {
     if (config.symbolInventorySize !== undefined) {
       errors.push({
         path: 'symbolInventorySize',
-        message: `symbolInventorySize applies only to carrierMode "fixed-token", not "${config.carrierMode}"`,
+        message: `symbolInventorySize applies only to carrierMode "fixed-token" or "fixed-glyph", not "${config.carrierMode}"`,
       });
     }
     if (config.maxSymbolsPerMessage !== undefined) {
       errors.push({
         path: 'maxSymbolsPerMessage',
-        message: `maxSymbolsPerMessage applies only to carrierMode "fixed-token", not "${config.carrierMode}"`,
+        message: `maxSymbolsPerMessage applies only to carrierMode "fixed-token" or "fixed-glyph", not "${config.carrierMode}"`,
       });
     }
   }
@@ -195,9 +226,26 @@ function collectCrossFieldErrors(config: RunConfig): RunConfigError[] {
   return errors;
 }
 
-/** §10.4 and §15.3 flags: allowed, but never silently. */
+/** §10.4, §13.4, and §15.3 flags: allowed, but never silently. */
 function collectWarnings(config: RunConfig): string[] {
   const warnings: string[] = [];
+
+  // §13.4: mainnet must wait for the `safe` block tag (or an equivalent
+  // provider-specific finality/confirmation-depth policy) before a
+  // checkpoint is reported anchored-final. This is a warning, not a
+  // rejection, because §13.4 permits a provider-specific equivalent string
+  // this module cannot enumerate — but the known Sepolia default carried
+  // over onto mainnet is always wrong, so it is always flagged.
+  if (
+    config.anchorNetwork === 'base-mainnet' &&
+    config.finalityPolicy === RUN_CONFIG_DEFAULTS.finalityPolicy
+  ) {
+    warnings.push(
+      `finalityPolicy is "${config.finalityPolicy}" on anchorNetwork "base-mainnet": SPEC ` +
+        '§13.4 requires waiting for the "safe" block tag (or an equivalent finality policy) ' +
+        'before a mainnet checkpoint is reported anchored-final',
+    );
+  }
 
   for (const field of LEARNER_FIELDS) {
     if (config[field].trainingIsolation === 'centralized') {
@@ -341,21 +389,26 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
   const babyA = buildLearner(overrides.babyA);
   const babyB = buildLearner(overrides.babyB);
   const carrierMode = overrides.carrierMode ?? RUN_CONFIG_DEFAULTS.carrierMode;
+  const anchorNetwork =
+    overrides.anchorNetwork ?? RUN_CONFIG_DEFAULTS.anchorNetwork;
 
-  const symbolInventorySize =
-    carrierMode === 'fixed-token'
-      ? (overrides.symbolInventorySize ??
-        RUN_CONFIG_DEFAULTS.symbolInventorySize)
-      : overrides.symbolInventorySize;
-  const maxSymbolsPerMessage =
-    carrierMode === 'fixed-token'
-      ? (overrides.maxSymbolsPerMessage ??
-        RUN_CONFIG_DEFAULTS.maxSymbolsPerMessage)
-      : overrides.maxSymbolsPerMessage;
+  const symbolInventorySize = hasSymbolInventory(carrierMode)
+    ? (overrides.symbolInventorySize ??
+      RUN_CONFIG_DEFAULTS.symbolInventorySize)
+    : overrides.symbolInventorySize;
+  const maxSymbolsPerMessage = hasSymbolInventory(carrierMode)
+    ? (overrides.maxSymbolsPerMessage ??
+      RUN_CONFIG_DEFAULTS.maxSymbolsPerMessage)
+    : overrides.maxSymbolsPerMessage;
   const maxStrokes =
     carrierMode === 'generative-canvas'
       ? (overrides.maxStrokes ?? RUN_CONFIG_DEFAULTS.maxStrokes)
       : overrides.maxStrokes;
+  const finalityPolicy =
+    overrides.finalityPolicy ??
+    (anchorNetwork === 'base-mainnet'
+      ? MAINNET_FINALITY_POLICY
+      : RUN_CONFIG_DEFAULTS.finalityPolicy);
 
   const candidate: RunConfig = {
     version: 1,
@@ -423,10 +476,8 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     checkpointTimeIntervalMs:
       overrides.checkpointTimeIntervalMs ??
       RUN_CONFIG_DEFAULTS.checkpointTimeIntervalMs,
-    anchorNetwork:
-      overrides.anchorNetwork ?? RUN_CONFIG_DEFAULTS.anchorNetwork,
-    finalityPolicy:
-      overrides.finalityPolicy ?? RUN_CONFIG_DEFAULTS.finalityPolicy,
+    anchorNetwork,
+    finalityPolicy,
     prototypeRetentionDays:
       overrides.prototypeRetentionDays ??
       RUN_CONFIG_DEFAULTS.prototypeRetentionDays,

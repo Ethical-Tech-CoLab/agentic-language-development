@@ -243,4 +243,75 @@ describe('verifyInclusion rejects every dishonest proof (ALD-012 acceptance 2)',
       }),
     ).toBe(false);
   });
+
+  it('rejects treeSize/leafIndex at or beyond 2**32 instead of truncating them', () => {
+    // fn/sn are driven by the 32-bit operators `>>>` and `&`. Without an
+    // explicit upper bound, `treeSize - 1 = 2**32 + 1` truncates to 1 via
+    // ToUint32, which is exactly the `sn` a genuine 2-leaf proof produces —
+    // so this real 2-leaf audit path would (wrongly) verify as inclusion in
+    // a claimed tree of 2**32 + 2 leaves, and even at a claimed leafIndex of
+    // 2**32 (which truncates to 0).
+    const two = leaves(2);
+    const root = merkleRoot(two);
+    const genuinePath = inclusionProof(two, 0);
+
+    expect(
+      verifyInclusion({
+        leafHash: two[0] ?? '',
+        leafIndex: 0,
+        treeSize: 2 ** 32 + 2,
+        path: genuinePath,
+        root,
+      }),
+    ).toBe(false);
+
+    expect(
+      verifyInclusion({
+        leafHash: two[0] ?? '',
+        leafIndex: 2 ** 32,
+        treeSize: 2 ** 32 + 2,
+        path: genuinePath,
+        root,
+      }),
+    ).toBe(false);
+
+    // A round, out-of-range value the review named explicitly.
+    expect(
+      verifyInclusion({
+        leafHash: two[0] ?? '',
+        leafIndex: 0,
+        treeSize: 2 ** 32 + 3,
+        path: genuinePath,
+        root,
+      }),
+    ).toBe(false);
+
+    // Values within the representable range are unaffected.
+    expect(
+      verifyInclusion({
+        leafHash: two[0] ?? '',
+        leafIndex: 0,
+        treeSize: 2,
+        path: genuinePath,
+        root,
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects a path longer than any tree of the declared size could produce', () => {
+    const size = 8;
+    const tree = leaves(size);
+    const root = merkleRoot(tree);
+    const genuinePath = inclusionProof(tree, 3);
+    const overlong = [...genuinePath, ...genuinePath, ...genuinePath, ...genuinePath];
+    expect(
+      verifyInclusion({
+        leafHash: tree[3] ?? '',
+        leafIndex: 3,
+        treeSize: size,
+        path: overlong,
+        root,
+      }),
+    ).toBe(false);
+  });
 });

@@ -247,6 +247,57 @@ const turnRecordAndForkSchema = `
     ON fork_artifacts(run_id, stream, sequence);
 `;
 
+/**
+ * Migration 3 constrains `fork_artifacts`, the one event table migration 2
+ * left without a domain check or a run reference. A fork artifact is read
+ * back during recovery (LEDGER §15) and its `stream` column is used to pick
+ * the physical table to compare against, so an out-of-domain value is not
+ * inert data: it is a poison row on the integrity-verification path that the
+ * append-only triggers make unremovable. The `CHECK` keeps the column inside
+ * `EVENT_STREAMS` and the `FOREIGN KEY` keeps an artifact bound to a
+ * registered run, matching every other event table in migration 1.
+ *
+ * SQLite cannot add a `CHECK` or a `FOREIGN KEY` with `ALTER TABLE`, so this
+ * is the documented table rebuild: drop the guard triggers, copy every row
+ * into the constrained table, drop the old one, rename, then reinstate the
+ * triggers and the index. The stream list is spelled out rather than
+ * interpolated from `EVENT_STREAMS` because migration SQL is checksummed and
+ * must never change once applied.
+ */
+const forkArtifactConstraintsSchema = `
+  DROP TRIGGER fork_artifacts_reject_update;
+  DROP TRIGGER fork_artifacts_reject_delete;
+
+  CREATE TABLE fork_artifacts_v3 (
+    run_id TEXT NOT NULL,
+    stream TEXT NOT NULL CHECK (stream IN (
+      'baby-a-ledger', 'baby-b-ledger', 'channel', 'affect', 'audit',
+      'turns', 'intervention'
+    )),
+    sequence INTEGER NOT NULL CHECK (sequence > 0),
+    entry_hash TEXT NOT NULL,
+    canonical_json TEXT NOT NULL,
+    detected_at TEXT NOT NULL,
+    PRIMARY KEY (run_id, stream, sequence, entry_hash),
+    FOREIGN KEY (run_id) REFERENCES run_metadata(run_id)
+  ) STRICT;
+
+  INSERT INTO fork_artifacts_v3 (
+    run_id, stream, sequence, entry_hash, canonical_json, detected_at
+  )
+  SELECT run_id, stream, sequence, entry_hash, canonical_json, detected_at
+    FROM fork_artifacts;
+
+  DROP TABLE fork_artifacts;
+
+  ALTER TABLE fork_artifacts_v3 RENAME TO fork_artifacts;
+
+  ${appendOnlyTriggers('fork_artifacts')}
+
+  CREATE INDEX fork_artifacts_run_idx
+    ON fork_artifacts(run_id, stream, sequence);
+`;
+
 export const migrations: readonly Migration[] = [
   {
     version: 1,
@@ -257,6 +308,11 @@ export const migrations: readonly Migration[] = [
     version: 2,
     name: 'turn-records-signers-and-fork-artifacts',
     sql: turnRecordAndForkSchema,
+  },
+  {
+    version: 3,
+    name: 'fork-artifact-stream-check-and-run-reference',
+    sql: forkArtifactConstraintsSchema,
   },
 ];
 

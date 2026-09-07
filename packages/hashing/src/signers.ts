@@ -16,21 +16,24 @@ import {
   signHash,
 } from './ed25519.js';
 
-interface ProvisionedSigner extends DomainSigner {
-  readonly seed: Buffer;
-}
-
-function provision(
-  domain: SignerDomain,
-  privateKey: KeyObject,
-  seed: Buffer,
-): ProvisionedSigner {
+/**
+ * Build the public face of a domain signer.
+ *
+ * The returned object carries exactly the four members of the
+ * `DomainSigner` contract (`packages/types/src/contracts.ts`) — no seed and no
+ * key object — so spreading, `Object.keys`, `JSON.stringify`, or any
+ * structured log of a signer can never emit private key material
+ * (LEDGER §11; SPEC §13.5: signing keys are never exposed to model context or
+ * tools). The private key lives only in the `sign` closure; the seed lives
+ * only in {@link InMemorySignerRegistry}'s private seed map, which
+ * {@link InMemorySignerRegistry.exportSeeds} is the sole reader of.
+ */
+function provision(domain: SignerDomain, privateKey: KeyObject): DomainSigner {
   const publicKey = publicKeyFromPrivate(privateKey);
   return {
     domain,
     keyId: SIGNER_KEY_IDS[domain],
     publicKey,
-    seed,
     sign: async (hash: string) => signHash(hash, privateKey),
   };
 }
@@ -42,7 +45,10 @@ function provision(
  * `exportSeeds()` outside the repository and restores with `fromSeeds()`.
  */
 export class InMemorySignerRegistry implements SignerRegistry {
-  private readonly signers = new Map<SignerDomain, ProvisionedSigner>();
+  private readonly signers = new Map<SignerDomain, DomainSigner>();
+
+  /** Private per-domain seeds, read only by {@link exportSeeds}. */
+  private readonly seeds = new Map<SignerDomain, Buffer>();
 
   private constructor(public readonly runId: string) {}
 
@@ -53,7 +59,8 @@ export class InMemorySignerRegistry implements SignerRegistry {
     const registry = new InMemorySignerRegistry(runId);
     for (const domain of domains) {
       const pair = generateEd25519KeyPair();
-      registry.signers.set(domain, provision(domain, pair.privateKey, pair.seed));
+      registry.signers.set(domain, provision(domain, pair.privateKey));
+      registry.seeds.set(domain, pair.seed);
     }
     return registry;
   }
@@ -72,10 +79,8 @@ export class InMemorySignerRegistry implements SignerRegistry {
         typeof material === 'string'
           ? Buffer.from(material, 'hex')
           : Buffer.from(material);
-      registry.signers.set(
-        domain,
-        provision(domain, privateKeyFromSeed(seed), seed),
-      );
+      registry.signers.set(domain, provision(domain, privateKeyFromSeed(seed)));
+      registry.seeds.set(domain, seed);
     }
     return registry;
   }
@@ -103,9 +108,9 @@ export class InMemorySignerRegistry implements SignerRegistry {
   /** Hex seeds for persistence by an isolated key store. Never export into evidence. */
   exportSeeds(): Record<string, string> {
     return Object.fromEntries(
-      [...this.signers.entries()].map(([domain, signer]) => [
+      [...this.seeds.entries()].map(([domain, seed]) => [
         domain,
-        signer.seed.toString('hex'),
+        seed.toString('hex'),
       ]),
     );
   }

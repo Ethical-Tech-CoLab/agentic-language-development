@@ -18,8 +18,28 @@
  */
 import { EMPTY_MERKLE_ROOT, merkleLeafHash, merkleNodeHash } from './hashes.js';
 
-/** Cache of `${start}:${end}` → subtree root. Sound because leaves never mutate. */
-export type RangeRootCache = Map<string, string>;
+/**
+ * Cache of `${start}:${end}` → subtree root, scoped per leaf array by the
+ * array's own identity (LEDGER-INTEGRITY-DESIGN.md §7: "the same root
+ * without a size does not fully describe the committed prefix" — the same
+ * reasoning means a subtree root memoized for one leaf list must never
+ * answer for a different one). Keying on identity rather than on the
+ * `${start}:${end}` range alone is what makes the cache sound to share: two
+ * different leaf arrays passed to {@link merkleRoot}, {@link inclusionProof},
+ * or {@link consistencyProof} with the same cache each get their own nested
+ * map, so a `[start, end)` collision between unrelated lists can never
+ * return the wrong list's root. Within one leaf array the cache remains
+ * sound because leaves never mutate in place — see {@link MerkleTree}, whose
+ * backing array is appended to, never replaced, so its identity (and thus
+ * its cache entries) stays valid across appends. Construct one with
+ * {@link createRangeRootCache}.
+ */
+export type RangeRootCache = WeakMap<readonly string[], Map<string, string>>;
+
+/** Creates an empty {@link RangeRootCache}. */
+export function createRangeRootCache(): RangeRootCache {
+  return new WeakMap();
+}
 
 /** Largest power of two strictly less than `n`. Requires `n > 1` (RFC 6962 §2.1). */
 function splitPoint(size: number): number {
@@ -49,7 +69,7 @@ function rangeRoot(
     return leafAt(leafHashes, start);
   }
   const key = `${String(start)}:${String(end)}`;
-  const cached = cache?.get(key);
+  const cached = cache?.get(leafHashes)?.get(key);
   if (cached !== undefined) {
     return cached;
   }
@@ -58,7 +78,14 @@ function rangeRoot(
     rangeRoot(leafHashes, start, start + k, cache),
     rangeRoot(leafHashes, start + k, end, cache),
   );
-  cache?.set(key, root);
+  if (cache !== undefined) {
+    let entries = cache.get(leafHashes);
+    if (entries === undefined) {
+      entries = new Map();
+      cache.set(leafHashes, entries);
+    }
+    entries.set(key, root);
+  }
   return root;
 }
 
@@ -185,7 +212,7 @@ export function consistencyProof(
  */
 export class MerkleTree {
   private readonly leaves: string[];
-  private readonly cache: RangeRootCache = new Map();
+  private readonly cache: RangeRootCache = createRangeRootCache();
 
   constructor(leafHashes: readonly string[] = []) {
     assertLeafHashes(leafHashes);

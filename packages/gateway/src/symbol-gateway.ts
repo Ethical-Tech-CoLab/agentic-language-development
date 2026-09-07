@@ -61,6 +61,7 @@ import {
 import {
   findTrustedMetadataKey,
   isPlainObject,
+  isWithinComplexityBudget,
   jsonSafe,
 } from './inspect.js';
 import type { GatewayReasonCode } from './reason-codes.js';
@@ -242,6 +243,17 @@ export class SymbolGatewayImpl implements SymbolGateway {
       return this.rejectProposal(turn, raw, 'invalid-envelope');
     }
 
+    // 1b. §9.4: bound the whole envelope's structural complexity — proposal
+    //     *and* privateLedgerDraft alike — before any recursive inspection or
+    //     canonical hashing touches it. A payload nested or wide enough to
+    //     exceed the budget is rejected outright here, rather than risking an
+    //     unbounded recursion (in this module's own checks, or later in
+    //     `@ald/hashing` canonicalization on the Evidence Writer path) from
+    //     escaping the rejection framework as an uncaught RangeError.
+    if (!isWithinComplexityBudget(raw)) {
+      return this.rejectProposal(turn, raw, 'payload-too-complex');
+    }
+
     // 2. §11.3 trusted metadata is Gateway-assigned; a Baby may never set it.
     if (findTrustedMetadataKey(shape.proposal) !== undefined) {
       return this.rejectProposal(turn, raw, 'trusted-metadata-present');
@@ -370,6 +382,14 @@ export class SymbolGatewayImpl implements SymbolGateway {
     const raw: unknown = envelope;
     if (!isPlainObject(raw) || !hasExactKeys(raw, ['channelEventHash', 'privateLedgerDraft'])) {
       return this.rejectInterpretation(turn, recipient, 'invalid-envelope', raw);
+    }
+
+    // §9.4: bound the envelope's structural complexity — in particular
+    // `privateLedgerDraft.content` — before it reaches `validateLedgerEventDraft`
+    // or the Evidence Writer's canonical hashing (`appendLedgerEvent`), for the
+    // same reason as the proposal path above.
+    if (!isWithinComplexityBudget(raw)) {
+      return this.rejectInterpretation(turn, recipient, 'payload-too-complex', raw);
     }
 
     let parsed: LedgerDraftEnvelope;

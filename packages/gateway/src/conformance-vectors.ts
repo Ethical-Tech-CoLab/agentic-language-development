@@ -58,6 +58,18 @@ function symbolProposal(publicArtifact: unknown): unknown {
   return { kind: 'emit_symbols', publicArtifact };
 }
 
+/**
+ * A value nested `depth` array levels deep, for exercising the SPEC §9.4
+ * complexity budget (default `maxDepth` of 32; see inspect.ts).
+ */
+function deeplyNested(depth: number): unknown {
+  let value: unknown = 'leaf';
+  for (let level = 0; level < depth; level += 1) {
+    value = [value];
+  }
+  return value;
+}
+
 export const FIXED_TOKEN_VECTORS: readonly ConformanceVector[] = [
   // --- acceptance (ALD-030 criterion 1) -----------------------------------
   {
@@ -230,6 +242,21 @@ export const FIXED_TOKEN_VECTORS: readonly ConformanceVector[] = [
       conformanceIntentionDraft({ eventType: 'intention.smuggled' }),
     ),
     expect: 'missing-intention',
+  },
+
+  // --- complexity budget (SPEC §9.4) --------------------------------------
+  {
+    name: 'rejects a public artifact nested past the complexity budget',
+    envelope: envelope(symbolProposal({ symbols: [deeplyNested(50)] })),
+    expect: 'payload-too-complex',
+  },
+  {
+    name: 'rejects a private ledger draft nested past the complexity budget',
+    envelope: envelope(
+      symbolProposal({ symbols: ['S01'] }),
+      conformanceIntentionDraft({ content: deeplyNested(50) }),
+    ),
+    expect: 'payload-too-complex',
   },
 
   // --- envelope frame (SPEC §11.3, ALD-035) -------------------------------

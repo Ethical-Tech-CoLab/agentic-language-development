@@ -472,11 +472,19 @@ export interface LearnerContract {
   track?: LearnerTrackId;
 }
 
+/**
+ * The run configuration as a Learner may see it. `randomSeed` is withheld:
+ * together with the public Scenario Engine it would let an adapter regenerate
+ * researcher-only ground truth and the other Baby's private seed, defeating
+ * SPEC §4.3 ("deliver only the permitted observation"), §9.5, and §10.1.
+ */
+export type LearnerVisibleRunConfig = Omit<RunConfig, 'randomSeed'>;
+
 export interface LearnerInitContext {
   runId: string;
   role: BabyRole;
   babyId: BabyId;
-  config: RunConfig;
+  config: LearnerVisibleRunConfig;
   learnerContract: LearnerContract;
   /** Private per-Baby seed derived by the runtime; never shared. */
   seed: string;

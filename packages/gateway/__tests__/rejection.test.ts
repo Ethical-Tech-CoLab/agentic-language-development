@@ -12,7 +12,13 @@ import {
   GATEWAY_ACTOR_ID,
   MAX_CONSECUTIVE_REJECTIONS_REASON,
 } from '../src/symbol-gateway.js';
-import { asEnvelope, harness, symbolEnvelope, turn } from './support.js';
+import {
+  asEnvelope,
+  harness,
+  intentionDraft,
+  symbolEnvelope,
+  turn,
+} from './support.js';
 
 const BAD = ['S99'];
 
@@ -186,6 +192,55 @@ describe('rejection behaviour (SPEC §9.4, ALD-034)', () => {
     expect(a.kind === 'rejected' && a.rejectedPayloadHash).not.toBe(
       c.kind === 'rejected' ? c.rejectedPayloadHash : '',
     );
+  });
+
+  it('commits a rejection instead of throwing on a 5,000-level nested proposal (SPEC §9.4)', async () => {
+    const { gateway, evidence, context } = harness();
+    let deep: unknown = 'S01';
+    for (let level = 0; level < 5000; level += 1) {
+      deep = [deep];
+    }
+    const envelope = asEnvelope({
+      proposal: { kind: 'emit_symbols', publicArtifact: { symbols: [deep] } },
+      privateLedgerDraft: intentionDraft(),
+    });
+
+    // Before the fix this rejected the returned promise with
+    // `RangeError: Maximum call stack size exceeded`, committing nothing and
+    // leaving the §9.4 counter untouched — the exact evasion the finding
+    // describes.
+    const result = await gateway.submitProposal(turn(), envelope);
+
+    expect(result.kind).toBe('rejected');
+    if (result.kind !== 'rejected') {
+      return;
+    }
+    expect(result.reasonCode).toBe('payload-too-complex');
+    expect(result.consecutiveRejections).toBe(1);
+    expect(gateway.consecutiveRejections()).toBe(1);
+    expect(evidence.channelEvents(context.runId)).toHaveLength(1);
+  });
+
+  it('commits a rejection for a private ledger draft with 20,000 sibling keys (SPEC §9.4)', async () => {
+    const { gateway, evidence, context } = harness();
+    const wideContent: Record<string, number> = {};
+    for (let index = 0; index < 20_000; index += 1) {
+      wideContent[`key-${index}`] = index;
+    }
+    const envelope = symbolEnvelope(
+      ['S01'],
+      intentionDraft({ content: wideContent }),
+    );
+
+    const result = await gateway.submitProposal(turn(), envelope);
+
+    expect(result.kind).toBe('rejected');
+    if (result.kind !== 'rejected') {
+      return;
+    }
+    expect(result.reasonCode).toBe('payload-too-complex');
+    expect(result.consecutiveRejections).toBe(1);
+    expect(evidence.channelEvents(context.runId)).toHaveLength(1);
   });
 
   it('survives an unserializable submission', async () => {

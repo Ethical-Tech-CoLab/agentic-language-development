@@ -9,10 +9,10 @@
  * enum string with no interpolated payload text
  * (EXPERIMENT-NOTEBOOK.md E01).
  *
- * `invalid-envelope`, `unexpected-artifact-field`, `missing-interpretation`
- * and `timeout` are implementation-defined codes; the remainder are named in
- * SPECIFICATION.md §9.1/§9.4 or in the ALD-030/ALD-034/ALD-035 acceptance
- * criteria.
+ * `invalid-envelope`, `unexpected-artifact-field`, `missing-interpretation`,
+ * `payload-too-complex` and `timeout` are implementation-defined codes; the
+ * remainder are named in SPECIFICATION.md §9.1/§9.4 or in the
+ * ALD-030/ALD-034/ALD-035 acceptance criteria.
  */
 export const GATEWAY_REASON_CODES = [
   /** The submission is not a well-formed §11.3 envelope. */
@@ -21,6 +21,14 @@ export const GATEWAY_REASON_CODES = [
   'trusted-metadata-present',
   /** SPEC §8.1 step 2: the required `intention.recorded` draft is absent or invalid. */
   'missing-intention',
+  /**
+   * SPEC §9.4: the raw submission's nesting depth or node count exceeds the
+   * Gateway's structural complexity budget (inspect.ts `ComplexityBudget`).
+   * Checked before any other recursive inspection or canonical hashing, so a
+   * hostile or malformed adapter cannot escape the §9.4 rejection counter by
+   * exhausting the call stack instead of failing a shape check.
+   */
+  'payload-too-complex',
   /** SPEC §8.2: the receiver draft is not a valid `interpretation.recorded` event. */
   'missing-interpretation',
   /** SPEC §9.6: the proposal kind is not offered by the run's carrier. */

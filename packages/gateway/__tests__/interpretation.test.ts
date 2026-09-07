@@ -168,6 +168,39 @@ describe('interpretation binding (SPEC §11.3)', () => {
     expect(JSON.stringify(event)).not.toContain('nonce-intention');
   });
 
+  it('rejects an interpretation draft whose content exceeds the complexity budget instead of throwing (SPEC §9.4)', async () => {
+    const { gateway, evidence, context, result } = await delivered();
+    let deep: unknown = 'artifact-1';
+    for (let level = 0; level < 3000; level += 1) {
+      deep = [deep];
+    }
+
+    // Before the fix, a deep enough `privateLedgerDraft.content` reached
+    // canonical hashing inside `appendLedgerEvent` and threw
+    // `RangeError: Maximum call stack size exceeded` with no rejection ever
+    // committed.
+    let caught: unknown;
+    try {
+      await gateway.submitInterpretation(turn(), 'baby-b', {
+        channelEventHash: result.channelEvent.entryHash,
+        privateLedgerDraft: interpretationDraft({
+          content: { artifactRef: 'guess', deep },
+        }),
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(InterpretationRejectedError);
+    expect((caught as InterpretationRejectedError).reasonCode).toBe(
+      'payload-too-complex',
+    );
+    expect(evidence.ledgerEvents(context.runId, 'B')).toHaveLength(0);
+    const events = evidence.channelEvents(context.runId);
+    expect(events).toHaveLength(2);
+    expect(events[1]?.reasonCode).toBe('payload-too-complex');
+  });
+
   it('binds an oracle delivery for interpretation too', async () => {
     const { gateway } = harness({
       communicationCondition: 'oracle',

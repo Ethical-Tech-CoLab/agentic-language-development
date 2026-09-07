@@ -11,6 +11,7 @@ import {
   EMPTY_MERKLE_ROOT,
   buildConsistencyProofRecord,
   buildInclusionProofRecord,
+  createRangeRootCache,
   merkleLeafHash,
   merkleRoot,
   verifyConsistency,
@@ -183,5 +184,42 @@ describe('buildConsistencyProofRecord', () => {
         fromRoot: merkleRoot(LEAVES.slice(0, 16)),
       }),
     ).toBe(false);
+  });
+});
+
+describe('RangeRootCache identity scoping across streams (LEDGER-INTEGRITY-DESIGN.md §7)', () => {
+  it('gives each stream its own root when two record builds share one cache', () => {
+    const babyA = LEAVES;
+    const babyB = Array.from({ length: SIZE }, (_, index) =>
+      merkleLeafHash(index + 1, fakeEntryHash(index + 1000)),
+    );
+    const cache = createRangeRootCache();
+
+    const recordA = buildInclusionProofRecord({
+      stream: 'baby-a-ledger',
+      treeName: MANDATORY_TREES['baby-a-ledger'],
+      checkpointSequence: 1,
+      sequence: 13,
+      entryHash: fakeEntryHash(12),
+      leafHashes: babyA,
+      cache,
+    });
+    const recordB = buildInclusionProofRecord({
+      stream: 'baby-b-ledger',
+      treeName: MANDATORY_TREES['baby-b-ledger'],
+      checkpointSequence: 1,
+      sequence: 13,
+      entryHash: fakeEntryHash(12 + 1000),
+      leafHashes: babyB,
+      cache,
+    });
+
+    // Each record's root must be the MTH of its own leaves, not the other
+    // stream's leaves borrowed from a colliding "start:end" cache key.
+    expect(recordA.root).toBe(merkleRoot(babyA));
+    expect(recordB.root).toBe(merkleRoot(babyB));
+    expect(recordA.root).not.toBe(recordB.root);
+    expect(verifyInclusion(recordA)).toBe(true);
+    expect(verifyInclusion(recordB)).toBe(true);
   });
 });

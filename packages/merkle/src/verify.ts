@@ -30,12 +30,51 @@ export interface ConsistencyVerificationInput {
   path: readonly string[];
 }
 
+/**
+ * Largest tree size, leaf index, or `fromSize`/`toSize` this module can
+ * check: the RFC 6962 §2.1.1/§2.1.2 walk below drives `fn`/`sn` with the
+ * unsigned 32-bit operators `>>>` and `&` (see {@link lsb}), which reduce any
+ * larger `number` modulo 2**32 via ToUint32/ToInt32 instead of throwing.
+ * Left unchecked, a `treeSize`/`leafIndex`/`fromSize`/`toSize` at or beyond
+ * 2**32 would be silently re-interpreted as `value mod 2**32`, so a proof
+ * would verify against a tree size the caller never declared —
+ * LEDGER-INTEGRITY-DESIGN.md §7 ("Tree size is essential because the same
+ * root without a size does not fully describe the committed prefix") is the
+ * reason the declared size must be the one actually checked. Anything at or
+ * above this bound is therefore rejected outright, matching this module's
+ * own contract that "an out-of-range index... return[s] false" rather than
+ * a wrong answer.
+ */
+const MAX_TREE_SIZE = 2 ** 32 - 1;
+
 function isIndex(value: unknown): value is number {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+  return (
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= MAX_TREE_SIZE
+  );
 }
 
 function isHashList(path: readonly string[]): boolean {
   return path.every((element) => isSha256Hash(element));
+}
+
+/**
+ * Upper bound on the number of hashes an inclusion or consistency audit path
+ * for a tree of `size` leaves can legitimately carry: RFC 6962 §2.1.1/§2.1.2
+ * walk the tree from a leaf (or the split point) to the root, a path of
+ * depth at most `ceil(log2(size)) + 1` (LEDGER-INTEGRITY-DESIGN.md §7 ties
+ * `treeSize` to "the committed prefix", and a path longer than that could
+ * not have been produced by any tree of the declared size). Checked before
+ * `verifyInclusion`/`verifyConsistency` do any shifting, so an over-long
+ * `path` is rejected outright rather than merely causing the walk to bail
+ * out partway through — matching this module's contract that "a short or
+ * over-long path... return[s] false" rather than doing unbounded work on
+ * attacker-supplied input.
+ */
+function maxPathLength(size: number): number {
+  return Math.ceil(Math.log2(size)) + 1;
 }
 
 /** Least-significant bit of `value` (RFC 6962 §2.1.1 `LSB`). */
@@ -56,6 +95,9 @@ export function verifyInclusion(input: InclusionVerificationInput): boolean {
     return false;
   }
   if (!isSha256Hash(leafHash) || !isSha256Hash(root) || !isHashList(path)) {
+    return false;
+  }
+  if (path.length > maxPathLength(treeSize)) {
     return false;
   }
   let fn = leafIndex;
@@ -115,6 +157,9 @@ export function verifyConsistency(
   }
   if (fromSize === 0) {
     return path.length === 0 && fromRoot === EMPTY_MERKLE_ROOT;
+  }
+  if (path.length > maxPathLength(toSize)) {
+    return false;
   }
 
   // RFC 6962-bis §2.1.4.2 step 1: an exact power of two contributes the old

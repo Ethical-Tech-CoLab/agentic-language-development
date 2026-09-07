@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
   EMPTY_MERKLE_ROOT,
   MerkleTree,
+  consistencyProof,
+  createRangeRootCache,
+  inclusionProof,
   merkleLeafHash,
   merkleNodeHash,
   merkleRoot,
@@ -180,5 +183,50 @@ describe('merkleRoot argument validation', () => {
     const tree = new MerkleTree(leaves(4));
     expect(() => tree.rootAt(5)).toThrow(/out of range/u);
     expect(() => tree.rootAt(-1)).toThrow(/out of range/u);
+  });
+});
+
+describe('RangeRootCache identity scoping (LEDGER-INTEGRITY-DESIGN.md §7)', () => {
+  it('gives two distinct leaf lists their own correct roots when sharing one cache', () => {
+    // Same [start, end) range keys would collide in a cache keyed only by
+    // "start:end" — the cache must be scoped by leaf-array identity so that
+    // handing it to a second, unrelated leaf list cannot contaminate its
+    // roots with the first list's subtree roots.
+    const a = leaves(4, 0);
+    const b = leaves(4, 100);
+    const cache = createRangeRootCache();
+
+    const rootA = merkleRoot(a, cache);
+    const rootB = merkleRoot(b, cache);
+
+    expect(rootA).toBe(merkleRoot(a));
+    expect(rootB).toBe(merkleRoot(b));
+    expect(rootB).not.toBe(rootA);
+
+    // Re-reading through the same shared cache must still be correct, not
+    // just the first write.
+    expect(merkleRoot(a, cache)).toBe(rootA);
+    expect(merkleRoot(b, cache)).toBe(rootB);
+  });
+
+  it('gives correct inclusion and consistency proofs when two leaf lists share one cache', () => {
+    const a = leaves(8, 0);
+    const b = leaves(8, 100);
+    const cache = createRangeRootCache();
+
+    const rootA = merkleRoot(a, cache);
+    const pathA = inclusionProof(a, 3, cache);
+    const rootB = merkleRoot(b, cache);
+    const pathB = inclusionProof(b, 3, cache);
+
+    expect(pathA).toEqual(inclusionProof(a, 3));
+    expect(pathB).toEqual(inclusionProof(b, 3));
+    expect(pathA).not.toEqual(pathB);
+
+    const consistA = consistencyProof(a, 4, cache);
+    const consistB = consistencyProof(b, 4, cache);
+    expect(consistA).toEqual(consistencyProof(a, 4));
+    expect(consistB).toEqual(consistencyProof(b, 4));
+    expect(rootA).not.toBe(rootB);
   });
 });

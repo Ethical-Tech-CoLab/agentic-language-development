@@ -40,8 +40,17 @@ export const SCENARIO_REF_PATTERN = /^scn:[a-f0-9]{16}$/u;
 
 /**
  * Allowlisted opaque-identifier format for `runId` (§10.1). Deliberately
- * narrow: no whitespace, so the prose heuristic cannot be evaded, and short
- * enough that a descriptive sentence cannot hide in it.
+ * narrow: no whitespace, and short enough that a descriptive sentence cannot
+ * hide in it. This pattern alone does not stop a whitespace-free sentence
+ * (`theKeyIsUnderTheDoorMat`) from matching — `looksLikeProse` below is what
+ * catches those, by evaluating the same camel/snake/kebab/dot/colon/slash
+ * split used for the token scan (see `normalizeForProseScan`) rather than the
+ * raw text. The pattern intentionally stays permissive enough to admit the
+ * hyphenated, human-legible run ids already used across the monorepo (e.g.
+ * `run-2026-08-24-001` per LEDGER-INTEGRITY-DESIGN.md §"Example manifest",
+ * `run-adapter-crash-evaluating` in packages/orchestrator/__tests__); it is
+ * `looksLikeProse`'s job, not this pattern's, to distinguish a compound
+ * identifier from a sentence.
  */
 export const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,63}$/u;
 
@@ -156,6 +165,17 @@ function normalizeForTokenScan(text: string): string {
     .replace(/[_-]+/gu, ' ');
 }
 
+/**
+ * `normalizeForTokenScan` plus a split on `.`, `:`, and `/` — the additional
+ * separators a dot/colon/slash-joined sentence (`the.red.circle`,
+ * `run:pick/the/target`) uses instead of `_`/`-`. Used only by the prose
+ * heuristic: the token scan's `\b` word-boundary regex already treats those
+ * characters as non-word, so it does not need this extra split.
+ */
+function normalizeForProseScan(text: string): string {
+  return normalizeForTokenScan(text).replace(/[._:/]+/gu, ' ');
+}
+
 function matchedTokens(text: string, tokens: readonly string[]): string[] {
   const normalized = normalizeForTokenScan(text);
   return tokens.filter((token) =>
@@ -164,18 +184,57 @@ function matchedTokens(text: string, tokens: readonly string[]): string[] {
 }
 
 /**
- * Prose heuristic: a long string carrying two or more space-separated
- * alphabetic words is a sentence, whatever vocabulary it uses, and no field
- * of SPEC §11.2 may contain one.
+ * Closed set of short English function words. A joined identifier that
+ * decodes (via `normalizeForProseScan`) to two or more all-alphabetic
+ * segments is not enough on its own to call it a sentence: conventional run
+ * ids already in use across the monorepo (`run-adapter-crash-evaluating`,
+ * `run-2026-08-24-001`) also decode to several alphabetic segments. What
+ * distinguishes a written sentence from a compound identifier is that a
+ * sentence almost always contains at least one closed-class function word
+ * (an article, pronoun, preposition, or auxiliary) — an opaque identifier
+ * built from content words (`adapter`, `crash`, `evaluating`, `cohort`)
+ * essentially never does. Gating on this keeps every hyphenated run id used
+ * in packages/orchestrator/__tests__ and twins/packs/__tests__ valid while
+ * still catching a joined sentence such as `theKeyIsUnderTheDoorMat` or
+ * `moveToPositionThenWaitForSignal`.
  */
-function looksLikeProse(text: string): boolean {
-  if (text.length <= 24) {
+const PROSE_STOPWORDS = new Set([
+  'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'to', 'of', 'in', 'on', 'at', 'for', 'with', 'and', 'or', 'but',
+  'if', 'then', 'this', 'that', 'these', 'those', 'you', 'your', 'i',
+  'my', 'we', 'he', 'she', 'it', 'they', 'them', 'his', 'her', 'its',
+  'our', 'their', 'not', 'no', 'do', 'does', 'did', 'will', 'would',
+  'can', 'could', 'should', 'must', 'has', 'have', 'had', 'so', 'as',
+  'by', 'from', 'into', 'onto', 'than', 'when', 'where', 'who', 'what',
+  'why', 'how', 'here', 'there',
+]);
+
+/**
+ * Prose heuristic: a long string that, once split the same way the token
+ * scan splits camelCase/snake_case/kebab-case/dot/colon/slash identifiers,
+ * carries two or more all-alphabetic words including at least one function
+ * word, is a sentence, whatever vocabulary it otherwise uses — and no field
+ * of SPEC §11.2 may contain one. Evaluated on the normalized text (not the
+ * raw string) so that a whitespace-free join such as `theKeyIsUnderTheDoorMat`
+ * or `the.red.circle` cannot evade it by construction (this was ALD's own
+ * bug: `RUN_ID_PATTERN` forbids whitespace in `runId`, so the raw text this
+ * heuristic used to scan could never contain more than one "word").
+ *
+ * The length gate is measured on the original (un-normalized) string so that
+ * inserting split spaces cannot itself push a short identifier over the
+ * threshold.
+ */
+function looksLikeProse(rawLength: number, normalized: string): boolean {
+  if (rawLength <= 24) {
     return false;
   }
-  const words = text
+  const words = normalized
     .split(/\s+/u)
     .filter((word) => /^[A-Za-z]+$/u.test(word));
-  return words.length >= 2;
+  if (words.length < 2) {
+    return false;
+  }
+  return words.some((word) => PROSE_STOPWORDS.has(word.toLowerCase()));
 }
 
 interface LanguageHit {
@@ -203,7 +262,7 @@ function classifyString(
       detail: `matched ${matches.length} banned human-language token(s)`,
     });
   }
-  if (looksLikeProse(text)) {
+  if (looksLikeProse(text.length, normalizeForProseScan(text))) {
     hits.push({
       reason: 'prose-string',
       path,
