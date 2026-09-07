@@ -56,7 +56,7 @@ import {
 } from '@ald/types';
 import { SeededPrng, hashCanonical } from '@ald/hashing';
 
-import { BlindingNonceSource, buildAgentNativeDraft } from './drafts.js';
+import { BlindingNonceSource, buildNoncedDraft } from './drafts.js';
 import {
   LearnerConfigurationError,
   LearnerStateError,
@@ -78,9 +78,11 @@ import {
   type ResolvedGameShape,
 } from './game.js';
 import {
+  EXPORTED_TABULAR_POLICY_VERSION,
   POLICY_DECIMALS,
   parseExportedTabularPolicy,
   tabularPolicyShape,
+  type ExportedEpisodicRegistries,
   type ExportedTabularPolicy,
   type TabularPolicyOptions,
 } from './policy.js';
@@ -205,6 +207,12 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   private readonly received = new Set<string>();
   /** Private partner/outcome prediction model used only by the intrinsic mode. */
   private readonly predictor = new Map<string, number>();
+  /**
+   * The registries as of the last `updatePolicy`, i.e. the snapshot an
+   * exported checkpoint carries. See `exportPolicy` for why the export lags
+   * the live registries.
+   */
+  private registryCheckpoint: ExportedEpisodicRegistries | undefined;
 
   constructor(private readonly options: TabularReinforceOptions = {}) {}
 
@@ -249,7 +257,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         context.symbolInventory.map((symbol, index) => [symbol, index]),
       ),
       actionStream: prng.derive('scratch-rl/action'),
-      nonces: new BlindingNonceSource(prng.derive('blinding-nonce')),
+      nonces: new BlindingNonceSource({
+        seed: context.seed,
+        runId: context.runId,
+        babyId: context.babyId,
+      }),
     };
 
     const symbolCount = context.symbolInventory.length;
@@ -261,10 +273,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     this.observation = undefined;
     this.lastReceived = undefined;
     this.pending.clear();
-    this.hypotheses.clear();
-    this.emitted.clear();
-    this.received.clear();
-    this.predictor.clear();
+    this.restoreRegistries(undefined);
 
     if (context.initialPolicy !== undefined) {
       this.loadPolicy(context.initialPolicy);
@@ -320,11 +329,18 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     };
     const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`;
 
-    await this.recordFirstUse(state, symbols, 'term.first_emitted', this.emitted);
+    await this.recordFirstUse(
+      state,
+      turnBudget.turn,
+      symbols,
+      'term.first_emitted',
+      this.emitted,
+    );
 
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
       subjectId: `symbol:${at(symbols, 0)}`,
+      turn: turnBudget.turn,
       content: {
         artifactRef,
         symbols,
@@ -332,7 +348,6 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         probability: roundTo(confidence, 6),
         associationWeights: roundAll(probs, 6),
       },
-      blindingNonce: state.nonces.next(),
       evidenceRefs: [artifactRef],
     });
 
@@ -384,9 +399,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         ? undefined
         : `channel:${received.channelEventHash}`;
 
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
       subjectId: `candidate:${objectRef}`,
+      turn: turnBudget.turn,
       content: {
         artifactRef,
         symbols: [...received.symbols],
@@ -396,7 +412,6 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         probability: roundTo(at(probs, actionIndex), 6),
         associationWeights: roundAll(probs, 6),
       },
-      blindingNonce: state.nonces.next(),
       evidenceRefs:
         channelRef === undefined ? [artifactRef] : [artifactRef, channelRef],
     });
@@ -440,7 +455,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       channelEventHash: delivery.channelEventHash,
     };
 
-    await this.recordFirstUse(state, symbols, 'term.first_received', this.received);
+    await this.recordFirstUse(
+      state,
+      delivery.turn,
+      symbols,
+      'term.first_received',
+      this.received,
+    );
 
     const candidateTypeCodes = this.observation?.view === 'receiver'
       ? [...this.observation.typeCodes]
@@ -453,9 +474,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       : [];
     const argmaxCandidateIndex = argmaxIndex(inferredDistribution);
 
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'interpretation.recorded',
       subjectId: `symbol:${at(symbols, 0)}`,
+      turn: delivery.turn,
       content: {
         artifactRef: delivery.channelEventHash,
         symbols,
@@ -467,7 +489,6 @@ export class TabularReinforceAdapter implements LearnerAdapter {
           6,
         ),
       },
-      blindingNonce: state.nonces.next(),
       evidenceRefs: [`channel:${delivery.channelEventHash}`],
     });
 
@@ -576,6 +597,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       this.pending.delete(turn);
     }
 
+    // The checkpoint advances the episodic registries in lock-step with the
+    // learned tables (see `exportPolicy`).
+    this.registryCheckpoint = this.snapshotRegistries(state);
+
     const policy = this.exportPolicy();
     const policyHash = hashCanonical(HASH_DOMAINS.policyCheckpoint, policy);
     return Promise.resolve({
@@ -585,16 +610,35 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     });
   }
 
+  /**
+   * The canonicalizable checkpoint: the learned tables plus the episodic
+   * registries this Baby needs to keep writing to the same ledger chain after
+   * a SPEC §7.3 re-initialization.
+   *
+   * The registry half is the snapshot taken by the last `updatePolicy`, not
+   * the live registries. That is what keeps the policy-checkpoint hash
+   * constant across an evaluation phase: SPEC §7.2 disables `updatePolicy`
+   * once evaluation starts, so nothing in the export can move — while a
+   * *live* registry would still grow the first time an evaluation turn
+   * received a symbol this Baby had never seen, silently changing the policy
+   * hash of a policy that did not change. The cost is that a recovery loses
+   * the registry entries added after the last checkpoint, which is exactly
+   * the checkpoint semantics of SPEC §7.3 and, in the runtime, at most one
+   * turn's worth (`NurseryRuntime` calls `updatePolicy` every training turn).
+   */
   exportPolicy(): ExportedTabularPolicy {
     const state = this.requireState();
     return {
-      version: 1,
+      version: EXPORTED_TABULAR_POLICY_VERSION,
       thetaSender: roundMatrix(this.thetaSender, POLICY_DECIMALS),
       thetaReceiver: this.thetaReceiver.map((table) =>
         roundMatrix(table, POLICY_DECIMALS),
       ),
       baseline: roundTo(this.baseline, POLICY_DECIMALS),
       options: { ...state.options },
+      registries: cloneRegistries(
+        this.registryCheckpoint ?? this.snapshotRegistries(state),
+      ),
     };
   }
 
@@ -653,6 +697,16 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    * recorded, a changed argmax appends a revision that references the prior
    * hypothesis rather than overwriting it, and contradictory evidence against
    * a confident hypothesis is preserved as its own event.
+   *
+   * The bookkeeping is only advanced *after* the corresponding append
+   * resolves. SPEC §14.5 retries a failed adapter call, and a retry must be
+   * able to re-emit the event it lost: mutating first would leave the map
+   * claiming a `hypothesis.created` that was never written, and every later
+   * revision would then name a `priorHypothesisRef` that resolves to nothing
+   * (LEDGER §5). Re-emitting a duplicate is recoverable for an auditor;
+   * a dangling reference is not. The nonce is derived from the event itself
+   * (LEDGER §12), so a retry that re-appends an already-committed event
+   * reproduces it byte for byte rather than forking it.
    */
   private async recordHypotheses(
     state: AdapterState,
@@ -689,54 +743,54 @@ export class TabularReinforceAdapter implements LearnerAdapter {
 
       if (previous === undefined) {
         const hypothesisRef = `hyp:${symbol}:1`;
+        await state.ledger.append(
+          buildNoncedDraft(state.nonces, {
+            eventType: 'hypothesis.created',
+            subjectId: `symbol:${symbol}`,
+            turn: memory.turn,
+            content: { ...shared, hypothesisRef },
+            evidenceRefs,
+          }),
+        );
         this.hypotheses.set(symbol, {
           version: 1,
           hypothesisRef,
           argmaxTypeCode,
         });
-        await state.ledger.append(
-          buildAgentNativeDraft({
-            eventType: 'hypothesis.created',
-            subjectId: `symbol:${symbol}`,
-            content: { ...shared, hypothesisRef },
-            blindingNonce: state.nonces.next(),
-            evidenceRefs,
-          }),
-        );
         continue;
       }
 
       if (previous.argmaxTypeCode !== argmaxTypeCode) {
         const version = previous.version + 1;
         const hypothesisRef = `hyp:${symbol}:${version}`;
-        this.hypotheses.set(symbol, { version, hypothesisRef, argmaxTypeCode });
         await state.ledger.append(
-          buildAgentNativeDraft({
+          buildNoncedDraft(state.nonces, {
             eventType: 'hypothesis.revised',
             subjectId: `symbol:${symbol}`,
+            turn: memory.turn,
             content: {
               ...shared,
               hypothesisRef,
               priorHypothesisRef: previous.hypothesisRef,
             },
-            blindingNonce: state.nonces.next(),
             evidenceRefs,
           }),
         );
+        this.hypotheses.set(symbol, { version, hypothesisRef, argmaxTypeCode });
         continue;
       }
 
       if (successBit === 0 && confidence > 0.5) {
         await state.ledger.append(
-          buildAgentNativeDraft({
+          buildNoncedDraft(state.nonces, {
             eventType: 'hypothesis.contradicted',
             subjectId: `symbol:${symbol}`,
+            turn: memory.turn,
             content: {
               ...shared,
               hypothesisRef: previous.hypothesisRef,
               evidenceRef: `outcome:${memory.turn}`,
             },
-            blindingNonce: state.nonces.next(),
             evidenceRefs,
           }),
         );
@@ -807,8 +861,15 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     this.pending.set(memory.turn, memory);
   }
 
+  /**
+   * CONCEPT-IDEA.md §11.2 rule 1. The symbol is marked as seen only once its
+   * `term.first_*` event is durable, so a SPEC §14.5 retry of a failed
+   * `act`/`receive` re-emits the event it lost instead of silently swallowing
+   * the only record of that term's first use.
+   */
   private async recordFirstUse(
     state: AdapterState,
+    turn: number,
     symbols: readonly string[],
     eventType: 'term.first_emitted' | 'term.first_received',
     seen: Set<string>,
@@ -817,21 +878,24 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       if (seen.has(symbol)) {
         continue;
       }
-      seen.add(symbol);
-      const draft: LedgerEventDraft = buildAgentNativeDraft({
+      const draft: LedgerEventDraft = buildNoncedDraft(state.nonces, {
         eventType,
         subjectId: `symbol:${symbol}`,
+        turn,
         content: {
           termRef: `symbol:${symbol}`,
           firstUse: eventType === 'term.first_emitted' ? 'emitted' : 'received',
         },
-        blindingNonce: state.nonces.next(),
       });
       await state.ledger.append(draft);
+      seen.add(symbol);
     }
   }
 
-  /** Derived runs (SPEC §7.4): resume from a recorded policy checkpoint. */
+  /**
+   * Resume from a recorded policy checkpoint: a derived run (SPEC §7.4) or a
+   * crash recovery that re-initializes this adapter mid-run (SPEC §7.3).
+   */
   private loadPolicy(value: unknown): void {
     const state = this.requireState();
     const policy = parseExportedTabularPolicy(value);
@@ -850,6 +914,75 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       table.map((logits) => [...logits]),
     );
     this.baseline = policy.baseline;
+    this.restoreRegistries(policy.registries);
+  }
+
+  /**
+   * Reset the episodic registries, restoring them from a checkpoint when that
+   * checkpoint describes *this* run and this Baby.
+   *
+   * The scoping is the difference between the two ways a checkpoint is
+   * loaded. SPEC §7.3 recovery re-initializes the adapter against the ledger
+   * chain it has already written to, so the registries must come back or the
+   * Baby re-records first uses and re-issues `hyp:<symbol>:1` for a different
+   * hypothesis. A derived run (SPEC §7.4) inherits the same learned tables but
+   * starts a *fresh* chain under a new `runId`, where no term has a first-use
+   * event yet and no hypothesis reference exists to revise — so it must start
+   * empty. A version 1 checkpoint carries no registries and is treated as the
+   * derived-run case.
+   */
+  private restoreRegistries(
+    registries: ExportedEpisodicRegistries | undefined,
+  ): void {
+    const state = this.requireState();
+    this.hypotheses.clear();
+    this.emitted.clear();
+    this.received.clear();
+    this.predictor.clear();
+
+    if (
+      registries !== undefined &&
+      registries.runId === state.context.runId &&
+      registries.babyId === state.context.babyId
+    ) {
+      for (const symbol of registries.emitted) {
+        this.emitted.add(symbol);
+      }
+      for (const symbol of registries.received) {
+        this.received.add(symbol);
+      }
+      for (const record of registries.hypotheses) {
+        this.hypotheses.set(record.symbol, {
+          version: record.version,
+          hypothesisRef: record.hypothesisRef,
+          argmaxTypeCode: record.argmaxTypeCode,
+        });
+      }
+      for (const entry of registries.predictor) {
+        this.predictor.set(entry.key, entry.value);
+      }
+    }
+
+    this.registryCheckpoint = this.snapshotRegistries(state);
+  }
+
+  /**
+   * The live registries in canonical (sorted) form, so the exported checkpoint
+   * hashes identically however the entries were discovered.
+   */
+  private snapshotRegistries(state: AdapterState): ExportedEpisodicRegistries {
+    return {
+      runId: state.context.runId,
+      babyId: state.context.babyId,
+      emitted: [...this.emitted].sort(compareStrings),
+      received: [...this.received].sort(compareStrings),
+      hypotheses: [...this.hypotheses.entries()]
+        .map(([symbol, record]) => ({ symbol, ...record }))
+        .sort((left, right) => compareStrings(left.symbol, right.symbol)),
+      predictor: [...this.predictor.entries()]
+        .map(([key, value]) => ({ key, value: roundTo(value, POLICY_DECIMALS) }))
+        .sort((left, right) => compareStrings(left.key, right.key)),
+    };
   }
 
   private requireState(): AdapterState {
@@ -941,6 +1074,28 @@ function clampProbability(value: number): number {
     return 0.5;
   }
   return Math.min(1 - PROBABILITY_EPSILON, Math.max(PROBABILITY_EPSILON, value));
+}
+
+/** Code-unit ordering, so a canonical snapshot does not depend on a locale. */
+function compareStrings(left: string, right: string): number {
+  if (left === right) {
+    return 0;
+  }
+  return left < right ? -1 : 1;
+}
+
+/** Defensive copy: `exportPolicy()` hands its result to callers that keep it. */
+function cloneRegistries(
+  registries: ExportedEpisodicRegistries,
+): ExportedEpisodicRegistries {
+  return {
+    runId: registries.runId,
+    babyId: registries.babyId,
+    emitted: [...registries.emitted],
+    received: [...registries.received],
+    hypotheses: registries.hypotheses.map((record) => ({ ...record })),
+    predictor: registries.predictor.map((entry) => ({ ...entry })),
+  };
 }
 
 function at<T>(values: readonly T[], index: number): T {

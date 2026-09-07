@@ -18,7 +18,7 @@ import {
   LedgerEventDraftSchema,
   type LedgerEventDraft,
 } from '@ald/types';
-import type { SeededPrng } from '@ald/hashing';
+import { hashCanonical } from '@ald/hashing';
 
 /** LEDGER §5 event types. */
 export const LEARNER_LEDGER_EVENT_TYPES = [
@@ -99,22 +99,71 @@ export function validateLearnerDraft(value: unknown): LedgerEventDraft & {
 }
 
 /**
+ * Domain separator for a derived blinding nonce. Implementation-defined:
+ * LEDGER §12 names the nonce but not its derivation.
+ */
+export const BLINDING_NONCE_DOMAIN = 'dtsf-learner-blinding-nonce-v1';
+
+/** Characters of the `sha256:` prefix `hashCanonical` returns. */
+const HASH_PREFIX_LENGTH = 'sha256:'.length;
+
+/** Hex characters kept from the digest: 24 = 96 bits (LEDGER §12). */
+const NONCE_HEX_LENGTH = 24;
+
+/** The Baby-private material every nonce of one ledger stream is bound to. */
+export interface BlindingNonceScope {
+  /** `LearnerInitContext.seed`: the private per-Baby seed, never shared. */
+  seed: string;
+  runId: string;
+  babyId: string;
+}
+
+/**
+ * What distinguishes one event from every other event of the same Baby's
+ * ledger. `turn` plus `eventType` plus `subjectId` already separate every
+ * event this package emits; `content` is folded in as well so that two events
+ * which would otherwise share the tuple — the same turn re-executed after a
+ * crash recovery, say — still get different nonces, while an idempotent retry
+ * of the *same* append (SPEC §14.5) reproduces the same nonce rather than
+ * inventing a second one.
+ */
+export interface BlindingNonceDiscriminator {
+  eventType: LearnerLedgerEventType;
+  subjectId: string;
+  /** The turn the event belongs to (SPEC §11.4). */
+  turn: number;
+  content: Record<string, unknown>;
+}
+
+/**
  * Per-event blinding nonces (LEDGER §12): 24 lowercase hex characters, i.e.
- * 96 bits, drawn from a dedicated child stream of this Baby's private PRNG
- * (`SeededPrng.derive('blinding-nonce')`). Three `nextUint32()` draws are
- * concatenated as 8 hex characters each. The stream is private to the Baby and
- * seeded from `LearnerInitContext.seed`, so nonces replay exactly under SPEC
- * §14.3 while remaining unpredictable to anyone without the run seed.
+ * 96 bits, taken from a domain-separated hash of the Baby's private seed, the
+ * run and Baby identity, and the event's own discriminator.
+ *
+ * The derivation is deliberately *position-independent*: it holds no stream
+ * cursor, so re-initializing an adapter mid-run — which SPEC §7.3 crash
+ * recovery does with the same seed and the same ledger chain — cannot restart
+ * the nonce sequence and hand a later event a nonce an earlier event already
+ * used. Nonces stay unpredictable to anyone without the private seed (LEDGER
+ * §12's stated purpose) and replay exactly under SPEC §14.3.
  */
 export class BlindingNonceSource {
-  constructor(private readonly prng: SeededPrng) {}
+  constructor(private readonly scope: BlindingNonceScope) {}
 
-  next(): string {
-    let nonce = '';
-    for (let index = 0; index < 3; index += 1) {
-      nonce += this.prng.nextUint32().toString(16).padStart(8, '0');
-    }
-    return nonce;
+  next(discriminator: BlindingNonceDiscriminator): string {
+    const digest = hashCanonical(BLINDING_NONCE_DOMAIN, {
+      seed: this.scope.seed,
+      runId: this.scope.runId,
+      babyId: this.scope.babyId,
+      eventType: discriminator.eventType,
+      subjectId: discriminator.subjectId,
+      turn: discriminator.turn,
+      content: discriminator.content,
+    });
+    return digest.slice(
+      HASH_PREFIX_LENGTH,
+      HASH_PREFIX_LENGTH + NONCE_HEX_LENGTH,
+    );
   }
 }
 
@@ -134,6 +183,38 @@ export function buildAgentNativeDraft(input: DraftInput): LedgerEventDraft {
     subjectId: input.subjectId,
     content: input.content,
     blindingNonce: input.blindingNonce,
+    evidenceRefs: input.evidenceRefs ?? [],
+  });
+}
+
+export interface NoncedDraftInput {
+  eventType: LearnerLedgerEventType;
+  subjectId: string;
+  /** The turn the event belongs to (SPEC §11.4); part of the nonce. */
+  turn: number;
+  content: Record<string, unknown>;
+  evidenceRefs?: string[];
+}
+
+/**
+ * Build one `agent-native-ledger` draft whose blinding nonce is derived from
+ * the event itself (LEDGER §12), so an adapter never has to hold a nonce
+ * stream position that a mid-run re-initialization would reset.
+ */
+export function buildNoncedDraft(
+  nonces: BlindingNonceSource,
+  input: NoncedDraftInput,
+): LedgerEventDraft {
+  return buildAgentNativeDraft({
+    eventType: input.eventType,
+    subjectId: input.subjectId,
+    content: input.content,
+    blindingNonce: nonces.next({
+      eventType: input.eventType,
+      subjectId: input.subjectId,
+      turn: input.turn,
+      content: input.content,
+    }),
     evidenceRefs: input.evidenceRefs ?? [],
   });
 }

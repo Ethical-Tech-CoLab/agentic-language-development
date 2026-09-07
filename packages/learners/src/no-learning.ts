@@ -33,10 +33,7 @@ import {
 } from '@ald/types';
 import { SeededPrng, domainHash, hashCanonical } from '@ald/hashing';
 
-import {
-  BlindingNonceSource,
-  buildAgentNativeDraft,
-} from './drafts.js';
+import { BlindingNonceSource, buildNoncedDraft } from './drafts.js';
 import { LearnerConfigurationError, LearnerStateError } from './errors.js';
 import {
   extractSymbols,
@@ -84,6 +81,20 @@ export class NoLearningAdapter implements LearnerAdapter {
    * delivered it, so it is never carried into a later turn that had none.
    */
   private lastReceived: { turn: number; symbols: string[] } | undefined;
+  /**
+   * Terms this Baby has already recorded a first use for (CONCEPT-IDEA.md
+   * §11.2 rule 1).
+   *
+   * Unlike the `scratch-rl` track these are not carried in `exportPolicy()`:
+   * this track has no learned state, its checkpoint is a constant by
+   * construction (that constancy is the control's meaning and is asserted in
+   * this package's tests), and the runtime writes and reloads a policy file
+   * only for a track that exposes `updatePolicy` — so there is no checkpoint
+   * for a recovered `no-learning` adapter to restore from. A SPEC §7.3
+   * recovery of a `no-learning` run therefore re-records first uses; the
+   * blinding nonces stay unique regardless, because they are derived from the
+   * event rather than from a stream position.
+   */
   private readonly emitted = new Set<string>();
   private readonly received = new Set<string>();
   private outcomes = 0;
@@ -116,7 +127,11 @@ export class NoLearningAdapter implements LearnerAdapter {
       symbols: [...context.symbolInventory],
       symbolStream: prng.derive('no-learning/symbol'),
       candidateStream: prng.derive('no-learning/candidate'),
-      nonces: new BlindingNonceSource(prng.derive('blinding-nonce')),
+      nonces: new BlindingNonceSource({
+        seed: context.seed,
+        runId: context.runId,
+        babyId: context.babyId,
+      }),
       seedHash: domainHash(HASH_DOMAINS.seed, context.seed),
     };
     this.observation = undefined;
@@ -167,18 +182,24 @@ export class NoLearningAdapter implements LearnerAdapter {
       publicArtifact: { symbols },
     };
 
-    await this.recordFirstUse(state, symbols, 'term.first_emitted', this.emitted);
+    await this.recordFirstUse(
+      state,
+      turnBudget.turn,
+      symbols,
+      'term.first_emitted',
+      this.emitted,
+    );
 
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
       subjectId: `symbol:${symbols[0] as string}`,
+      turn: turnBudget.turn,
       content: {
         artifactRef: `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`,
         symbols,
         targetTypeCode,
         policy: 'uniform-random',
       },
-      blindingNonce: state.nonces.next(),
     });
 
     return { proposal, privateLedgerDraft: draft };
@@ -200,9 +221,10 @@ export class NoLearningAdapter implements LearnerAdapter {
       publicArtifact: { objectRef },
     };
 
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
       subjectId: `candidate:${objectRef}`,
+      turn: turnBudget.turn,
       content: {
         artifactRef: `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`,
         // §9.6 `disabled`: an empty list when nothing was delivered.
@@ -210,7 +232,6 @@ export class NoLearningAdapter implements LearnerAdapter {
         selection: objectRef,
         policy: 'uniform-random',
       },
-      blindingNonce: state.nonces.next(),
     });
 
     return { proposal, privateLedgerDraft: draft };
@@ -223,12 +244,19 @@ export class NoLearningAdapter implements LearnerAdapter {
     const symbols = extractSymbols(delivery);
     this.lastReceived = { turn: delivery.turn, symbols };
 
-    await this.recordFirstUse(state, symbols, 'term.first_received', this.received);
+    await this.recordFirstUse(
+      state,
+      delivery.turn,
+      symbols,
+      'term.first_received',
+      this.received,
+    );
 
     const uniform = 1 / state.shape.typeCount;
-    const draft = buildAgentNativeDraft({
+    const draft = buildNoncedDraft(state.nonces, {
       eventType: 'interpretation.recorded',
       subjectId: `symbol:${symbols[0] as string}`,
+      turn: delivery.turn,
       content: {
         artifactRef: delivery.channelEventHash,
         symbols,
@@ -238,7 +266,6 @@ export class NoLearningAdapter implements LearnerAdapter {
         ),
         policy: 'uniform-random',
       },
-      blindingNonce: state.nonces.next(),
       evidenceRefs: [`channel:${delivery.channelEventHash}`],
     });
 
@@ -270,8 +297,14 @@ export class NoLearningAdapter implements LearnerAdapter {
     };
   }
 
+  /**
+   * CONCEPT-IDEA.md §11.2 rule 1. As in the `scratch-rl` track, the symbol is
+   * marked as seen only after its event is durable, so a SPEC §14.5 retry
+   * re-emits the first-use event it lost rather than dropping it.
+   */
   private async recordFirstUse(
     state: AdapterState,
+    turn: number,
     symbols: readonly string[],
     eventType: 'term.first_emitted' | 'term.first_received',
     seen: Set<string>,
@@ -280,14 +313,14 @@ export class NoLearningAdapter implements LearnerAdapter {
       if (seen.has(symbol)) {
         continue;
       }
-      seen.add(symbol);
-      const draft: LedgerEventDraft = buildAgentNativeDraft({
+      const draft: LedgerEventDraft = buildNoncedDraft(state.nonces, {
         eventType,
         subjectId: `symbol:${symbol}`,
+        turn,
         content: { termRef: `symbol:${symbol}`, policy: 'uniform-random' },
-        blindingNonce: state.nonces.next(),
       });
       await state.ledger.append(draft);
+      seen.add(symbol);
     }
   }
 

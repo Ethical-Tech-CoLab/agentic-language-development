@@ -89,11 +89,15 @@ export {
   type TabularReinforceOptions,
 } from './tabular-reinforce.js';
 export {
+  EXPORTED_TABULAR_POLICY_VERSION,
+  EpisodicRegistriesSchema,
   ExportedTabularPolicySchema,
   POLICY_DECIMALS,
   TabularPolicyOptionsSchema,
   parseExportedTabularPolicy,
   tabularPolicyShape,
+  type ExportedEpisodicRegistries,
+  type ExportedHypothesisRecord,
   type ExportedTabularPolicy,
   type TabularPolicyOptions,
   type TabularPolicyShape,
