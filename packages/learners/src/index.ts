@@ -121,8 +121,10 @@ export {
   type ContractLintRule,
 } from './contract-lint.js';
 export {
+  AGENT_NATIVE_REFERENCE_FORMATS,
   FORBIDDEN_PROPOSAL_KEYS,
   RecordingLedgerClient,
+  assertAgentNativeContent,
   assertToolOnlyProposal,
   buildConformanceRunConfig,
   runLearnerAdapterConformance,

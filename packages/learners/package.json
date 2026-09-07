@@ -17,6 +17,7 @@
   "dependencies": {
     "@ald/types": "*",
     "@ald/hashing": "*",
+    "@ald/scenario": "*",
     "zod": "^4.4.3"
   }
 }

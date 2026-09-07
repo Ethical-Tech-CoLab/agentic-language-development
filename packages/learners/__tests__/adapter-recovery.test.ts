@@ -439,6 +439,135 @@ describe('retried adapter calls (SPEC §14.5)', () => {
 });
 
 /**
+ * SPEC §14.5 retries the *whole* adapter call, so every private draw and every
+ * state change inside one has to be idempotent per turn, or the retried run
+ * stops being the run its seed replays (§14.3): a second `sampleIndex` shifts
+ * the action stream, and a second `predictionProgressReward` steps the
+ * intrinsic predictor twice and changes the reward for that turn.
+ */
+describe('idempotent adapter calls per turn (SPEC §14.5, §14.3)', () => {
+  /** Turn 1 as sender, turn 2 as sender, driven by hand. */
+  async function senderTurn(
+    adapter: TabularReinforceAdapter,
+    config: RunConfig,
+    turn: number,
+  ): Promise<void> {
+    await adapter.observe({
+      runId: config.runId,
+      turn,
+      recipient: 'baby-a',
+      encoding: 'opaque-numeric',
+      payload: [
+        [turn % 4, (turn + 1) % 4, 1],
+        [(turn + 2) % 4, (turn + 3) % 4, 0],
+      ],
+      scenarioRef: `scenario:${String(turn)}`,
+    });
+  }
+
+  it('replays the same proposal when act() is called twice for one turn', async () => {
+    const config = buildConformanceRunConfig('scratch-rl', {
+      episodes: 4,
+      symbolInventorySize: INVENTORY_SIZE,
+    });
+    const ledger = new RecordingLedgerClient(config.runId, 'baby-a');
+    const adapter = await initAdapter(ledger, config);
+
+    ledger.turn = 1;
+    await senderTurn(adapter, config, 1);
+    const budget = {
+      turn: 1,
+      role: 'sender' as const,
+      responseBudgetMs: 1_000,
+      availableActions: ['emit_symbols' as const],
+    };
+    const first = await adapter.act(budget);
+    const second = await adapter.act(budget);
+
+    expect(JSON.stringify(second)).toBe(JSON.stringify(first));
+    // The first use of that term was recorded once, not once per attempt.
+    expect(ledger.countOf('term.first_emitted')).toBe(1);
+
+    // And the action stream did not advance: the next turn draws what it
+    // would have drawn without the retry.
+    await ledger.append(first.privateLedgerDraft);
+    ledger.turn = 2;
+    await senderTurn(adapter, config, 2);
+    const next = await adapter.act({ ...budget, turn: 2 });
+
+    const control = new RecordingLedgerClient(config.runId, 'baby-a');
+    const controlAdapter = await initAdapter(control, config);
+    control.turn = 1;
+    await senderTurn(controlAdapter, config, 1);
+    const controlFirst = await controlAdapter.act(budget);
+    await control.append(controlFirst.privateLedgerDraft);
+    control.turn = 2;
+    await senderTurn(controlAdapter, config, 2);
+    const controlNext = await controlAdapter.act({ ...budget, turn: 2 });
+
+    expect(JSON.stringify(next)).toBe(JSON.stringify(controlNext));
+  });
+
+  it('leaves the predictor and the baseline as if onOutcome ran once', async () => {
+    const config = buildConformanceRunConfig('scratch-rl', {
+      episodes: 4,
+      symbolInventorySize: INVENTORY_SIZE,
+      learningSignal: 'intrinsic-prediction-progress',
+    });
+    const intrinsic = { ...OPTIONS, intrinsicMode: 'prediction-progress' } as const;
+
+    const play = async (attempts: number): Promise<unknown> => {
+      const ledger = new RecordingLedgerClient(config.runId, 'baby-a');
+      const adapter = new TabularReinforceAdapter(intrinsic);
+      await adapter.init({
+        runId: config.runId,
+        role: 'baby-a',
+        babyId: 'A',
+        config,
+        learnerContract: loadLearnerContract('scratch-rl'),
+        seed: 'private-seed-baby-a',
+        symbolInventory: inventory,
+        ledger,
+      });
+      ledger.turn = 1;
+      await senderTurn(adapter, config, 1);
+      const envelope = await adapter.act({
+        turn: 1,
+        role: 'sender',
+        responseBudgetMs: 1_000,
+        availableActions: ['emit_symbols'],
+      });
+      await ledger.append(envelope.privateLedgerDraft);
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        await adapter.onOutcome({
+          runId: config.runId,
+          turn: 1,
+          role: 'sender',
+          success: false,
+          payload: [0],
+        });
+      }
+      await adapter.updatePolicy({
+        runId: config.runId,
+        turns: [1],
+        learningSignal: 'intrinsic-prediction-progress',
+      });
+      return adapter.exportPolicy();
+    };
+
+    const once = await play(1);
+    const retried = await play(2);
+
+    // The exported checkpoint carries the predictor, the baseline and the
+    // learned tables, so equality here is the whole learned state.
+    expect(retried).toEqual(once);
+    const predictor = parseExportedTabularPolicy(retried)
+      .registries as ExportedEpisodicRegistries;
+    expect(predictor.predictor).toHaveLength(1);
+  });
+});
+
+/**
  * The `no-learning` control shares the nonce derivation, so its chain keeps
  * unique nonces across a restart too. It exports no learned state, so it has
  * no checkpoint to restore registries from — see `NoLearningAdapter.emitted`.

@@ -15,6 +15,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   RecordingLedgerClient,
+  assertAgentNativeContent,
   assertToolOnlyProposal,
   buildConformanceRunConfig,
   runLearnerAdapterConformance,
@@ -22,10 +23,13 @@ import {
 } from '../src/conformance.js';
 import { LearnerConformanceError } from '../src/errors.js';
 import { createNoLearningAdapterFactory } from '../src/no-learning.js';
+import { createTabularReinforceAdapterFactory } from '../src/tabular-reinforce.js';
 
 type Defect =
   | 'none'
   | 'free-text'
+  | 'english-artifact-field'
+  | 'english-ledger-gloss'
   | 'trusted-field'
   | 'nested-trusted-field'
   | 'wrong-draft-type'
@@ -67,7 +71,13 @@ class DefectiveAdapter implements LearnerAdapter {
     this.candidateRefs = turnBudget.candidateRefs ?? [];
     const proposal =
       turnBudget.role === 'sender'
-        ? { kind: 'emit_symbols', publicArtifact: { symbols: ['S01'] } }
+        ? {
+            kind: 'emit_symbols',
+            publicArtifact:
+              this.defect === 'english-artifact-field'
+                ? { symbols: ['S01'], note: 'the red one' }
+                : { symbols: ['S01'] },
+          }
         : {
             kind: 'select_object',
             publicArtifact: {
@@ -85,7 +95,14 @@ class DefectiveAdapter implements LearnerAdapter {
           ? 'human-audit-ledger'
           : 'agent-native-ledger',
       subjectId: 'symbol:S01',
-      content: { artifactRef: 'proposal:x', termRef: 'symbol:S01' },
+      content:
+        this.defect === 'english-ledger-gloss'
+          ? {
+              artifactRef: 'proposal:x',
+              termRef: 'symbol:S01',
+              hypothesis: 'S13 means red circle',
+            }
+          : { artifactRef: 'proposal:x', termRef: 'symbol:S01' },
       blindingNonce: '0123456789abcdef01234567',
       evidenceRefs: [],
     };
@@ -301,10 +318,53 @@ describe('assertToolOnlyProposal (SPEC §6.3, §11.3)', () => {
   });
 });
 
+describe('assertAgentNativeContent (SPEC §11.4, CONCEPT-IDEA.md §20.6)', () => {
+  it('accepts the opaque references the reference adapters write', () => {
+    expect(() =>
+      assertAgentNativeContent(
+        {
+          artifactRef: `proposal:sha256:${'a'.repeat(64)}`,
+          termRef: 'symbol:S01',
+          symbols: ['S01', 'S12'],
+          hypothesisRef: 'hyp:S01:2',
+          priorHypothesisRef: 'hyp:S01:1',
+          evidenceRef: 'outcome:37',
+          selection: 'o:0011aabbccdd',
+          targetTypeCode: 5,
+          associationOverTypeCodes: [0.5, 0.5],
+          policy: 'uniform-random',
+        },
+        'unit',
+      ),
+    ).not.toThrow();
+  });
+
+  it('rejects an English gloss hiding among them', () => {
+    for (const gloss of [
+      'the red one',
+      'S13 means red circle',
+      'pick the object that is on the left of the target',
+    ]) {
+      expect(() =>
+        assertAgentNativeContent({ termRef: 'symbol:S13', note: gloss }, 'unit'),
+        gloss,
+      ).toThrow(/human-language/u);
+    }
+  });
+
+  it('never repeats the offending text in the error it throws (§10.2)', () => {
+    expect(() =>
+      assertAgentNativeContent({ note: 'the red one' }, 'unit'),
+    ).toThrow(/^(?!.*the red one).*$/su);
+  });
+});
+
 describe('runLearnerAdapterConformance', () => {
   it('rejects each defect it exists to catch', async () => {
     const defects: Defect[] = [
       'free-text',
+      'english-artifact-field',
+      'english-ledger-gloss',
       'trusted-field',
       'nested-trusted-field',
       'wrong-draft-type',
@@ -322,6 +382,49 @@ describe('runLearnerAdapterConformance', () => {
         }),
         defect,
       ).rejects.toThrow(LearnerConformanceError);
+    }
+  });
+
+  it('names the smuggled English rather than a generic schema failure', async () => {
+    // Regression: the harness parsed each envelope with the SPEC §11.3 schema
+    // and then discarded the parse result, so a natural-language field the
+    // schema *stripped* still travelled on the raw envelope into the other
+    // Baby's receive(); and a private draft was checked only for
+    // `contentSchema: 'agent-native-ledger'`, never for what its content
+    // actually said. Both were a working covert channel through a
+    // "conforming" adapter (SPEC §6.3, §11.3, §11.4).
+    await expect(
+      runLearnerAdapterConformance(defectiveFactory('english-artifact-field'), {
+        episodes: 1,
+        seed: 'defect-artifact-english',
+      }),
+    ).rejects.toThrow(/publicArtifact for kind "emit_symbols"|note/u);
+    await expect(
+      runLearnerAdapterConformance(defectiveFactory('english-ledger-gloss'), {
+        episodes: 1,
+        seed: 'defect-gloss',
+      }),
+    ).rejects.toThrow(/human-language/u);
+  });
+
+  it('still accepts both shipped adapters under the content scan', async () => {
+    for (const factory of [
+      createNoLearningAdapterFactory(),
+      createTabularReinforceAdapterFactory({ learningRate: 1, temperature: 0.5 }),
+    ]) {
+      const result = await runLearnerAdapterConformance(factory, {
+        episodes: 8,
+        seed: `shipped-${factory.track}`,
+      });
+      expect(result.successFlags).toHaveLength(8);
+      for (const role of ['baby-a', 'baby-b'] as const) {
+        expect(result.ledgers[role].drafts.length).toBeGreaterThan(0);
+        for (const draft of result.ledgers[role].drafts) {
+          expect(() =>
+            assertAgentNativeContent(draft.content, draft.eventType),
+          ).not.toThrow();
+        }
+      }
     }
   });
 

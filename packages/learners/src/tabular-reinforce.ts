@@ -28,7 +28,18 @@
  * the empty message — a uniform choice over the offered candidates, because no
  * symbol means no information — records `symbols: []` in its intention event,
  * and contributes no REINFORCE update, since there is no symbol row to credit.
- * The sender half of such a turn is updated normally.
+ * The sender half of such a turn is updated normally. A receiver turn may
+ * equally arrive with *more* symbols than this adapter emits: SPEC §9.6's
+ * `random` control draws a message of any length in
+ * `[1, maxSymbolsPerMessage]`, and §9.6 requires all six conditions to run
+ * over the same learner interfaces. Any delivered length is therefore scored
+ * on the prefix the receiver holds tables for and recorded verbatim; it is
+ * never an adapter error.
+ *
+ * Every private draw is bound to its turn rather than to a stream position:
+ * `act()` caches the action it drew and `onOutcome()` the reward it computed,
+ * so a SPEC §14.5 retry of a crashed adapter call replays the same draw
+ * instead of advancing the private streams and breaking §14.3 seeded replay.
  *
  * Initialization is all-zero logits, i.e. an exactly uniform policy. That is a
  * deliberate substitute for random initialization: it is reproducible, its
@@ -131,7 +142,9 @@ interface SenderTurnMemory {
 interface ReceiverTurnMemory {
   role: 'receiver';
   turn: number;
+  /** Every delivered symbol, verbatim, for the intention event (SPEC §8.2). */
   symbols: string[];
+  /** Inventory indices of the scored prefix: at most `messageLength` of them. */
   symbolIndices: number[];
   candidateTypeCodes: number[];
   actionIndex: number;
@@ -155,7 +168,9 @@ type TurnMemory = SenderTurnMemory | ReceiverTurnMemory;
  */
 interface ReceivedMessage {
   turn: number;
+  /** Every symbol delivered, verbatim, however many arrived (SPEC §9.6). */
   symbols: string[];
+  /** Inventory indices of the scored prefix: at most `messageLength` of them. */
   symbolIndices: number[];
   channelEventHash: string | null;
 }
@@ -213,8 +228,20 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    * the live registries.
    */
   private registryCheckpoint: ExportedEpisodicRegistries | undefined;
+  /** Non-fatal findings from the last `initialPolicy` load (SPEC §7.4). */
+  private diagnostics: string[] = [];
 
   constructor(private readonly options: TabularReinforceOptions = {}) {}
+
+  /**
+   * Differences between the loaded checkpoint's hyperparameters and this
+   * run's, in `name checkpointValue != runValue` form. Empty when no
+   * checkpoint was loaded or when the two agree. Researcher-facing only: it is
+   * never written to a ledger and never reaches a Baby's observation.
+   */
+  get policyLoadDiagnostics(): readonly string[] {
+    return this.diagnostics;
+  }
 
   async init(context: LearnerInitContext): Promise<void> {
     if (context.symbolInventory.length === 0) {
@@ -273,6 +300,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     this.observation = undefined;
     this.lastReceived = undefined;
     this.pending.clear();
+    this.diagnostics = [];
     this.restoreRegistries(undefined);
 
     if (context.initialPolicy !== undefined) {
@@ -304,30 +332,14 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     turnBudget: TurnBudget,
   ): Promise<TurnProposalEnvelope> {
     requireAction(turnBudget, 'emit_symbols');
-    const observation = this.requireObservation();
-    if (observation.targetIndex === null) {
-      throw new LearnerStateError(
-        'A sender turn requires an observation with a target row',
-      );
-    }
-    const typeCode = at(observation.typeCodes, observation.targetIndex);
-    const logits = row(this.thetaSender, typeCode);
-    const probs = softmax(logits, state.options.temperature);
-
-    const symbolIndices: number[] = [];
-    let confidence = 1;
-    for (let position = 0; position < state.shape.messageLength; position += 1) {
-      const index = state.actionStream.sampleIndex(probs);
-      symbolIndices.push(index);
-      confidence *= at(probs, index);
-    }
-    const symbols = symbolIndices.map((index) => at(state.symbols, index));
+    const memory = this.senderTurn(state, turnBudget.turn);
+    const symbols = [...memory.symbols];
 
     const proposal = {
       kind: 'emit_symbols' as const,
       publicArtifact: { symbols },
     };
-    const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`;
+    const artifactRef = memory.primaryEvidenceRef;
 
     await this.recordFirstUse(
       state,
@@ -344,25 +356,69 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       content: {
         artifactRef,
         symbols,
-        targetTypeCode: typeCode,
-        probability: roundTo(confidence, 6),
-        associationWeights: roundAll(probs, 6),
+        targetTypeCode: memory.typeCode,
+        probability: roundTo(memory.confidence, 6),
+        associationWeights: roundAll(memory.probs, 6),
       },
       evidenceRefs: [artifactRef],
     });
 
-    this.remember({
+    return { proposal, privateLedgerDraft: draft };
+  }
+
+  /**
+   * The sender action for `turn`, drawn once.
+   *
+   * SPEC §14.5 retries a crashed adapter call, and §14.3 requires the run to
+   * replay from its recorded seed. Both hold only if the retry re-uses the
+   * draw the first attempt made: a second `sampleIndex` would advance the
+   * private action stream, change every later symbol, and — through the
+   * event-derived nonces (LEDGER §12) — every later entry hash. The draw is
+   * therefore recorded in the turn buffer *before* any ledger append, so a
+   * call that fails part-way still replays identically.
+   */
+  private senderTurn(state: AdapterState, turn: number): SenderTurnMemory {
+    const cached = this.pending.get(turn);
+    if (cached !== undefined && cached.role === 'sender') {
+      return cached;
+    }
+    const observation = this.requireObservation();
+    if (observation.targetIndex === null) {
+      throw new LearnerStateError(
+        'A sender turn requires an observation with a target row',
+      );
+    }
+    const typeCode = at(observation.typeCodes, observation.targetIndex);
+    const probs = softmax(
+      row(this.thetaSender, typeCode),
+      state.options.temperature,
+    );
+
+    const symbolIndices: number[] = [];
+    let confidence = 1;
+    for (let position = 0; position < state.shape.messageLength; position += 1) {
+      const index = state.actionStream.sampleIndex(probs);
+      symbolIndices.push(index);
+      confidence *= at(probs, index);
+    }
+    const symbols = symbolIndices.map((index) => at(state.symbols, index));
+    const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, {
+      kind: 'emit_symbols' as const,
+      publicArtifact: { symbols },
+    })}`;
+
+    const memory: SenderTurnMemory = {
       role: 'sender',
-      turn: turnBudget.turn,
+      turn,
       symbols,
       symbolIndices,
       typeCode,
       probs,
       confidence,
       primaryEvidenceRef: artifactRef,
-    });
-
-    return { proposal, privateLedgerDraft: draft };
+    };
+    this.remember(memory);
+    return memory;
   }
 
   private async actAsReceiver(
@@ -374,20 +430,9 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     if (candidateRefs === undefined || candidateRefs.length === 0) {
       throw new LearnerStateError('A receiver turn requires candidateRefs');
     }
-    // SPEC §9.6 `disabled`: no artifact is delivered, so the receiver acts
-    // with an empty message. `candidateScores` then sums over no symbol rows
-    // and the softmax is exactly uniform over the candidates: no symbol, no
-    // information, chance behavior — which is what the control measures.
     const received = this.receivedFor(turnBudget.turn);
-    const candidateTypeCodes = this.receiverCandidateTypeCodes(
-      candidateRefs.length,
-    );
-    const probs = softmax(
-      this.candidateScores(received.symbolIndices, candidateTypeCodes),
-      state.options.temperature,
-    );
-    const actionIndex = state.actionStream.sampleIndex(probs);
-    const objectRef = at(candidateRefs, actionIndex);
+    const memory = this.receiverTurn(state, turnBudget.turn, received, candidateRefs);
+    const objectRef = at(candidateRefs, memory.actionIndex);
 
     const proposal = {
       kind: 'select_object' as const,
@@ -405,30 +450,71 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       turn: turnBudget.turn,
       content: {
         artifactRef,
-        symbols: [...received.symbols],
+        symbols: [...memory.symbols],
         selection: objectRef,
         /** The type code of the candidate this Baby intends to refer to. */
-        targetTypeCode: at(candidateTypeCodes, actionIndex),
-        probability: roundTo(at(probs, actionIndex), 6),
-        associationWeights: roundAll(probs, 6),
+        targetTypeCode: at(memory.candidateTypeCodes, memory.actionIndex),
+        probability: roundTo(memory.confidence, 6),
+        associationWeights: roundAll(memory.probs, 6),
       },
       evidenceRefs:
         channelRef === undefined ? [artifactRef] : [artifactRef, channelRef],
     });
 
-    this.remember({
+    return { proposal, privateLedgerDraft: draft };
+  }
+
+  /**
+   * The receiver action for `turn`, drawn once (see `senderTurn` for why the
+   * draw is cached rather than repeated).
+   *
+   * SPEC §9.6 `disabled`: no artifact is delivered, so the receiver acts with
+   * an empty message. `candidateScores` then sums over no symbol rows and the
+   * softmax is exactly uniform over the candidates: no symbol, no information,
+   * chance behavior — which is what the control measures.
+   */
+  private receiverTurn(
+    state: AdapterState,
+    turn: number,
+    received: ReceivedMessage,
+    candidateRefs: readonly string[],
+  ): ReceiverTurnMemory {
+    const cached = this.pending.get(turn);
+    if (cached !== undefined && cached.role === 'receiver') {
+      return cached;
+    }
+    const candidateTypeCodes = this.receiverCandidateTypeCodes(
+      candidateRefs.length,
+    );
+    const probs = softmax(
+      this.candidateScores(received.symbolIndices, candidateTypeCodes),
+      state.options.temperature,
+    );
+    const actionIndex = state.actionStream.sampleIndex(probs);
+    // The hypothesis events of this turn are evidenced by the delivered
+    // channel event where there was one, and by this Baby's own proposal
+    // otherwise (§8.2: no channel event, no channel reference).
+    const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, {
+      kind: 'select_object' as const,
+      publicArtifact: { objectRef: at(candidateRefs, actionIndex) },
+    })}`;
+
+    const memory: ReceiverTurnMemory = {
       role: 'receiver',
-      turn: turnBudget.turn,
+      turn,
       symbols: [...received.symbols],
       symbolIndices: [...received.symbolIndices],
       candidateTypeCodes,
       actionIndex,
       probs,
       confidence: at(probs, actionIndex),
-      primaryEvidenceRef: channelRef ?? artifactRef,
-    });
-
-    return { proposal, privateLedgerDraft: draft };
+      primaryEvidenceRef:
+        received.channelEventHash === null
+          ? artifactRef
+          : `channel:${received.channelEventHash}`,
+    };
+    this.remember(memory);
+    return memory;
   }
 
   async receive(
@@ -436,12 +522,16 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   ): Promise<LedgerDraftEnvelope> {
     const state = this.requireState();
     const symbols = extractSymbols(delivery);
-    if (symbols.length !== state.shape.messageLength) {
-      throw new LearnerStateError(
-        `Expected ${state.shape.messageLength} symbol(s), received ${symbols.length}`,
-      );
-    }
-    const symbolIndices = symbols.map((symbol) => {
+    // SPEC §9.6 `random` delivers a uniformly drawn message of any length in
+    // `[1, maxSymbolsPerMessage]`, and §9.6 requires every condition to run
+    // over the same scenarios and learner interfaces — so a delivered length
+    // that differs from this adapter's configured `messageLength` is a legal
+    // artifact, not a protocol error. The policy scores the delivered prefix
+    // it holds receiver tables for; a shorter message simply leaves the
+    // trailing positions absent, and any symbol past `messageLength` is
+    // unscored but still recorded verbatim in the interpretation event (§8.2).
+    const scored = symbols.slice(0, state.shape.messageLength);
+    const symbolIndices = scored.map((symbol) => {
       const index = state.symbolIndex.get(symbol);
       if (index === undefined) {
         throw new LearnerStateError(`Symbol ${symbol} is not in the inventory`);
@@ -503,6 +593,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    * association weights written here are read from the pre-update tables, so a
    * hypothesis event always describes the state that produced the behavior it
    * is evidence about.
+   *
+   * The reward is computed at most once per turn. SPEC §14.5 retries a crashed
+   * adapter call, and in `intrinsic-prediction-progress` mode computing the
+   * reward *is* a state change — `predictionProgressReward` steps the private
+   * predictor — so a second computation for the same turn would return a
+   * different reward, move the checkpoint hash, and make the run
+   * irreproducible from its seed (§14.3).
    */
   async onOutcome(outcome: OutcomeEvent): Promise<void> {
     const state = this.requireState();
@@ -514,10 +611,12 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     }
 
     const successBit = successBitOf(outcome);
-    memory.reward =
-      state.rewardMode === 'extrinsic-task'
-        ? (outcome.reward ?? successBit)
-        : this.predictionProgressReward(state, memory, successBit);
+    if (memory.reward === undefined) {
+      memory.reward =
+        state.rewardMode === 'extrinsic-task'
+          ? (outcome.reward ?? successBit)
+          : this.predictionProgressReward(state, memory, successBit);
+    }
 
     await this.recordHypotheses(state, memory, successBit);
   }
@@ -895,20 +994,63 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   /**
    * Resume from a recorded policy checkpoint: a derived run (SPEC §7.4) or a
    * crash recovery that re-initializes this adapter mid-run (SPEC §7.3).
+   *
+   * The checkpoint's *attribute space* is compared, not only its table
+   * dimensions. Two different game shapes can share a cardinality — a 2-value,
+   * 4-attribute space and a 4-value, 2-attribute space both give 16 type codes
+   * — and `typeCodeFromAttributes` decodes the same integer to entirely
+   * different objects in the two, so a checkpoint loaded across that boundary
+   * would silently index the parent's logits by the child's meanings while
+   * `parentRunId`/`derivedFromCheckpointHash` assert an unbroken lineage
+   * (SPEC §7.4). Refusing here is the only place the mismatch is visible
+   * before the derived run's evidence is sealed.
+   *
+   * Hyperparameters are a weaker case: re-tuning `learningRate`,
+   * `temperature`, or `baselineDecay` for a derived run is a legitimate
+   * experiment, not a lineage error. A difference is recorded in
+   * `policyLoadDiagnostics` for the researcher rather than refused.
    */
   private loadPolicy(value: unknown): void {
     const state = this.requireState();
     const policy = parseExportedTabularPolicy(value);
     const shape = tabularPolicyShape(policy);
-    if (
-      shape.typeCount !== state.shape.typeCount ||
-      shape.symbolCount !== state.symbols.length ||
-      shape.messageLength !== state.shape.messageLength
-    ) {
+    const mismatches: string[] = [];
+    for (const [name, checkpointValue, runValue] of [
+      ['typeCount', shape.typeCount, state.shape.typeCount],
+      ['symbolCount', shape.symbolCount, state.symbols.length],
+      ['messageLength', shape.messageLength, state.shape.messageLength],
+      [
+        'attributeCount',
+        policy.options.attributeCount,
+        state.shape.attributeCount,
+      ],
+      [
+        'valuesPerAttribute',
+        policy.options.valuesPerAttribute,
+        state.shape.valuesPerAttribute,
+      ],
+    ] as const) {
+      if (checkpointValue !== runValue) {
+        mismatches.push(`${name} ${checkpointValue} != ${runValue}`);
+      }
+    }
+    if (mismatches.length > 0) {
       throw new LearnerConfigurationError(
-        'initialPolicy shape does not match this run configuration',
+        `initialPolicy shape does not match this run configuration: ${mismatches.join(', ')}`,
       );
     }
+
+    this.diagnostics = [];
+    for (const [name, checkpointValue, runValue] of [
+      ['learningRate', policy.options.learningRate, state.options.learningRate],
+      ['temperature', policy.options.temperature, state.options.temperature],
+      ['baselineDecay', policy.options.baselineDecay, state.options.baselineDecay],
+    ] as const) {
+      if (checkpointValue !== runValue) {
+        this.diagnostics.push(`${name} ${checkpointValue} != ${runValue}`);
+      }
+    }
+
     this.thetaSender = policy.thetaSender.map((logits) => [...logits]);
     this.thetaReceiver = policy.thetaReceiver.map((table) =>
       table.map((logits) => [...logits]),

@@ -17,7 +17,12 @@
  *   delivered `channelEventHash` unchanged and carries an
  *   `interpretation.recorded` draft (SPEC §8.2);
  * - every draft an adapter appends to its private ledger validates against
- *   `LedgerEventDraftSchema` and the LEDGER §5 required-content-field table;
+ *   `LedgerEventDraftSchema` and the LEDGER §5 required-content-field table,
+ *   and every string it writes into `agent-native-ledger` content is either an
+ *   allowlisted opaque reference or survives the §10.1 human-language scan —
+ *   an English gloss riding in a private event is a covert channel between the
+ *   Babies as surely as one riding in `publicArtifact` (SPEC §11.4,
+ *   CONCEPT-IDEA.md §20.6);
  * - `updatePolicy` is absent exactly for the tracks SPEC §6.2 says it is
  *   absent for.
  *
@@ -60,6 +65,7 @@ import {
   domainHash,
   hashCanonical,
 } from '@ald/hashing';
+import { scanForHumanLanguage } from '@ald/scenario';
 
 import { loadLearnerContract, type TrackLearnerContract } from './contracts.js';
 import { validateLearnerDraft } from './drafts.js';
@@ -211,6 +217,12 @@ export class RecordingLedgerClient implements PrivateLedgerClient {
     options?: { channelEventHash?: Sha256Hash },
   ): Promise<LedgerEvent> {
     const validated = this.validate ? validateLearnerDraft(draft) : draft;
+    if (this.validate && validated.contentSchema === 'agent-native-ledger') {
+      assertAgentNativeContent(
+        validated.content,
+        `${this.role} append of ${validated.eventType}`,
+      );
+    }
     this.counts.set(
       validated.eventType,
       (this.counts.get(validated.eventType) ?? 0) + 1,
@@ -573,6 +585,152 @@ function assertNoTrustedFields(
   }
 }
 
+/**
+ * Structured opaque-reference formats the reference adapters legitimately
+ * write into `agent-native-ledger` content (SPEC §11.4): proposal, channel,
+ * policy and scenario hashes, the `symbol:`/`hyp:` term and hypothesis
+ * references of CONCEPT-IDEA.md §11.2, the Scenario Engine's `o:<hex>`
+ * candidate references and the harness's `object:<hash>` stand-ins, and the
+ * `outcome:<turn>` evidence reference.
+ *
+ * The list is deliberately narrow — every pattern is anchored and admits only
+ * hex, digits, or a fixed-token symbol id, so no English can hide inside one.
+ * A string that matches none of them is not rejected outright (a track may
+ * have its own opaque vocabulary); it is handed to the §10.1 scan instead.
+ */
+export const AGENT_NATIVE_REFERENCE_FORMATS: readonly RegExp[] = [
+  /^sha256:[0-9a-f]{64}$/u,
+  /^(?:proposal|channel|policy|scenario|object|entry):sha256:[0-9a-f]{64}$/u,
+  /^(?:o|scn|obj):[0-9a-f]{8,64}$/u,
+  /^S[0-9]{2,3}$/u,
+  /^symbol:S[0-9]{2,3}$/u,
+  /^hyp:S[0-9]{2,3}:[0-9]+$/u,
+  /^outcome:[0-9]+$/u,
+];
+
+function isOpaqueReference(value: string): boolean {
+  return AGENT_NATIVE_REFERENCE_FORMATS.some((pattern) => pattern.test(value));
+}
+
+function collectStringValues(
+  value: unknown,
+  into: string[],
+  seen: WeakSet<object>,
+): void {
+  if (typeof value === 'string') {
+    into.push(value);
+    return;
+  }
+  if (typeof value !== 'object' || value === null) {
+    return;
+  }
+  if (seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectStringValues(item, into, seen);
+    }
+    return;
+  }
+  for (const nested of Object.values(value as Record<string, unknown>)) {
+    collectStringValues(nested, into, seen);
+  }
+}
+
+/**
+ * SPEC §11.4 and CONCEPT-IDEA.md §20.6: an `agent-native-ledger` event carries
+ * association weights, distributions, confidences and opaque references —
+ * never an English gloss. The harness cannot certify "no natural language" by
+ * inspecting `contentSchema` alone, because the field is a claim the adapter
+ * makes about itself; this is the check behind the claim.
+ *
+ * Only string *values* are scanned. Content keys are the adapter's own
+ * agent-native field names (`targetTypeCode`, `associationWeights`), which the
+ * §10.1 token list would flag for vocabulary they use structurally rather than
+ * as language.
+ */
+export function assertAgentNativeContent(
+  content: Record<string, unknown>,
+  where: string,
+): void {
+  const strings: string[] = [];
+  collectStringValues(content, strings, new WeakSet<object>());
+  const suspect = strings.filter((value) => !isOpaqueReference(value));
+  const hits = scanForHumanLanguage(suspect);
+  if (hits.length > 0) {
+    throw new LearnerConformanceError(
+      `${where}: agent-native content carries ${String(hits.length)} human-language string(s) (SPEC §11.4); first offending field length ${String((hits[0] as string).length)}`,
+    );
+  }
+}
+
+/**
+ * Reject any key a schema silently dropped.
+ *
+ * `z.object()` strips unknown keys on `.parse()` rather than rejecting them,
+ * and the harness keeps using the *raw* envelope afterwards — it is the raw
+ * `publicArtifact` that is hashed into the channel event and handed to the
+ * other adapter's `receive()`. So a field the schema discarded is not
+ * harmless: it is a covert channel that the schema check hides rather than
+ * catches (SPEC §6.3, §11.3). Extra keys are compared in the raw-to-parsed
+ * direction only, so a schema default the parse *adds* (`evidenceRefs: []`) is
+ * not mistaken for a violation.
+ */
+function assertNoStrippedKeys(
+  raw: unknown,
+  parsed: unknown,
+  where: string,
+  path: string,
+): void {
+  if (Array.isArray(raw)) {
+    if (!Array.isArray(parsed)) {
+      return;
+    }
+    raw.forEach((item, index) => {
+      assertNoStrippedKeys(item, parsed[index], where, `${path}[${index}]`);
+    });
+    return;
+  }
+  if (typeof raw !== 'object' || raw === null) {
+    return;
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return;
+  }
+  const parsedRecord = parsed as Record<string, unknown>;
+  for (const key of ownKeysDeep(raw)) {
+    if (!(key in parsedRecord)) {
+      throw new LearnerConformanceError(
+        `${where}: ${path}.${key} is not part of the SPEC §11.3 schema and must not ride alongside the tool call`,
+      );
+    }
+    assertNoStrippedKeys(
+      (raw as Record<string, unknown>)[key],
+      parsedRecord[key],
+      where,
+      `${path}.${key}`,
+    );
+  }
+}
+
+/**
+ * One envelope, checked against what its schema actually accepted: no key the
+ * schema stripped survives in the raw value the harness goes on to use, and
+ * the private draft it carries holds agent-native content only.
+ */
+function assertSchemaFaithfulEnvelope(
+  raw: unknown,
+  parsed: { privateLedgerDraft: LedgerEventDraft },
+  where: string,
+): void {
+  assertNoStrippedKeys(raw, parsed, where, 'envelope');
+  if (parsed.privateLedgerDraft.contentSchema === 'agent-native-ledger') {
+    assertAgentNativeContent(parsed.privateLedgerDraft.content, where);
+  }
+}
+
 function buildOutcome(
   base: OutcomeEvent,
   visibility: 'value' | 'forbidden',
@@ -686,7 +844,11 @@ export async function runLearnerAdapterConformance(
       `episode ${index} sender act()`,
     );
     if (resolved.validate) {
-      TurnProposalEnvelopeSchema.parse(senderProposal);
+      assertSchemaFaithfulEnvelope(
+        senderEnvelope,
+        TurnProposalEnvelopeSchema.parse(senderProposal),
+        `episode ${index} sender act()`,
+      );
       validateLearnerDraft(senderProposal.privateLedgerDraft);
     }
     assertIntentionDraft(senderProposal, `episode ${index} sender act()`);
@@ -719,7 +881,11 @@ export async function runLearnerAdapterConformance(
 
     const interpretation = await receiver.receive(delivery);
     if (resolved.validate) {
-      LedgerDraftEnvelopeSchema.parse(interpretation);
+      assertSchemaFaithfulEnvelope(
+        interpretation,
+        LedgerDraftEnvelopeSchema.parse(interpretation),
+        `episode ${index} receive()`,
+      );
       validateLearnerDraft(interpretation.privateLedgerDraft);
     }
     if (interpretation.channelEventHash !== channelEventHash) {
@@ -759,7 +925,11 @@ export async function runLearnerAdapterConformance(
       `episode ${index} receiver act()`,
     );
     if (resolved.validate) {
-      TurnProposalEnvelopeSchema.parse(receiverProposal);
+      assertSchemaFaithfulEnvelope(
+        receiverEnvelope,
+        TurnProposalEnvelopeSchema.parse(receiverProposal),
+        `episode ${index} receiver act()`,
+      );
       validateLearnerDraft(receiverProposal.privateLedgerDraft);
     }
     assertIntentionDraft(receiverProposal, `episode ${index} receiver act()`);

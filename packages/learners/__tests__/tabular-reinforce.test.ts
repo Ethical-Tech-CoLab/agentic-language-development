@@ -402,6 +402,59 @@ describe('TabularReinforceAdapter learning signals', () => {
       }),
     ).rejects.toThrow(LearnerConfigurationError);
   });
+
+  it('refuses a checkpoint written for a different game shape (SPEC §7.4)', async () => {
+    const { adapter } = await initAdapter({
+      ...TRAINING_OPTIONS,
+      attributeCount: 3,
+      valuesPerAttribute: 4,
+    });
+    const policy = adapter.exportPolicy();
+    expect(policy.options.attributeCount).toBe(3);
+
+    await expect(
+      initAdapter(
+        { ...TRAINING_OPTIONS, attributeCount: 2, valuesPerAttribute: 4 },
+        { initialPolicy: policy },
+      ),
+    ).rejects.toThrow(/attributeCount 3 != 2/u);
+  });
+
+  it('refuses a checkpoint whose attribute space only shares its cardinality', async () => {
+    // Regression: the shape check compared table dimensions alone, and a
+    // 2-value/4-attribute space and a 4-value/2-attribute space both give 16
+    // type codes — so the parent's logits loaded silently while every type
+    // code decoded to a different object (SPEC §7.4 lineage).
+    const { adapter } = await initAdapter({
+      ...TRAINING_OPTIONS,
+      attributeCount: 4,
+      valuesPerAttribute: 2,
+    });
+    const policy = adapter.exportPolicy();
+    expect(policy.thetaSender).toHaveLength(16);
+
+    await expect(
+      initAdapter(
+        { ...TRAINING_OPTIONS, attributeCount: 2, valuesPerAttribute: 4 },
+        { initialPolicy: policy },
+      ),
+    ).rejects.toThrow(/valuesPerAttribute 2 != 4/u);
+  });
+
+  it('loads a re-tuned checkpoint but reports the hyperparameter difference', async () => {
+    const { adapter } = await initAdapter(TRAINING_OPTIONS);
+    const policy = adapter.exportPolicy();
+
+    const { adapter: derived } = await initAdapter(
+      { learningRate: 0.3, temperature: 1 },
+      { initialPolicy: policy },
+    );
+    expect(derived.policyLoadDiagnostics).toEqual([
+      'learningRate 1 != 0.3',
+      'temperature 0.5 != 1',
+    ]);
+    expect(derived.exportPolicy().thetaSender).toEqual(policy.thetaSender);
+  });
 });
 
 describe('TabularReinforceAdapter multi-symbol messages', () => {
