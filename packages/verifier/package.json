@@ -11,6 +11,9 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "bin": {
+    "ald-verify": "./bin/ald-verify.js"
+  },
   "scripts": {
     "build": "tsc --build"
   },
@@ -18,5 +21,9 @@
     "@ald/types": "*",
     "@ald/hashing": "*",
     "@ald/merkle": "*"
+  },
+  "devDependencies": {
+    "@ald/evidence": "*",
+    "@ald/lifecycle": "*"
   }
 }

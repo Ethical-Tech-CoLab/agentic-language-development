@@ -11,6 +11,7 @@
     { "path": "../types" },
     { "path": "../hashing" },
     { "path": "../merkle" },
-    { "path": "../evidence" }
+    { "path": "../evidence" },
+    { "path": "../lifecycle" }
   ]
 }

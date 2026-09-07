@@ -18,6 +18,7 @@
     "@ald/types": "*",
     "@ald/hashing": "*",
     "@ald/merkle": "*",
-    "@ald/evidence": "*"
+    "@ald/evidence": "*",
+    "@ald/lifecycle": "*"
   }
 }

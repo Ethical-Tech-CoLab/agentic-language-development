@@ -23,9 +23,6 @@
     "@ald/lifecycle": "*",
     "@ald/scenario": "*",
     "@ald/learners": "*",
-    "@ald/gateway": "*",
-    "@ald/checkpoint": "*",
-    "@ald/anchor": "*",
-    "@ald/verifier": "*"
+    "@ald/gateway": "*"
   }
 }

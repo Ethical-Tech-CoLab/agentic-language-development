@@ -16,9 +16,6 @@
     { "path": "../lifecycle" },
     { "path": "../scenario" },
     { "path": "../learners" },
-    { "path": "../gateway" },
-    { "path": "../checkpoint" },
-    { "path": "../anchor" },
-    { "path": "../verifier" }
+    { "path": "../gateway" }
   ]
 }
