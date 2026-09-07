@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active. ALD-001 through ALD-007 are complete; ALD-008 is the next critical-path item.
+- **Status:** Implementation active. ALD-001 through ALD-017, ALD-023 through ALD-030, ALD-034 through ALD-038, ALD-041 through ALD-043, ALD-045, ALD-048 through ALD-052, and the statistics half of ALD-072 are implemented and tested in Prototype Mode; ALD-018, ALD-019, ALD-021, ALD-022, ALD-025 through ALD-027, ALD-059, and ALD-071 are implemented except for the parts that need a funded Base wallet, Research-Grade deployment, or external pre-registration. Acceptance checkboxes below record the verified state item by item; the next critical-path items are ALD-020 (real Base Sepolia anchoring), ALD-044, ALD-055, ALD-072 (intervention suite), and ALD-071 (external registration binding).
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -37,7 +37,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 - **Isolation:** Research-Grade Mode (Mode R) runs learner processes in separate containers/processes with no shared mutable state beyond the Gateway and ledger, per `SPECIFICATION.md` [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r).
 - **On-chain privacy:** no private, raw-observation, or model-internal data is ever placed in an on-chain anchoring payload — only checkpoint root hashes and minimal metadata, per `SPECIFICATION.md` [§13.6 Privacy Controls](SPECIFICATION.md#136-privacy-controls) and `LEDGER-INTEGRITY-DESIGN.md` [§12. Privacy](LEDGER-INTEGRITY-DESIGN.md#12-privacy).
 - **No invented dates or staffing:** this backlog contains no calendar dates, durations, or headcount figures. Milestones are ordinal (`M0`…`M5`); the execution plan uses ordinal iterations (`Iteration 1`…`Iteration 4`, "Iteration 5+"). Sequencing is expressed purely through dependencies.
-- **Repository today:** documentation-only. Every "implement X" item below is net-new work; none of it exists in the repository yet, so no item's acceptance criteria assume pre-existing code beyond what an earlier, lower-numbered ALD item established.
+- **Repository today:** an npm-workspaces TypeScript monorepo with the packages listed in README.md; each item's acceptance criteria assume only what earlier, lower-numbered ALD items established.
 - **Diplomacy-table reuse:** the repository's existing UX components (e.g., from a prior Diplomacy-style project) may be reused only within the boundaries `SPECIFICATION.md` [§16.2](SPECIFICATION.md#162-diplomacy-table-reuse-boundaries) defines; this is treated as a constraint, not an invitation to reuse everything available.
 
 ## 3. Priority Definitions
@@ -306,35 +306,35 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§4. Canonical Ledger Event](LEDGER-INTEGRITY-DESIGN.md#4-canonical-ledger-event), [§6. Binding Ledgers to Communication](LEDGER-INTEGRITY-DESIGN.md#6-binding-ledgers-to-communication)
 - **Scope:** Implement independent previous-hash chains for Baby A ledger, Baby B ledger, and channel transcript, plus optional affect/audit chains, with the cross-event bindings required by LEDGER §6.
 - **Acceptance criteria:**
-  - [ ] Each stored event's previous hash matches the immediately preceding event in the same run and event domain, with sequence starting at `1`.
-  - [ ] Mutating, deleting, inserting, or reordering an event in any primary chain is detected by a chain-walk validator.
-  - [ ] Sender intention, channel event, receiver delivery receipt, and receiver interpretation carry the exact cross-hashes required by LEDGER §6 and SPECIFICATION §11.5.
+  - [x] Each stored event's previous hash matches the immediately preceding event in the same run and event domain, with sequence starting at `1`.
+  - [x] Mutating, deleting, inserting, or reordering an event in any primary chain is detected by a chain-walk validator.
+  - [x] Sender intention, channel event, receiver delivery receipt, and receiver interpretation carry the exact cross-hashes required by LEDGER §6 and SPECIFICATION §11.5.
 
 #### ALD-009 — Per-run event and witness key provisioning
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-008, ALD-003
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§11. Key Management](LEDGER-INTEGRITY-DESIGN.md#11-key-management)
 - **Scope:** Provision isolated per-run Ed25519 keys for Baby A ledger, Baby B ledger, channel transcript, optional affect events, generated audit-ledger events, and Nursery checkpoint witness; expose domain-bound signing RPCs and store only public keys in the run manifest.
 - **Acceptance criteria:**
-  - [ ] Every committed event and checkpoint has a signature verifiable by the public key registered for exactly its domain.
-  - [ ] Cross-domain signing attempts fail, including Baby A attempting to sign Baby B or channel content.
-  - [ ] Private keys are absent from SQLite, logs, model context, and evidence bundles; per-run rotation produces distinct public keys.
+  - [x] Every committed event and checkpoint has a signature verifiable by the public key registered for exactly its domain.
+  - [x] Cross-domain signing attempts fail, including Baby A attempting to sign Baby B or channel content.
+  - [x] Private keys are absent from SQLite, logs, model context, and evidence bundles; per-run rotation produces distinct public keys.
 
 #### ALD-010 — Evidence Writer and atomic turn transaction
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-005, ALD-008, ALD-009
 - **Spec refs:** `SPECIFICATION.md` [§8.2 Atomic Ledger+Message Transaction](SPECIFICATION.md#82-atomic-ledgermessage-transaction)
 - **Scope:** Implement the single Evidence Writer service from SPECIFICATION §4/§8: authenticate Gateway requests, assign sequences, build canonical events, obtain domain-bound signatures from `ALD-009`, and commit the sender ledger plus channel event in one SQLite transaction.
 - **Acceptance criteria:**
-  - [ ] A signing or insert failure at any point results in zero sender-ledger and channel rows committed.
-  - [ ] A successful `TurnCommitRequest` commits both signed rows atomically and returns their entry hashes before delivery.
-  - [ ] Module boundaries and database permissions prevent every other component, including Gateway and Controller, from writing event tables directly.
+  - [x] A signing or insert failure at any point results in zero sender-ledger and channel rows committed.
+  - [x] A successful `TurnCommitRequest` commits both signed rows atomically and returns their entry hashes before delivery.
+  - [x] Module boundaries and database permissions prevent every other component, including Gateway and Controller, from writing event tables directly.
 
 #### ALD-011 — WAL durability and crash-safety tests
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-005, ALD-010
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§3. Authoritative Local Store](LEDGER-INTEGRITY-DESIGN.md#3-authoritative-local-store), [§15. Recovery and Fork Handling](LEDGER-INTEGRITY-DESIGN.md#15-recovery-and-fork-handling)
 - **Scope:** Build a test harness that kills the process mid-write (simulated crash) and verifies the WAL recovers to a consistent last-committed state on restart, with no torn or partial ledger events.
 - **Acceptance criteria:**
-  - [ ] Simulated crash during an in-flight `ALD-010` transaction leaves the database with either the pre-transaction or post-transaction state, never a partial one, on restart.
-  - [ ] The chain-walk validator from `ALD-008` reports zero integrity violations after each crash-recovery test run.
+  - [x] Simulated crash during an in-flight `ALD-010` transaction leaves the database with either the pre-transaction or post-transaction state, never a partial one, on restart.
+  - [x] The chain-walk validator from `ALD-008` reports zero integrity violations after each crash-recovery test run.
   - [ ] The test suite runs at least 20 randomized crash-point trials in CI (once `ALD-078` exists) without a single torn-write failure.
 
 ### EPIC-03 — Merkle Checkpoints and Verifier CLI (Phase 1)
@@ -346,26 +346,26 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§7. Ordered Merkle Checkpoints](LEDGER-INTEGRITY-DESIGN.md#7-ordered-merkle-checkpoints)
 - **Scope:** Implement RFC 6962-style ordered Merkle trees for all present primary and auxiliary event domains, producing roots, inclusion proofs, and prefix-consistency proofs between checkpoint sizes.
 - **Acceptance criteria:**
-  - [ ] Given a fixed ordered set of event hashes, the builder produces a deterministic, reproducible root hash.
-  - [ ] An inclusion proof for any leaf verifies correctly against the root using only the proof and the leaf hash.
-  - [ ] Valid extension checkpoints produce a consistency proof, while reordering, deletion, insertion, or a non-prefix tree fails consistency verification.
+  - [x] Given a fixed ordered set of event hashes, the builder produces a deterministic, reproducible root hash.
+  - [x] An inclusion proof for any leaf verifies correctly against the root using only the proof and the leaf hash.
+  - [x] Valid extension checkpoints produce a consistency proof, while reordering, deletion, insertion, or a non-prefix tree fails consistency verification.
 
 #### ALD-013 — Checkpoint manifest generation
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-009, ALD-012, ALD-002
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§8. Checkpoint Manifest](LEDGER-INTEGRITY-DESIGN.md#8-checkpoint-manifest), `SPECIFICATION.md` [§11.7 Checkpoint Manifest Reference](SPECIFICATION.md#117-checkpoint-manifest-reference)
 - **Scope:** Generate the complete checkpoint manifest with required Baby A/B/channel roots, present auxiliary roots, tree sizes, last hashes, prior-checkpoint hash, run/config/prompt hashes, then obtain the Nursery witness signature from `ALD-009`.
 - **Acceptance criteria:**
-  - [ ] A generated manifest validates against the authoritative schema and includes every event tree present in the Evidence Store.
-  - [ ] Each manifest references the immediately prior checkpoint hash and carries a valid Nursery witness signature.
-  - [ ] Every tree size/root exactly matches `ALD-012`, and a missing or extra tree causes checkpoint generation to fail.
+  - [x] A generated manifest validates against the authoritative schema and includes every event tree present in the Evidence Store.
+  - [x] Each manifest references the immediately prior checkpoint hash and carries a valid Nursery witness signature.
+  - [x] Every tree size/root exactly matches `ALD-012`, and a missing or extra tree causes checkpoint generation to fail.
 
 #### ALD-014 — Checkpoint frequency scheduler
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-013
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§9. Checkpoint Frequency](LEDGER-INTEGRITY-DESIGN.md#9-checkpoint-frequency)
 - **Scope:** Implement the scheduler that triggers checkpoint generation according to the frequency policy in §9 (event-count and/or time-based trigger, as specified).
 - **Acceptance criteria:**
-  - [ ] A checkpoint is generated automatically once the configured trigger threshold from §9 is reached.
-  - [ ] No two checkpoints overlap in event range.
+  - [x] A checkpoint is generated automatically once the configured trigger threshold from §9 is reached.
+  - [x] No two checkpoints overlap in event range.
   - [ ] The scheduler is a background timer with the crash-protection convention (registered under the process's `uncaughtException`/`unhandledRejection` handlers) so a scheduling failure logs rather than crashes the server.
 
 #### ALD-015 — Independent verifier CLI
@@ -373,26 +373,26 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§14. Independent Verification](LEDGER-INTEGRITY-DESIGN.md#14-independent-verification)
 - **Scope:** Build a standalone CLI with no runtime trust that validates canonical JSON, all event chains/cross-bindings, writer and witness signatures, Merkle roots, inclusion/consistency proofs, checkpoint chains, configuration hashes, forks, gaps, and unanchored tails. Chain-RPC verification is added by `ALD-021`.
 - **Acceptance criteria:**
-  - [ ] The CLI runs against an exported bundle with no network access and no shared process state with the server.
-  - [ ] It accepts an unchanged local bundle and rejects every non-chain mutation case in LEDGER §17 with the correct machine-readable failure location.
-  - [ ] It distinguishes chain, signature, inclusion, consistency, checkpoint, fork/gap, and unanchored-tail results.
+  - [x] The CLI runs against an exported bundle with no network access and no shared process state with the server.
+  - [x] It accepts an unchanged local bundle and rejects every non-chain mutation case in LEDGER §17 with the correct machine-readable failure location.
+  - [x] It distinguishes chain, signature, inclusion, consistency, checkpoint, fork/gap, and unanchored-tail results.
 
 #### ALD-016 — Evidence bundle export
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-013, ALD-005
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§13. Evidence Bundle](LEDGER-INTEGRITY-DESIGN.md#13-evidence-bundle)
 - **Scope:** Implement an export command that packages a run's ledger events, checkpoint manifests, signatures, and (once available) anchor receipts into a portable bundle format per §13.
 - **Acceptance criteria:**
-  - [ ] The exported bundle contains every event, manifest, and signature needed for `ALD-015` to verify it with no other input.
-  - [ ] Exporting the same run twice without intervening writes produces byte-identical bundles.
-  - [ ] The bundle format is documented with a schema so a third party could write their own verifier.
+  - [x] The exported bundle contains every event, manifest, and signature needed for `ALD-015` to verify it with no other input.
+  - [x] Exporting the same run twice without intervening writes produces byte-identical bundles.
+  - [x] The bundle format is documented with a schema so a third party could write their own verifier.
 
 #### ALD-017 — Verification report schema and generator
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-015
 - **Spec refs:** `SPECIFICATION.md` [§11.10 Verification Report](SPECIFICATION.md#1110-verification-report)
 - **Scope:** Formalize the CLI's pass/fail output into the Verification Report structure defined in §11.10 and persist generated reports alongside the bundle they describe.
 - **Acceptance criteria:**
-  - [ ] Every verifier CLI run (`ALD-015`) produces a report conforming to the `ALD-002` schema for Verification Report.
-  - [ ] A failing verification produces a report with machine-readable failure codes, not just free text.
+  - [x] Every verifier CLI run (`ALD-015`) produces a report conforming to the `ALD-002` schema for Verification Report.
+  - [x] A failing verification produces a report with machine-readable failure codes, not just free text.
   - [ ] Reports are timestamped and reference the exact bundle export they were generated from.
 
 ### EPIC-04 — Base Sepolia and Mainnet Anchoring (Phases 2–3)
@@ -404,18 +404,18 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§11.8 Anchor Receipt Reference](SPECIFICATION.md#118-anchor-receipt-reference), `LEDGER-INTEGRITY-DESIGN.md` [§10. Base and L1 Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-base-and-l1-anchoring)
 - **Scope:** Define and persist the Anchor Receipt structure (checkpoint reference, chain ID, transaction hash, block number, confirmation status) linked one-to-one with a checkpoint manifest.
 - **Acceptance criteria:**
-  - [ ] A stored Anchor Receipt validates against the `ALD-002` schema and always references an existing checkpoint manifest (`ALD-013`).
-  - [ ] Only a checkpoint root hash and minimal metadata are ever stored as the on-chain payload field — no raw observation or model data.
-  - [ ] Querying receipts by checkpoint ID returns at most one receipt per chain per checkpoint.
+  - [x] A stored Anchor Receipt validates against the `ALD-002` schema and always references an existing checkpoint manifest (`ALD-013`).
+  - [x] Only a checkpoint root hash and minimal metadata are ever stored as the on-chain payload field — no raw observation or model data.
+  - [x] Querying receipts by checkpoint ID returns at most one receipt per chain per checkpoint.
 
 #### ALD-019 — Anchoring signer key management
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-003, ALD-009
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§11. Key Management](LEDGER-INTEGRITY-DESIGN.md#11-key-management)
 - **Scope:** Provision a distinct on-chain signing key (separate from the event-signing key in `ALD-009`) per the §11 key-management convention, with its own storage/rotation path.
 - **Acceptance criteria:**
-  - [ ] The anchoring key is stored separately from the event-signing key and neither can be derived from the other.
-  - [ ] A key-rotation procedure exists and is exercised by a test that anchors before and after rotation without breaking prior receipts' validity.
-  - [ ] The anchoring private key is never logged, telemetered, or included in any evidence bundle.
+  - [x] The anchoring key is stored separately from the event-signing key and neither can be derived from the other.
+  - [x] A key-rotation procedure exists and is exercised by a test that anchors before and after rotation without breaking prior receipts' validity.
+  - [x] The anchoring private key is never logged, telemetered, or included in any evidence bundle.
 
 #### ALD-020 — Base Sepolia anchoring client
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-018, ALD-019
@@ -423,26 +423,26 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement the client that submits a checkpoint root hash to Base Sepolia and records the resulting transaction as an Anchor Receipt (`ALD-018`), with Base Sepolia as the unconditional default target.
 - **Acceptance criteria:**
   - [ ] A submitted checkpoint root is independently observable on a public Base Sepolia block explorer.
-  - [ ] The default configuration anchors to Base Sepolia with no additional opt-in required.
-  - [ ] The submitted on-chain payload contains only the root hash and minimal required metadata, matching `ALD-018`'s privacy criterion.
+  - [x] The default configuration anchors to Base Sepolia with no additional opt-in required.
+  - [x] The submitted on-chain payload contains only the root hash and minimal required metadata, matching `ALD-018`'s privacy criterion.
 
 #### ALD-021 — Anchor confirmation and retry/backoff
 - **Priority:** P1 · **Size:** M · **Class:** MVP · **Depends on:** ALD-015, ALD-020
 - **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§10. Base and L1 Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-base-and-l1-anchoring)
 - **Scope:** Implement finality polling and retry/backoff, then extend the independent verifier to retrieve the transaction through an independently configured RPC, validate chain ID/calldata/receipt/block inclusion, and compare the anchored checkpoint to the final local prefix.
 - **Acceptance criteria:**
-  - [ ] A receipt is marked `confirmed` only after reaching the configured confirmation depth.
-  - [ ] Transient RPC failure retries without duplicate submission; wrong-chain, failed, or nonexistent transactions fail verification.
-  - [ ] The verifier reports any event tail after the final anchored checkpoint and independently reproduces the anchored checkpoint hash.
+  - [x] A receipt is marked `confirmed` only after reaching the configured confirmation depth.
+  - [x] Transient RPC failure retries without duplicate submission; wrong-chain, failed, or nonexistent transactions fail verification.
+  - [x] The verifier reports any event tail after the final anchored checkpoint and independently reproduces the anchored checkpoint hash.
 
 #### ALD-022 — Mainnet anchoring policy switch
 - **Priority:** P2 · **Size:** M · **Class:** Later-Research · **Depends on:** ALD-020, ALD-021, ALD-003
 - **Spec refs:** `SPECIFICATION.md` [§13.4 Base Sepolia / Mainnet Anchoring Policy](SPECIFICATION.md#134-base-sepolia--mainnet-anchoring-policy)
 - **Scope:** Add an explicit, separately-configured mainnet anchoring path reusing the Sepolia client's logic with a different chain configuration, gated behind a distinct opt-in flag that defaults to off.
 - **Acceptance criteria:**
-  - [ ] With no explicit opt-in set, the system never submits any transaction to mainnet, confirmed by a test that asserts zero mainnet RPC calls under default config.
+  - [x] With no explicit opt-in set, the system never submits any transaction to mainnet, confirmed by a test that asserts zero mainnet RPC calls under default config.
   - [ ] Enabling the opt-in flag and providing mainnet-specific key/config anchors successfully to mainnet in a manual/staging test.
-  - [ ] Switching the opt-in flag off again immediately reverts all anchoring to Base Sepolia with no code change required.
+  - [x] Switching the opt-in flag off again immediately reverts all anchoring to Base Sepolia with no code change required.
 
 ### EPIC-05 — Run and Turn Lifecycle State Machine
 
@@ -453,45 +453,45 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§11.1 Run Configuration](SPECIFICATION.md#111-run-configuration)
 - **Scope:** Implement validation for the Run Configuration schema (`ALD-002`), rejecting configs missing required fields (model track, protocol channel selection, mode) before a run can be created.
 - **Acceptance criteria:**
-  - [ ] Missing fields and incompatible track/learning-signal, oracle/experiment, or carrier-specific combinations are rejected with field-specific errors.
-  - [ ] Valid root and derived configs cover every model, deployment, communication, carrier, affect, and interaction mode; lineage fields are all-or-none.
-  - [ ] Validated canonical configs are persisted, hashable, and retrievable by run ID.
+  - [x] Missing fields and incompatible track/learning-signal, oracle/experiment, or carrier-specific combinations are rejected with field-specific errors.
+  - [x] Valid root and derived configs cover every model, deployment, communication, carrier, affect, and interaction mode; lineage fields are all-or-none.
+  - [x] Validated canonical configs are persisted, hashable, and retrievable by run ID.
 
 #### ALD-024 — Run state machine
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-023
 - **Spec refs:** `SPECIFICATION.md` [§7.1 Run States](SPECIFICATION.md#71-run-states), [§7.2 State Transition Table](SPECIFICATION.md#72-state-transition-table)
 - **Scope:** Implement the full run-state machine exactly as the §7.2 transition table specifies, rejecting any transition not listed in the table.
 - **Acceptance criteria:**
-  - [ ] Every transition listed in §7.2 is implemented and unit-tested.
-  - [ ] Every transition **not** listed in §7.2 is rejected with an explicit "invalid transition" error, verified by an exhaustive test over all state pairs.
-  - [ ] The current state of any run is queryable and matches the last successfully applied transition.
+  - [x] Every transition listed in §7.2 is implemented and unit-tested.
+  - [x] Every transition **not** listed in §7.2 is rejected with an explicit "invalid transition" error, verified by an exhaustive test over all state pairs.
+  - [x] The current state of any run is queryable and matches the last successfully applied transition.
 
 #### ALD-025 — Turn phase orchestrator
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-024, ALD-010
 - **Spec refs:** `SPECIFICATION.md` [§8.1 Turn Phases](SPECIFICATION.md#81-turn-phases), [§8.3 Turn Timing and Budgets](SPECIFICATION.md#83-turn-timing-and-budgets)
 - **Scope:** Implement the turn-phase sequencing (observation → proposal → validation → commit, per §8.1) driving the `ALD-010` atomic transaction wrapper at the commit phase, enforcing the timing budgets from §8.3.
 - **Acceptance criteria:**
-  - [ ] Every phase in §8.1 executes in the documented order for a successful turn.
-  - [ ] A turn exceeding the §8.3 timing budget is terminated and recorded as a timeout, not left hanging.
-  - [ ] The commit phase always goes through the `ALD-010` atomic wrapper — no direct ledger writes bypass it.
+  - [x] Every phase in §8.1 executes in the documented order for a successful turn.
+  - [x] A turn exceeding the §8.3 timing budget is terminated and recorded as a timeout, not left hanging.
+  - [x] The commit phase always goes through the `ALD-010` atomic wrapper — no direct ledger writes bypass it.
 
 #### ALD-026 — Pause/abort handling
 - **Priority:** P0 · **Size:** S · **Class:** MVP · **Depends on:** ALD-024
 - **Spec refs:** `SPECIFICATION.md` [§7.3 Pause/Abort/Recovery/Fork Behavior](SPECIFICATION.md#73-pause-abort-recovery-fork-behavior)
 - **Scope:** Implement pause and abort operations that transition a run to the corresponding §7.1 states, ensuring an in-flight turn either completes its atomic commit or is fully rolled back before the pause/abort takes effect.
 - **Acceptance criteria:**
-  - [ ] Pausing a run mid-turn either lets the current turn's atomic commit finish or fully rolls it back — never a partial commit.
-  - [ ] An `aborted-sealed` run is terminal and can never accept another turn or be reopened.
-  - [ ] Pause/abort/resume operations are recorded through the audited intervention path and produce required checkpoints.
+  - [x] Pausing a run mid-turn either lets the current turn's atomic commit finish or fully rolls it back — never a partial commit.
+  - [x] An `aborted-sealed` run is terminal and can never accept another turn or be reopened.
+  - [x] Pause/abort/resume operations are recorded through the audited intervention path and produce required checkpoints.
 
 #### ALD-027 — Crash recovery and integrity-fork detection
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-011, ALD-025
 - **Spec refs:** `SPECIFICATION.md` [§7.3 Pause/Abort/Recovery/Fork Behavior](SPECIFICATION.md#73-pause-abort-recovery-fork-behavior), `LEDGER-INTEGRITY-DESIGN.md` [§15. Recovery and Fork Handling](LEDGER-INTEGRITY-DESIGN.md#15-recovery-and-fork-handling)
 - **Scope:** Reconstruct run/turn state from the last consistent evidence prefix after restart, and detect duplicate `(runId, domain, sequence)` entries with mismatched hashes both during writes and recovery.
 - **Acceptance criteria:**
-  - [ ] After a simulated crash mid-turn, restart reconstructs the run's state to exactly the last atomically committed turn, with no phantom in-progress turn.
-  - [ ] A mismatched duplicate sequence preserves both artifacts, transitions the run to `forked-invalid`, halts writes, and requires research-integrity review.
-  - [ ] Recovery appends an explicit recovery event at the next unused sequence and matches the state independently derived by `ALD-015`.
+  - [x] After a simulated crash mid-turn, restart reconstructs the run's state to exactly the last atomically committed turn, with no phantom in-progress turn.
+  - [x] A mismatched duplicate sequence preserves both artifacts, transitions the run to `forked-invalid`, halts writes, and requires research-integrity review.
+  - [x] Recovery appends an explicit recovery event at the next unused sequence and matches the state independently derived by `ALD-015`.
 
 #### ALD-028 — Derived-run branching and lineage
 - **Priority:** P1 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-024, ALD-016
@@ -499,7 +499,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement a new derived run from a specific parent checkpoint, with optional per-Baby replacement policy/adapter, independent event sequences starting at `1`, and immutable parent references.
 - **Acceptance criteria:**
   - [ ] A child run records `parentRunId`, `derivedFromCheckpointHash`, and both initial policy refs in config and its first initialization event.
-  - [ ] Child sequences restart at `1`, and writes never modify parent evidence or reopen a terminal parent.
+  - [x] Child sequences restart at `1`, and writes never modify parent evidence or reopen a terminal parent.
   - [ ] `ALD-016` exports lineage references and `ALD-015` verifies them against the immutable parent bundle.
 
 ### EPIC-06 — Symbol Gateway and Communication Protocols
@@ -511,18 +511,18 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9. Communication Protocols](SPECIFICATION.md#9-communication-protocols)
 - **Scope:** Implement the single mediation point for every inter-agent artifact, registered protocol dispatch, and all six §9.6 communication-control conditions, including seeded substitutions and oracle-only-for-E03 enforcement.
 - **Acceptance criteria:**
-  - [ ] Every artifact passes through the Gateway; direct Baby-to-Baby routes fail in an instrumented integration test.
-  - [ ] `normal`, `disabled`, `constant`, seeded `random`, seeded `shuffled`, and E03-only `oracle` conditions produce their exact §9.6 behavior with no code changes.
-  - [ ] Every accepted, rejected, or control-substituted turn records the Baby-proposal hash when present and exact delivered-artifact hash through `ALD-035`.
+  - [x] Every artifact passes through the Gateway; direct Baby-to-Baby routes fail in an instrumented integration test.
+  - [x] `normal`, `disabled`, `constant`, seeded `random`, seeded `shuffled`, and E03-only `oracle` conditions produce their exact §9.6 behavior with no code changes.
+  - [x] Every accepted, rejected, or control-substituted turn records the Baby-proposal hash when present and exact delivered-artifact hash through `ALD-035`.
 
 #### ALD-030 — Fixed-token protocol
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-029
 - **Spec refs:** `SPECIFICATION.md` [§9.1 Fixed Token Protocol](SPECIFICATION.md#91-fixed-token-protocol)
 - **Scope:** Implement the fixed-token vocabulary channel: a closed, enumerable token set, with the Gateway validating every emitted token against the registered vocabulary.
 - **Acceptance criteria:**
-  - [ ] Emitting a token in the registered vocabulary is accepted and forwarded.
-  - [ ] Emitting any token, string, or byte sequence not in the registered vocabulary is rejected, not silently coerced to the nearest valid token.
-  - [ ] The vocabulary is configurable per run without a code change.
+  - [x] Emitting a token in the registered vocabulary is accepted and forwarded.
+  - [x] Emitting any token, string, or byte sequence not in the registered vocabulary is rejected, not silently coerced to the nearest valid token.
+  - [x] The vocabulary is configurable per run without a code change.
 
 #### ALD-031 — Alternate neutral carrier protocols
 - **Priority:** P2 · **Size:** L · **Class:** Later-Research · **Depends on:** ALD-029
@@ -556,27 +556,27 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9.4 Rejection Behavior and Channel Violation Handling](SPECIFICATION.md#94-rejection-behavior-and-channel-violation-handling)
 - **Scope:** Implement the protocol-independent rejection framework used by every Gateway module: consistent error shape, append-only `channel.rejected` events containing only a rejected-payload hash, rejection counters, and automatic pause after the configured consecutive-rejection ceiling. Fixed-token handling is the first registered module; later canvas and affect modules reuse this framework.
 - **Acceptance criteria:**
-  - [ ] A fixed-token violation produces the standard rejection shape and an append-only `channel.rejected` event with reason code and payload hash but no raw rejected content.
-  - [ ] Five consecutive rejections by default trigger an automatic pause and `safety-trigger` audit entry.
-  - [ ] A protocol-module contract test proves canvas and affect handlers can register later without changing the rejection event shape or pause policy.
+  - [x] A fixed-token violation produces the standard rejection shape and an append-only `channel.rejected` event with reason code and payload hash but no raw rejected content.
+  - [x] Five consecutive rejections by default trigger an automatic pause and `safety-trigger` audit entry.
+  - [x] A protocol-module contract test proves canvas and affect handlers can register later without changing the rejection event shape or pause policy.
 
 #### ALD-035 — Turn envelope, channel event, and ledger draft schemas
 - **Priority:** P0 · **Size:** S · **Class:** MVP · **Depends on:** ALD-002, ALD-029
 - **Spec refs:** `SPECIFICATION.md` [§11.3 Turn and Ledger Proposal Envelopes](SPECIFICATION.md#113-turn-and-ledger-proposal-envelopes), [§11.5 Channel Event](SPECIFICATION.md#115-channel-event)
 - **Scope:** Implement and validate Agent Action Proposal, Turn Proposal Envelope, Ledger Draft Envelope, Affect State Measurement, and fully signed Channel Event schemas, wired into Gateway and Evidence Writer boundaries.
 - **Acceptance criteria:**
-  - [ ] Every Gateway proposal includes one required private intention draft and rejects Baby-supplied run/turn/sender/hash metadata.
-  - [ ] Every accepted/rejected event contains the sender-ledger binding, delivery receipt, previous channel hash, entry hash, and channel-writer signature required by §11.5.
-  - [ ] Interpretation drafts require the delivered channel hash, and all schema failures use the standard Gateway error shape.
+  - [x] Every Gateway proposal includes one required private intention draft and rejects Baby-supplied run/turn/sender/hash metadata.
+  - [x] Every accepted/rejected event contains the sender-ledger binding, delivery receipt, previous channel hash, entry hash, and channel-writer signature required by §11.5.
+  - [x] Interpretation drafts require the delivered channel hash, and all schema failures use the standard Gateway error shape.
 
 #### ALD-036 — Gateway/protocol conformance test suite
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-030, ALD-034, ALD-035
 - **Spec refs:** `SPECIFICATION.md` [§9. Communication Protocols](SPECIFICATION.md#9-communication-protocols), [§17.2 Test Strategy](SPECIFICATION.md#172-test-strategy)
 - **Scope:** Build an extensible automated conformance suite for registered Gateway protocols, rejection behavior, and schema validation, runnable independently of any learner adapter. The fixed-token module is the MVP gate; `ALD-031` and `ALD-033` must add canvas and affect vectors before those modules are declared done.
 - **Acceptance criteria:**
-  - [ ] The MVP suite exercises fixed-token acceptance/rejection, all six communication controls, dual proposal/delivery hashing, consecutive-rejection pause, and schema failures.
-  - [ ] The suite runs against a mocked/stub learner, with no dependency on any specific `ALD-044`–047 adapter.
-  - [ ] A protocol registration test requires every enabled module to contribute accept/reject vectors; the consolidated suite is the gate referenced by EPIC-06 and `ALD-078`.
+  - [x] The MVP suite exercises fixed-token acceptance/rejection, all six communication controls, dual proposal/delivery hashing, consecutive-rejection pause, and schema failures.
+  - [x] The suite runs against a mocked/stub learner, with no dependency on any specific `ALD-044`–047 adapter.
+  - [x] A protocol registration test requires every enabled module to contribute accept/reject vectors; the consolidated suite is the gate referenced by EPIC-06 and `ALD-078`.
 
 ### EPIC-07 — Observation Hygiene, Scenario Engine, and Deterministic Services
 
@@ -587,17 +587,17 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§11.2 Observation](SPECIFICATION.md#112-observation)
 - **Scope:** Implement the Observation builder that assembles exactly the fields §11.2 defines for a given turn, from world/scenario state, with no additional fields leaking in.
 - **Acceptance criteria:**
-  - [ ] A built Observation validates against the `ALD-002` schema and contains no field not listed in §11.2.
-  - [ ] Two observations built from identical underlying state are byte-identical after canonicalization (reusing `ALD-006`'s approach).
-  - [ ] The builder is the only code path producing Observations delivered to learners.
+  - [x] A built Observation validates against the `ALD-002` schema and contains no field not listed in §11.2.
+  - [x] Two observations built from identical underlying state are byte-identical after canonicalization (reusing `ALD-006`'s approach).
+  - [x] The builder is the only code path producing Observations delivered to learners.
 
 #### ALD-038 — Observation hygiene filter
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-037
 - **Spec refs:** `SPECIFICATION.md` [§10.1 Observation Hygiene](SPECIFICATION.md#101-observation-hygiene)
 - **Scope:** Implement the filter that strips or blocks any observation content prohibited by §10.1 (e.g., internal identifiers, other agent's private state, out-of-scenario metadata) before delivery.
 - **Acceptance criteria:**
-  - [ ] Every prohibited field category listed in §10.1 is demonstrated blocked using a test observation deliberately constructed to contain it.
-  - [ ] The filter runs on every Observation before it reaches the Gateway/learner boundary, with no bypass path.
+  - [x] Every prohibited field category listed in §10.1 is demonstrated blocked using a test observation deliberately constructed to contain it.
+  - [x] The filter runs on every Observation before it reaches the Gateway/learner boundary, with no bypass path.
   - [ ] A blocked field produces an audit-logged event (feeding `ALD-059`), not a silent drop.
 
 #### ALD-039 — OCR detection and scenario-bundle quarantine
@@ -623,9 +623,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9.5 Interaction and Utility Profiles](SPECIFICATION.md#95-interaction-and-utility-profiles), [§15.3 Evaluation Baselines and Statistics](SPECIFICATION.md#153-evaluation-baselines-and-statistics), [§17.3 Phased Delivery](SPECIFICATION.md#173-phased-delivery)
 - **Scope:** Implement the scenario/task generator that deterministically produces scenario states, private observations, utility matrices, reservation values, and zones of possible agreement from run configuration and seed for all five §9.5 interaction profiles.
 - **Acceptance criteria:**
-  - [ ] Two runs with the same seed and interaction mode produce byte-identical scenarios, private facts, utilities, and task sequences.
-  - [ ] Every §9.5 interaction profile produces its required utility relationship, including a provably empty zone of possible agreement for `no-agreement-control`.
-  - [ ] The engine's output feeds `ALD-037`'s Observation builder with no intermediate non-deterministic step.
+  - [x] Two runs with the same seed and interaction mode produce byte-identical scenarios, private facts, utilities, and task sequences.
+  - [x] Every §9.5 interaction profile produces its required utility relationship, including a provably empty zone of possible agreement for `no-agreement-control`.
+  - [x] The engine's output feeds `ALD-037`'s Observation builder with no intermediate non-deterministic step.
 
 ### EPIC-08 — Learner Contracts and Model Adapters
 
@@ -636,18 +636,18 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§6.2 Learner Adapter Interface](SPECIFICATION.md#62-learner-adapter-interface)
 - **Scope:** Define the shared TypeScript interface every model track must implement (receive Observation, return Agent Action Proposal, lifecycle hooks) exactly matching §6.2, and provide the deterministic/fixed `no-learning` reference adapter used for chance controls.
 - **Acceptance criteria:**
-  - [ ] The interface implements every §6.2 method, including `receive(DeliveredChannelArtifact)` returning a `LedgerDraftEnvelope`.
-  - [ ] The `no-learning` reference adapter is selectable, performs no policy update, and passes the contract-conformance test.
-  - [ ] The interface is the only integration point the turn orchestrator (`ALD-025`) uses to reach a learner.
+  - [x] The interface implements every §6.2 method, including `receive(DeliveredChannelArtifact)` returning a `LedgerDraftEnvelope`.
+  - [x] The `no-learning` reference adapter is selectable, performs no policy update, and passes the contract-conformance test.
+  - [x] The interface is the only integration point the turn orchestrator (`ALD-025`) uses to reach a learner.
 
 #### ALD-043 — Learner contract versioning, lint, and tool-only enforcement
 - **Priority:** P0 · **Size:** L · **Class:** Research-Grade · **Depends on:** ALD-042
 - **Spec refs:** `SPECIFICATION.md` [§6.3 Tool-Only Interaction Contract](SPECIFICATION.md#63-tool-only-interaction-contract), [§6.4 Learner Contract Versioning](SPECIFICATION.md#64-learner-contract-versioning)
 - **Scope:** Implement immutable versioned learner-contract files, CI lint that rejects semantic examples/sample exchanges/banned patterns, prompt-bundle hashing, and runtime enforcement that every adapter acts only through the declared tools and Gateway.
 - **Acceptance criteria:**
-  - [ ] A contract containing a symbol-meaning example, sample exchange, or prohibited side-channel instruction fails CI and cannot be referenced by a run.
-  - [ ] Referenced contract versions are immutable and their prompt-bundle hashes appear in run evidence.
-  - [ ] The no-learning reference and all four adapter tracks are blocked and audited when attempting any state write or output outside the §6.3 tool surface.
+  - [x] A contract containing a symbol-meaning example, sample exchange, or prohibited side-channel instruction fails CI and cannot be referenced by a run.
+  - [x] Referenced contract versions are immutable and their prompt-bundle hashes appear in run evidence.
+  - [x] The no-learning reference and all four adapter tracks are blocked and audited when attempting any state write or output outside the §6.3 tool surface.
 
 #### ALD-044 — Frozen-LLM adapter with local open-weight default
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-042, ALD-043
@@ -664,8 +664,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement the `scratch-rl` GRU/LSTM actor-critic adapter with independent PPO-style updates, random initialization, private buffers, and policy checkpoint output.
 - **Acceptance criteria:**
   - [ ] The track starts from randomly initialized parameters whose initial hash is recorded in the evidence bundle.
-  - [ ] A full turn and minimal reward-to-parameter-update cycle complete end-to-end in both pre-registered extrinsic-reward and intrinsic-motivation modes.
-  - [ ] Policy updates use only the Baby's private buffers and emit a verifiable policy checkpoint reference.
+  - [x] A full turn and minimal reward-to-parameter-update cycle complete end-to-end in both pre-registered extrinsic-reward and intrinsic-motivation modes.
+  - [x] Policy updates use only the Baby's private buffers and emit a verifiable policy checkpoint reference.
 
 #### ALD-046 — Self-supervised ungrounded learner track
 - **Priority:** P1 · **Size:** L · **Class:** Later-Research · **Depends on:** ALD-042, ALD-043
@@ -694,44 +694,44 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§12.4 Baby Twin Routes (baby-a, baby-b)](SPECIFICATION.md#124-baby-twin-routes-baby-a-baby-b)
 - **Scope:** Replace the `ALD-004` skeleton routes with full implementations of every route listed in §12.4, wired to the Gateway (`ALD-029`) and a selected learner adapter (`ALD-042`-conformant).
 - **Acceptance criteria:**
-  - [ ] Every route in §12.4, including Gateway-only `/deliver`, exists on both `baby-a` and `baby-b`, all unprefixed.
-  - [ ] Each route's behavior matches its documented purpose in §12.4 (verified by an integration test per route).
-  - [ ] A full run using these twin packs completes at least one turn end-to-end through the Gateway.
+  - [x] Every route in §12.4, including Gateway-only `/deliver`, exists on both `baby-a` and `baby-b`, all unprefixed.
+  - [x] Each route's behavior matches its documented purpose in §12.4 (verified by an integration test per route).
+  - [x] A full run using these twin packs completes at least one turn end-to-end through the Gateway.
 
 #### ALD-049 — Nursery controller twin pack
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-024, ALD-048
 - **Spec refs:** `SPECIFICATION.md` [§12.5 Nursery Controller Routes (nursery)](SPECIFICATION.md#125-nursery-controller-routes-nursery)
 - **Scope:** Implement the nursery controller's routes for creating/starting/pausing/aborting runs and creating derived runs, driving the `ALD-024` state machine and `ALD-028` lineage service while orchestrating both Baby twins.
 - **Acceptance criteria:**
-  - [ ] Every route in §12.5 exists, unprefixed, and drives the correct `ALD-024` state transition.
-  - [ ] Creating a run via nursery correctly provisions both `baby-a` and `baby-b` instances.
-  - [ ] Pausing/aborting and derived-run creation use the same state/lineage services as direct internal calls, with no divergent logic path or reopening of terminal parents.
+  - [x] Every route in §12.5 exists, unprefixed, and drives the correct `ALD-024` state transition.
+  - [x] Creating a run via nursery correctly provisions both `baby-a` and `baby-b` instances.
+  - [x] Pausing/aborting and derived-run creation use the same state/lineage services as direct internal calls, with no divergent logic path or reopening of terminal parents.
 
 #### ALD-050 — Evidence and verification routes on nursery
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-016, ALD-049
 - **Spec refs:** `SPECIFICATION.md` [§12.6 Evidence and Verification Routes (nursery)](SPECIFICATION.md#126-evidence-and-verification-routes-nursery)
 - **Scope:** Implement the nursery routes for triggering evidence bundle export (`ALD-016`) and retrieving verification reports (`ALD-017`), per §12.6.
 - **Acceptance criteria:**
-  - [ ] Every route in §12.6 exists, unprefixed, and returns data conforming to the `ALD-002` schemas involved.
-  - [ ] Triggering an export via this route produces a bundle identical to calling `ALD-016`'s export function directly.
-  - [ ] Unauthorized callers (per `ALD-051`) cannot reach these routes.
+  - [x] Every route in §12.6 exists, unprefixed, and returns data conforming to the `ALD-002` schemas involved.
+  - [x] Triggering an export via this route produces a bundle identical to calling `ALD-016`'s export function directly.
+  - [x] Unauthorized callers (per `ALD-051`) cannot reach these routes.
 
 #### ALD-051 — Authorization roles and route guards
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-048, ALD-049, ALD-050
 - **Spec refs:** `SPECIFICATION.md` [§12.2 Authorization Roles](SPECIFICATION.md#122-authorization-roles)
 - **Scope:** Implement the role model and route guards from §12.2 across all twin routes, denying access to any role not explicitly permitted for a given route.
 - **Acceptance criteria:**
-  - [ ] Every role defined in §12.2 is enforced on every route that names a restriction.
-  - [ ] Missing/invalid credentials return `401 UNAUTHENTICATED`; valid identities with insufficient roles return `403 FORBIDDEN`.
-  - [ ] A test matrix of (role × route) confirms allow/deny matches §12.2 exactly.
+  - [x] Every role defined in §12.2 is enforced on every route that names a restriction.
+  - [x] Missing/invalid credentials return `401 UNAUTHENTICATED`; valid identities with insufficient roles return `403 FORBIDDEN`.
+  - [x] A test matrix of (role × route) confirms allow/deny matches §12.2 exactly.
 
 #### ALD-052 — Response and error shape standardization
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-048, ALD-049, ALD-050
 - **Spec refs:** `SPECIFICATION.md` [§12.3 Response and Error Shape](SPECIFICATION.md#123-response-and-error-shape)
 - **Scope:** Apply the standardized success/error response envelope from §12.3 to every route across all three twin packs.
 - **Acceptance criteria:**
-  - [ ] Every success response across all routes matches the §12.3 success envelope.
-  - [ ] Every error response across all routes matches the §12.3 error envelope, including the ones from `ALD-034`'s channel violations.
+  - [x] Every success response across all routes matches the §12.3 success envelope.
+  - [x] Every error response across all routes matches the §12.3 error envelope, including the ones from `ALD-034`'s channel violations.
   - [ ] A lint/test rule fails the build if a new route is added without conforming to the envelope.
 
 ### EPIC-10 — Mode R Isolation and Claim-Boundary Controls
@@ -745,14 +745,14 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [ ] A run created under Mode P and one under Mode R differ exactly along the dimensions listed in §5.3 — no undocumented behavioral difference.
   - [ ] The mode is immutable for the lifetime of a run once created (cannot be switched mid-run).
-  - [ ] The active mode is recorded in the Run Configuration and visible in every exported evidence bundle.
+  - [x] The active mode is recorded in the Run Configuration and visible in every exported evidence bundle.
 
 #### ALD-054 — Claim-boundary enforcement
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-053
 - **Spec refs:** `SPECIFICATION.md` [§5.4 Claim Boundary Statements](SPECIFICATION.md#54-claim-boundary-statements)
 - **Scope:** Implement automated checks that block any dashboard/report/export from asserting a Mode-R-only claim (e.g., "isolation-verified") about a run that actually executed in Mode P.
 - **Acceptance criteria:**
-  - [ ] Every claim statement listed in §5.4 is machine-checked against the run's actual recorded mode before being allowed to render/export.
+  - [x] Every claim statement listed in §5.4 is machine-checked against the run's actual recorded mode before being allowed to render/export.
   - [ ] A Mode P run attempting to surface a Mode-R-only claim label is blocked with a specific error, not silently downgraded.
   - [ ] The check is exercised by an automated test for every claim statement in §5.4, not spot-checked manually.
 
@@ -801,9 +801,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§14.2 Audit Logging](SPECIFICATION.md#142-audit-logging)
 - **Scope:** Implement append-only audit records for human views, operator interventions, and safety triggers. Pause/resume/abort/annotate actions must use this path, record actor/reason, and request the mandatory checkpoint; unplanned interventions also create a notebook deviation reference.
 - **Acceptance criteria:**
-  - [ ] Every §14.2 human view/intervention and §14.5 safety trigger produces an append-only audit record with authenticated actor and machine-readable reason.
+  - [x] Every §14.2 human view/intervention and §14.5 safety trigger produces an append-only audit record with authenticated actor and machine-readable reason.
   - [ ] Each intervention produces a signed checkpoint, and any unplanned intervention links to an append-only notebook deviation record.
-  - [ ] Audit and intervention logs plus checkpoint references are included in every evidence bundle, not only Mode R.
+  - [x] Audit and intervention logs plus checkpoint references are included in every evidence bundle, not only Mode R.
 
 #### ALD-060 — Snapshot and restore mechanism
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-005, ALD-011
@@ -821,7 +821,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [ ] Every failure mode named in §14.5 has an implemented, tested handling path.
   - [ ] An unhandled rejection thrown from a background task (e.g., a failed anchor confirmation poll) is caught, logged, and does not crash the server process, confirmed by a fault-injection test.
-  - [ ] The failure-handling behavior for anchoring failures reuses `ALD-021`'s retry/backoff rather than a separate ad hoc mechanism.
+  - [x] The failure-handling behavior for anchoring failures reuses `ALD-021`'s retry/backoff rather than a separate ad hoc mechanism.
 
 #### ALD-062 — Retention policy enforcement job
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-005, ALD-016
@@ -868,8 +868,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§14.3 Reproducibility and Replay Fidelity](SPECIFICATION.md#143-reproducibility-and-replay-fidelity)
 - **Scope:** Implement scenario replay and deterministic execution `replayDigest` generation/verification per §14.3, then expose the results in a read-only dashboard viewer.
 - **Acceptance criteria:**
-  - [ ] Same-seed scenario replay reproduces scenario/observation hashes; wrong-seed replay fails automatically.
-  - [ ] Deterministic adapters reproduce the §14.3 replay digest, while nondeterministic adapters are explicitly `not-applicable` and pass recorded-decision playback only.
+  - [x] Same-seed scenario replay reproduces scenario/observation hashes; wrong-seed replay fails automatically.
+  - [x] Deterministic adapters reproduce the §14.3 replay digest, while nondeterministic adapters are explicitly `not-applicable` and pass recorded-decision playback only.
   - [ ] The viewer displays machine results and remains read-only; it cannot alter evidence or override a failure.
 
 ### EPIC-13 — Security, Red-Team, and Cryptography Track
@@ -922,8 +922,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Bind a notebook experiment and sealed hypothesis/parameters to RunConfig, create append-only versioned Experiment Records, and export `experiment-record.json` with disposition/checkpoint/anchor/verifier/deviation references.
 - **Acceptance criteria:**
   - [ ] A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run anchor receipt.
-  - [ ] Pre-registration creates Experiment Record version `1`; later disposition/evidence changes append higher versions without updating prior rows.
-  - [ ] Every evidence bundle contains the latest record plus its version history and references resolvable by an independent reviewer.
+  - [x] Pre-registration creates Experiment Record version `1`; later disposition/evidence changes append higher versions without updating prior rows.
+  - [x] Every evidence bundle contains the latest record plus its version history and references resolvable by an independent reviewer.
 
 #### ALD-072 — Intervention test suite and baseline/statistics scaffold
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-041, ALD-071
@@ -931,17 +931,17 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Build the software scaffold (not the scientific analysis itself) that lets a pre-registered intervention be applied to a deterministic scenario run (`ALD-041`) and that computes the baseline statistics named in §15.3 over run output.
 - **Acceptance criteria:**
   - [ ] An intervention defined in a pre-registration reference (`ALD-071`) can be toggled on/off for a run via configuration, with no code change per intervention.
-  - [ ] The scaffold computes every baseline statistic named in §15.3 over a completed run's evidence.
-  - [ ] The scaffold's output is a data structure ready for a researcher's downstream analysis — it does not itself draw or store scientific conclusions.
+  - [x] The scaffold computes every baseline statistic named in §15.3 over a completed run's evidence.
+  - [x] The scaffold's output is a data structure ready for a researcher's downstream analysis — it does not itself draw or store scientific conclusions.
 
 #### ALD-073 — Gate G1: Integrity and isolation readiness (E00–E03)
 - **Priority:** P0 · **Size:** S · **Class:** MVP · **Depends on:** ALD-015, ALD-021, ALD-029, ALD-035, ALD-036, ALD-041, ALD-042, ALD-067, ALD-068, ALD-071, ALD-072
 - **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E00](EXPERIMENT-NOTEBOOK.md#e00-ledger-integrity-and-base-anchoring), [E01](EXPERIMENT-NOTEBOOK.md#e01-channel-isolation-and-side-channel-red-team), [E02](EXPERIMENT-NOTEBOOK.md#e02-observation-and-metadata-leakage-audit), [E03](EXPERIMENT-NOTEBOOK.md#e03-chance-no-communication-and-random-message-controls)
 - **Scope:** Define and check the readiness gate confirming the software capability required for `E00`–`E03` exists and passes its own conformance checks — the gate asserts *capability is ready to run the experiment*, not that the experiment has been run or what it found.
 - **Acceptance criteria:**
-  - [ ] `E00` readiness: the verifier accepts an unchanged anchored bundle and rejects all 14 mutation/anchor cases in LEDGER §17, including wrong-chain anchors and unanchored tails.
+  - [x] `E00` readiness: the verifier accepts an unchanged anchored bundle and rejects all 14 mutation/anchor cases in LEDGER §17, including wrong-chain anchors and unanchored tails.
   - [ ] `E01`/`E02` readiness: `ALD-067`/`ALD-068` red-team suites are green.
-  - [ ] `E03` readiness: `ALD-029`/`ALD-036` run all six controls with dual-hash evidence, while `ALD-041`/`ALD-042`/`ALD-072` provide deterministic scenarios, no-learning behavior, confidence intervals, and effect sizes.
+  - [x] `E03` readiness: `ALD-029`/`ALD-036` run all six controls with dual-hash evidence, while `ALD-041`/`ALD-042`/`ALD-072` provide deterministic scenarios, no-learning behavior, confidence intervals, and effect sizes.
 
 #### ALD-074 — Gate G2: Model-track and protocol readiness (E10–E16)
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-031, ALD-032, ALD-036, ALD-042, ALD-044, ALD-045, ALD-046, ALD-047, ALD-056, ALD-057, ALD-064, ALD-072
@@ -1079,6 +1079,26 @@ These are working decisions this backlog encodes. Where a decision is not yet ma
 - **Cryptography research boundary:** `ALD-069`'s ephemeral-encoding harness is explicitly research instrumentation; `ALD-070` enforces that its output is never substituted for the production integrity mechanisms in EPIC-02/EPIC-04.
 - **Sizing/priority are relative, not calendar-based:** S/M/L reflect complexity, not effort-days; P0/P1/P2 reflect blast radius on integrity/critical-path/research-readiness, not business value.
 - **Open/undecided (not invented here):** the specific open-weight frozen-LLM model, exact retention durations for §14.6, and exact confirmation-depth thresholds for §13.4 are left to be filled in when their owning item (ALD-044, ALD-062, ALD-021 respectively) is picked up, using whatever value the source documents specify at that time — this backlog does not invent them.
+
+### Implementation decisions recorded during the verifiable-core build (2026-09-07)
+
+These resolve details the source documents name but do not fix. Each is implemented, tested, and referenced from code comments.
+
+- **Hash domains.** LEDGER-INTEGRITY-DESIGN.md and SPECIFICATION.md name six domain separators; the implementation defines the remaining ones in `packages/types/src/domains.ts` (`HASH_DOMAINS`): channel event, affect event, audit-ledger entry, intervention event, turn record, Baby proposal, rejected payload, run config, run id, run manifest, pre-registration, scenario bundle/state, observation, action, outcome, prompt bundle, policy checkpoint, and PRNG seed. All follow `SHA-256(domain || 0x00 || payload)`; only Merkle interior nodes use `0x01`.
+- **Turn-record stream.** SPEC §14.3 needs per-turn hashes for the replay digest, so the Evidence Store carries an implementation-defined `turns` stream (`turn_records`, migration v2), witness-signed and committed as the auxiliary checkpoint tree `turns`. `intervention_log` stays hash-chained but unsigned and is exported without a checkpoint tree (LEDGER §8 auxiliary trees require a writer key).
+- **Checkpoint manifest `reason`.** LEDGER §8's manifest is illustrative; the implementation adds a `reason` enum recording the LEDGER §9 trigger so intervention checkpoints are verifiable.
+- **Empty trees.** A stream with no events is committed as `treeSize 0`, `EMPTY_MERKLE_ROOT`, `lastEntryHash = GENESIS_HASH`; a size-0 auxiliary tree is omitted from `auxiliaryTrees` and a verifier reads the omission as the empty tree (docs/evidence-bundle-format.md §6). A single-leaf Merkle root is the leaf hash (leaves are already domain-hashed).
+- **Ledger draft `evidenceRefs`.** Non-empty `evidenceRefs` on a draft are merged into `content.evidenceRefs` of the committed event (LEDGER §4 example shape).
+- **Communication controls.** `constant` delivers `{ symbols: [inventory[0]] }` unless pre-registered otherwise; `random` draws a length uniformly in `[1, maxSymbolsPerMessage]` then uniform symbols; `shuffled` uses a per-batch seeded derangement and is permitted only for `no-learning` tracks (its pre-pass requires stateless adapters); `oracle` bypasses both learners (artifact and decode from researcher ground truth). Timeouts and other payload-less rejections hash canonical `null`.
+- **Anchor receipts.** `anchor_receipts` is append-only with one row per transaction, so the publisher inserts exactly one row at a terminal decision (`confirmed`, `failed`, or `submitted` after the poll budget); pending submissions live in a non-evidence sidecar file. `safe-tag` finality is an interim 32-confirmation proxy (ADR-05). Mainnet requires both `allowMainnet: true` and `ALD_ALLOW_MAINNET_ANCHORING=true`.
+- **Experiment records.** Version 1 is written at run creation with `disposition: invalid` (SPEC §7.2: a run is not `valid` until the verifier passes), placeholder `checkpointManifestRef = GENESIS_HASH`, `anchorTxRef = 0x00…`, `verifierReportRef = pending`. Sealing appends v2 (checkpoint/anchor refs) and v3 (verifier result); the bundle's `experiment-record.json` is rewritten after v3.
+- **Unanchorable prototype runs.** With no anchor publisher configured (`anchorPolicy: skip`, prototype only) sealing follows SPEC §7.2 literally: `sealing → sealing-blocked → abandon-recovery → aborted-sealed`, recording a `governance-decision` intervention (`anchoring-skipped-prototype-mode`) and a deviation. Such runs are never `valid`.
+- **Verifier local-integrity mode.** `--allow-unanchored` downgrades only the absence of a confirmed final anchor and the unanchored tail; every other failure still exits 1.
+- **Adapter failures.** SPEC §14.5: one retry, then forfeit the turn (null action, turn record written), append a `safety-trigger` intervention, and pause. `evaluating` has no `pause` row in §7.2, so a trigger there records `pause-not-available` and continues (spec gap flagged).
+- **Run configuration.** Optional `evaluationTurns` (runtime default 200) fixes the evaluation-phase budget; `symbolInventorySize`/`maxSymbolsPerMessage` are valid only for `fixed-token` and `maxStrokes` only for `generative-canvas`.
+- **Learner contracts.** Files carry a `<!-- contract: <track> version: <n> -->` header exempt from the banned-pattern lint; `promptBundleHash` is the canonical hash of `{ track: text }`.
+- **Key store.** Per-run seeds under `<ALD_KEY_DIR>/<runId>/signers.json` (0600/0700); runId grammar `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`.
+- **Twin routes (Mode P).** Roles arrive as `x-ald-role` + `x-ald-service-token`; default dev tokens `dev-<role>` exist only for prototype mode. `POST /reset` returns 501 until the runtime exposes adapter re-initialization. `GET /runs` is added as a read-only convenience implied by the session routes.
 
 ## 16. Appendix: ID Index
 

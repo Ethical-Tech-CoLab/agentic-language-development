@@ -95,13 +95,40 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-This repository is in the **foundation implementation phase**. The npm/TypeScript
-workspace, shared runtime schemas, typed configuration loader, secret scan, and three
-DTSF-compatible twin-pack skeletons, SQLite WAL evidence schema, RFC 8785 canonical
-serialization, and ledger event validators are implemented. The next critical-path
-work is independent ledger/channel hash chaining (ALD-008 onward).
+This repository is in the **verifiable-core implementation phase**. The evidence
+integrity spine and the communication MVP from [BACKLOG.md](BACKLOG.md) milestones
+M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
 
-No experiment results are claimed yet.
+- `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
+  canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC
+  6962 ordered Merkle trees with inclusion and consistency proofs, and the single
+  atomic SQLite Evidence Writer with fork detection, recovery, and bundle export.
+- `@ald/checkpoint`, `@ald/anchor`, `@ald/verifier`: signed checkpoint manifests and
+  proof files, the Base anchor publisher (fake chain and viem transports; no funded
+  wallet is configured here), and the standalone `ald-verify` CLI that re-derives
+  every hash, signature, root, proof, binding, and anchor from a bundle alone.
+- `@ald/lifecycle`, `@ald/scenario`, `@ald/gateway`, `@ald/learners`,
+  `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine, the
+  deterministic referential Scenario Engine with all five interaction profiles and
+  the observation hygiene filter, the Symbol Gateway with the fixed-token protocol
+  and all six communication-control conditions, the no-learning and tabular
+  scratch-RL learner adapters with agent-native ledgers, the Nursery runtime that
+  drives the SPEC §8 turn cycle end to end, and the pre-registered statistics.
+- DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
+  with role guards in Prototype Mode.
+
+The qualification harness (`scripts/run-qualification.mjs`) executes E03-style
+chance controls and an E11-style naming game through the real pipeline and writes a
+report under `reports/qualification/`. Those runs are **non-confirmatory software
+qualification in Prototype Mode**: not pre-registered, not anchored, and never
+research findings.
+
+The next critical-path work is Base Sepolia anchoring with a funded wallet
+(ALD-020), Research-Grade isolation (ALD-055), the frozen-LLM adapter (ALD-044),
+the intervention test suite (ALD-072), and external pre-registration binding
+(ALD-071).
+
+No experiment results are claimed.
 
 The complete rationale, literature review, experimental ideas, risks, and open
 decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
@@ -116,6 +143,9 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [SPECIFICATION.md](SPECIFICATION.md) | Normative architecture, protocols, schemas, APIs, isolation controls, lifecycle, and acceptance criteria |
 | [BACKLOG.md](BACKLOG.md) | Milestones, critical path, epics, dependency-ordered stories, readiness gates, and requirement coverage |
 | [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
+| [CONFIGURATION.md](CONFIGURATION.md) | Runtime environment variables, key-store layout, and secret handling |
+| [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
+| [reports/README.md](reports/README.md) | What the qualification reports are and are not |
 
 ## Research Book
 
@@ -142,6 +172,31 @@ generated PDF, page manifest, page images, print edition, and locally bundled re
 are committed so GitHub Pages needs no server, CDN, or runtime PDF renderer.
 
 The notebook is ready for pre-registration. No experiment results are claimed yet.
+
+## Running the Platform Locally
+
+```bash
+npm ci
+npm run check
+```
+
+`npm run check` lints, lints the learner contracts, builds every workspace, runs the
+test suite, and scans for committed secrets.
+
+Run the Prototype Mode qualification harness and verify a bundle independently:
+
+```bash
+npm run build && node scripts/run-qualification.mjs
+```
+
+```bash
+node packages/verifier/bin/ald-verify.js evidence/qualification/<run-set>/bundles/runs/<run-id> --allow-unanchored
+```
+
+Databases and bundles are written under `evidence/`, which is ignored by git; reports
+are written under `reports/qualification/`. Without a funded Base Sepolia wallet
+every run seals along the SPECIFICATION.md §7.2 unanchored path and is recorded as
+`invalid` by construction.
 
 ## Responsible Research
 

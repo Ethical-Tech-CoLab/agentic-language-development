@@ -52,3 +52,16 @@ The script exits `1` if any produced evidence bundle fails independent
 verification, printing which run(s) failed, so a non-zero exit from this
 script (or from a CI job that runs it) means an evidence-integrity problem,
 not merely an unqualifying statistical result.
+
+## Design observations from qualification runs
+
+- **E03 controls collapse with a no-learning receiver.** RESEARCH.md Appendix D fixes the
+  same scenario seed for every condition at a given slot, and a `no-learning` receiver
+  ignores the delivered artifact by construction. The `disabled`, `constant`, `random`,
+  `shuffled`, and `normal-no-learning` trajectories at a slot are therefore identical, so
+  the five equivalence tests in the report are not independent evidence. The controls
+  become informative only when the receiver policy can respond to messages (for example a
+  trained `scratch-rl` policy evaluated under the control conditions, or a
+  pre-registered per-condition receiver seed). This is a property of the registered
+  design, not a defect in the harness, and is recorded here for the researchers who own
+  EXPERIMENT-NOTEBOOK.md.
