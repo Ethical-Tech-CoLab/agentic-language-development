@@ -3,7 +3,14 @@
  * exists to protect: the on-chain payload encoding (LEDGER §12) and the
  * canonical, crash-durable pending-submission sidecar.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import {
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import { canonicalJson, decodeHash } from '@ald/hashing';
@@ -14,6 +21,7 @@ import * as testing from '../src/testing.js';
 import {
   ANCHOR_CHAIN_IDS,
   ANCHOR_INPUT_DATA_LENGTH,
+  PENDING_FILE_MODE,
   PendingFileInvalidError,
   addPendingSubmission,
   anchorInputData,
@@ -33,7 +41,10 @@ const EXPECTED_EXPORTS = [
   'AnchorNetworkMismatchError',
   'AnchorPayloadMismatchError',
   'AnchorSubmissionFailedError',
+  'BASE_BLOCK_TIME_SECONDS',
   'BaseAnchorPublisher',
+  'DEFAULT_CONFIRMATION_POLL_ATTEMPTS',
+  'DEFAULT_CONFIRMATION_POLL_INTERVAL_MS',
   'DEFAULT_FAKE_FROM_ADDRESS',
   'DEFAULT_INITIAL_BACKOFF_MS',
   'DEFAULT_MAX_BACKOFF_MS',
@@ -43,6 +54,7 @@ const EXPECTED_EXPORTS = [
   'InvalidFinalityPolicyError',
   'MAINNET_ANCHORING_ENV_VAR',
   'MainnetAnchoringDisabledError',
+  'PENDING_FILE_MODE',
   'PendingAnchorFileSchema',
   'PendingAnchorSubmissionSchema',
   'PendingFileInvalidError',
@@ -153,5 +165,44 @@ describe('pending submission sidecar', () => {
     writeFileSync(path, '{"version":1}', 'utf8');
 
     expect(() => readPendingSubmissions(path)).toThrow(PendingFileInvalidError);
+  });
+
+  it('is 0600 and ignores anything planted at the old fixed temp path', async () => {
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'pending.json');
+    const victim = join(directory, 'victim.txt');
+    writeFileSync(victim, 'ORIGINAL\n', { mode: 0o600 });
+    // The sidecar used to be staged at this exact sibling path, so a planted
+    // file donated its permissions and a planted symlink took the write.
+    const planted = `${path}.tmp`;
+    symlinkSync(victim, planted);
+
+    addPendingSubmission(path, submission);
+
+    expect(readPendingSubmissions(path)).toEqual([submission]);
+    expect(statSync(path).mode & 0o777).toBe(PENDING_FILE_MODE);
+    expect(lstatSync(path).isSymbolicLink()).toBe(false);
+    expect(readFileSync(victim, 'utf8')).toBe('ORIGINAL\n');
+    // A unique temp name is used and cleaned up by the rename.
+    expect(
+      readdirSync(directory).filter((entry) => entry.endsWith('.tmp')),
+    ).toEqual(['pending.json.tmp']);
+  });
+
+  it('refuses a symlinked sidecar instead of writing through it', async () => {
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'pending.json');
+    const victim = join(directory, 'victim.json');
+    // Valid sidecar content, so the read succeeds and only the write can
+    // refuse: the sidecar must be a regular file this process owns.
+    const original = `${canonicalJson({ version: 1, submissions: [] })}\n`;
+    writeFileSync(victim, original, { mode: 0o600 });
+    symlinkSync(victim, path);
+
+    expect(readPendingSubmissions(path)).toEqual([]);
+    expect(() => addPendingSubmission(path, submission)).toThrow(
+      PendingFileInvalidError,
+    );
+    expect(readFileSync(victim, 'utf8')).toBe(original);
   });
 });

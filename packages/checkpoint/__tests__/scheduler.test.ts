@@ -161,7 +161,8 @@ describe('CheckpointScheduler time trigger', () => {
       timer,
     });
     scheduler.start();
-    expect(timer.intervals).toEqual([5_000]);
+    // Default tickIntervalMs is max(1000, floor(timeIntervalMs / 4)).
+    expect(timer.intervals).toEqual([1_250]);
 
     // No events yet: an idle run never checkpoints on time alone.
     clock.advance(10_000);
@@ -210,6 +211,61 @@ describe('CheckpointScheduler time trigger', () => {
     scheduler.stop();
     scheduler.stop();
     expect(timer.cleared).toBe(1);
+  });
+});
+
+describe('CheckpointScheduler time-interval cadence bound', () => {
+  it('fires within timeIntervalMs + tickIntervalMs of the last checkpoint, even off-cycle', async () => {
+    const timeIntervalMs = 300_000;
+    const creator = new RecordingCreator();
+    const clock = new ManualClock(0);
+    const timer = new FakeTimer();
+    const scheduler = new CheckpointScheduler({
+      service: creator,
+      runId: 'run-a',
+      eventInterval: 2,
+      timeIntervalMs,
+      clock,
+      timer,
+    });
+    scheduler.start();
+    const tickIntervalMs = timer.intervals[0];
+    expect(tickIntervalMs).toBe(75_000); // max(1000, floor(300_000 / 4))
+
+    // An event-interval checkpoint lands off the tick cycle, at t = 301_000
+    // (the reporter's exact reproduction scenario).
+    clock.advance(301_000);
+    scheduler.recordAcceptedEvents(2);
+    await scheduler.pending;
+    expect(creator.calls).toEqual(['event-interval']);
+    const lastCheckpointAtMs = 301_000;
+
+    // One further event arrives, then nothing else.
+    clock.advance(1_000); // t = 302_000
+    scheduler.recordAcceptedEvents(1);
+
+    // Fire ticks on the real fixed phase (multiples of tickIntervalMs from
+    // start) until the time trigger fires; earlier ticks in this window
+    // correctly skip because timeIntervalMs has not elapsed since 301_000.
+    let elapsed = 302_000;
+    let fired = false;
+    for (let tick = 5; tick <= 20 && !fired; tick += 1) {
+      const target = tick * tickIntervalMs;
+      clock.advance(target - elapsed);
+      elapsed = target;
+      timer.fire();
+      await scheduler.pending;
+      if (creator.calls.includes('time-interval')) {
+        fired = true;
+        const gap = elapsed - lastCheckpointAtMs;
+        // This is the bound the fix establishes: not 2 * timeIntervalMs.
+        expect(gap).toBeLessThanOrEqual(timeIntervalMs + tickIntervalMs);
+        expect(gap).toBeGreaterThanOrEqual(timeIntervalMs);
+      }
+    }
+    expect(fired).toBe(true);
+
+    scheduler.stop();
   });
 });
 
@@ -276,6 +332,74 @@ describe('CheckpointScheduler failure handling', () => {
     expect(creator.calls).toEqual([]);
 
     scheduler.stop();
+  });
+
+  it('recovers when onError itself throws: the chain never stays rejected', async () => {
+    const failure = new Error('sqlite is busy');
+    const creator = new RecordingCreator(failure);
+    const errors: unknown[] = [];
+    const scheduler = new CheckpointScheduler({
+      service: creator,
+      runId: 'run-a',
+      eventInterval: 2,
+      timeIntervalMs: 5_000,
+      clock: new ManualClock(),
+      onError: (error) => {
+        errors.push(error);
+        throw new Error('logger exploded');
+      },
+    });
+
+    scheduler.recordAcceptedEvents(2);
+    // Before the fix this rejected forever, so a bare `await` here would
+    // throw "logger exploded" instead of resolving.
+    await expect(scheduler.pending).resolves.toBeUndefined();
+    expect(errors).toEqual([failure]);
+
+    // A later window must still reach the service: the chain was not
+    // permanently poisoned by the throwing observer.
+    scheduler.recordAcceptedEvents(2);
+    await expect(scheduler.pending).resolves.toBeUndefined();
+    expect(creator.calls).toEqual(['event-interval', 'event-interval']);
+    expect(errors).toHaveLength(2);
+  });
+
+  it('does not re-add already-checkpointed events when onCheckpoint throws', async () => {
+    const creator = new RecordingCreator();
+    const errors: unknown[] = [];
+    const scheduler = new CheckpointScheduler({
+      service: creator,
+      runId: 'run-a',
+      eventInterval: 4,
+      timeIntervalMs: 60_000,
+      clock: new ManualClock(),
+      onCheckpoint: () => {
+        throw new Error('subscriber blew up');
+      },
+      onError: (error) => errors.push(error),
+    });
+
+    scheduler.recordAcceptedEvents(4);
+    await expect(scheduler.pending).resolves.toBeUndefined();
+
+    // The checkpoint was created; only the subscriber failed.
+    expect(creator.calls).toEqual(['event-interval']);
+    expect(errors).toHaveLength(1);
+    // Criterion 2: a successfully checkpointed window must not be restored,
+    // or the next single event would immediately re-trigger and the
+    // checkpointed range would be re-attempted.
+    expect(scheduler.pendingEventCount).toBe(0);
+
+    scheduler.recordAcceptedEvents(1);
+    await scheduler.pending;
+    expect(creator.calls).toEqual(['event-interval']);
+    expect(scheduler.pendingEventCount).toBe(1);
+
+    // The cadence is otherwise unaffected: completing the window still
+    // fires exactly one more checkpoint, not one per event.
+    scheduler.recordAcceptedEvents(3);
+    await scheduler.pending;
+    expect(creator.calls).toEqual(['event-interval', 'event-interval']);
   });
 });
 

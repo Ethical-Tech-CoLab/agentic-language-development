@@ -27,7 +27,10 @@ export type AnchorErrorCode =
   | 'UNKNOWN_ANCHOR_RUN'
   /** The manifest being anchored is not stored, so no receipt could link to it. */
   | 'UNKNOWN_ANCHOR_CHECKPOINT'
-  /** Key file missing, malformed, or world/group readable. */
+  /**
+   * Key file missing, malformed, not a valid secp256k1 scalar, world/group
+   * readable, or sitting in a group/other-writable directory.
+   */
   | 'ANCHOR_KEY_FILE'
   /** Retryable RPC/transport failure; no transaction was submitted. */
   | 'TRANSIENT_CHAIN_ERROR'
@@ -130,6 +133,10 @@ export class UnknownAnchorCheckpointError extends AnchorError {
 /**
  * Never carries the key material itself — only the path and the reason
  * (LEDGER §11: the anchoring private key is never logged or telemetered).
+ *
+ * `cause` is therefore attached only for failures raised by the filesystem;
+ * a curve-library rejection is re-raised without one, because its message
+ * prints the candidate scalar — i.e. the file's bytes.
  */
 export class AnchorKeyFileError extends AnchorError {
   constructor(

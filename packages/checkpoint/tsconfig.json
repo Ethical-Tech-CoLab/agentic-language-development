@@ -12,6 +12,8 @@
     { "path": "../hashing" },
     { "path": "../merkle" },
     { "path": "../evidence" },
-    { "path": "../lifecycle" }
+    { "path": "../lifecycle" },
+    { "path": "../learners" },
+    { "path": "../verifier" }
   ]
 }

@@ -3,8 +3,16 @@
  * event/witness keys, never logged, and rotating it leaves prior receipts
  * verifiable (LEDGER §11, SPEC §13.5).
  */
-import { chmod, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import {
+  chmod,
+  mkdir,
+  readFile,
+  readdir,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { join } from 'node:path';
+import { inspect } from 'node:util';
 
 import { FileKeyStore } from '@ald/hashing';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -88,6 +96,64 @@ describe('anchor key files (ALD-019)', () => {
     await expect(loadAnchorKeyFile(join(directory, 'missing.key'))).rejects.toBeInstanceOf(
       AnchorKeyFileError,
     );
+  });
+
+  it('never echoes an out-of-range key, not even through a cause', async () => {
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'out-of-range.key');
+    // Correctly shaped (0x + 64 hex) but >= the secp256k1 group order, so the
+    // curve library raises a bare Error that prints the scalar in decimal.
+    const key = `0x${'ff'.repeat(32)}`;
+    const decimal = BigInt(key).toString(10);
+    await writeFile(path, `${key}\n`, { mode: 0o600 });
+
+    const failure = await loadAnchorKeyFile(path).catch(
+      (error: unknown) => error,
+    );
+
+    expect(failure).toBeInstanceOf(AnchorKeyFileError);
+    expect((failure as AnchorKeyFileError).code).toBe('ANCHOR_KEY_FILE');
+    const rendered = `${(failure as Error).message} ${inspect(failure, {
+      depth: 6,
+    })}`;
+    expect(rendered).not.toContain(key.slice(2));
+    expect(rendered).not.toContain(decimal);
+    expect((failure as Error).cause).toBeUndefined();
+
+    // Same containment on the write path, and the bad key never lands on disk.
+    const writePath = join(directory, 'zero.key');
+    const zero = `0x${'00'.repeat(32)}`;
+    const writeFailure = await writeAnchorKeyFile(writePath, zero).catch(
+      (error: unknown) => error,
+    );
+    expect(writeFailure).toBeInstanceOf(AnchorKeyFileError);
+    expect((writeFailure as Error).message).not.toContain(zero.slice(2));
+    await expect(stat(writePath)).rejects.toThrow();
+  });
+
+  it('refuses a key file in a group/other-writable directory', async () => {
+    const directory = await temporaryDirectory();
+    const exposed = join(directory, 'exposed');
+    await mkdir(exposed, { recursive: true, mode: 0o700 });
+    const path = join(exposed, 'anchor.key');
+    const key = generateAnchorKey();
+    await writeAnchorKeyFile(path, key.privateKey);
+    // Anyone who can write the directory can replace the key file in it.
+    await chmod(exposed, 0o777);
+
+    const failure = await loadAnchorKeyFile(path).catch(
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(AnchorKeyFileError);
+    expect((failure as Error).message).toContain('group/other write');
+    expect((failure as Error).message).not.toContain(key.privateKey.slice(2));
+
+    await expect(
+      loadAnchorKeyFile(path, { allowInsecurePermissions: true }),
+    ).resolves.toMatchObject({ address: key.address });
+
+    await chmod(exposed, 0o700);
+    await expect(loadAnchorKeyFile(path)).resolves.toEqual(key);
   });
 
   it('accepts a trailing-whitespace key file and refuses to clobber it', async () => {

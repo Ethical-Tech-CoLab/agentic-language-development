@@ -12,7 +12,12 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ANCHOR_CHAIN_IDS,
   AnchorSubmissionFailedError,
+  BASE_BLOCK_TIME_SECONDS,
   BaseAnchorPublisher,
+  DEFAULT_CONFIRMATION_POLL_ATTEMPTS,
+  DEFAULT_CONFIRMATION_POLL_INTERVAL_MS,
+  DEFAULT_INITIAL_BACKOFF_MS,
+  DEFAULT_RETRY_ATTEMPTS,
   FakeChainTransport,
   InvalidFinalityPolicyError,
   MAINNET_ANCHORING_ENV_VAR,
@@ -23,6 +28,7 @@ import {
   anchorInputData,
   readPendingSubmissions,
   requiredConfirmations,
+  verifyAnchorReceipt,
 } from '../src/index.js';
 import type { AnchorTestContext } from './support.js';
 import {
@@ -42,7 +48,10 @@ async function context(): Promise<AnchorTestContext> {
 
 interface PublisherOptions {
   finalityPolicy?: string;
+  /** Send-retry budget. */
   attempts?: number;
+  /** Confirmation-poll budget; defaults to the production default. */
+  pollAttempts?: number;
   sleep?: (milliseconds: number) => Promise<void>;
   pendingFile?: string;
   allowMainnet?: boolean;
@@ -64,6 +73,12 @@ function publisherFor(
       initialBackoffMs: 1,
       maxBackoffMs: 4,
       sleep: options.sleep ?? immediateSleep,
+    },
+    confirmationPoll: {
+      intervalMs: 1,
+      ...(options.pollAttempts === undefined
+        ? {}
+        : { attempts: options.pollAttempts }),
     },
     ...(options.pendingFile === undefined
       ? {}
@@ -187,8 +202,8 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     const transport = new FakeChainTransport();
     const publisher = publisherFor(ctx, transport, {
       finalityPolicy: '3-confirmations',
-      attempts: 6,
-      // Each backoff advances the fake chain by one block.
+      pollAttempts: 6,
+      // Each poll interval advances the fake chain by one block.
       sleep: async () => {
         transport.mineBlock(1);
       },
@@ -206,23 +221,31 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     expect(transport.blockNumber).toBe(3);
   });
 
-  it("stays 'submitted' until the confirmation depth is reached", async () => {
+  it("stays 'submitted', unstored, and carries the observed depth", async () => {
     const ctx = await context();
     const manifest = await ctx.addCheckpoint();
     const transport = new FakeChainTransport();
+    const pendingFile = join(ctx.directory, 'pending.json');
     const publisher = publisherFor(ctx, transport, {
       finalityPolicy: '3-confirmations',
-      attempts: 2,
+      pollAttempts: 2,
+      pendingFile,
     });
 
     const submitted = await publisher.submit(manifest);
     transport.mineBlock(1);
     const result = await publisher.awaitConfirmation(submitted);
 
+    // Giving up is not a terminal decision: LEDGER §10 allows only one
+    // append-only row per (chainId, transactionHash), and a 'submitted' row
+    // could never be upgraded to the confirmation that follows.
     expect(result.status).toBe('submitted');
-    expect(ctx.writer.readAnchorReceipts(ctx.runId)[0]?.status).toBe(
-      'submitted',
-    );
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(0);
+    // What the poll did observe is reported to the caller.
+    expect(result.blockNumber).toBe(1);
+    expect(result.blockHash).not.toBeNull();
+    expect(result.confirmations).toBe(1);
+    expect(readPendingSubmissions(pendingFile)).toHaveLength(1);
   });
 
   it("records 'failed' for a reverted transaction", async () => {
@@ -244,14 +267,14 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     expect(readPendingSubmissions(pendingFile)).toHaveLength(0);
   });
 
-  it("gives up as 'submitted' and keeps the pending entry when never mined", async () => {
+  it("gives up as 'submitted', writes no row, and keeps the pending entry", async () => {
     const ctx = await context();
     const manifest = await ctx.addCheckpoint();
     const transport = new FakeChainTransport();
     const pendingFile = join(ctx.directory, 'pending.json');
     const publisher = publisherFor(ctx, transport, {
       pendingFile,
-      attempts: 3,
+      pollAttempts: 3,
     });
 
     const submitted = await publisher.submit(manifest);
@@ -259,13 +282,90 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
 
     expect(result.status).toBe('submitted');
     expect(result.blockNumber).toBeNull();
-    const stored = ctx.writer.readAnchorReceipts(ctx.runId);
-    expect(stored).toHaveLength(1);
-    expect(stored[0]?.status).toBe('submitted');
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(0);
     expect(publisher.pendingSubmissions()).toHaveLength(1);
     expect(publisher.pendingSubmissions()[0]?.transactionHash).toBe(
       submitted.transactionHash,
     );
+  });
+
+  it('records the confirmation when a given-up poll is resumed later', async () => {
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const pendingFile = join(ctx.directory, 'pending.json');
+    const publisher = publisherFor(ctx, transport, {
+      finalityPolicy: '3-confirmations',
+      pollAttempts: 2,
+      pendingFile,
+    });
+
+    const submitted = await publisher.submit(manifest);
+    transport.mineBlock(1);
+    const gaveUp = await publisher.awaitConfirmation(submitted);
+    expect(gaveUp.status).toBe('submitted');
+    expect(gaveUp.confirmations).toBe(1);
+
+    // SPEC §7.2 `sealing-blocked` -> retry succeeds -> `sealing`: an operator
+    // resumes the poll over the surviving pending entry.
+    transport.mineBlock(10);
+    const resumed = await publisher.awaitConfirmation(gaveUp);
+
+    expect(resumed.status).toBe('confirmed');
+    expect(resumed.blockNumber).toBe(1);
+    const stored = ctx.writer.readAnchorReceipts(ctx.runId);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]?.status).toBe('confirmed');
+    expect(stored[0]?.transactionHash).toBe(submitted.transactionHash);
+    expect(stored[0]?.confirmations).toBeGreaterThanOrEqual(3);
+    expect(readPendingSubmissions(pendingFile)).toHaveLength(0);
+    await expect(
+      verifyAnchorReceipt(
+        stored[0] ?? resumed,
+        manifest.checkpointHash,
+        transport,
+      ),
+    ).resolves.toMatchObject({ ok: true });
+
+    // A further poll and a further submit neither duplicate the row nor
+    // contradict it, and no second transaction is ever paid for.
+    const again = await publisher.awaitConfirmation(resumed);
+    expect(again.status).toBe('confirmed');
+    const resubmitted = await publisher.submit(manifest);
+    expect(resubmitted.status).toBe('confirmed');
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
+    expect(transport.submissions).toHaveLength(1);
+  });
+
+  it('resumes a given-up submission from the sidecar after a restart', async () => {
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const pendingFile = join(ctx.directory, 'pending.json');
+    const publisher = publisherFor(ctx, transport, {
+      finalityPolicy: '3-confirmations',
+      pollAttempts: 1,
+      pendingFile,
+    });
+
+    const submitted = await publisher.submit(manifest);
+    await publisher.awaitConfirmation(submitted);
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(0);
+
+    transport.mineBlock(4);
+    const restarted = publisherFor(ctx, transport, {
+      finalityPolicy: '3-confirmations',
+      pollAttempts: 1,
+      pendingFile,
+    });
+    const recovered = await restarted.submit(manifest);
+    expect(recovered.transactionHash).toBe(submitted.transactionHash);
+    const confirmed = await restarted.awaitConfirmation(recovered);
+
+    expect(confirmed.status).toBe('confirmed');
+    expect(transport.submissions).toHaveLength(1);
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
+    expect(readPendingSubmissions(pendingFile)).toHaveLength(0);
   });
 
   it('anchorAndConfirm submits and waits in one call', async () => {
@@ -273,7 +373,7 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     const manifest = await ctx.addCheckpoint();
     const transport = new FakeChainTransport();
     const publisher = publisherFor(ctx, transport, {
-      attempts: 3,
+      pollAttempts: 3,
       sleep: async () => {
         transport.mineBlock(1);
       },
@@ -352,6 +452,45 @@ describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () 
     expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
   });
 
+  it('returns the first submission for a duplicate submit with no pendingFile', async () => {
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    // The documented default: no sidecar configured at all.
+    const publisher = publisherFor(ctx, transport);
+
+    const first = await publisher.submit(manifest);
+    const second = await publisher.submit(manifest);
+
+    expect(second).toEqual(first);
+    expect(transport.submissions).toHaveLength(1);
+
+    transport.mineBlock(1);
+    await publisher.awaitConfirmation(first);
+    await publisher.awaitConfirmation(second);
+
+    const rows = ctx.writer.readAnchorReceipts(ctx.runId);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.status).toBe('confirmed');
+  });
+
+  it('collapses concurrent submits for one checkpoint into one transaction', async () => {
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport);
+
+    const [first, second, third] = await Promise.all([
+      publisher.submit(manifest),
+      publisher.submit(manifest),
+      publisher.submit(manifest),
+    ]);
+
+    expect(second.transactionHash).toBe(first.transactionHash);
+    expect(third.transactionHash).toBe(first.transactionHash);
+    expect(transport.submissions).toHaveLength(1);
+  });
+
   it('round-trips the pending file so a crash cannot lose the tx hash', async () => {
     const ctx = await context();
     const manifest = await ctx.addCheckpoint();
@@ -397,6 +536,68 @@ describe('finality policy parsing (SPEC §13.4, ADR-05)', () => {
     expect(requiredConfirmations('safe-tag')).toBe(
       SAFE_TAG_CONFIRMATION_PROXY,
     );
+  });
+
+  it("brackets Base's safe head with one L1 epoch of Base blocks", () => {
+    // One Ethereum epoch = 32 slots x 12 s = 384 s; Base blocks are 2 s.
+    const epochSeconds = 32 * 12;
+    expect(SAFE_TAG_CONFIRMATION_PROXY).toBe(
+      epochSeconds / BASE_BLOCK_TIME_SECONDS,
+    );
+    expect(SAFE_TAG_CONFIRMATION_PROXY).toBe(192);
+  });
+
+  it('budgets enough confirmation polls to reach the safe-tag depth', () => {
+    const pollableBlocks =
+      (DEFAULT_CONFIRMATION_POLL_ATTEMPTS *
+        DEFAULT_CONFIRMATION_POLL_INTERVAL_MS) /
+      1_000 /
+      BASE_BLOCK_TIME_SECONDS;
+    expect(pollableBlocks).toBeGreaterThanOrEqual(SAFE_TAG_CONFIRMATION_PROXY);
+
+    // The old shared send-retry budget could not: 5 attempts of exponential
+    // backoff from 500 ms is under four Base blocks.
+    const retryBlocks =
+      ((DEFAULT_RETRY_ATTEMPTS - 1) * DEFAULT_INITIAL_BACKOFF_MS) /
+      1_000 /
+      BASE_BLOCK_TIME_SECONDS;
+    expect(retryBlocks).toBeLessThan(SAFE_TAG_CONFIRMATION_PROXY);
+  });
+
+  it("reaches the safe-tag depth under the default poll budget", async () => {
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport, {
+      finalityPolicy: 'safe-tag',
+      // No pollAttempts: the production default has to suffice.
+      sleep: async () => {
+        transport.mineBlock(1);
+      },
+    });
+
+    expect(publisher.requiredConfirmations).toBe(SAFE_TAG_CONFIRMATION_PROXY);
+    const submitted = await publisher.submit(manifest);
+    transport.mineBlock(1);
+    const confirmed = await publisher.awaitConfirmation(submitted);
+
+    expect(confirmed.status).toBe('confirmed');
+    expect(confirmed.confirmations).toBe(SAFE_TAG_CONFIRMATION_PROXY);
+
+    // A publisher budgeted like the old shared send-retry path gives up
+    // without ever writing a row.
+    const secondManifest = await ctx.addCheckpoint('event-interval');
+    const shallow = publisherFor(ctx, new FakeChainTransport(), {
+      finalityPolicy: 'safe-tag',
+      pollAttempts: DEFAULT_RETRY_ATTEMPTS,
+    });
+    const gaveUp = await shallow.anchorAndConfirm(secondManifest);
+    expect(gaveUp.status).toBe('submitted');
+    expect(
+      ctx.writer
+        .readAnchorReceipts(ctx.runId)
+        .filter((row) => row.checkpointHash === secondManifest.checkpointHash),
+    ).toHaveLength(0);
   });
 
   it('rejects an unparseable policy at construction time', async () => {

@@ -74,15 +74,72 @@ function toAnchorKey(privateKey: HexString): AnchorKey {
 }
 
 /**
+ * Derive the address, converting *any* failure into an `AnchorKeyFileError`
+ * that carries neither the key nor a cause.
+ *
+ * `PRIVATE_KEY_PATTERN` only checks the 0x + 64-hex shape, so a syntactically
+ * valid but out-of-range scalar reaches the curve library, which raises a bare
+ * `Error` whose message prints the candidate scalar in decimal — the key
+ * itself. LEDGER §11 forbids that reaching a log, so the cause is dropped
+ * rather than chained.
+ */
+function deriveAnchorKey(path: string, privateKey: HexString): AnchorKey {
+  try {
+    return toAnchorKey(privateKey);
+  } catch {
+    throw new AnchorKeyFileError(
+      path,
+      'is not a valid secp256k1 private key (the key itself is never logged)',
+    );
+  }
+}
+
+/** Octal bits that must be clear on the directory holding a key file. */
+const FORBIDDEN_KEY_DIRECTORY_MODE_BITS = 0o022;
+
+/**
+ * Refuse a key file whose directory is group- or other-writable: anyone with
+ * write access to the directory can replace the key file with their own, so
+ * the anchor wallet would no longer be the dedicated key LEDGER §11 requires.
+ */
+async function assertDirectorySafe(path: string): Promise<void> {
+  const directory = dirname(path);
+  let stats;
+  try {
+    stats = await stat(directory);
+  } catch (cause) {
+    throw new AnchorKeyFileError(path, 'cannot be read', { cause });
+  }
+  const insecureBits = stats.mode & FORBIDDEN_KEY_DIRECTORY_MODE_BITS;
+  if (insecureBits !== 0) {
+    throw new AnchorKeyFileError(
+      path,
+      `lives in directory ${directory} with mode ` +
+        `${(stats.mode & 0o777).toString(8).padStart(3, '0')}, which allows ` +
+        `group/other write; run 'chmod go-w' on it or pass ` +
+        'allowInsecurePermissions',
+    );
+  }
+}
+
+/**
  * Read the anchor wallet key from `path`.
  *
  * Refuses a file whose mode grants any group or other permission on POSIX,
- * because a readable anchor key is a spendable anchor key.
+ * because a readable anchor key is a spendable anchor key, and equally refuses
+ * one whose parent directory is group/other writable, because a writable
+ * directory is a replaceable key file (LEDGER §11).
  */
 export async function loadAnchorKeyFile(
   path: string,
   options: LoadAnchorKeyFileOptions = {},
 ): Promise<AnchorKey> {
+  const checkPermissions =
+    process.platform !== 'win32' && options.allowInsecurePermissions !== true;
+  if (checkPermissions) {
+    await assertDirectorySafe(path);
+  }
+
   let stats;
   try {
     stats = await stat(path);
@@ -95,11 +152,7 @@ export async function loadAnchorKeyFile(
   }
 
   const insecureBits = stats.mode & FORBIDDEN_KEY_FILE_MODE_BITS;
-  if (
-    process.platform !== 'win32' &&
-    insecureBits !== 0 &&
-    options.allowInsecurePermissions !== true
-  ) {
+  if (checkPermissions && insecureBits !== 0) {
     throw new AnchorKeyFileError(
       path,
       `mode ${(stats.mode & 0o777).toString(8).padStart(3, '0')} allows group/other access; ` +
@@ -114,7 +167,7 @@ export async function loadAnchorKeyFile(
     throw new AnchorKeyFileError(path, 'cannot be read', { cause });
   }
 
-  return toAnchorKey(normalizePrivateKey(path, contents.trim()));
+  return deriveAnchorKey(path, normalizePrivateKey(path, contents.trim()));
 }
 
 /**
@@ -126,7 +179,11 @@ export async function writeAnchorKeyFile(
   privateKey: string,
 ): Promise<AnchorKey> {
   const normalized = normalizePrivateKey(path, privateKey.trim());
-  await mkdir(dirname(path), { recursive: true });
+  // Derive first: a key the curve rejects must never reach the filesystem.
+  const key = deriveAnchorKey(path, normalized);
+  // Owner-only on any directory this call creates, so the file it is about to
+  // write is not left in a directory `loadAnchorKeyFile` must then refuse.
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   try {
     await writeFile(path, `${normalized}\n`, {
       encoding: 'utf8',
@@ -140,7 +197,7 @@ export async function writeAnchorKeyFile(
   if (process.platform !== 'win32') {
     await chmod(path, ANCHOR_KEY_FILE_MODE);
   }
-  return toAnchorKey(normalized);
+  return key;
 }
 
 /**

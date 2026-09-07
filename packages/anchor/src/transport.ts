@@ -82,7 +82,16 @@ export interface ChainTransaction {
  * Implementations must throw {@link import('./errors.js').TransientChainError}
  * (or any error) from `sendAnchorTransaction` only when nothing was submitted:
  * the publisher treats a throw as "safe to retry" and a returned hash as
- * "submitted exactly once".
+ * "submitted exactly once". An implementation that can lose the *response* to
+ * a broadcast (any HTTP transport) therefore has to sign at a pinned nonce and
+ * reconcile against the chain before reporting a failure — see
+ * `ViemChainTransport` — so that a retry replaces the same transaction instead
+ * of paying for a second one (LEDGER §16 Phase 2: "retry and nonce
+ * management").
+ *
+ * Error messages crossing this boundary must be secret-free: `endpointLabel`,
+ * the RPC method, and the provider's error name/code, never the RPC URL, its
+ * userinfo, or its query (LEDGER §11).
  */
 export interface ChainTransport {
   readonly chainId: number;

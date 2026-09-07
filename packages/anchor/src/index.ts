@@ -61,6 +61,7 @@ export {
   type LoadAnchorKeyFileOptions,
 } from './key-file.js';
 export {
+  PENDING_FILE_MODE,
   PendingAnchorFileSchema,
   PendingAnchorSubmissionSchema,
   addPendingSubmission,
@@ -71,13 +72,17 @@ export {
   type PendingAnchorSubmission,
 } from './pending.js';
 export {
+  BASE_BLOCK_TIME_SECONDS,
   BaseAnchorPublisher,
+  DEFAULT_CONFIRMATION_POLL_ATTEMPTS,
+  DEFAULT_CONFIRMATION_POLL_INTERVAL_MS,
   DEFAULT_INITIAL_BACKOFF_MS,
   DEFAULT_MAX_BACKOFF_MS,
   DEFAULT_RETRY_ATTEMPTS,
   MAINNET_ANCHORING_ENV_VAR,
   SAFE_TAG_CONFIRMATION_PROXY,
   requiredConfirmations,
+  type AnchorConfirmationPollOptions,
   type AnchorEvidenceStore,
   type AnchorRetryOptions,
   type BaseAnchorPublisherOptions,

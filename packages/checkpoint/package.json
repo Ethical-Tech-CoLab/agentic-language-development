@@ -20,5 +20,9 @@
     "@ald/merkle": "*",
     "@ald/evidence": "*",
     "@ald/lifecycle": "*"
+  },
+  "devDependencies": {
+    "@ald/learners": "*",
+    "@ald/verifier": "*"
   }
 }
