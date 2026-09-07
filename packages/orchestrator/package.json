@@ -1,0 +1,31 @@
+{
+  "name": "@ald/orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@ald/types": "*",
+    "@ald/hashing": "*",
+    "@ald/config": "*",
+    "@ald/evidence": "*",
+    "@ald/merkle": "*",
+    "@ald/lifecycle": "*",
+    "@ald/scenario": "*",
+    "@ald/learners": "*",
+    "@ald/gateway": "*",
+    "@ald/checkpoint": "*",
+    "@ald/anchor": "*",
+    "@ald/verifier": "*"
+  }
+}

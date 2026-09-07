@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../hashing" },
+    { "path": "../config" },
+    { "path": "../evidence" },
+    { "path": "../merkle" },
+    { "path": "../lifecycle" },
+    { "path": "../scenario" },
+    { "path": "../learners" },
+    { "path": "../gateway" },
+    { "path": "../checkpoint" },
+    { "path": "../anchor" },
+    { "path": "../verifier" }
+  ]
+}
