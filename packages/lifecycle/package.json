@@ -15,6 +15,7 @@
     "build": "tsc --build"
   },
   "dependencies": {
+    "@ald/hashing": "*",
     "@ald/types": "*"
   }
 }

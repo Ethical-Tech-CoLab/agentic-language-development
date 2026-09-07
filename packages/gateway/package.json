@@ -9,6 +9,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./testing": {
+      "import": "./dist/testing.js",
+      "types": "./dist/testing.d.ts"
     }
   },
   "scripts": {
@@ -17,6 +21,7 @@
   "dependencies": {
     "@ald/types": "*",
     "@ald/hashing": "*",
-    "@ald/evidence": "*"
+    "@ald/evidence": "*",
+    "zod": "^4.4.3"
   }
 }

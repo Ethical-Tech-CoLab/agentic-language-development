@@ -1,37 +1,15 @@
-import { mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-
-import Database from 'better-sqlite3';
-
-import { applyMigrations } from './migrations.js';
-
-export interface EvidenceDatabase {
-  database: Database.Database;
-  path: string;
-  close(): void;
-}
-
-export function openEvidenceDatabase(databasePath: string): EvidenceDatabase {
-  const resolvedPath =
-    databasePath === ':memory:' ? databasePath : resolve(databasePath);
-
-  if (resolvedPath !== ':memory:') {
-    mkdirSync(dirname(resolvedPath), { recursive: true });
-  }
-
-  const database = new Database(resolvedPath);
-  database.pragma('foreign_keys = ON');
-  database.pragma('synchronous = FULL');
-  database.pragma('journal_mode = WAL');
-  applyMigrations(database);
-
-  return {
-    database,
-    path: resolvedPath,
-    close: () => database.close(),
-  };
-}
-
+/**
+ * @ald/evidence — the authoritative local evidence store (LEDGER §3) and the
+ * single Evidence Writer service (SPEC §4.1 item 7, §8.2).
+ *
+ * The only way to append to an event table is `SqliteEvidenceWriter`
+ * (ALD-010 criterion 3): every SQL statement against `ledger_events`,
+ * `channel_events`, `affect_events`, `audit_ledger_entries`, `turn_records`,
+ * `intervention_log`, `checkpoint_manifests`, `anchor_receipts`,
+ * `experiment_records`, `run_metadata`, `run_signers`, and `fork_artifacts`
+ * is private to `writer.ts`.
+ */
+export { openEvidenceDatabase, type EvidenceDatabase } from './database.js';
 export { applyMigrations, migrations } from './migrations.js';
 export {
   canonicalizeJson,
@@ -45,3 +23,30 @@ export {
   validateLedgerEventDraft,
   type LedgerEventType,
 } from './event-types.js';
+export {
+  CheckpointChainError,
+  DuplicateEventError,
+  DuplicateRunError,
+  EvidenceWriterError,
+  ExperimentRecordVersionError,
+  ForkDetectedError,
+  IntegrityBlockedError,
+  InterpretationBindingError,
+  InvalidRequestError,
+  UnknownRunError,
+  type EvidenceErrorCode,
+} from './errors.js';
+export {
+  SqliteEvidenceWriter,
+  type AffectAppendRequest,
+  type ForkArtifactRecord,
+  type SqliteEvidenceWriterOptions,
+} from './writer.js';
+export {
+  buildRunManifest,
+  exportRunBundle,
+  type BundleReader,
+  type ExportBundleOptions,
+  type LearnerContractText,
+  type RunManifestInput,
+} from './export.js';

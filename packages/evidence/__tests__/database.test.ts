@@ -1,10 +1,18 @@
+import { createHash } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { openEvidenceDatabase } from '../src/index.js';
+import { migrations, openEvidenceDatabase } from '../src/index.js';
+
+// The applied schema is checksum-verified (see `applyMigrations`), so the SQL
+// of a released migration may never change. Pinning the digest here turns an
+// accidental edit into a failing test instead of a store that refuses to open.
+const APPLIED_MIGRATION_CHECKSUMS: Record<number, string> = {
+  1: '31241366310597875775715ac638810eccd586dd179f0d350b641bf0716290d9',
+};
 
 const temporaryDirectories: string[] = [];
 
@@ -47,10 +55,13 @@ describe('evidence database migrations', () => {
       'channel_events',
       'checkpoint_manifests',
       'experiment_records',
+      'fork_artifacts',
       'intervention_log',
       'ledger_events',
       'run_metadata',
+      'run_signers',
       'schema_migrations',
+      'turn_records',
     ]);
 
     evidence.close();
@@ -68,6 +79,7 @@ describe('evidence database migrations', () => {
 
     expect(migrations).toEqual([
       { version: 1, name: 'initial-evidence-schema' },
+      { version: 2, name: 'turn-records-signers-and-fork-artifacts' },
     ]);
 
     second.close();
@@ -114,6 +126,54 @@ describe('evidence database migrations', () => {
         .prepare('SELECT deployment_mode FROM run_metadata WHERE run_id = ?')
         .get(run.runId),
     ).toEqual({ deployment_mode: 'prototype' });
+
+    evidence.close();
+  });
+
+  it('never changes the SQL of an already applied migration', () => {
+    for (const migration of migrations) {
+      const expected = APPLIED_MIGRATION_CHECKSUMS[migration.version];
+      if (expected === undefined) {
+        continue;
+      }
+      expect(createHash('sha256').update(migration.sql).digest('hex')).toBe(
+        expected,
+      );
+    }
+  });
+
+  it('rejects updates and deletes from the migration 2 tables', async () => {
+    const evidence = openEvidenceDatabase(await temporaryDatabasePath());
+    evidence.database
+      .prepare(
+        `INSERT INTO fork_artifacts (
+           run_id, stream, sequence, entry_hash, canonical_json, detected_at
+         ) VALUES ('run-1', 'channel', 1, 'sha256:aa', '{}', '1970-01-01T00:00:00.000Z')`,
+      )
+      .run();
+
+    expect(() =>
+      evidence.database
+        .prepare("UPDATE fork_artifacts SET entry_hash = 'sha256:bb'")
+        .run(),
+    ).toThrow('append-only table: fork_artifacts');
+    expect(() =>
+      evidence.database.prepare('DELETE FROM fork_artifacts').run(),
+    ).toThrow('append-only table: fork_artifacts');
+
+    for (const table of ['turn_records', 'run_signers']) {
+      const triggers = evidence.database
+        .prepare(
+          `SELECT name FROM sqlite_master
+            WHERE type = 'trigger' AND tbl_name = ? ORDER BY name`,
+        )
+        .all(table)
+        .map((row) => (row as { name: string }).name);
+      expect(triggers).toEqual([
+        `${table}_reject_delete`,
+        `${table}_reject_update`,
+      ]);
+    }
 
     evidence.close();
   });

@@ -3,9 +3,24 @@
  * domain-separated SHA-256, RFC 8785 canonical JSON, Ed25519 signing, per-run
  * signer registries, and the deterministic seeded PRNG.
  *
- * Hash-chain construction/validation and the file-backed key store are added
- * by ALD-008 / ALD-009 in `chain.ts` and `keystore.ts`.
+ * Hash-chain construction/validation (ALD-008) lives in `chain.ts`; the
+ * file-backed per-run key store (ALD-009) lives in `keystore.ts`.
  */
+export {
+  buildSignedEvent,
+  formatChainViolation,
+  isSignedStream,
+  nextSequence,
+  parseJsonlEvents,
+  previousHashFor,
+  validateChain,
+  type ChainValidationOptions,
+  type ChainValidationResult,
+  type ChainViolation,
+  type ChainViolationCode,
+  type JsonlParseOptions,
+  type SignedEventStream,
+} from './chain.js';
 export {
   canonicalJson,
   parseCanonicalJson,
@@ -36,5 +51,6 @@ export {
   verifyHashSignature,
   type Ed25519KeyPair,
 } from './ed25519.js';
+export { FileKeyStore, SIGNER_SEED_FILE } from './keystore.js';
 export { SeededPrng, deriveSeedHex } from './prng.js';
 export { InMemorySignerRegistry } from './signers.js';

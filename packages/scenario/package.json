@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ald/types": "*",
-    "@ald/hashing": "*"
+    "@ald/hashing": "*",
+    "zod": "^4.4.3"
   }
 }

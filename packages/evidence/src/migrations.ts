@@ -20,7 +20,11 @@ const protectedTables = [
   'experiment_records',
 ] as const;
 
-function appendOnlyTriggers(table: (typeof protectedTables)[number]): string {
+/**
+ * Append-only guard triggers (LEDGER §3). The emitted SQL is part of the
+ * checksum of every migration that uses it, so its text MUST NOT change.
+ */
+function appendOnlyTriggers(table: string): string {
   return `
     CREATE TRIGGER ${table}_reject_update
     BEFORE UPDATE ON ${table}
@@ -188,11 +192,71 @@ const initialSchema = `
     ON experiment_records(run_id, record_version DESC);
 `;
 
+/**
+ * Tables added by migration 2. `turn_records` is the implementation-defined
+ * `turns` stream (SPEC §14.3 replay tuples), `run_signers` binds a run to the
+ * public halves of its per-run keys (LEDGER §11: public keys only, never
+ * seeds), and `fork_artifacts` preserves both sides of a detected fork
+ * (LEDGER §15).
+ */
+const turnRecordAndForkSchema = `
+  CREATE TABLE turn_records (
+    run_id TEXT NOT NULL,
+    sequence INTEGER NOT NULL CHECK (sequence > 0),
+    turn INTEGER NOT NULL CHECK (turn >= 0),
+    phase TEXT NOT NULL CHECK (phase IN ('running', 'evaluating')),
+    previous_entry_hash TEXT NOT NULL,
+    entry_hash TEXT NOT NULL UNIQUE,
+    writer_key_id TEXT NOT NULL,
+    writer_signature TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    canonical_json TEXT NOT NULL,
+    PRIMARY KEY (run_id, sequence),
+    FOREIGN KEY (run_id) REFERENCES run_metadata(run_id)
+  ) STRICT;
+
+  CREATE TABLE run_signers (
+    run_id TEXT NOT NULL,
+    domain TEXT NOT NULL CHECK (domain IN (
+      'baby-a-ledger', 'baby-b-ledger', 'channel', 'affect', 'audit', 'witness'
+    )),
+    key_id TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    PRIMARY KEY (run_id, domain),
+    FOREIGN KEY (run_id) REFERENCES run_metadata(run_id)
+  ) STRICT;
+
+  CREATE TABLE fork_artifacts (
+    run_id TEXT NOT NULL,
+    stream TEXT NOT NULL,
+    sequence INTEGER NOT NULL CHECK (sequence > 0),
+    entry_hash TEXT NOT NULL,
+    canonical_json TEXT NOT NULL,
+    detected_at TEXT NOT NULL,
+    PRIMARY KEY (run_id, stream, sequence, entry_hash)
+  ) STRICT;
+
+  ${['turn_records', 'run_signers', 'fork_artifacts']
+    .map(appendOnlyTriggers)
+    .join('\n')}
+
+  CREATE INDEX turn_records_run_turn_idx
+    ON turn_records(run_id, turn);
+  CREATE INDEX fork_artifacts_run_idx
+    ON fork_artifacts(run_id, stream, sequence);
+`;
+
 export const migrations: readonly Migration[] = [
   {
     version: 1,
     name: 'initial-evidence-schema',
     sql: initialSchema,
+  },
+  {
+    version: 2,
+    name: 'turn-records-signers-and-fork-artifacts',
+    sql: turnRecordAndForkSchema,
   },
 ];
 
