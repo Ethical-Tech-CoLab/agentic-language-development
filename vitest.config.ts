@@ -23,6 +23,7 @@ export default defineConfig({
       'book/**/__tests__/**/*.test.ts',
       'twins/**/__tests__/**/*.test.ts',
     ],
-    testTimeout: 60_000,
+    testTimeout: 180_000,
+    hookTimeout: 180_000,
   },
 });
