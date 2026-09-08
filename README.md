@@ -130,9 +130,10 @@ qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
 The next critical-path work is an active side-channel harness and Mode R
-container/network isolation, exercising frozen-LLM with real open weights, enforcing
-retention, anchoring on Base Sepolia with a funded wallet, and binding an external
-pre-registration.
+container/network isolation, exercising frozen-LLM with real open weights,
+anchoring on Base Sepolia with a funded wallet, and binding an external
+pre-registration. The retention job is implemented and covered against real exported
+bundles and evidence-store rows.
 
 No experiment results are claimed.
 

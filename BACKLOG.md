@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 162 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: the active side-channel harness, retention enforcement, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
+- **Status:** Implementation active, with 165 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: the active side-channel harness, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -828,9 +828,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§14.6 Retention Policy](SPECIFICATION.md#146-retention-policy)
 - **Scope:** Purge bulk payload files only for non-public development/qualification runs that are not Base-mainnet anchored and exceed `prototypeRetentionDays`; preserve append-only database events, audit/intervention logs, manifests, receipts, and run index metadata.
 - **Acceptance criteria:**
-  - [ ] Only eligible non-public, non-mainnet run-bundle payloads are purged; public or mainnet-anchored bundles are retained indefinitely.
-  - [ ] `run_metadata`, ledger/channel/audit/intervention rows, checkpoint manifests, and anchor receipts remain queryable after purge.
-  - [ ] The job's actions are themselves audit-logged (`ALD-059`).
+  - [x] Only eligible non-public, non-mainnet run-bundle payloads are purged; public or mainnet-anchored bundles are retained indefinitely.
+  - [x] `run_metadata`, ledger/channel/audit/intervention rows, checkpoint manifests, and anchor receipts remain queryable after purge.
+  - [x] The job's actions are themselves audit-logged (`ALD-059`).
 
 ### EPIC-12 — Dashboard / Research Console and UX
 
