@@ -35,10 +35,12 @@ import type {
   TurnRecord,
 } from './schemas-integrity.js';
 import type {
+  AffectDisplayId,
   AffectEvent,
   AffectStateMeasurement,
   AgentActionProposal,
   ChannelEvent,
+  CurriculumStage,
   DeliveredChannelArtifact,
   ExperimentRecord,
   LearnerTrackId,
@@ -449,6 +451,117 @@ export interface ScenarioEngine {
 }
 
 // ---------------------------------------------------------------------------
+// Isolation, provenance, affect windows, causal probes (SPEC §5.2, §6.5,
+// §9.3, §15.2) — shared by @ald/isolation, @ald/gateway, @ald/learners,
+// @ald/interventions, @ald/leakage, and the Nursery runtime.
+// ---------------------------------------------------------------------------
+
+/** Where a learner adapter executes relative to the Nursery runtime (SPEC §5.3). */
+export type IsolationBoundary =
+  | 'in-process'
+  | 'separate-process'
+  | 'separate-container';
+
+/**
+ * What an adapter can prove about its own isolation. `processId` and
+ * `containerId` are what ALD-055's tests compare: two Babies in Mode R MUST
+ * report distinct values.
+ */
+export interface IsolationDescriptor {
+  boundary: IsolationBoundary;
+  processId?: number;
+  containerId?: string;
+  /** Free-form operator label (host name, compose service); never Baby-visible. */
+  hostLabel?: string;
+}
+
+export type LearnerComponentKind =
+  | 'sensory-encoder'
+  | 'world-model'
+  | 'communication-policy'
+  | 'value-function'
+  | 'language-model'
+  | 'memory'
+  | 'other';
+
+export type LearnerComponentProvenance =
+  | 'random-init'
+  | 'frozen-open-weight'
+  | 'frozen-visual-features'
+  | 'derived-run-policy'
+  | 'none';
+
+export interface LearnerComponentRecord {
+  name: string;
+  kind: LearnerComponentKind;
+  provenance: LearnerComponentProvenance;
+  /** Hash of the component's parameters or weights at `init` time. */
+  hash: Sha256Hash;
+  /** SPEC §6.5 item 3: text-aligned features reclassify the run. */
+  textAligned: boolean;
+}
+
+/**
+ * Self-declared provenance an adapter exposes for the semantic-leakage
+ * battery (SPEC §6.5, ALD-057) and the track claim boundaries (§6.1). The
+ * battery treats these as claims to be checked, never as proof.
+ */
+export interface LearnerProvenance {
+  track: LearnerTrackId;
+  /** The exact `modelRef` the adapter was built for (SPEC §11.1). */
+  modelRef: string;
+  textTokenizerPresent: boolean;
+  textAlignedEncoderPresent: boolean;
+  /** SPEC §10.4: `none` for frozen/no-learning tracks. */
+  weightUpdatePath: 'none' | 'private-buffers-only' | 'centralized';
+  components: LearnerComponentRecord[];
+}
+
+/** One open affect window (SPEC §9.3 rule 2): fixed schedule, Gateway-defined. */
+export interface AffectWindow {
+  windowId: string;
+  turn: number;
+  /** The Baby that may submit exactly one display in this window. */
+  sender: BabyRole;
+  recipient: BabyRole;
+  opensAfter: 'outcome';
+}
+
+export type AffectSubmitResult =
+  | {
+      kind: 'accepted';
+      affectEvent: AffectEvent;
+      /** What the recipient sees (after any `permuted`/`opaque` mapping). */
+      deliveredDisplayId: AffectDisplayId;
+    }
+  | {
+      kind: 'rejected';
+      channelEvent: ChannelEvent;
+      reasonCode: string;
+      rejectedPayloadHash: Sha256Hash;
+      consecutiveRejections: number;
+      pauseRequested: boolean;
+    };
+
+/**
+ * A live §15.2 causal probe applied to one delivery: the receiver gets a
+ * perturbed artifact while the channel event keeps the sender's validated
+ * `publicArtifactHash`, so `deliveryReceipt.deliveredArtifactHash` differs
+ * and the probe is visible to the verifier. `scrambling` is offline only and
+ * is deliberately not representable here.
+ */
+export interface ArtifactProbe {
+  probeId: string;
+  kind: 'ablation' | 'substitution';
+  /** Zero-based mark position within the delivered artifact. */
+  position: number;
+  /** `substitution` only: the in-inventory mark to deliver instead. */
+  substitute?: string;
+  /** Ledger hypothesis the probe tests, fixed before the outcome is seen. */
+  hypothesisRef: string;
+}
+
+// ---------------------------------------------------------------------------
 // Learner Adapter (SPEC §6.2, §6.3)
 // ---------------------------------------------------------------------------
 
@@ -501,6 +614,8 @@ export interface TurnBudget {
   availableActions: AgentActionProposal['kind'][];
   /** Opaque object references the receiver may select (receiver role only). */
   candidateRefs?: string[];
+  /** SPEC §9.3: set when this call is an open affect window, not a task turn. */
+  window?: AffectWindow;
 }
 
 export interface OutcomeEvent {
@@ -535,12 +650,20 @@ export interface LearnerAdapter {
   onOutcome(outcome: OutcomeEvent): Promise<void>;
   updatePolicy?(batch: UpdateBatch): Promise<PolicyCheckpointRef>;
   measureAffect?(): Promise<AffectStateMeasurement>;
+  /** E22 (SPEC §18 `curriculumMode`): apply a pre-registered stage; reject unknown knobs. */
+  applyCurriculumStage?(stage: CurriculumStage): Promise<void>;
+  /** SPEC §6.5 / ALD-044 / ALD-047: self-declared model and component provenance. */
+  describeProvenance?(): LearnerProvenance;
+  /** SPEC §5.3: where this adapter executes; `in-process` when absent. */
+  readonly isolation?: IsolationDescriptor;
   /** Canonicalizable policy state for policy-checkpoint hashing and derived runs. */
   exportPolicy(): unknown;
 }
 
 export interface LearnerAdapterFactory {
   readonly track: LearnerTrackId;
+  /** SPEC §5.3: `in-process` when absent. Mode R requires a separate boundary. */
+  readonly isolation?: IsolationBoundary;
   create(): LearnerAdapter;
 }
 
@@ -564,6 +687,8 @@ export interface GatewayTurnContext {
   batchArtifacts?: AgentActionProposal['publicArtifact'][];
   /** `shuffled` only: this episode's index within `batchArtifacts`. */
   batchIndex?: number;
+  /** SPEC §15.2: a live causal probe to apply to this delivery (evaluation only). */
+  probe?: ArtifactProbe;
 }
 
 export type GatewaySubmitResult =
@@ -603,6 +728,13 @@ export interface SymbolGateway {
     recipient: BabyRole,
     envelope: LedgerDraftEnvelope,
   ): Promise<LedgerEvent>;
+  /** SPEC §9.3 declared/permuted/opaque: one `submit_affect` proposal per open window. */
+  submitAffect?(window: AffectWindow, proposal: unknown): Promise<AffectSubmitResult>;
+  /** SPEC §9.3 derived: the Gateway maps a private measurement to one display. */
+  recordDerivedAffect?(
+    window: AffectWindow,
+    measurement: AffectStateMeasurement,
+  ): Promise<AffectSubmitResult>;
   consecutiveRejections(): number;
   resetRejectionCounter(): void;
 }

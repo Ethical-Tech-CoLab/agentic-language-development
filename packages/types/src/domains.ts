@@ -63,6 +63,14 @@ export const HASH_DOMAINS = {
   promptBundle: 'dtsf-prompt-bundle-v1',
   /** Implementation: canonical exported policy state → policy checkpoint hash. */
   policyCheckpoint: 'dtsf-policy-checkpoint-v1',
+  /** Implementation: canonical causal-probe descriptor (SPEC §15.2) → probe hash. */
+  causalProbe: 'dtsf-causal-probe-v1',
+  /** Implementation: canonical runtime snapshot (SPEC §14.4) → snapshot digest. */
+  runtimeSnapshot: 'dtsf-runtime-snapshot-v1',
+  /** Implementation: E40 cipher-instance artifact (SPEC §15.4) → artifact hash. */
+  encodingScheme: 'dtsf-encoding-scheme-v1',
+  /** Implementation: E40 per-Baby nonce commitment → commitment hash. */
+  nonceCommitment: 'dtsf-nonce-commitment-v1',
   /** Implementation: seed material for the deterministic PRNG. */
   seed: 'dtsf-seed-v1',
 } as const;
@@ -188,6 +196,34 @@ export const CLAIM_BOUNDARY_STATEMENTS = {
     'does not rule out every conceivable physical or computational side ' +
     'channel (CONCEPT-IDEA.md §10).',
 } as const;
+
+/**
+ * Claim labels that describe Mode R guarantees only (SPEC §5.2, §5.3, §10.3).
+ * ALD-054: a report, export, or console view of a `prototype` run that
+ * carries any of these MUST be blocked with a specific error, never silently
+ * downgraded.
+ */
+export const MODE_R_ONLY_CLAIM_LABELS = [
+  'isolation-verified',
+  'channel-isolation',
+  'side-channel-resistance',
+  'research-grade-isolation',
+  'process-isolation',
+  'network-route-denied',
+] as const;
+
+export type ModeROnlyClaimLabel = (typeof MODE_R_ONLY_CLAIM_LABELS)[number];
+
+/**
+ * SPEC §10.3 scope boundary that MUST be restated verbatim in any Mode R
+ * publication alongside `CLAIM_BOUNDARY_STATEMENTS['research-grade']`.
+ */
+export const SIDE_CHANNEL_SCOPE_STATEMENT =
+  'In scope (claimed): network route absence, timing/size normalization ' +
+  'within the stated envelope, filesystem/process isolation, tool inventory ' +
+  'audit. Explicitly out of scope (not claimed, per CONCEPT-IDEA.md §10): ' +
+  'exotic hardware side channels (cache timing, power analysis), and any ' +
+  'covert channel not enumerated above.';
 
 /** Default fixed-token inventory identifiers `S01`..`S<n>` (SPEC §9.1). */
 export function fixedTokenInventory(size: number): string[] {

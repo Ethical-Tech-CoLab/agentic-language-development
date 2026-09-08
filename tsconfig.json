@@ -44,6 +44,24 @@
       "path": "packages/orchestrator"
     },
     {
+      "path": "packages/isolation"
+    },
+    {
+      "path": "packages/interventions"
+    },
+    {
+      "path": "packages/leakage"
+    },
+    {
+      "path": "packages/redteam"
+    },
+    {
+      "path": "packages/ops"
+    },
+    {
+      "path": "packages/crypto-research"
+    },
+    {
       "path": "twins/packs/baby-a"
     },
     {

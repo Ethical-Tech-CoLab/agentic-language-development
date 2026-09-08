@@ -30,6 +30,14 @@ export const EXPECTED_SCHEMA_EXPORTS = [
   'InterventionEventSchema',
   'AuditLedgerEntrySchema',
   'ExperimentRecordFileSchema',
+  'RegistrationClassSchema',
+  'CurriculumStageSchema',
+  'InterventionPlanSchema',
+  'AffectDisplayIdSchema',
+  'PreRegistrationArtifactSchema',
+  'PreRegistrationBindingSchema',
+  'BundleAttachmentSchema',
+  'BundleAttachmentIndexSchema',
 ] as const;
 
 export type SchemaExportName = (typeof EXPECTED_SCHEMA_EXPORTS)[number];

@@ -1,0 +1,23 @@
+{
+  "name": "@ald/crypto-research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@ald/types": "*",
+    "@ald/hashing": "*",
+    "@ald/analysis": "*",
+    "zod": "^4.4.3"
+  }
+}

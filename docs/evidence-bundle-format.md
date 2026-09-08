@@ -132,6 +132,15 @@ listed in `signers`.
 - `runIdHash` = `sha256(runId || 0x00 || utf8(runId))`.
 - `claimBoundaryStatement` MUST equal the SPEC §5.1 or §5.2 sentence for
   `deploymentMode` verbatim.
+- `preRegistration` (optional, `PreRegistrationBindingSchema`) records how the
+  run was bound under SPEC §15.1: `registrationClass` (`qualification` or
+  `confirmatory`), the `preRegistrationHash` it binds, the external
+  registration URL/id when one exists, the pre-run anchor of that hash when one
+  exists, and a verbatim `label`. A `confirmatory` binding MUST carry both the
+  external registration and a `confirmed` pre-run anchor; a verifier that finds
+  a `confirmatory` binding without them MUST fail the run. A bundle without this
+  field is a run created before ALD-071 completed and is read as
+  `qualification`.
 
 ## 8. Anchor Receipts
 
@@ -149,3 +158,37 @@ The verifier writes `verification-report.json` conforming to
 `VerificationReportSchema` (SPEC §11.10) with `exitCode: 1` on any failure and
 lists every gap, fork, and event after the last anchored checkpoint under
 `gaps`, `forks`, and `unanchoredTailReported`.
+
+## 10. Analysis Attachments
+
+Analysis outputs that are evidence *about* a run but not events *of* the run —
+the SPEC §15.2 intervention-suite results, the §6.5 semantic-leakage battery,
+side-channel and observation red-team audits, carrier/affect leakage
+evaluations, E40 encoding-scheme events, curriculum transitions, drift
+evaluations — live under `analysis/`:
+
+```text
+<bundle-root>/
+  analysis/
+    index.json                     canonical JSON, BundleAttachmentIndexSchema
+    <kind>/<name>.json             canonical JSON attachments
+```
+
+- `analysis/index.json` lists every file under `analysis/` except itself as a
+  `BundleAttachmentSchema` entry: relative `path`, plain `sha256:<hex>` of the
+  file bytes (no domain separator, so any tool reproduces it), `kind`,
+  `analysisVersion`, `producedAt`, and an optional `boundBy`.
+- `boundBy` names a chained evidence entry (`audit`, `intervention`, or `turns`
+  stream) whose content carries the same `sha256`. An attachment produced while
+  the run was live is bound this way and therefore covered by the checkpoint
+  and anchor chain. An attachment without `boundBy` was produced after sealing;
+  it is tamper-evident (its hash is listed) but not chain-bound, and a verifier
+  MUST report it as an *unbound analysis attachment*, never as anchored evidence.
+- A verifier MUST fail the bundle when an entry's `sha256` does not match the
+  file, when a file under `analysis/` is not listed, or when a listed file is
+  missing. It MUST NOT interpret attachment contents; interpretation is the
+  researcher's job (SPEC §15.1: the notebook is authoritative for scientific
+  status).
+- Attachments never contain raw observations, raw rejected payloads, private
+  keys, or Baby-visible text; the same §13.6 privacy rules as every other bundle
+  file apply.

@@ -16,8 +16,13 @@
  */
 import type { LearnerAdapterFactory, LearnerTrackId } from '@ald/types';
 
-import { NotImplementedTrackError } from './errors.js';
+import { createFrozenLlmAdapterFactory, type FrozenLlmAdapterOptions } from './frozen-llm.js';
+import { createHybridAdapterFactory, type HybridAdapterOptions } from './hybrid.js';
 import { createNoLearningAdapterFactory } from './no-learning.js';
+import {
+  createSelfSupervisedAdapterFactory,
+  type SelfSupervisedAdapterOptions,
+} from './self-supervised.js';
 import {
   createTabularReinforceAdapterFactory,
   type TabularReinforceOptions,
@@ -27,7 +32,10 @@ import {
  * Options accepted by the built-in factories. Tracks ignore knobs they do not
  * use, so one option object can configure a whole run's adapter set.
  */
-export type LearnerAdapterOptions = TabularReinforceOptions;
+export type LearnerAdapterOptions = TabularReinforceOptions &
+  FrozenLlmAdapterOptions &
+  SelfSupervisedAdapterOptions &
+  HybridAdapterOptions;
 
 /** BACKLOG item that owns each unimplemented track (SPEC §6.1). */
 export const UNIMPLEMENTED_TRACK_BACKLOG_ITEMS = {
@@ -48,24 +56,9 @@ export const ADAPTER_FACTORIES: Record<
 > = {
   'no-learning': (options = {}) => createNoLearningAdapterFactory(options),
   'scratch-rl': (options = {}) => createTabularReinforceAdapterFactory(options),
-  'frozen-llm': () => {
-    throw new NotImplementedTrackError(
-      'frozen-llm',
-      UNIMPLEMENTED_TRACK_BACKLOG_ITEMS['frozen-llm'],
-    );
-  },
-  'self-supervised': () => {
-    throw new NotImplementedTrackError(
-      'self-supervised',
-      UNIMPLEMENTED_TRACK_BACKLOG_ITEMS['self-supervised'],
-    );
-  },
-  hybrid: () => {
-    throw new NotImplementedTrackError(
-      'hybrid',
-      UNIMPLEMENTED_TRACK_BACKLOG_ITEMS.hybrid,
-    );
-  },
+  'frozen-llm': (options = {}) => createFrozenLlmAdapterFactory(options),
+  'self-supervised': (options = {}) => createSelfSupervisedAdapterFactory(options),
+  hybrid: (options = {}) => createHybridAdapterFactory(options),
 };
 
 /** Build the adapter factory for one track (SPEC §11.1 `babyA.track`). */
@@ -76,6 +69,12 @@ export function createLearnerAdapterFactory(
   return ADAPTER_FACTORIES[track](options);
 }
 
+export { createFrozenLlmAdapterFactory, type FrozenLlmAdapterOptions } from './frozen-llm.js';
+export {
+  createSelfSupervisedAdapterFactory,
+  type SelfSupervisedAdapterOptions,
+} from './self-supervised.js';
+export { createHybridAdapterFactory, type HybridAdapterOptions } from './hybrid.js';
 export {
   NoLearningAdapter,
   createNoLearningAdapterFactory,

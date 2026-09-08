@@ -9,6 +9,10 @@ import type { SchemaExportName } from './schema-manifest.js';
 import {
   AnchorReceiptSchema,
   AuditLedgerEntrySchema,
+  BundleAttachmentIndexSchema,
+  BundleAttachmentSchema,
+  PreRegistrationArtifactSchema,
+  PreRegistrationBindingSchema,
   CheckpointManifestSchema,
   ConsistencyProofSchema,
   ExperimentRecordFileSchema,
@@ -20,8 +24,12 @@ import {
   UnsignedCheckpointManifestSchema,
 } from './schemas-integrity.js';
 import {
+  AffectDisplayIdSchema,
   AffectEventSchema,
   AffectStateMeasurementSchema,
+  CurriculumStageSchema,
+  InterventionPlanSchema,
+  RegistrationClassSchema,
   AgentActionProposalSchema,
   AnchorReceiptReferenceSchema,
   ChannelEventSchema,
@@ -62,4 +70,12 @@ export const schemaRegistry = {
   InterventionEventSchema,
   AuditLedgerEntrySchema,
   ExperimentRecordFileSchema,
+  RegistrationClassSchema,
+  CurriculumStageSchema,
+  InterventionPlanSchema,
+  AffectDisplayIdSchema,
+  PreRegistrationArtifactSchema,
+  PreRegistrationBindingSchema,
+  BundleAttachmentSchema,
+  BundleAttachmentIndexSchema,
 } satisfies Record<SchemaExportName, unknown>;

@@ -94,6 +94,49 @@ export const StreamDeclarationSchema = z.object({
 });
 
 /** `run-manifest.json` at the root of an exported evidence bundle. */
+/**
+ * The canonical pre-registration artifact (SPEC §15.1): hashed with
+ * `HASH_DOMAINS.preRegistration` into `RunConfig.preRegistrationHash`.
+ * `parameters` is the run configuration minus `runId`, `randomSeed`, and
+ * `preRegistrationHash` itself; `seeds` lists the pre-registered seed labels.
+ */
+export const PreRegistrationArtifactSchema = z.object({
+  version: z.literal(1),
+  experimentId: z.string().regex(/^E\d{2}$/u),
+  protocolGitCommit: nonEmptyString,
+  registrationClass: z.enum(['qualification', 'confirmatory']),
+  hypothesis: nonEmptyString,
+  parameters: z.record(z.string(), z.unknown()),
+  seeds: z.array(nonEmptyString).min(1),
+  analysisPlan: nonEmptyString,
+});
+
+/**
+ * How a run's pre-registration was bound (SPEC §15.1; ALD-071). Recorded in
+ * the run manifest. A `confirmatory` binding MUST carry the external
+ * registration and a confirmed pre-run anchor of `preRegistrationHash`; a
+ * `qualification` binding is labeled non-confirmatory.
+ */
+export const PreRegistrationBindingSchema = z.object({
+  registrationClass: z.enum(['qualification', 'confirmatory']),
+  preRegistrationHash: strictHash,
+  externalRegistrationUrl: z.string().url().optional(),
+  externalRegistrationId: nonEmptyString.optional(),
+  registeredAt: isoDateTime.optional(),
+  preRunAnchor: z
+    .object({
+      network: z.enum(['base-sepolia', 'base-mainnet']),
+      chainId: positiveInteger,
+      transactionHash: evmHash,
+      inputData: z.string().regex(/^0x[a-f0-9]*$/iu),
+      blockNumber: nonNegativeInteger.nullable(),
+      status: z.enum(['submitted', 'confirmed', 'failed']),
+    })
+    .optional(),
+  /** Verbatim non-confirmatory label for qualification bindings. */
+  label: nonEmptyString,
+});
+
 export const RunManifestSchema = z.object({
   version: z.literal(1),
   runId: nonEmptyString,
@@ -116,6 +159,8 @@ export const RunManifestSchema = z.object({
   }),
   signers: z.array(SignerPublicKeyRecordSchema).min(1),
   streams: z.array(StreamDeclarationSchema).min(3),
+  /** SPEC §15.1 binding; absent on runs created before ALD-071 completed. */
+  preRegistration: PreRegistrationBindingSchema.optional(),
 });
 
 /** Full anchor receipt persisted in `anchor_receipts` and `anchors/`. */
@@ -262,6 +307,49 @@ export const AuditLedgerEntrySchema = UnsignedAuditLedgerEntrySchema.extend({
   writerSignature: ed25519Signature,
 });
 
+/**
+ * One analysis artifact stored under `analysis/` in a bundle
+ * (docs/evidence-bundle-format.md §10). `sha256` is the plain SHA-256 of the
+ * file bytes (`sha256:<hex>`, no domain — the file is a public artifact a
+ * third party hashes with any tool). `boundBy` names the chained evidence
+ * entry that carries the same hash when the artifact was produced during the
+ * run; an unbound attachment is post-run analysis and is reported as such.
+ */
+export const BundleAttachmentSchema = z.object({
+  path: z
+    .string()
+    .regex(/^analysis\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.json$/u),
+  sha256: strictHash,
+  kind: z.enum([
+    'intervention-suite',
+    'semantic-leakage-battery',
+    'side-channel-audit',
+    'red-team-observation',
+    'carrier-leakage',
+    'affect-leakage',
+    'encoding-events',
+    'curriculum-transitions',
+    'drift-evaluation',
+    'replay-check',
+    'other',
+  ]),
+  analysisVersion: nonEmptyString,
+  producedAt: isoDateTime,
+  boundBy: z
+    .object({
+      stream: z.enum(['audit', 'intervention', 'turns']),
+      entryHash: strictHash,
+    })
+    .optional(),
+});
+
+/** `analysis/index.json`: every attachment the bundle carries. */
+export const BundleAttachmentIndexSchema = z.object({
+  version: z.literal(1),
+  runId: nonEmptyString,
+  attachments: z.array(BundleAttachmentSchema),
+});
+
 /** `experiment-record.json`: current record plus full append-only history. */
 export const ExperimentRecordFileSchema = z.object({
   current: z.record(z.string(), z.unknown()),
@@ -292,3 +380,7 @@ export type UnsignedAuditLedgerEntry = z.infer<
 >;
 export type AuditLedgerEntry = z.infer<typeof AuditLedgerEntrySchema>;
 export type ExperimentRecordFile = z.infer<typeof ExperimentRecordFileSchema>;
+export type PreRegistrationArtifact = z.infer<typeof PreRegistrationArtifactSchema>;
+export type PreRegistrationBinding = z.infer<typeof PreRegistrationBindingSchema>;
+export type BundleAttachment = z.infer<typeof BundleAttachmentSchema>;
+export type BundleAttachmentIndex = z.infer<typeof BundleAttachmentIndexSchema>;

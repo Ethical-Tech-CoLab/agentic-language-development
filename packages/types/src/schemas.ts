@@ -59,6 +59,73 @@ export const AffectModeSchema = z.enum([
   'emergent',
 ]);
 
+/** SPEC §18 `registrationClass`-adjacent: how a run is labeled for §15.1 binding. */
+export const RegistrationClassSchema = z.enum(['qualification', 'confirmatory']);
+
+/**
+ * One pre-registered developmental stage (EXPERIMENT-NOTEBOOK.md E22,
+ * SPEC §18 `curriculumMode: fixed-schedule`). Stages are applied by the
+ * runtime at `startTurn`; adapters that cannot honour a knob must reject the
+ * stage, never ignore it silently.
+ */
+export const CurriculumStageSchema = z
+  .object({
+    stageIndex: nonNegativeInteger,
+    startTurn: nonNegativeInteger,
+    learnerOptions: z
+      .object({
+        learningRate: z.number().positive().optional(),
+        temperature: z.number().positive().optional(),
+        explorationRate: z.number().min(0).max(1).optional(),
+        memoryCapacity: positiveInteger.optional(),
+      })
+      .strict()
+      .optional(),
+    /** Staged carrier bandwidth (E22); never above the run's own ceiling. */
+    maxSymbolsPerMessage: z.number().int().min(1).max(16).optional(),
+    /** A consolidation interval: no policy updates while the stage is active. */
+    consolidation: z.boolean().optional(),
+  })
+  .strict();
+
+/**
+ * Pre-registered intervention configuration (SPEC §15.2, §18; BACKLOG
+ * ALD-072). Every toggle here is part of the hashed RunConfig, so turning an
+ * intervention on or off is a pre-registered configuration change, never a
+ * code change.
+ */
+export const InterventionPlanSchema = z
+  .object({
+    version: z.literal(1),
+    /** §15.2 mandatory suite, run during `evaluating`. */
+    evaluationSuite: z
+      .object({
+        ablation: z.boolean(),
+        substitution: z.boolean(),
+        /** Offline analysis only (§15.2); never applied to a live delivery. */
+        scramblingControl: z.boolean(),
+        /** Fraction of evaluation turns that carry a live probe. */
+        probeShare: z.number().min(0).max(1),
+      })
+      .strict()
+      .optional(),
+    /** E14: one bounded extra turn after a failed episode, same carrier capacity. */
+    repair: z
+      .object({ enabled: z.boolean(), maxExtraTurns: z.literal(1) })
+      .strict()
+      .optional(),
+    /** E15: type codes held out of training and evaluated separately. */
+    heldOutTypeCodes: z.array(nonNegativeInteger).optional(),
+    /** E22: fixed developmental schedule. */
+    curriculum: z
+      .object({ stages: z.array(CurriculumStageSchema).min(1) })
+      .strict()
+      .optional(),
+    /** E31: turns between frozen drift evaluations inside one run. */
+    driftEvaluationInterval: positiveInteger.optional(),
+  })
+  .strict();
+
 const learnerConfigSchema = z.object({
   track: LearnerTrackIdSchema,
   modelRef: nonEmptyString,
@@ -115,6 +182,14 @@ export const RunConfigSchema = z
     preRegistrationHash: hashString,
     randomSeed: nonEmptyString,
     experimentId: z.string().regex(/^E\d{2}$/u),
+    /** SPEC §15.1: absent means `qualification` (non-confirmatory). */
+    registrationClass: RegistrationClassSchema.optional(),
+    /** SPEC §15.2 / §18: pre-registered interventions (ALD-072). */
+    interventionPlan: InterventionPlanSchema.optional(),
+    /** SPEC §9.2: hash of the frozen unfamiliar-glyph bundle (`fixed-glyph` only). */
+    glyphBundleHash: hashString.optional(),
+    /** SPEC §9.3 `derived`: name of the fixed pre-registered measurement→display mapping. */
+    affectDerivedMapping: nonEmptyString.optional(),
   })
   .superRefine((config, context) => {
     const derivedFields = [
@@ -224,7 +299,7 @@ export const ToneProposalSchema = z.object({
     .max(8),
 });
 
-const affectDisplayIdSchema = z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']);
+export const AffectDisplayIdSchema = z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']);
 
 /** Tool names a Baby may call (SPEC §6.3), in declaration order. */
 export const AGENT_ACTION_KINDS = [
@@ -282,7 +357,7 @@ export const AgentActionProposalSchema = z.discriminatedUnion('kind', [
   }),
   z.object({
     kind: z.literal('submit_affect'),
-    publicArtifact: z.object({ displayId: affectDisplayIdSchema }),
+    publicArtifact: z.object({ displayId: AffectDisplayIdSchema }),
   }),
 ]);
 
@@ -424,7 +499,7 @@ export const AffectEventSchema = z.object({
   turn: nonNegativeInteger,
   windowId: nonEmptyString,
   sender: z.enum(['baby-a', 'baby-b']),
-  displayId: z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']),
+  displayId: AffectDisplayIdSchema,
   affectMode: z.enum(['declared', 'permuted', 'opaque', 'derived']),
   deliveredAt: isoDateTime,
   previousEntryHash: hashString,
@@ -506,6 +581,10 @@ export const VerificationReportSchema = z.object({
 });
 
 export type LearnerTrackId = z.infer<typeof LearnerTrackIdSchema>;
+export type RegistrationClass = z.infer<typeof RegistrationClassSchema>;
+export type CurriculumStage = z.infer<typeof CurriculumStageSchema>;
+export type InterventionPlan = z.infer<typeof InterventionPlanSchema>;
+export type AffectDisplayId = z.infer<typeof AffectDisplayIdSchema>;
 export type RunConfig = z.infer<typeof RunConfigSchema>;
 export type Observation = z.infer<typeof ObservationSchema>;
 export type AgentActionProposal = z.infer<typeof AgentActionProposalSchema>;
