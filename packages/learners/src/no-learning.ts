@@ -33,10 +33,21 @@ import {
 } from '@ald/types';
 import { SeededPrng, domainHash, hashCanonical } from '@ald/hashing';
 
+import {
+  carrierProposal,
+  createCarrierSupport,
+  markKey,
+  messageFields,
+  requireCarrierAction,
+  subjectIdFor,
+  termFields,
+  type CarrierAdapterSupport,
+  type CarrierSupportOptions,
+  type DeliveredMark,
+} from './carrier-support.js';
 import { BlindingNonceSource, buildNoncedDraft } from './drafts.js';
 import { LearnerConfigurationError, LearnerStateError } from './errors.js';
 import {
-  extractSymbols,
   parseObservationPayload,
   requireAction,
   resolveGameShape,
@@ -46,7 +57,7 @@ import {
   type ResolvedGameShape,
 } from './game.js';
 
-export type NoLearningAdapterOptions = GameShapeOptions;
+export type NoLearningAdapterOptions = GameShapeOptions & CarrierSupportOptions;
 
 /** Shape of `NoLearningAdapter.exportPolicy()`. Never contains the raw seed. */
 export interface ExportedUniformRandomPolicy {
@@ -57,13 +68,27 @@ export interface ExportedUniformRandomPolicy {
   messageLength: number;
   attributeCount: number;
   valuesPerAttribute: number;
+  /**
+   * SPEC §9.2 carrier fields, present only for an alternate carrier
+   * (ALD-031). They are omitted on the default `fixed-token` carrier so this
+   * control's checkpoint stays byte-identical to the pre-ALD-031 export — the
+   * constancy of this policy across a run is the control's meaning, and a
+   * field appearing in it would change every recorded policy hash of every
+   * existing E00-E03 baseline for no behavioural reason.
+   */
+  carrier?: string;
+  /** Number of declared or invented forms this Baby chooses between. */
+  formCount?: number;
+  /** Hash of the whole form inventory (SPEC §14.3 replay). */
+  formInventoryHash?: string;
 }
 
 interface AdapterState {
   context: LearnerInitContext;
   ledger: PrivateLedgerClient;
   shape: ResolvedGameShape;
-  symbols: string[];
+  /** SPEC §9.1/§9.2: how a form index becomes a public artifact (ALD-031). */
+  support: CarrierAdapterSupport;
   symbolStream: SeededPrng;
   candidateStream: SeededPrng;
   nonces: BlindingNonceSource;
@@ -80,7 +105,7 @@ export class NoLearningAdapter implements LearnerAdapter {
    * `ledgerLagTurns: 0` (SPEC §8.2) a message belongs to the turn that
    * delivered it, so it is never carried into a later turn that had none.
    */
-  private lastReceived: { turn: number; symbols: string[] } | undefined;
+  private lastReceived: { turn: number; marks: DeliveredMark[] } | undefined;
   /**
    * Terms this Baby has already recorded a first use for (CONCEPT-IDEA.md
    * §11.2 rule 1).
@@ -124,7 +149,7 @@ export class NoLearningAdapter implements LearnerAdapter {
       context,
       ledger: context.ledger,
       shape,
-      symbols: [...context.symbolInventory],
+      support: createCarrierSupport(context, shape, this.options),
       symbolStream: prng.derive('no-learning/symbol'),
       candidateStream: prng.derive('no-learning/candidate'),
       nonces: new BlindingNonceSource({
@@ -165,7 +190,8 @@ export class NoLearningAdapter implements LearnerAdapter {
     state: AdapterState,
     turnBudget: TurnBudget,
   ): Promise<TurnProposalEnvelope> {
-    requireAction(turnBudget, 'emit_symbols');
+    const support = state.support;
+    requireCarrierAction(turnBudget, support.emitKind);
     const observation = this.requireObservation('sender');
     if (observation.targetIndex === null) {
       throw new LearnerStateError(
@@ -174,29 +200,36 @@ export class NoLearningAdapter implements LearnerAdapter {
     }
     const targetTypeCode = observation.typeCodes[observation.targetIndex] as number;
 
-    const symbols = Array.from({ length: state.shape.messageLength }, () =>
-      state.symbols[state.symbolStream.nextInt(state.symbols.length)] as string,
+    // One uniform draw per mark over the form inventory. On `fixed-token`
+    // `formCount` is the symbol-inventory size and `marksPerMessage` is
+    // `messageLength`, so the draw sequence — and therefore every recorded
+    // symbol of every existing baseline run — is exactly what it was before
+    // ALD-031 generalized the carrier (SPEC §9.2).
+    const indices = Array.from({ length: support.marksPerMessage }, () =>
+      state.symbolStream.nextInt(support.formCount),
     );
-    const proposal = {
-      kind: 'emit_symbols' as const,
-      publicArtifact: { symbols },
-    };
+    const marks = indices.map((index) => ({
+      formIndex: index,
+      formId: support.formId(index),
+      markHash: support.formMarkHash(index),
+    }));
+    const proposal = carrierProposal(support, indices);
 
     await this.recordFirstUse(
       state,
       turnBudget.turn,
-      symbols,
+      marks,
       'term.first_emitted',
       this.emitted,
     );
 
     const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
-      subjectId: `symbol:${symbols[0] as string}`,
+      subjectId: subjectIdFor(support, marks[0] as DeliveredMark),
       turn: turnBudget.turn,
       content: {
         artifactRef: `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`,
-        symbols,
+        ...messageFields(support, marks),
         targetTypeCode,
         policy: 'uniform-random',
       },
@@ -227,8 +260,8 @@ export class NoLearningAdapter implements LearnerAdapter {
       turn: turnBudget.turn,
       content: {
         artifactRef: `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, proposal)}`,
-        // §9.6 `disabled`: an empty list when nothing was delivered.
-        symbols: [...this.receivedSymbols(turnBudget.turn)],
+        // §9.6 `disabled`: an empty message when nothing was delivered.
+        ...messageFields(state.support, this.receivedMarks(turnBudget.turn)),
         selection: objectRef,
         policy: 'uniform-random',
       },
@@ -241,13 +274,14 @@ export class NoLearningAdapter implements LearnerAdapter {
     delivery: DeliveredChannelArtifact,
   ): Promise<LedgerDraftEnvelope> {
     const state = this.requireState();
-    const symbols = extractSymbols(delivery);
-    this.lastReceived = { turn: delivery.turn, symbols };
+    const delivered = state.support.parseDelivery(delivery.publicArtifact);
+    const marks = delivered.marks;
+    this.lastReceived = { turn: delivery.turn, marks };
 
     await this.recordFirstUse(
       state,
       delivery.turn,
-      symbols,
+      marks,
       'term.first_received',
       this.received,
     );
@@ -255,11 +289,11 @@ export class NoLearningAdapter implements LearnerAdapter {
     const uniform = 1 / state.shape.typeCount;
     const draft = buildNoncedDraft(state.nonces, {
       eventType: 'interpretation.recorded',
-      subjectId: `symbol:${symbols[0] as string}`,
+      subjectId: subjectIdFor(state.support, marks[0] as DeliveredMark),
       turn: delivery.turn,
       content: {
         artifactRef: delivery.channelEventHash,
-        symbols,
+        ...messageFields(state.support, marks),
         inferredTypeDistribution: roundAll(
           new Array<number>(state.shape.typeCount).fill(uniform),
           6,
@@ -287,14 +321,31 @@ export class NoLearningAdapter implements LearnerAdapter {
 
   exportPolicy(): ExportedUniformRandomPolicy {
     const state = this.requireState();
+    const support = state.support;
     return {
       kind: 'uniform-random',
       seedHash: state.seedHash,
-      symbolInventorySize: state.symbols.length,
-      messageLength: state.shape.messageLength,
+      symbolInventorySize: support.formCount,
+      messageLength: support.marksPerMessage,
       attributeCount: state.shape.attributeCount,
       valuesPerAttribute: state.shape.valuesPerAttribute,
+      ...(support.carrier === 'fixed-token'
+        ? {}
+        : {
+            carrier: support.carrier,
+            formCount: support.formCount,
+            formInventoryHash: support.formInventoryHash,
+          }),
     };
+  }
+
+  /**
+   * SPEC §9.2/§14.3: the hash of this Baby's declared or invented form
+   * inventory. Researcher-facing; the runtime records it in the evidence
+   * bundle so a replay can be checked against the forms that actually ran.
+   */
+  get carrierFormInventoryHash(): string {
+    return this.requireState().support.formInventoryHash;
   }
 
   /**
@@ -305,30 +356,31 @@ export class NoLearningAdapter implements LearnerAdapter {
   private async recordFirstUse(
     state: AdapterState,
     turn: number,
-    symbols: readonly string[],
+    marks: readonly DeliveredMark[],
     eventType: 'term.first_emitted' | 'term.first_received',
     seen: Set<string>,
   ): Promise<void> {
-    for (const symbol of symbols) {
-      if (seen.has(symbol)) {
+    for (const mark of marks) {
+      const key = markKey(state.support, mark);
+      if (seen.has(key)) {
         continue;
       }
       const draft: LedgerEventDraft = buildNoncedDraft(state.nonces, {
         eventType,
-        subjectId: `symbol:${symbol}`,
+        subjectId: subjectIdFor(state.support, mark),
         turn,
-        content: { termRef: `symbol:${symbol}`, policy: 'uniform-random' },
+        content: { ...termFields(state.support, mark), policy: 'uniform-random' },
       });
       await state.ledger.append(draft);
-      seen.add(symbol);
+      seen.add(key);
     }
   }
 
-  /** The symbols delivered on `turn`; empty when nothing was (§9.6). */
-  private receivedSymbols(turn: number): readonly string[] {
+  /** The marks delivered on `turn`; empty when nothing was (§9.6). */
+  private receivedMarks(turn: number): readonly DeliveredMark[] {
     const received = this.lastReceived;
     return received !== undefined && received.turn === turn
-      ? received.symbols
+      ? received.marks
       : [];
   }
 

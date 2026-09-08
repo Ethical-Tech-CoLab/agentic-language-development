@@ -276,28 +276,36 @@ export const ObservationSchema = z.object({
   scenarioRef: nonEmptyString,
 });
 
-export const StrokeSchema = z.object({
-  startX: z.number().int().min(0).max(15),
-  startY: z.number().int().min(0).max(15),
-  endX: z.number().int().min(0).max(15),
-  endY: z.number().int().min(0).max(15),
-  width: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-});
+export const StrokeSchema = z
+  .object({
+    startX: z.number().int().min(0).max(15),
+    startY: z.number().int().min(0).max(15),
+    endX: z.number().int().min(0).max(15),
+    endY: z.number().int().min(0).max(15),
+    width: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  })
+  .strict();
 
-export const BitmapProposalSchema = z.object({
-  bits: z.array(z.union([z.literal(0), z.literal(1)])).length(256),
-});
+export const BitmapProposalSchema = z
+  .object({
+    bits: z.array(z.union([z.literal(0), z.literal(1)])).length(256),
+  })
+  .strict();
 
-export const ToneProposalSchema = z.object({
-  tones: z
-    .array(
-      z.object({
-        pitchBin: z.number().int().min(0).max(7),
-        durationBin: z.number().int().min(1).max(4),
-      }),
-    )
-    .max(8),
-});
+export const ToneProposalSchema = z
+  .object({
+    tones: z
+      .array(
+        z
+          .object({
+            pitchBin: z.number().int().min(0).max(7),
+            durationBin: z.number().int().min(1).max(4),
+          })
+          .strict(),
+      )
+      .max(8),
+  })
+  .strict();
 
 export const AffectDisplayIdSchema = z.enum(['A1', 'A2', 'A3', 'A4', 'A5', 'A6']);
 
@@ -321,44 +329,60 @@ export type AgentActionKind = (typeof AGENT_ACTION_KINDS)[number];
  * `publicArtifact` for consumers.
  */
 export const AgentActionProposalSchema = z.discriminatedUnion('kind', [
-  z.object({
-    kind: z.literal('emit_symbols'),
-    publicArtifact: z.object({
-      symbols: z.array(nonEmptyString).min(1).max(16),
-    }),
-  }),
-  z.object({
-    kind: z.literal('emit_glyphs'),
-    publicArtifact: z.object({
-      glyphs: z.array(nonEmptyString).min(1).max(16),
-    }),
-  }),
-  z.object({
-    kind: z.literal('emit_bitmap'),
-    publicArtifact: z.object({ bitmap: BitmapProposalSchema }),
-  }),
-  z.object({
-    kind: z.literal('emit_canvas'),
-    publicArtifact: z.object({
-      strokes: z.array(StrokeSchema).min(1).max(64),
-    }),
-  }),
-  z.object({
-    kind: z.literal('emit_tones'),
-    publicArtifact: z.object({ tones: ToneProposalSchema }),
-  }),
-  z.object({
-    kind: z.literal('select_object'),
-    publicArtifact: z.object({ objectRef: nonEmptyString }),
-  }),
-  z.object({
-    kind: z.literal('perform_action'),
-    publicArtifact: z.object({ actionRef: nonEmptyString }),
-  }),
-  z.object({
-    kind: z.literal('submit_affect'),
-    publicArtifact: z.object({ displayId: AffectDisplayIdSchema }),
-  }),
+  z
+    .object({
+      kind: z.literal('emit_symbols'),
+      publicArtifact: z
+        .object({ symbols: z.array(nonEmptyString).min(1).max(16) })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('emit_glyphs'),
+      publicArtifact: z
+        .object({ glyphs: z.array(nonEmptyString).min(1).max(16) })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('emit_bitmap'),
+      publicArtifact: z.object({ bitmap: BitmapProposalSchema }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('emit_canvas'),
+      publicArtifact: z
+        .object({ strokes: z.array(StrokeSchema).min(1).max(64) })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('emit_tones'),
+      publicArtifact: z.object({ tones: ToneProposalSchema }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('select_object'),
+      publicArtifact: z.object({ objectRef: nonEmptyString }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('perform_action'),
+      publicArtifact: z.object({ actionRef: nonEmptyString }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('submit_affect'),
+      publicArtifact: z.object({ displayId: AffectDisplayIdSchema }).strict(),
+    })
+    .strict(),
 ]);
 
 export const LedgerEventDraftSchema = z.object({
@@ -387,10 +411,12 @@ export const UnsignedLedgerEventSchema = z.object({
   writerKeyId: nonEmptyString,
 });
 
-export const TurnProposalEnvelopeSchema = z.object({
-  proposal: AgentActionProposalSchema,
-  privateLedgerDraft: LedgerEventDraftSchema,
-});
+export const TurnProposalEnvelopeSchema = z
+  .object({
+    proposal: AgentActionProposalSchema,
+    privateLedgerDraft: LedgerEventDraftSchema,
+  })
+  .strict();
 
 export const LedgerDraftEnvelopeSchema = z.object({
   channelEventHash: hashString,

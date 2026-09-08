@@ -15,10 +15,15 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@ald/types": "*",
-    "@ald/hashing": "*",
+    "@ald/anchor": "*",
     "@ald/evidence": "*",
+    "@ald/hashing": "*",
     "@ald/orchestrator": "*",
+    "@ald/types": "*",
+    "better-sqlite3": "^12.4.1",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0"
   }
 }

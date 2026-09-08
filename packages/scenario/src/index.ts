@@ -38,3 +38,62 @@ export {
   type HygieneReasonCode,
   type HygieneScanOptions,
 } from './hygiene.js';
+// ---------------------------------------------------------------------------
+// Scenario-bundle quarantine and the approved-bundle registry
+// (ALD-039; SPEC §10.1, §10.2). `registerScenarioBundle` is the authoring
+// gate every bundle passes before a run may reference it;
+// `ScenarioBundleRegistry` is the fail-closed memory of those decisions.
+// ---------------------------------------------------------------------------
+export {
+  ASSET_ID_PATTERN,
+  HeuristicTextDetector,
+  LANGUAGE_REASON_CODES,
+  NULL_TEXT_DETECTOR,
+  OBSERVATION_FILTER_VERSION,
+  PngDecodeError,
+  QuarantineError,
+  SUPPORTED_MEDIA_TYPES,
+  ScenarioBundleAssetSchema,
+  ScenarioBundleSchema,
+  combineDetectors,
+  countInvisible,
+  crc32,
+  decodePng,
+  encodedCandidates,
+  foldConfusables,
+  hashAssetBytes,
+  hashScenarioBundle,
+  registerScenarioBundle,
+  scanBundleString,
+  scenarioBundleSummary,
+  stripInvisible,
+  type DecodedImage,
+  type HeuristicTextDetectorOptions,
+  type OcrDetector,
+  type PngDecodeErrorCode,
+  type PngDecodeOptions,
+  type PngTextChunk,
+  type QuarantineErrorCode,
+  type QuarantineFinding,
+  type QuarantineReasonCode,
+  type RegisterScenarioBundleOptions,
+  type ScenarioBundle,
+  type ScenarioBundleAsset,
+  type ScenarioBundleAssetRecord,
+  type ScenarioBundleRegistration,
+  type ScenarioBundleRegistrySink,
+  type StringFinding,
+  type TemplateGlyphDetector,
+  type TextDetection,
+  type TextDetectionReason,
+} from './quarantine/index.js';
+export {
+  SCENARIO_BUNDLE_REGISTRY_FILE,
+  ScenarioBundleRegistry,
+  ScenarioBundleRegistryEntrySchema,
+  ScenarioBundleRegistryFileSchema,
+  registerGeneratorConfig,
+  scenarioBundleHashOf,
+  type ScenarioBundleRegistryEntry,
+  type ScenarioBundleRegistryOptions,
+} from './bundle-registry.js';

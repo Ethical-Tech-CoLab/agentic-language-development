@@ -17,9 +17,33 @@
 import type { AgentActionProposal, GatewayRunContext, RunConfig } from '@ald/types';
 import type { SeededPrng } from '@ald/hashing';
 
-import { UnsupportedCarrierError } from './errors.js';
+import { GatewayError, UnsupportedCarrierError } from './errors.js';
 import { containsString, isPlainObject } from './inspect.js';
 import type { GatewayReasonCode } from './reason-codes.js';
+
+/**
+ * A registered module claims a different tool family than its `carrierMode`
+ * owns (SPEC §9.6 "exactly one carrier family per run", ALD-031 criterion 3).
+ * A configuration fault, never a Baby channel violation, so it is raised
+ * rather than committed as `channel.rejected`.
+ *
+ * It lives here rather than in `errors.ts` because it is produced only by
+ * this module's registry checks; the §12.3 mapping in `toGatewayError`
+ * handles it through its `GatewayError` base like every other Gateway error.
+ */
+export class InvalidCarrierFamilyError extends GatewayError {
+  constructor(
+    readonly carrier: RunConfig['carrierMode'],
+    readonly expectedKinds: readonly string[],
+    readonly actualKinds: readonly string[],
+  ) {
+    super(
+      'INVALID_REQUEST',
+      `The module registered for carrier ${carrier} offers [${actualKinds.join(', ')}] but that carrier's family is [${expectedKinds.join(', ')}]`,
+      { carrier, expectedKinds: [...expectedKinds], actualKinds: [...actualKinds] },
+    );
+  }
+}
 
 export type PublicArtifact = AgentActionProposal['publicArtifact'];
 export type ActionKind = AgentActionProposal['kind'];
@@ -68,7 +92,13 @@ export interface CarrierModule {
   constantArtifact(context: CarrierContext): PublicArtifact;
 }
 
-function fail(
+/**
+ * A rejection from inside a carrier module. Exported so the SPEC §9.2
+ * alternate-carrier modules in `carriers/` build their failures the same way
+ * the fixed-token module does, rather than re-deriving the shape (ALD-031,
+ * ALD-034 criterion 3).
+ */
+export function fail(
   reasonCode: GatewayReasonCode,
   detail: string,
 ): CarrierValidationResult {
@@ -79,8 +109,14 @@ function fail(
  * An extra field is a free-text carrier when it holds a string anywhere, and
  * a plain schema violation otherwise (SPEC §9.1: "any accompanying free
  * text ... is rejected").
+ *
+ * This is what makes a color field or a semantic tag on a bitmap, canvas, or
+ * tone artifact rejectable without the module having to enumerate the field
+ * names a Baby might invent (SPEC §9.2: "Bitmap and canvas carriers have no
+ * color or text field"): `{"color": "#ff0000"}` is `free-text-present`,
+ * `{"colorIndex": 3}` is `unexpected-artifact-field`.
  */
-function extraFieldFailure(
+export function extraFieldFailure(
   container: Record<string, unknown>,
   extraKeys: readonly string[],
   where: string,
@@ -101,9 +137,12 @@ function extraFieldFailure(
  * padded whitespace, Unicode look-alikes — is reported as free text rather
  * than as an allowlist miss.
  */
-const BARE_TOKEN_PATTERN = /^[A-Za-z]{1,3}[0-9]{1,3}$/u;
+export const BARE_TOKEN_PATTERN = /^[A-Za-z]{1,3}[0-9]{1,3}$/u;
 
-function trailingRepeats(symbols: readonly string[], candidate: string): number {
+export function trailingRepeats(
+  symbols: readonly string[],
+  candidate: string,
+): number {
   let count = 0;
   for (let index = symbols.length - 1; index >= 0; index -= 1) {
     if (symbols[index] !== candidate) {
@@ -266,5 +305,82 @@ export function resetCarrierModules(): void {
   modules.clear();
   for (const module of BUILT_IN_MODULES) {
     modules.set(module.carrier, module);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Exactly one carrier family per run (SPEC §9.6, ALD-031 criterion 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * The carrier family each `carrierMode` owns (SPEC §9.1, §9.2).
+ *
+ * This is a static table rather than a lookup through the module registry, so
+ * "which tool is this Baby offered this turn" can be answered — and asserted —
+ * for a carrier whose module has not been registered in the current process.
+ * Every entry is a single-element list: SPEC §9.2 makes an alternate carrier
+ * an experiment condition, and §9.6 requires exactly one carrier family per
+ * run, so no run ever offers two emit tools at once.
+ */
+export const CARRIER_ACTION_KINDS: Readonly<
+  Record<RunConfig['carrierMode'], readonly ActionKind[]>
+> = {
+  'fixed-token': ['emit_symbols'],
+  'fixed-glyph': ['emit_glyphs'],
+  'generative-bitmap': ['emit_bitmap'],
+  'generative-canvas': ['emit_canvas'],
+  'generative-tone': ['emit_tones'],
+};
+
+/** Every emit tool any carrier can offer, in `CarrierModeSchema` order. */
+export const ALL_CARRIER_ACTION_KINDS: readonly ActionKind[] = Object.values(
+  CARRIER_ACTION_KINDS,
+).flat();
+
+/**
+ * `true` when `kind` belongs to `carrier`'s family. A proposal of any other
+ * carrier's kind is `carrier-mismatch` at the Gateway boundary (SPEC §9.6);
+ * this predicate is the same judgement made without a registered module.
+ */
+export function isCarrierActionKind(
+  carrier: RunConfig['carrierMode'],
+  kind: string,
+): boolean {
+  return (CARRIER_ACTION_KINDS[carrier] as readonly string[]).includes(kind);
+}
+
+/**
+ * The emit tools a run's carrier offers (SPEC §6.3: a Baby may act only
+ * through the tools it is handed). The Nursery Controller builds
+ * `TurnBudget.availableActions` from the registered module's `allowedKinds`;
+ * this is the configuration-only form, used to assert that the registered
+ * module and the configured carrier agree.
+ */
+export function availableCarrierActions(
+  config: Pick<RunConfig, 'carrierMode'>,
+): readonly ActionKind[] {
+  return CARRIER_ACTION_KINDS[config.carrierMode];
+}
+
+/**
+ * ALD-031 criterion 3: assert that the module registered for this run's
+ * carrier offers exactly that carrier's family and nothing else. Throws
+ * {@link UnsupportedCarrierError} when no module is registered.
+ */
+export function assertSingleCarrierFamily(
+  config: Pick<RunConfig, 'carrierMode'>,
+): void {
+  const module = carrierModule(config.carrierMode);
+  const expected = [...CARRIER_ACTION_KINDS[config.carrierMode]].sort();
+  const actual = [...module.allowedKinds].sort();
+  const identical =
+    actual.length === expected.length &&
+    actual.every((kind, index) => kind === expected[index]);
+  if (!identical) {
+    throw new InvalidCarrierFamilyError(
+      config.carrierMode,
+      expected,
+      actual,
+    );
   }
 }

@@ -25,6 +25,7 @@ import type {
 import type {
   AnchorReceipt,
   AuditLedgerEntry,
+  PreRegistrationBinding,
   CheckpointManifest,
   CheckpointReason,
   ConsistencyProof,
@@ -527,6 +528,17 @@ export interface AffectWindow {
   opensAfter: 'outcome';
 }
 
+/** SPEC §9.3 rule 4/5: what the recipient Baby receives from an accepted affect window. */
+export interface DeliveredAffect {
+  runId: string;
+  turn: number;
+  windowId: string;
+  logicalSender: BabyRole;
+  /** After any `permuted`/`opaque` mapping; the only affect content a Baby sees. */
+  displayId: AffectDisplayId;
+  affectEventHash: Sha256Hash;
+}
+
 export type AffectSubmitResult =
   | {
       kind: 'accepted';
@@ -650,6 +662,8 @@ export interface LearnerAdapter {
   onOutcome(outcome: OutcomeEvent): Promise<void>;
   updatePolicy?(batch: UpdateBatch): Promise<PolicyCheckpointRef>;
   measureAffect?(): Promise<AffectStateMeasurement>;
+  /** SPEC §9.3: the other Baby's accepted display for this window (declared/permuted/opaque). */
+  receiveAffect?(delivery: DeliveredAffect): Promise<void>;
   /** E22 (SPEC §18 `curriculumMode`): apply a pre-registered stage; reject unknown knobs. */
   applyCurriculumStage?(stage: CurriculumStage): Promise<void>;
   /** SPEC §6.5 / ALD-044 / ALD-047: self-declared model and component provenance. */
@@ -767,8 +781,17 @@ export interface Intervention {
   details?: Record<string, unknown>;
 }
 
+/** SPEC §15.1 (ALD-071): how the run's pre-registration is bound at creation. */
+export interface CreateRunOptions {
+  /**
+   * Required when `config.registrationClass === 'confirmatory'`; a
+   * `qualification` run may omit it and is then labeled non-confirmatory.
+   */
+  preRegistration?: PreRegistrationBinding;
+}
+
 export interface NurseryRuntime {
-  createRun(config: RunConfig): Promise<RunSummary>;
+  createRun(config: RunConfig, options?: CreateRunOptions): Promise<RunSummary>;
   getRun(runId: string): RunSummary | undefined;
   listRuns(): RunSummary[];
   step(runId: string): Promise<TurnResult>;

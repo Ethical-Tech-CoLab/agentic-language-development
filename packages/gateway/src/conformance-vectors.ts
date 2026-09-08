@@ -354,3 +354,579 @@ export function resetConformanceVectors(): void {
   carrierVectors.clear();
   carrierVectors.set('fixed-token', FIXED_TOKEN_VECTORS);
 }
+
+// ---------------------------------------------------------------------------
+// SPEC §9.2 alternate-carrier vectors (ALD-031 criterion 3, ALD-036)
+// ---------------------------------------------------------------------------
+//
+// One array per §9.2 carrier, in the same shape as `FIXED_TOKEN_VECTORS` and
+// exercised by the same driver. They are registered by
+// `registerAlternateCarriers()` (`carriers/register.ts`) rather than at module
+// load, because SPEC §9.2 makes an alternate carrier "an explicit experiment
+// condition, never the default": a build that has not opted into the
+// alternate carriers has no module registered for them either, and
+// `assertEveryCarrierHasVectors(registeredCarriers())` must stay satisfiable
+// in both states.
+//
+// Every vector below is written against `CONFORMANCE_MAX_SYMBOLS` (4),
+// `CONFORMANCE_MAX_SYMBOL_REPEATS` (3) and the §9.2 defaults: a 32-mark glyph
+// inventory, exactly 256 bitmap bits, 8 strokes, 8 tones.
+
+/** SPEC §9.2 default `fixed-glyph` inventory the glyph vectors assume. */
+export const CONFORMANCE_GLYPH_INVENTORY: readonly string[] = Array.from(
+  { length: 32 },
+  (_, index) => `G${String(index + 1).padStart(2, '0')}`,
+);
+
+/** Exactly 256 bits, the §9.2 `generative-bitmap` grid. */
+function bits(fill: (index: number) => 0 | 1, count = 256): (0 | 1)[] {
+  return Array.from({ length: count }, (_, index) => fill(index));
+}
+
+function stroke(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return { startX: 1, startY: 2, endX: 13, endY: 14, width: 1, ...overrides };
+}
+
+function tone(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return { pitchBin: 3, durationBin: 2, ...overrides };
+}
+
+function glyphProposal(publicArtifact: unknown): unknown {
+  return { kind: 'emit_glyphs', publicArtifact };
+}
+
+function bitmapProposal(publicArtifact: unknown): unknown {
+  return { kind: 'emit_bitmap', publicArtifact };
+}
+
+function canvasProposal(publicArtifact: unknown): unknown {
+  return { kind: 'emit_canvas', publicArtifact };
+}
+
+function toneProposal(publicArtifact: unknown): unknown {
+  return { kind: 'emit_tones', publicArtifact };
+}
+
+export const FIXED_GLYPH_VECTORS: readonly ConformanceVector[] = [
+  // --- acceptance (ALD-031 criterion 1) -----------------------------------
+  {
+    name: 'accepts one inventory glyph',
+    envelope: envelope(glyphProposal({ glyphs: ['G01'] })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts three inventory glyphs',
+    envelope: envelope(glyphProposal({ glyphs: ['G32', 'G01', 'G17'] })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts the maximum of four glyphs',
+    envelope: envelope(glyphProposal({ glyphs: ['G02', 'G02', 'G31', 'G31'] })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts exactly maxSymbolRepeats consecutive repeats',
+    envelope: envelope(glyphProposal({ glyphs: ['G05', 'G05', 'G05'] })),
+    expect: 'accepted',
+  },
+
+  // --- length and repetition (SPEC §9.1 rules, §9.2 "same repeat rule") ---
+  {
+    name: 'rejects an empty glyph list',
+    envelope: envelope(glyphProposal({ glyphs: [] })),
+    expect: 'empty-message',
+  },
+  {
+    name: 'rejects five glyphs against a cap of four',
+    envelope: envelope(
+      glyphProposal({ glyphs: ['G01', 'G02', 'G03', 'G04', 'G05'] }),
+    ),
+    expect: 'message-too-long',
+  },
+  {
+    name: 'rejects four consecutive repeats of one glyph',
+    envelope: envelope(
+      glyphProposal({ glyphs: ['G07', 'G07', 'G07', 'G07'] }),
+    ),
+    expect: 'symbol-repeat-limit',
+  },
+
+  // --- allowlist and free text (SPEC §9.2) --------------------------------
+  {
+    name: 'rejects a well-formed glyph id outside the frozen bundle',
+    envelope: envelope(glyphProposal({ glyphs: ['G33'] })),
+    expect: 'glyph-not-in-inventory',
+  },
+  {
+    name: 'rejects a fixed-token symbol submitted as a glyph id',
+    envelope: envelope(glyphProposal({ glyphs: ['S01'] })),
+    expect: 'glyph-not-in-inventory',
+  },
+  {
+    name: 'rejects a glyph id with surrounding whitespace rather than trimming it',
+    envelope: envelope(glyphProposal({ glyphs: [' G01 '] })),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects prose in the glyph list',
+    envelope: envelope(glyphProposal({ glyphs: ['a small red circle'] })),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a semantic tag smuggled into an extra artifact field',
+    envelope: envelope(
+      glyphProposal({ glyphs: ['G01'], meaning: 'the round one' }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a non-string extra artifact field',
+    envelope: envelope(glyphProposal({ glyphs: ['G01'], strength: 3 })),
+    expect: 'unexpected-artifact-field',
+  },
+
+  // --- envelope frame and routing ----------------------------------------
+  {
+    name: 'rejects a non-string glyph id',
+    envelope: envelope(glyphProposal({ glyphs: [1] })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a glyph list that is not an array',
+    envelope: envelope(glyphProposal({ glyphs: 'G01' })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects an artifact with no glyphs field',
+    envelope: envelope(glyphProposal({})),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a fixed-token proposal on a glyph run',
+    envelope: envelope({
+      kind: 'emit_symbols',
+      publicArtifact: { symbols: ['S01'] },
+    }),
+    expect: 'carrier-mismatch',
+  },
+  {
+    name: 'rejects Baby-supplied trusted metadata on a glyph proposal',
+    envelope: envelope({
+      kind: 'emit_glyphs',
+      publicArtifact: { glyphs: ['G01'] },
+      runId: 'run-forged',
+    }),
+    expect: 'trusted-metadata-present',
+  },
+  {
+    name: 'rejects a glyph proposal with no intention draft',
+    envelope: envelope(
+      glyphProposal({ glyphs: ['G01'] }),
+      conformanceIntentionDraft({ eventType: 'interpretation.recorded' }),
+    ),
+    expect: 'missing-intention',
+  },
+];
+
+export const GENERATIVE_BITMAP_VECTORS: readonly ConformanceVector[] = [
+  // --- acceptance (ALD-031 criterion 1) -----------------------------------
+  {
+    name: 'accepts the all-zero 256-bit matrix',
+    envelope: envelope(bitmapProposal({ bitmap: { bits: bits(() => 0) } })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts the all-one 256-bit matrix',
+    envelope: envelope(bitmapProposal({ bitmap: { bits: bits(() => 1) } })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts an alternating 256-bit matrix',
+    envelope: envelope(
+      bitmapProposal({
+        bitmap: { bits: bits((index) => (index % 2 === 0 ? 1 : 0)) },
+      }),
+    ),
+    expect: 'accepted',
+  },
+
+  // --- exact grid size (SPEC §9.2 "256 bits") -----------------------------
+  {
+    name: 'rejects a 255-bit matrix',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0, 255) } }),
+    ),
+    expect: 'bitmap-size-invalid',
+  },
+  {
+    name: 'rejects a 257-bit matrix',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0, 257) } }),
+    ),
+    expect: 'bitmap-size-invalid',
+  },
+  {
+    name: 'rejects an empty bit matrix',
+    envelope: envelope(bitmapProposal({ bitmap: { bits: [] } })),
+    expect: 'bitmap-size-invalid',
+  },
+
+  // --- cell values --------------------------------------------------------
+  {
+    name: 'rejects a cell value of 2',
+    envelope: envelope(
+      bitmapProposal({
+        bitmap: { bits: bits((index) => (index === 5 ? (2 as 0 | 1) : 0)) },
+      }),
+    ),
+    expect: 'bitmap-value-invalid',
+  },
+  {
+    name: 'rejects a fractional cell value',
+    envelope: envelope(
+      bitmapProposal({
+        bitmap: { bits: bits((index) => (index === 0 ? (0.5 as 0 | 1) : 0)) },
+      }),
+    ),
+    expect: 'bitmap-value-invalid',
+  },
+  {
+    name: 'rejects a string cell as free text, not as a value error',
+    envelope: envelope(
+      bitmapProposal({
+        bitmap: {
+          bits: bits((index) => (index === 3 ? ('1' as unknown as 0 | 1) : 0)),
+        },
+      }),
+    ),
+    expect: 'free-text-present',
+  },
+
+  // --- no color or text field (SPEC §9.2) ---------------------------------
+  {
+    name: 'rejects a color field beside the bitmap',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0) }, color: '#ff0000' }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a caption nested inside the bitmap',
+    envelope: envelope(
+      bitmapProposal({
+        bitmap: { bits: bits(() => 0), caption: 'the tall one' },
+      }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a numeric grid override nested inside the bitmap',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0), gridWidth: 16 } }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+
+  // --- envelope frame and routing ----------------------------------------
+  {
+    name: 'rejects a bitmap that is not an object',
+    envelope: envelope(bitmapProposal({ bitmap: [0, 1] })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a bits field that is not an array',
+    envelope: envelope(bitmapProposal({ bitmap: { bits: 256 } })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a canvas proposal on a bitmap run',
+    envelope: envelope(canvasProposal({ strokes: [stroke()] })),
+    expect: 'carrier-mismatch',
+  },
+];
+
+export const GENERATIVE_CANVAS_VECTORS: readonly ConformanceVector[] = [
+  // --- acceptance (ALD-031 criterion 1) -----------------------------------
+  {
+    name: 'accepts one stroke',
+    envelope: envelope(canvasProposal({ strokes: [stroke()] })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts the default maximum of eight strokes',
+    envelope: envelope(
+      canvasProposal({
+        strokes: Array.from({ length: 8 }, (_, index) =>
+          stroke({ startX: index, endX: 15 - index }),
+        ),
+      }),
+    ),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts a degenerate zero-length stroke as a dot',
+    envelope: envelope(
+      canvasProposal({
+        strokes: [{ startX: 4, startY: 4, endX: 4, endY: 4, width: 2 }],
+      }),
+    ),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts all three quantized pen widths',
+    envelope: envelope(
+      canvasProposal({
+        strokes: [stroke({ width: 1 }), stroke({ width: 2 }), stroke({ width: 3 })],
+      }),
+    ),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts strokes at both grid extremes',
+    envelope: envelope(
+      canvasProposal({
+        strokes: [{ startX: 0, startY: 0, endX: 15, endY: 15, width: 3 }],
+      }),
+    ),
+    expect: 'accepted',
+  },
+
+  // --- stroke count (SPEC §9.2 maxStrokes) --------------------------------
+  {
+    name: 'rejects an empty stroke list',
+    envelope: envelope(canvasProposal({ strokes: [] })),
+    expect: 'empty-message',
+  },
+  {
+    name: 'rejects nine strokes against a cap of eight',
+    envelope: envelope(
+      canvasProposal({ strokes: Array.from({ length: 9 }, () => stroke()) }),
+    ),
+    expect: 'too-many-strokes',
+  },
+
+  // --- coordinate and width bounds ----------------------------------------
+  {
+    name: 'rejects a stroke past the right edge of the grid',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ endX: 16 })] })),
+    expect: 'stroke-out-of-range',
+  },
+  {
+    name: 'rejects a negative stroke coordinate',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ startY: -1 })] })),
+    expect: 'stroke-out-of-range',
+  },
+  {
+    name: 'rejects a fractional stroke coordinate',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ startX: 1.5 })] })),
+    expect: 'stroke-out-of-range',
+  },
+  {
+    name: 'rejects a pen width of four',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ width: 4 })] })),
+    expect: 'stroke-width-invalid',
+  },
+  {
+    name: 'rejects a pen width of zero',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ width: 0 })] })),
+    expect: 'stroke-width-invalid',
+  },
+
+  // --- no color or text field (SPEC §9.2) ---------------------------------
+  {
+    name: 'rejects a per-stroke color field',
+    envelope: envelope(
+      canvasProposal({ strokes: [stroke({ color: '#00ff00' })] }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a per-stroke semantic tag',
+    envelope: envelope(
+      canvasProposal({ strokes: [stroke({ label: 'the square one' })] }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a per-stroke numeric extra field',
+    envelope: envelope(
+      canvasProposal({ strokes: [stroke({ pressure: 2 })] }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a string pen width as free text',
+    envelope: envelope(canvasProposal({ strokes: [stroke({ width: '1' })] })),
+    expect: 'free-text-present',
+  },
+
+  // --- envelope frame and routing ----------------------------------------
+  {
+    name: 'rejects a stroke list that is not an array',
+    envelope: envelope(canvasProposal({ strokes: stroke() })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a stroke that is not an object',
+    envelope: envelope(canvasProposal({ strokes: [[0, 0, 1, 1, 1]] })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a tone proposal on a canvas run',
+    envelope: envelope(toneProposal({ tones: { tones: [tone()] } })),
+    expect: 'carrier-mismatch',
+  },
+];
+
+export const GENERATIVE_TONE_VECTORS: readonly ConformanceVector[] = [
+  // --- acceptance (ALD-031 criterion 1) -----------------------------------
+  {
+    name: 'accepts one tone',
+    envelope: envelope(toneProposal({ tones: { tones: [tone()] } })),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts the maximum of eight tones',
+    envelope: envelope(
+      toneProposal({
+        tones: {
+          tones: Array.from({ length: 8 }, (_, index) =>
+            tone({ pitchBin: index }),
+          ),
+        },
+      }),
+    ),
+    expect: 'accepted',
+  },
+  {
+    name: 'accepts both bin extremes',
+    envelope: envelope(
+      toneProposal({
+        tones: {
+          tones: [
+            { pitchBin: 0, durationBin: 1 },
+            { pitchBin: 7, durationBin: 4 },
+          ],
+        },
+      }),
+    ),
+    expect: 'accepted',
+  },
+
+  // --- sequence length (SPEC §9.2 "8 tones") ------------------------------
+  {
+    name: 'rejects an empty tone sequence',
+    envelope: envelope(toneProposal({ tones: { tones: [] } })),
+    expect: 'empty-message',
+  },
+  {
+    name: 'rejects nine tones against a cap of eight',
+    envelope: envelope(
+      toneProposal({
+        tones: { tones: Array.from({ length: 9 }, () => tone()) },
+      }),
+    ),
+    expect: 'too-many-tones',
+  },
+
+  // --- bin bounds ---------------------------------------------------------
+  {
+    name: 'rejects a ninth pitch bin',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ pitchBin: 8 })] } }),
+    ),
+    expect: 'tone-out-of-range',
+  },
+  {
+    name: 'rejects a negative pitch bin',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ pitchBin: -1 })] } }),
+    ),
+    expect: 'tone-out-of-range',
+  },
+  {
+    name: 'rejects a zero duration bin',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ durationBin: 0 })] } }),
+    ),
+    expect: 'tone-out-of-range',
+  },
+  {
+    name: 'rejects a fifth duration bin',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ durationBin: 5 })] } }),
+    ),
+    expect: 'tone-out-of-range',
+  },
+
+  // --- no text field, no raw audio (SPEC §9.2) ----------------------------
+  {
+    name: 'rejects a note name beside the quantized bins',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ noteName: 'C4' })] } }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a base64 audio payload smuggled beside the sequence',
+    envelope: envelope(
+      toneProposal({
+        tones: { tones: [tone()] },
+        sample: 'UklGRiQAAABXQVZF',
+      }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a numeric tempo field beside the sequence',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone()] }, tempo: 120 }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a per-tone numeric extra field',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone({ velocity: 5 })] } }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+
+  // --- envelope frame and routing ----------------------------------------
+  {
+    name: 'rejects a tone sequence that is not an array',
+    envelope: envelope(toneProposal({ tones: { tones: tone() } })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a tone that is not an object',
+    envelope: envelope(toneProposal({ tones: { tones: [[3, 2]] } })),
+    expect: 'invalid-envelope',
+  },
+  {
+    name: 'rejects a glyph proposal on a tone run',
+    envelope: envelope(glyphProposal({ glyphs: ['G01'] })),
+    expect: 'carrier-mismatch',
+  },
+];
+
+/**
+ * Vector set per §9.2 alternate carrier, keyed exactly as `carrierMode` is.
+ * `registerAlternateCarriers()` feeds this map into
+ * `registerConformanceVectors`, so ALD-036's
+ * `assertEveryCarrierHasVectors(registeredCarriers())` covers all five
+ * carriers once a run has opted into the alternate ones (ALD-031 criterion 3).
+ */
+export const ALTERNATE_CARRIER_VECTORS: ReadonlyMap<
+  RunConfig['carrierMode'],
+  readonly ConformanceVector[]
+> = new Map([
+  ['fixed-glyph', FIXED_GLYPH_VECTORS],
+  ['generative-bitmap', GENERATIVE_BITMAP_VECTORS],
+  ['generative-canvas', GENERATIVE_CANVAS_VECTORS],
+  ['generative-tone', GENERATIVE_TONE_VECTORS],
+] as const);

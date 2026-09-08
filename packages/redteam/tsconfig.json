@@ -17,16 +17,7 @@
       "path": "../hashing"
     },
     {
-      "path": "../gateway"
-    },
-    {
       "path": "../scenario"
-    },
-    {
-      "path": "../learners"
-    },
-    {
-      "path": "../evidence"
     }
   ]
 }

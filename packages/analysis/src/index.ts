@@ -112,3 +112,67 @@ export {
   type E11SummaryInput,
   type E11TrainingWindow,
 } from './e11.js';
+
+// ---------------------------------------------------------------------------
+// Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;
+// ALD-074 E14/E15/E16, ALD-076 E31). Owned by the `@ald/interventions`
+// workstream: seed-clustered inference (SPEC §15.2), the E15 composition
+// readout, and the E31 checkpoint-drift readout.
+// ---------------------------------------------------------------------------
+export {
+  HIERARCHICAL_ANALYSIS_VERSION,
+  QUALIFICATION_MINIMUM_SEEDS,
+  betaBinomialAgreement,
+  fitBetaBinomial,
+  seedLevelAgreement,
+  welchTTest,
+  type AgreementDecision,
+  type BetaBinomialAgreementInput,
+  type BetaBinomialAgreementResult,
+  type BetaBinomialFit,
+  type SeedAgreementCount,
+  type SeedAgreementProportion,
+  type SeedLevelAgreementInput,
+  type SeedLevelAgreementResult,
+  type WelchTTestResult,
+} from './hierarchical.js';
+export {
+  COMPOSITION_ANALYSIS_VERSION,
+  E15_CONFIRMATORY_MINIMUM_SEEDS,
+  TOPOGRAPHIC_MAX_EPISODES,
+  attributeHammingDistance,
+  checkHeldOutSplitIntegrity,
+  evaluateComposition,
+  messageEditDistance,
+  spearmanCorrelation,
+  symbolReuse,
+  topographicSimilarity,
+  type BandwidthConditionInput,
+  type BandwidthContrastResult,
+  type BandwidthInferenceClass,
+  type CompositionEpisode,
+  type CompositionInput,
+  type CompositionResult,
+  type OrderProbeOutcome,
+  type OrderSensitivityResult,
+  type ProportionWithInterval,
+  type SeedProportionInput,
+  type SplitIntegrityResult,
+  type SplitIntegrityViolationCode,
+  type SymbolReuseResult,
+  type TopographicResult,
+} from './composition.js';
+export {
+  DEFAULT_STABILITY_TOLERANCE_BITS,
+  DRIFT_ANALYSIS_VERSION,
+  evaluateCheckpointDrift,
+  symbolUsageDivergenceBits,
+  type CheckpointEvaluation,
+  type CheckpointPairDrift,
+  type DriftInput,
+  type DriftResult,
+  type PairUnscoredReasonCode,
+  type RegimeSeparation,
+  type RegimeSeparationDecision,
+  type StabilityInterval,
+} from './drift.js';

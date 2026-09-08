@@ -15,7 +15,6 @@ import {
   isLearnerLedgerEventType,
   validateLearnerDraft,
 } from '../src/drafts.js';
-import { NotImplementedTrackError } from '../src/errors.js';
 
 const LEDGER_DESIGN = fileURLToPath(
   new URL('../../../LEDGER-INTEGRITY-DESIGN.md', import.meta.url),
@@ -40,7 +39,7 @@ describe('ADAPTER_FACTORIES', () => {
     );
   });
 
-  it('builds the two implemented reference tracks', () => {
+  it('builds the two zero-configuration reference tracks', () => {
     expect(ADAPTER_FACTORIES['no-learning']().track).toBe('no-learning');
     expect(ADAPTER_FACTORIES['scratch-rl']().track).toBe('scratch-rl');
     expect(createLearnerAdapterFactory('no-learning').create().track).toBe(
@@ -52,31 +51,8 @@ describe('ADAPTER_FACTORIES', () => {
     ).toBe('scratch-rl');
   });
 
-  it('throws with the owning BACKLOG item for every unimplemented track', () => {
-    for (const [track, backlogItem] of Object.entries(
-      UNIMPLEMENTED_TRACK_BACKLOG_ITEMS,
-    )) {
-      let thrown: unknown;
-      try {
-        createLearnerAdapterFactory(
-          track as keyof typeof UNIMPLEMENTED_TRACK_BACKLOG_ITEMS,
-        );
-      } catch (error) {
-        thrown = error;
-      }
-      expect(thrown).toBeInstanceOf(NotImplementedTrackError);
-      expect((thrown as NotImplementedTrackError).track).toBe(track);
-      expect((thrown as NotImplementedTrackError).backlogItem).toBe(backlogItem);
-      expect((thrown as Error).message).toContain(backlogItem);
-    }
-  });
-
-  it('never silently substitutes another track', () => {
-    expect(Object.keys(UNIMPLEMENTED_TRACK_BACKLOG_ITEMS).sort()).toEqual([
-      'frozen-llm',
-      'hybrid',
-      'self-supervised',
-    ]);
+  it('has no remaining unimplemented SPEC §6.1 tracks', () => {
+    expect(UNIMPLEMENTED_TRACK_BACKLOG_ITEMS).toEqual({});
   });
 });
 

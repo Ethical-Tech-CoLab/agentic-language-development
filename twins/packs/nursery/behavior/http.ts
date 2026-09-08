@@ -518,8 +518,130 @@ export function mapError(error: unknown): BehaviorPackResult {
 }
 
 // ---------------------------------------------------------------------------
+// Telemetry (SPEC §14.1; BACKLOG ALD-058)
+// ---------------------------------------------------------------------------
+
+/**
+ * State-Map key a host sets to receive one telemetry record per request
+ * (SPEC §14.1). All three twin packs dispatch through {@link createRouter},
+ * so setting it once per twin covers every route that twin serves.
+ *
+ * The value is duck-typed rather than imported from `@ald/ops`: telemetry is
+ * informational, and a twin pack must not acquire a build-time dependency on
+ * the operations package to be observable. `@ald/ops`'s `TelemetrySink` is
+ * structurally assignable to {@link TelemetrySinkLike}.
+ */
+export const TELEMETRY_SINK_STATE_KEY = 'telemetrySink';
+
+/**
+ * One recorded request. `path` is the matched route PATTERN, never
+ * `request.path`: a raw path carries run ids and, on the Baby routes, values
+ * drawn from scenario state, and SPEC §13.6/§14.6 keep run content out of
+ * side logs. The run id travels in its own field so a dashboard can still
+ * filter by run (ALD-058 criterion 3).
+ *
+ * Baby-twin routes (`/act`, `/deliver`, ...) take no run id in the path, so
+ * their records carry no `runId`; a dashboard correlates those by twin and
+ * time window.
+ */
+export interface TelemetryRequestRecord {
+  twin: string;
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+  runId?: string;
+  actorRole?: string;
+}
+
+/**
+ * The sink slice this router uses. `record` MUST NOT throw; this router
+ * additionally contains a sink that does, and never awaits whatever `record`
+ * returns, so a sink that throws, rejects, or hangs can neither fail nor slow
+ * the request (ALD-058 criterion 2).
+ */
+export interface TelemetrySinkLike {
+  record(record: TelemetryRequestRecord): unknown;
+}
+
+/** Route pattern reported for a request no route matched. */
+export const UNMATCHED_ROUTE_PATTERN = '<unmatched>';
+
+function telemetrySinkFrom(
+  context: BehaviorPackContext,
+): TelemetrySinkLike | undefined {
+  const candidate = context.state.get(TELEMETRY_SINK_STATE_KEY);
+  if (
+    typeof candidate === 'object' &&
+    candidate !== null &&
+    typeof (candidate as { record?: unknown }).record === 'function'
+  ) {
+    return candidate as TelemetrySinkLike;
+  }
+  return undefined;
+}
+
+/**
+ * Fire-and-forget. Every failure mode of the sink is contained here: a throw
+ * is swallowed, and a returned promise is given a `catch` and never awaited,
+ * so neither a rejection nor a promise that never settles can reach the
+ * request (ALD-058 criterion 2).
+ */
+function recordTelemetry(
+  context: BehaviorPackContext,
+  record: TelemetryRequestRecord,
+): void {
+  const sink = telemetrySinkFrom(context);
+  if (sink === undefined) {
+    return;
+  }
+  try {
+    const returned: unknown = sink.record(record);
+    if (
+      typeof returned === 'object' &&
+      returned !== null &&
+      typeof (returned as { then?: unknown }).then === 'function'
+    ) {
+      void (returned as Promise<unknown>).then(undefined, () => undefined);
+    }
+  } catch {
+    // §14.1 telemetry is informational; a broken sink is never the request's
+    // problem. The sink counts its own failures (`@ald/ops` `errorCount`).
+  }
+}
+
+/** Monotonic where available so a clock adjustment cannot yield a negative. */
+function elapsedMs(startedAt: number): number {
+  const now =
+    typeof performance === 'object' && typeof performance.now === 'function'
+      ? performance.now()
+      : Date.now();
+  return Math.max(0, now - startedAt);
+}
+
+function startTimer(): number {
+  return typeof performance === 'object' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
+}
+
+/** `/runs/:id/...` is the only run-scoped pattern family (SPEC §12.5-§12.6). */
+function runIdFrom(params: Record<string, string>): string | undefined {
+  return params.runId ?? params.id;
+}
+
+// ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
+
+/** What {@link createRouter}'s dispatch resolved, plus its telemetry dimensions. */
+interface DispatchOutcome {
+  result: BehaviorPackResult;
+  /** Matched route pattern, or {@link UNMATCHED_ROUTE_PATTERN}. */
+  pattern: string;
+  runId?: string;
+  actorRole?: string;
+}
 
 /**
  * Builds a `BehaviorPack.handleRequest` implementation from a route table:
@@ -527,6 +649,10 @@ export function mapError(error: unknown): BehaviorPackResult {
  * header pair, checks the route's role list, parses the body, and maps any
  * thrown error to the §12.3 envelope. No route in the returned handler ever
  * throws past this boundary.
+ *
+ * Every dispatch — matched, unauthenticated, forbidden, or unmatched — also
+ * produces one telemetry record when the host set
+ * {@link TELEMETRY_SINK_STATE_KEY} on the context state (SPEC §14.1).
  */
 export function createRouter(
   routes: readonly RouteDefinition[],
@@ -534,57 +660,104 @@ export function createRouter(
   request: TwinRequest,
   context: BehaviorPackContext,
 ) => Promise<BehaviorPackResult> {
-  return async (request, context) => {
-    let sawPathMatch = false;
+  const dispatch = async (
+    request: TwinRequest,
+    context: BehaviorPackContext,
+  ): Promise<DispatchOutcome> => {
+    let matchedPattern: string | undefined;
     for (const route of routes) {
       let params: Record<string, string> | undefined;
       try {
         params = matchPath(route.pattern, request.path);
       } catch (error) {
         if (error instanceof MalformedPathError) {
-          return failure('INVALID_REQUEST', error.message);
+          return {
+            result: failure('INVALID_REQUEST', error.message),
+            pattern: route.pattern,
+          };
         }
         throw error;
       }
       if (params === undefined) {
         continue;
       }
-      sawPathMatch = true;
+      matchedPattern = route.pattern;
       if (route.method !== request.method) {
         continue;
       }
 
+      const runId = runIdFrom(params);
       const auth = authenticate(request, context);
       if (!auth.ok) {
-        return failure(auth.code, auth.message, undefined, auth.status);
+        return {
+          result: failure(auth.code, auth.message, undefined, auth.status),
+          pattern: route.pattern,
+          ...(runId === undefined ? {} : { runId }),
+        };
       }
       if (!roleSatisfies(auth.role, route.roles)) {
-        return failure(
-          'FORBIDDEN',
-          `role "${auth.role}" may not call ${route.method} ${route.pattern}`,
-        );
+        return {
+          result: failure(
+            'FORBIDDEN',
+            `role "${auth.role}" may not call ${route.method} ${route.pattern}`,
+          ),
+          pattern: route.pattern,
+          actorRole: auth.role,
+          ...(runId === undefined ? {} : { runId }),
+        };
       }
 
+      const dimensions = {
+        pattern: route.pattern,
+        actorRole: auth.role,
+        ...(runId === undefined ? {} : { runId }),
+      };
       try {
         const body = parseBody(request.body);
-        return await route.handler({
-          request,
-          params,
-          body,
-          role: auth.role,
-          actorId: actorIdFor(request, auth.role),
-          context,
-        });
+        return {
+          result: await route.handler({
+            request,
+            params,
+            body,
+            role: auth.role,
+            actorId: actorIdFor(request, auth.role),
+            context,
+          }),
+          ...dimensions,
+        };
       } catch (error) {
-        return mapError(error);
+        return { result: mapError(error), ...dimensions };
       }
     }
 
-    return failure(
-      'NOT_FOUND',
-      sawPathMatch
-        ? `No handler for ${request.method} ${request.path}`
-        : `No route matches ${request.path}`,
-    );
+    // The telemetry `path` stays a pattern even here: a request whose path
+    // matched a pattern but not its method reports that pattern, and a request
+    // that matched nothing reports the sentinel, never the raw path.
+    return {
+      result: failure(
+        'NOT_FOUND',
+        matchedPattern === undefined
+          ? `No route matches ${request.path}`
+          : `No handler for ${request.method} ${request.path}`,
+      ),
+      pattern: matchedPattern ?? UNMATCHED_ROUTE_PATTERN,
+    };
+  };
+
+  return async (request, context) => {
+    const startedAt = startTimer();
+    const outcome = await dispatch(request, context);
+    recordTelemetry(context, {
+      twin: context.twinName,
+      method: request.method,
+      path: outcome.pattern,
+      status: outcome.result.response.status,
+      durationMs: elapsedMs(startedAt),
+      ...(outcome.runId === undefined ? {} : { runId: outcome.runId }),
+      ...(outcome.actorRole === undefined
+        ? {}
+        : { actorRole: outcome.actorRole }),
+    });
+    return outcome.result;
   };
 }

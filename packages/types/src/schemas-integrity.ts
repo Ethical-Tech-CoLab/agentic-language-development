@@ -237,6 +237,18 @@ export const UnsignedTurnRecordSchema = z.object({
   scenarioRef: nonEmptyString,
   scenarioStateHash: strictHash,
   observationHashes: z.object({ babyA: strictHash, babyB: strictHash }),
+  /**
+   * Set on turns that belong to a frozen evaluation block inside `running`
+   * (E31 drift evaluation) or a held-out evaluation (E15); absent otherwise.
+   */
+  evaluationBlock: z
+    .object({
+      kind: z.enum(['drift', 'held-out']),
+      index: nonNegativeInteger,
+    })
+    .optional(),
+  /** SPEC §15.2: hash of the live causal probe applied to this turn's delivery. */
+  probeHash: strictHash.optional(),
   babyProposalHash: strictHash.nullable(),
   deliveredArtifactHash: strictHash,
   channelEventHash: strictHash.nullable(),
@@ -263,6 +275,16 @@ export const InterventionEventTypeSchema = z.enum([
   'recovery',
   'governance-decision',
   'hygiene-block',
+  /** Runtime-recorded facts about the run: isolation descriptors, provenance, initial policy hashes. */
+  'runtime-attestation',
+  /** SPEC §15.2 live probe applied to one delivery (details carry the probe hash). */
+  'causal-probe',
+  /** E22 pre-registered stage applied (details carry policy hashes before/after). */
+  'curriculum-transition',
+  /** An `analysis/` attachment was produced during the run (details carry its sha256). */
+  'analysis-attached',
+  /** SPEC §14.6 retention job action (bulk payload purge; index rows retained). */
+  'retention-purge',
 ]);
 
 /** Append-only `intervention_log` row (SPEC §14.2, §14.5). Hash-chained, unsigned. */

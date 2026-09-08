@@ -63,6 +63,16 @@ export const HASH_DOMAINS = {
   promptBundle: 'dtsf-prompt-bundle-v1',
   /** Implementation: canonical exported policy state → policy checkpoint hash. */
   policyCheckpoint: 'dtsf-policy-checkpoint-v1',
+  /** Implementation: canonical private generative-form inventory → inventory hash. */
+  carrierFormInventory: 'dtsf-carrier-form-inventory-v1',
+  /** Implementation: canonical frozen unfamiliar-glyph bundle → glyphBundleHash. */
+  glyphBundle: 'dtsf-glyph-bundle-v1',
+  /** Implementation: canonical private affect measurement → measurement digest. */
+  affectMeasurement: 'dtsf-affect-measurement-v1',
+  /** Implementation: canonical retention audit entry → retention entryHash. */
+  retentionLogEntry: 'dtsf-retention-log-v1',
+  /** Implementation: failure message text → operator-only correlation digest. */
+  failureMessage: 'dtsf-ops-failure-message-v1',
   /** Implementation: canonical causal-probe descriptor (SPEC §15.2) → probe hash. */
   causalProbe: 'dtsf-causal-probe-v1',
   /** Implementation: canonical runtime snapshot (SPEC §14.4) → snapshot digest. */

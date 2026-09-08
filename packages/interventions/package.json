@@ -19,7 +19,6 @@
     "@ald/hashing": "*",
     "@ald/analysis": "*",
     "@ald/learners": "*",
-    "@ald/scenario": "*",
     "zod": "^4.4.3"
   }
 }

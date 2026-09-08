@@ -17,10 +17,7 @@
   "dependencies": {
     "@ald/types": "*",
     "@ald/hashing": "*",
-    "@ald/gateway": "*",
     "@ald/scenario": "*",
-    "@ald/learners": "*",
-    "@ald/evidence": "*",
     "zod": "^4.4.3"
   }
 }

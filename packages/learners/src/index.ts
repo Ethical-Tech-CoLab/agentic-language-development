@@ -5,6 +5,8 @@
  * Implemented here:
  * - `no-learning` (ALD-042): the seeded uniform-random chance control;
  * - `scratch-rl` (ALD-045): tabular REINFORCE, the E11 naming-game baseline;
+ * - `frozen-llm` (ALD-044), `self-supervised` (ALD-046), and `hybrid`
+ *   (ALD-047);
  * - the versioned learner contracts and their lint (ALD-043);
  * - a reusable conformance harness every later track is checked against.
  *
@@ -38,17 +40,13 @@ export type LearnerAdapterOptions = TabularReinforceOptions &
   HybridAdapterOptions;
 
 /** BACKLOG item that owns each unimplemented track (SPEC §6.1). */
-export const UNIMPLEMENTED_TRACK_BACKLOG_ITEMS = {
-  'frozen-llm': 'ALD-044',
-  'self-supervised': 'ALD-046',
-  hybrid: 'ALD-047',
-} as const;
+export const UNIMPLEMENTED_TRACK_BACKLOG_ITEMS: Readonly<
+  Partial<Record<LearnerTrackId, string>>
+> = {};
 
 /**
- * Adapter factory per track. All five SPEC §6.1 track IDs are addressable
- * behind the identical interface; the three that are not implemented yet throw
- * `NotImplementedTrackError` naming their BACKLOG item rather than silently
- * falling back to another track.
+ * Adapter factory per track. All five SPEC §6.1 track IDs are implemented and
+ * addressable behind the identical interface.
  */
 export const ADAPTER_FACTORIES: Record<
   LearnerTrackId,

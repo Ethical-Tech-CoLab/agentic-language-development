@@ -67,6 +67,19 @@ import {
 } from '@ald/types';
 import { SeededPrng, hashCanonical } from '@ald/hashing';
 
+import {
+  carrierProposal,
+  createCarrierSupport,
+  hypothesisRefFor,
+  markKey,
+  messageFields,
+  requireCarrierAction,
+  subjectIdFor,
+  termFields,
+  type CarrierAdapterSupport,
+  type CarrierSupportOptions,
+  type DeliveredMark,
+} from './carrier-support.js';
 import { BlindingNonceSource, buildNoncedDraft } from './drafts.js';
 import {
   LearnerConfigurationError,
@@ -75,7 +88,6 @@ import {
 } from './errors.js';
 import {
   argmaxIndex,
-  extractSymbols,
   parseObservationPayload,
   requireAction,
   resolveGameShape,
@@ -104,7 +116,9 @@ export const SUPPORTED_LEARNING_SIGNALS = [
   'intrinsic-prediction-progress',
 ] as const;
 
-export interface TabularReinforceOptions extends GameShapeOptions {
+export interface TabularReinforceOptions
+  extends GameShapeOptions,
+    CarrierSupportOptions {
   /** REINFORCE step size (default `0.3`). */
   learningRate?: number;
   /** Moving-average baseline decay (default `0.9`). */
@@ -128,7 +142,8 @@ type RewardMode = 'extrinsic-task' | 'intrinsic-prediction-progress';
 interface SenderTurnMemory {
   role: 'sender';
   turn: number;
-  symbols: string[];
+  /** The marks emitted, in message order (SPEC §9.1/§9.2). */
+  marks: DeliveredMark[];
   symbolIndices: number[];
   typeCode: number;
   /** Sender action distribution over the symbol inventory at action time. */
@@ -142,9 +157,9 @@ interface SenderTurnMemory {
 interface ReceiverTurnMemory {
   role: 'receiver';
   turn: number;
-  /** Every delivered symbol, verbatim, for the intention event (SPEC §8.2). */
-  symbols: string[];
-  /** Inventory indices of the scored prefix: at most `messageLength` of them. */
+  /** Every delivered mark, verbatim, for the intention event (SPEC §8.2). */
+  marks: DeliveredMark[];
+  /** Form indices of the scored prefix: at most `marksPerMessage` of them. */
   symbolIndices: number[];
   candidateTypeCodes: number[];
   actionIndex: number;
@@ -168,16 +183,16 @@ type TurnMemory = SenderTurnMemory | ReceiverTurnMemory;
  */
 interface ReceivedMessage {
   turn: number;
-  /** Every symbol delivered, verbatim, however many arrived (SPEC §9.6). */
-  symbols: string[];
-  /** Inventory indices of the scored prefix: at most `messageLength` of them. */
+  /** Every mark delivered, verbatim, however many arrived (SPEC §9.6). */
+  marks: DeliveredMark[];
+  /** Form indices of the scored prefix: at most `marksPerMessage` of them. */
   symbolIndices: number[];
   channelEventHash: string | null;
 }
 
 /** The empty message a receiver holds when nothing was delivered (§9.6). */
 function emptyMessage(turn: number): ReceivedMessage {
-  return { turn, symbols: [], symbolIndices: [], channelEventHash: null };
+  return { turn, marks: [], symbolIndices: [], channelEventHash: null };
 }
 
 interface HypothesisRecord {
@@ -192,8 +207,8 @@ interface AdapterState {
   shape: ResolvedGameShape;
   options: TabularPolicyOptions;
   rewardMode: RewardMode;
-  symbols: string[];
-  symbolIndex: Map<string, number>;
+  /** SPEC §9.1/§9.2: how a form index becomes a public artifact (ALD-031). */
+  support: CarrierAdapterSupport;
   actionStream: SeededPrng;
   nonces: BlindingNonceSource;
 }
@@ -279,10 +294,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       shape,
       options: resolved,
       rewardMode: resolveRewardMode(context.config, this.options),
-      symbols: [...context.symbolInventory],
-      symbolIndex: new Map(
-        context.symbolInventory.map((symbol, index) => [symbol, index]),
-      ),
+      support: createCarrierSupport(context, shape, this.options),
       actionStream: prng.derive('scratch-rl/action'),
       nonces: new BlindingNonceSource({
         seed: context.seed,
@@ -291,10 +303,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       }),
     };
 
-    const symbolCount = context.symbolInventory.length;
+    const symbolCount = this.state.support.formCount;
     this.thetaSender = zeroMatrix(shape.typeCount, symbolCount);
-    this.thetaReceiver = Array.from({ length: shape.messageLength }, () =>
-      zeroMatrix(symbolCount, shape.typeCount),
+    this.thetaReceiver = Array.from(
+      { length: this.state.support.marksPerMessage },
+      () => zeroMatrix(symbolCount, shape.typeCount),
     );
     this.baseline = 0;
     this.observation = undefined;
@@ -331,31 +344,28 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     state: AdapterState,
     turnBudget: TurnBudget,
   ): Promise<TurnProposalEnvelope> {
-    requireAction(turnBudget, 'emit_symbols');
+    requireCarrierAction(turnBudget, state.support.emitKind);
     const memory = this.senderTurn(state, turnBudget.turn);
-    const symbols = [...memory.symbols];
+    const marks = [...memory.marks];
 
-    const proposal = {
-      kind: 'emit_symbols' as const,
-      publicArtifact: { symbols },
-    };
+    const proposal = carrierProposal(state.support, memory.symbolIndices);
     const artifactRef = memory.primaryEvidenceRef;
 
     await this.recordFirstUse(
       state,
       turnBudget.turn,
-      symbols,
+      marks,
       'term.first_emitted',
       this.emitted,
     );
 
     const draft = buildNoncedDraft(state.nonces, {
       eventType: 'intention.recorded',
-      subjectId: `symbol:${at(symbols, 0)}`,
+      subjectId: subjectIdFor(state.support, at(marks, 0)),
       turn: turnBudget.turn,
       content: {
         artifactRef,
-        symbols,
+        ...messageFields(state.support, marks),
         targetTypeCode: memory.typeCode,
         probability: roundTo(memory.confidence, 6),
         associationWeights: roundAll(memory.probs, 6),
@@ -396,21 +406,29 @@ export class TabularReinforceAdapter implements LearnerAdapter {
 
     const symbolIndices: number[] = [];
     let confidence = 1;
-    for (let position = 0; position < state.shape.messageLength; position += 1) {
+    for (
+      let position = 0;
+      position < state.support.marksPerMessage;
+      position += 1
+    ) {
       const index = state.actionStream.sampleIndex(probs);
       symbolIndices.push(index);
       confidence *= at(probs, index);
     }
-    const symbols = symbolIndices.map((index) => at(state.symbols, index));
-    const artifactRef = `proposal:${hashCanonical(HASH_DOMAINS.babyProposal, {
-      kind: 'emit_symbols' as const,
-      publicArtifact: { symbols },
-    })}`;
+    const marks = symbolIndices.map((index) => ({
+      formIndex: index,
+      formId: state.support.formId(index),
+      markHash: state.support.formMarkHash(index),
+    }));
+    const artifactRef = `proposal:${hashCanonical(
+      HASH_DOMAINS.babyProposal,
+      carrierProposal(state.support, symbolIndices),
+    )}`;
 
     const memory: SenderTurnMemory = {
       role: 'sender',
       turn,
-      symbols,
+      marks,
       symbolIndices,
       typeCode,
       probs,
@@ -450,7 +468,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       turn: turnBudget.turn,
       content: {
         artifactRef,
-        symbols: [...memory.symbols],
+        ...messageFields(state.support, memory.marks),
         selection: objectRef,
         /** The type code of the candidate this Baby intends to refer to. */
         targetTypeCode: at(memory.candidateTypeCodes, memory.actionIndex),
@@ -502,7 +520,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     const memory: ReceiverTurnMemory = {
       role: 'receiver',
       turn,
-      symbols: [...received.symbols],
+      marks: [...received.marks],
       symbolIndices: [...received.symbolIndices],
       candidateTypeCodes,
       actionIndex,
@@ -521,7 +539,14 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     delivery: DeliveredChannelArtifact,
   ): Promise<LedgerDraftEnvelope> {
     const state = this.requireState();
-    const symbols = extractSymbols(delivery);
+    const delivered = state.support.parseDelivery(delivery.publicArtifact);
+    const marks = delivered.marks;
+    const unknownSymbol = marks.find((mark) => mark.formIndex === null);
+    if (state.support.symbolic && unknownSymbol !== undefined) {
+      throw new LearnerStateError(
+        `Symbol ${unknownSymbol.formId} is not in the inventory`,
+      );
+    }
     // SPEC §9.6 `random` delivers a uniformly drawn message of any length in
     // `[1, maxSymbolsPerMessage]`, and §9.6 requires every condition to run
     // over the same scenarios and learner interfaces — so a delivered length
@@ -530,17 +555,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     // it holds receiver tables for; a shorter message simply leaves the
     // trailing positions absent, and any symbol past `messageLength` is
     // unscored but still recorded verbatim in the interpretation event (§8.2).
-    const scored = symbols.slice(0, state.shape.messageLength);
-    const symbolIndices = scored.map((symbol) => {
-      const index = state.symbolIndex.get(symbol);
-      if (index === undefined) {
-        throw new LearnerStateError(`Symbol ${symbol} is not in the inventory`);
-      }
-      return index;
-    });
+    const scored = marks.slice(0, state.support.marksPerMessage);
+    const symbolIndices = scored.flatMap((mark) =>
+      mark.formIndex === null ? [] : [mark.formIndex],
+    );
     this.lastReceived = {
       turn: delivery.turn,
-      symbols,
+      marks,
       symbolIndices,
       channelEventHash: delivery.channelEventHash,
     };
@@ -548,7 +569,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     await this.recordFirstUse(
       state,
       delivery.turn,
-      symbols,
+      marks,
       'term.first_received',
       this.received,
     );
@@ -566,11 +587,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
 
     const draft = buildNoncedDraft(state.nonces, {
       eventType: 'interpretation.recorded',
-      subjectId: `symbol:${at(symbols, 0)}`,
+      subjectId: subjectIdFor(state.support, at(marks, 0)),
       turn: delivery.turn,
       content: {
         artifactRef: delivery.channelEventHash,
-        symbols,
+        ...messageFields(state.support, marks),
         candidateTypeCodes,
         inferredDistribution: roundAll(inferredDistribution, 6),
         argmaxCandidateIndex,
@@ -820,7 +841,15 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     });
 
     for (const [symbolIndex, positions] of positionsBySymbol) {
-      const symbol = at(state.symbols, symbolIndex);
+      const mark = memory.marks.find(
+        (candidate) => candidate.formIndex === symbolIndex,
+      );
+      if (mark === undefined) {
+        throw new LearnerStateError(
+          `No delivered mark corresponds to form index ${String(symbolIndex)}`,
+        );
+      }
+      const key = markKey(state.support, mark);
       const association = softmax(
         this.associationRow(symbolIndex, positions),
         state.options.temperature,
@@ -832,26 +861,26 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         `outcome:${memory.turn}`,
       ];
       const shared = {
-        termRef: `symbol:${symbol}`,
+        ...termFields(state.support, mark),
         associationOverTypeCodes: roundAll(association, 6),
         argmaxTypeCode,
         confidence: roundTo(confidence, 6),
         evidenceRefs,
       };
-      const previous = this.hypotheses.get(symbol);
+      const previous = this.hypotheses.get(key);
 
       if (previous === undefined) {
-        const hypothesisRef = `hyp:${symbol}:1`;
+        const hypothesisRef = hypothesisRefFor(state.support, mark.formId, 1);
         await state.ledger.append(
           buildNoncedDraft(state.nonces, {
             eventType: 'hypothesis.created',
-            subjectId: `symbol:${symbol}`,
+            subjectId: subjectIdFor(state.support, mark),
             turn: memory.turn,
             content: { ...shared, hypothesisRef },
             evidenceRefs,
           }),
         );
-        this.hypotheses.set(symbol, {
+        this.hypotheses.set(key, {
           version: 1,
           hypothesisRef,
           argmaxTypeCode,
@@ -861,11 +890,15 @@ export class TabularReinforceAdapter implements LearnerAdapter {
 
       if (previous.argmaxTypeCode !== argmaxTypeCode) {
         const version = previous.version + 1;
-        const hypothesisRef = `hyp:${symbol}:${version}`;
+        const hypothesisRef = hypothesisRefFor(
+          state.support,
+          mark.formId,
+          version,
+        );
         await state.ledger.append(
           buildNoncedDraft(state.nonces, {
             eventType: 'hypothesis.revised',
-            subjectId: `symbol:${symbol}`,
+            subjectId: subjectIdFor(state.support, mark),
             turn: memory.turn,
             content: {
               ...shared,
@@ -875,7 +908,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
             evidenceRefs,
           }),
         );
-        this.hypotheses.set(symbol, { version, hypothesisRef, argmaxTypeCode });
+        this.hypotheses.set(key, { version, hypothesisRef, argmaxTypeCode });
         continue;
       }
 
@@ -883,7 +916,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         await state.ledger.append(
           buildNoncedDraft(state.nonces, {
             eventType: 'hypothesis.contradicted',
-            subjectId: `symbol:${symbol}`,
+            subjectId: subjectIdFor(state.support, mark),
             turn: memory.turn,
             content: {
               ...shared,
@@ -969,25 +1002,26 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   private async recordFirstUse(
     state: AdapterState,
     turn: number,
-    symbols: readonly string[],
+    marks: readonly DeliveredMark[],
     eventType: 'term.first_emitted' | 'term.first_received',
     seen: Set<string>,
   ): Promise<void> {
-    for (const symbol of symbols) {
-      if (seen.has(symbol)) {
+    for (const mark of marks) {
+      const key = markKey(state.support, mark);
+      if (seen.has(key)) {
         continue;
       }
       const draft: LedgerEventDraft = buildNoncedDraft(state.nonces, {
         eventType,
-        subjectId: `symbol:${symbol}`,
+        subjectId: subjectIdFor(state.support, mark),
         turn,
         content: {
-          termRef: `symbol:${symbol}`,
+          ...termFields(state.support, mark),
           firstUse: eventType === 'term.first_emitted' ? 'emitted' : 'received',
         },
       });
       await state.ledger.append(draft);
-      seen.add(symbol);
+      seen.add(key);
     }
   }
 
@@ -1017,8 +1051,8 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     const mismatches: string[] = [];
     for (const [name, checkpointValue, runValue] of [
       ['typeCount', shape.typeCount, state.shape.typeCount],
-      ['symbolCount', shape.symbolCount, state.symbols.length],
-      ['messageLength', shape.messageLength, state.shape.messageLength],
+      ['symbolCount', shape.symbolCount, state.support.formCount],
+      ['messageLength', shape.messageLength, state.support.marksPerMessage],
       [
         'attributeCount',
         policy.options.attributeCount,

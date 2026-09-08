@@ -49,6 +49,24 @@ export const GATEWAY_REASON_CODES = [
   'interpretation-hash-mismatch',
   /** SPEC §8.3: the turn response budget elapsed; the turn is forfeited. */
   'timeout',
+  /** SPEC §9.2 `fixed-glyph`: the glyph id is not in the frozen glyph bundle. */
+  'glyph-not-in-inventory',
+  /** SPEC §9.2 `generative-bitmap`: the bit matrix is not exactly 16x16 = 256 bits. */
+  'bitmap-size-invalid',
+  /** SPEC §9.2 `generative-bitmap`: a cell is not the literal `0` or `1`. */
+  'bitmap-value-invalid',
+  /** SPEC §9.2 `generative-canvas`: over `maxStrokes` (absolute ceiling 64). */
+  'too-many-strokes',
+  /** SPEC §9.2 `generative-canvas`: a stroke coordinate is outside the 0-15 grid. */
+  'stroke-out-of-range',
+  /** SPEC §9.2 `generative-canvas`: the quantized pen width is not 1, 2, or 3. */
+  'stroke-width-invalid',
+  /** SPEC §9.2 `generative-tone`: over the eight-tone sequence bound. */
+  'too-many-tones',
+  /** SPEC §9.2 `generative-tone`: a pitch bin is not 0-7 or a duration bin not 1-4. */
+  'tone-out-of-range',
+  /** SPEC §9.3 rule 6: a non-allowlisted or malformed affect payload (ALD-033). */
+  'affect-violation',
 ] as const;
 
 export type GatewayReasonCode = (typeof GATEWAY_REASON_CODES)[number];

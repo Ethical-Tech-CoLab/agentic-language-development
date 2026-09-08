@@ -24,6 +24,9 @@ import {
   HASH_DOMAINS,
   LedgerDraftEnvelopeSchema,
   TurnProposalEnvelopeSchema,
+  type AffectStateMeasurement,
+  type AffectSubmitResult,
+  type AffectWindow,
   type AgentActionProposal,
   type BabyRole,
   type ChannelEvent,
@@ -42,6 +45,7 @@ import {
 import { hashCanonical, SeededPrng } from '@ald/hashing';
 import { validateLedgerEventDraft } from '@ald/evidence';
 
+import { AffectProtocol, type DerivedAffectResult } from './affect.js';
 import {
   carrierModule,
   DEFAULT_MAX_SYMBOL_REPEATS,
@@ -199,6 +203,8 @@ export class SymbolGatewayImpl implements SymbolGateway {
   private readonly deliveries = new Map<string, GatewayDelivery>();
   private readonly permutations = new Map<number, number[]>();
   private rejections = 0;
+  /** SPEC §9.3: built on first affect call (see the `affect` accessor). */
+  private affectProtocol: AffectProtocol | undefined;
 
   constructor(
     readonly runContext: GatewayRunContext,
@@ -457,6 +463,44 @@ export class SymbolGatewayImpl implements SymbolGateway {
   ): Promise<GatewayRejection> {
     const rejection = await this.commitRejection(turn.turn, sender, 'timeout', null);
     return { kind: 'rejected', ...rejection };
+  }
+
+  // -------------------------------------------------------------------------
+  // Affect protocol (SPEC §9.3, ALD-033) — thin delegations; the rules,
+  // the modes, the window discipline, and the derived mapping all live in
+  // `affect.ts`.
+  // -------------------------------------------------------------------------
+
+  /**
+   * The run's affect protocol. Created on first use, so a run with
+   * `affectMode: "none"` never builds one and an affect call on such a run
+   * raises `AffectDisabledError`. The Nursery Controller reaches
+   * `openWindow`/`takePrivateMeasurements` through this accessor; it may also
+   * construct an `AffectProtocol` directly with its own clock.
+   */
+  get affect(): AffectProtocol {
+    this.affectProtocol ??= new AffectProtocol({
+      runContext: this.runContext,
+      evidence: this.evidence,
+      commitAffectRejection: (turn, sender, payload) =>
+        this.commitRejection(turn, sender, 'affect-violation', payload),
+      now: () => new Date().toISOString(),
+    });
+    return this.affectProtocol;
+  }
+
+  submitAffect(
+    window: AffectWindow,
+    proposal: unknown,
+  ): Promise<AffectSubmitResult> {
+    return this.affect.submitAffect(window, proposal);
+  }
+
+  recordDerivedAffect(
+    window: AffectWindow,
+    measurement: AffectStateMeasurement,
+  ): Promise<DerivedAffectResult> {
+    return this.affect.recordDerivedAffect(window, measurement);
   }
 
   consecutiveRejections(): number {

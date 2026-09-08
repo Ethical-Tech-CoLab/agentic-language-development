@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active. ALD-001 through ALD-017, ALD-023 through ALD-030, ALD-034 through ALD-038, ALD-041 through ALD-043, ALD-045, ALD-048 through ALD-052, and the statistics half of ALD-072 are implemented and tested in Prototype Mode; ALD-018, ALD-019, ALD-021, ALD-022, ALD-025 through ALD-027, ALD-059, and ALD-071 are implemented except for the parts that need a funded Base wallet, Research-Grade deployment, or external pre-registration. Acceptance checkboxes below record the verified state item by item; the next critical-path items are ALD-020 (real Base Sepolia anchoring), ALD-044, ALD-055, ALD-072 (intervention suite), and ALD-071 (external registration binding).
+- **Status:** Implementation active, with 160 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, and configuration-driven interventions. The acceptance checkboxes below are authoritative: runtime wiring, the active side-channel harness, retention enforcement, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -529,9 +529,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9.2 Alternate Neutral Carrier Protocols](SPECIFICATION.md#92-alternate-neutral-carrier-protocols)
 - **Scope:** Implement §9.2's `fixed-glyph`, `generative-bitmap`, `generative-canvas`, and `generative-tone` carrier modules with frozen neutral grammars, hard bounds, RFC 8785 canonicalization, and carrier-qualified content-addressed `markHash` generation.
 - **Acceptance criteria:**
-  - [ ] Each alternate carrier accepts a valid bounded artifact and reproduces the same carrier-qualified `markHash`.
-  - [ ] Out-of-range glyph IDs, bitmap sizes, stroke values, tone bins, text/color fields, and semantic tags are rejected with specific reasons.
-  - [ ] Every carrier contributes accept/reject vectors to `ALD-036`, and exactly one carrier family is available in a run.
+  - [x] Each alternate carrier accepts a valid bounded artifact and reproduces the same carrier-qualified `markHash`.
+  - [x] Out-of-range glyph IDs, bitmap sizes, stroke values, tone bins, text/color fields, and semantic tags are rejected with specific reasons.
+  - [x] Every carrier contributes accept/reject vectors to `ALD-036`, and exactly one carrier family is available in a run.
 
 #### ALD-032 — Alternate-carrier leakage evaluation
 - **Priority:** P1 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-031
@@ -547,9 +547,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9.3 Six-Display Affect Protocol](SPECIFICATION.md#93-six-display-affect-protocol)
 - **Scope:** Implement declared, permuted, opaque, and derived six-display modes plus emergent-affect routing through the selected alternate carrier. In derived mode, the Gateway maps adapter measurements; the Baby cannot choose a display.
 - **Acceptance criteria:**
-  - [ ] Declared/permuted/opaque modes emit only A1-A6, while any other display or out-of-window submission is rejected.
-  - [ ] Derived mode disables `submit_affect`, records the private measurement, and applies the pre-registered Gateway mapping; emergent mode records a carrier Channel Event rather than an Affect Event.
-  - [ ] Affect schemas and every mode's accept/reject vectors extend `ALD-036`, including normalized timing/envelope behavior.
+  - [x] Declared/permuted/opaque modes emit only A1-A6, while any other display or out-of-window submission is rejected.
+  - [x] Derived mode disables `submit_affect`, records the private measurement, and applies the pre-registered Gateway mapping; emergent mode records a carrier Channel Event rather than an Affect Event.
+  - [x] Affect schemas and every mode's accept/reject vectors extend `ALD-036`, including normalized timing/envelope behavior.
 
 #### ALD-034 — Channel violation detection and rejection behavior
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-029, ALD-030
@@ -606,8 +606,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Scan every scene and asset for OCR-visible text before scenario registration. Any detected glyph or text causes the complete bundle to fail observation hygiene and enter quarantine; prohibited text is never sanitized and passed through.
 - **Acceptance criteria:**
   - [ ] A bundle containing OCR-detected text, caption metadata, semantic filenames, or human-readable labels cannot be referenced by a run.
-  - [ ] Text-free controls pass while pre-registered adversarial image/text fixtures are quarantined before any adapter receives them.
-  - [ ] Quarantine events retain artifact hashes and reason codes without exposing raw injection text in Baby-visible or public logs.
+  - [x] Text-free controls pass while pre-registered adversarial image/text fixtures are quarantined before any adapter receives them.
+  - [x] Quarantine events retain artifact hashes and reason codes without exposing raw injection text in Baby-visible or public logs.
 
 #### ALD-040 — Side-channel elimination in transport layer
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-029, ALD-037
@@ -655,8 +655,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement the `frozen-llm` adapter using a locally deployable 3B–8B open-weight instruction model by default, with frozen weights, separate private memory, constrained tool calls, and no network access.
 - **Acceptance criteria:**
   - [ ] The `frozen-llm` track is selectable via `ALD-023` run configuration and records the exact model and weight hashes.
-  - [ ] A full turn (observation → proposal → Gateway validation → commit) completes end-to-end using this adapter.
-  - [ ] The adapter exposes no weight-update path and passes the `ALD-036` Gateway conformance suite.
+  - [x] A full turn (observation → proposal → Gateway validation → commit) completes end-to-end using this adapter.
+  - [x] The adapter exposes no weight-update path and passes the `ALD-036` Gateway conformance suite.
 
 #### ALD-045 — From-scratch RL learner track
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-042, ALD-043
@@ -672,8 +672,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§6.1 Track Definitions](SPECIFICATION.md#61-track-definitions), `EXPERIMENT-NOTEBOOK.md` [E12 — Self-Supervised Ungrounded Baseline](EXPERIMENT-NOTEBOOK.md#e12-self-supervised-ungrounded-baseline)
 - **Scope:** Implement the `self-supervised` adapter with the same recurrent backbone as `scratch-rl` where feasible, using a pre-registered predictive or contrastive loss and no scalar reward.
 - **Acceptance criteria:**
-  - [ ] The track is selectable, starts from recorded random initialization, and rejects any scalar reward supplied to its update path.
-  - [ ] A full turn and minimal predictive/contrastive update complete end-to-end.
+  - [x] The track is selectable, starts from recorded random initialization, and rejects any scalar reward supplied to its update path.
+  - [x] A full turn and minimal predictive/contrastive update complete end-to-end.
   - [ ] The evidence bundle records the loss definition and proves that outcome labels are not included in the self-supervised update batch.
 
 #### ALD-047 — Hybrid learner track
@@ -681,8 +681,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§6.1 Track Definitions](SPECIFICATION.md#61-track-definitions), [§6.5 Semantic-Leakage Test Battery](SPECIFICATION.md#65-semantic-leakage-test-battery)
 - **Scope:** Implement the `hybrid` adapter using a from-scratch sensory encoder, recurrent world model, and randomly initialized communication policy, with optional frozen low-level visual features only after semantic-leakage qualification.
 - **Acceptance criteria:**
-  - [ ] The track is selectable and records the provenance and hashes of every sensory, world-model, and communication component.
-  - [ ] A full turn and minimal policy update complete end-to-end through the shared interface.
+  - [x] The track is selectable and records the provenance and hashes of every sensory, world-model, and communication component.
+  - [x] A full turn and minimal policy update complete end-to-end through the shared interface.
   - [ ] Any text-aligned frozen feature automatically weakens the run's claim classification; strict ungrounded classification requires `ALD-057` to pass.
 
 ### EPIC-09 — DTSF Twin Packs, API Surface, and Authorization
@@ -792,9 +792,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§14.1 Telemetry](SPECIFICATION.md#141-telemetry)
 - **Scope:** Implement the telemetry pipeline capturing per-request/per-turn metrics (method, path, status, duration) named in §14.1, persisted for dashboard consumption.
 - **Acceptance criteria:**
-  - [ ] Every API request across all twin routes produces a telemetry record with the fields §14.1 requires.
-  - [ ] Telemetry recording failures never block or fail the underlying request (verified by fault-injection test on the telemetry sink).
-  - [ ] Telemetry data is queryable by run ID and by time range.
+  - [x] Every API request across all twin routes produces a telemetry record with the fields §14.1 requires.
+  - [x] Telemetry recording failures never block or fail the underlying request (verified by fault-injection test on the telemetry sink).
+  - [x] Telemetry data is queryable by run ID and by time range.
 
 #### ALD-059 — Audit, intervention, and safety-event logging
 - **Priority:** P0 · **Size:** L · **Class:** Research-Grade · **Depends on:** ALD-013, ALD-024, ALD-053
@@ -810,17 +810,17 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§14.4 Snapshot and Restore](SPECIFICATION.md#144-snapshot-and-restore)
 - **Scope:** Implement periodic and on-demand snapshotting of all runtime state to serialized files, and a restore path that reconstructs state from the latest snapshot on startup, per §14.4.
 - **Acceptance criteria:**
-  - [ ] A manual "take snapshot now" action produces a snapshot file set that a restore can consume.
-  - [ ] Restarting the server after a snapshot automatically restores to that snapshot's state (`autoRestore()`-equivalent behavior).
-  - [ ] A restored run's evidence-store state matches, byte-for-byte in the chain-walk sense (`ALD-008`), the state at the moment the snapshot was taken.
+  - [x] A manual "take snapshot now" action produces a snapshot file set that a restore can consume.
+  - [x] Restarting the server after a snapshot automatically restores to that snapshot's state (`autoRestore()`-equivalent behavior).
+  - [x] A restored run's evidence-store state matches, byte-for-byte in the chain-walk sense (`ALD-008`), the state at the moment the snapshot was taken.
 
 #### ALD-061 — Failure handling policy implementation
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** ALD-011, ALD-021
 - **Spec refs:** `SPECIFICATION.md` [§14.5 Failure Handling](SPECIFICATION.md#145-failure-handling)
 - **Scope:** Implement the documented failure-handling policy for each named failure mode in §14.5 (evidence-store failure, anchoring failure, learner adapter crash), including registering `process.on('uncaughtException')` and `process.on('unhandledRejection')` handlers so background tasks (checkpoint scheduler, anchoring retries) log rather than crash the server.
 - **Acceptance criteria:**
-  - [ ] Every failure mode named in §14.5 has an implemented, tested handling path.
-  - [ ] An unhandled rejection thrown from a background task (e.g., a failed anchor confirmation poll) is caught, logged, and does not crash the server process, confirmed by a fault-injection test.
+  - [x] Every failure mode named in §14.5 has an implemented, tested handling path.
+  - [x] An unhandled rejection thrown from a background task (e.g., a failed anchor confirmation poll) is caught, logged, and does not crash the server process, confirmed by a fault-injection test.
   - [x] The failure-handling behavior for anchoring failures reuses `ALD-021`'s retry/backoff rather than a separate ad hoc mechanism.
 
 #### ALD-062 — Retention policy enforcement job
@@ -890,8 +890,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§10.2 Prompt Injection Controls](SPECIFICATION.md#102-prompt-injection-controls), `EXPERIMENT-NOTEBOOK.md` [E02 — Observation and Metadata Leakage Audit](EXPERIMENT-NOTEBOOK.md#e02-observation-and-metadata-leakage-audit)
 - **Scope:** Build adversarial scenario bundles that hide text in pixels, metadata, filenames, alternate encodings, and malformed assets, attempting to bypass `ALD-039` and reach a Baby observation.
 - **Acceptance criteria:**
-  - [ ] The suite includes direct text, low-contrast/OCR-evasion fixtures, metadata labels, semantic filenames, and malformed-image cases.
-  - [ ] Every positive fixture is quarantined and zero raw text reaches an adapter context; negative text-free controls remain loadable.
+  - [x] The suite includes direct text, low-contrast/OCR-evasion fixtures, metadata labels, semantic filenames, and malformed-image cases.
+  - [x] Every positive fixture is quarantined and zero raw text reaches an adapter context; negative text-free controls remain loadable.
   - [ ] Results are exported as hashed evidence linked from the E02 Experiment Record, not misrepresented as the Experiment Record itself.
 
 #### ALD-069 — Ephemeral encoding and adversarial cryptography research harness
@@ -930,7 +930,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§15.2 Intervention Test Suite](SPECIFICATION.md#152-intervention-test-suite), [§15.3 Evaluation Baselines and Statistics](SPECIFICATION.md#153-evaluation-baselines-and-statistics)
 - **Scope:** Build the software scaffold (not the scientific analysis itself) that lets a pre-registered intervention be applied to a deterministic scenario run (`ALD-041`) and that computes the baseline statistics named in §15.3 over run output.
 - **Acceptance criteria:**
-  - [ ] An intervention defined in a pre-registration reference (`ALD-071`) can be toggled on/off for a run via configuration, with no code change per intervention.
+  - [x] An intervention defined in a pre-registration reference (`ALD-071`) can be toggled on/off for a run via configuration, with no code change per intervention.
   - [x] The scaffold computes every baseline statistic named in §15.3 over a completed run's evidence.
   - [x] The scaffold's output is a data structure ready for a researcher's downstream analysis — it does not itself draw or store scientific conclusions.
 
@@ -1084,7 +1084,7 @@ These are working decisions this backlog encodes. Where a decision is not yet ma
 
 These resolve details the source documents name but do not fix. Each is implemented, tested, and referenced from code comments.
 
-- **Hash domains.** LEDGER-INTEGRITY-DESIGN.md and SPECIFICATION.md name six domain separators; the implementation defines the remaining ones in `packages/types/src/domains.ts` (`HASH_DOMAINS`): channel event, affect event, audit-ledger entry, intervention event, turn record, Baby proposal, rejected payload, run config, run id, run manifest, pre-registration, scenario bundle/state, observation, action, outcome, prompt bundle, policy checkpoint, and PRNG seed. All follow `SHA-256(domain || 0x00 || payload)`; only Merkle interior nodes use `0x01`.
+- **Hash domains.** LEDGER-INTEGRITY-DESIGN.md and SPECIFICATION.md name six domain separators; the implementation defines the remaining ones in `packages/types/src/domains.ts` (`HASH_DOMAINS`): channel event, affect event and measurement, audit-ledger entry, intervention event and causal probe, turn record, Baby proposal, rejected payload, run config/id/manifest, pre-registration, scenario bundle/state, observation, action, outcome, prompt bundle, policy checkpoint, carrier-form inventory, glyph bundle, retention log, failure message, runtime snapshot, encoding scheme, nonce commitment, and PRNG seed. All follow `SHA-256(domain || 0x00 || payload)`; only Merkle interior nodes use `0x01`.
 - **Turn-record stream.** SPEC §14.3 needs per-turn hashes for the replay digest, so the Evidence Store carries an implementation-defined `turns` stream (`turn_records`, migration v2), witness-signed and committed as the auxiliary checkpoint tree `turns`. `intervention_log` stays hash-chained but unsigned and is exported without a checkpoint tree (LEDGER §8 auxiliary trees require a writer key).
 - **Checkpoint manifest `reason`.** LEDGER §8's manifest is illustrative; the implementation adds a `reason` enum recording the LEDGER §9 trigger so intervention checkpoints are verifiable.
 - **Empty trees.** A stream with no events is committed as `treeSize 0`, `EMPTY_MERKLE_ROOT`, `lastEntryHash = GENESIS_HASH`; a size-0 auxiliary tree is omitted from `auxiliaryTrees` and a verifier reads the omission as the empty tree (docs/evidence-bundle-format.md §6). A single-leaf Merkle root is the leaf hash (leaves are already domain-hashed).

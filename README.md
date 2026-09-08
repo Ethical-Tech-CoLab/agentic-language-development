@@ -108,12 +108,17 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   wallet is configured here), and the standalone `ald-verify` CLI that re-derives
   every hash, signature, root, proof, binding, and anchor from a bundle alone.
 - `@ald/lifecycle`, `@ald/scenario`, `@ald/gateway`, `@ald/learners`,
-  `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine, the
-  deterministic referential Scenario Engine with all five interaction profiles and
-  the observation hygiene filter, the Symbol Gateway with the fixed-token protocol
-  and all six communication-control conditions, the no-learning and tabular
-  scratch-RL learner adapters with agent-native ledgers, the Nursery runtime that
-  drives the SPEC §8 turn cycle end to end, and the pre-registered statistics.
+  `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine; deterministic
+  scenarios, hygiene, and a quarantine registry; fixed-token, glyph, bitmap, canvas,
+  tone, and six-display affect protocols; no-learning and scratch-RL runtime tracks;
+  frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
+  Nursery's end-to-end SPEC §8 turn cycle; and pre-registered analysis primitives.
+- `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
+  process transport and learner-host confinement; API telemetry, snapshot/restore,
+  and failure supervision; configuration-driven causal probes, repair, held-out,
+  curriculum, drift, and statistical scaffolds; and the committed observation-text
+  and quarantine-bypass corpus. These are tested foundations, not a completed Mode R
+  deployment or a scientific result.
 - DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
   with role guards in Prototype Mode.
 
@@ -123,10 +128,11 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is Base Sepolia anchoring with a funded wallet
-(ALD-020), Research-Grade isolation (ALD-055), the frozen-LLM adapter (ALD-044),
-the intervention test suite (ALD-072), and external pre-registration binding
-(ALD-071).
+The next critical-path work is wiring quarantine and intervention plans into run
+registration/execution, completing the active side-channel harness, finishing Mode R
+container/network isolation, exercising frozen-LLM with real open weights, enforcing
+retention, anchoring on Base Sepolia with a funded wallet, and binding an external
+pre-registration.
 
 No experiment results are claimed.
 
