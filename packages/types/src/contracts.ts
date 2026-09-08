@@ -223,6 +223,7 @@ export interface TurnRecordAppendRequest {
   scenarioRef: string;
   scenarioStateHash: Sha256Hash;
   observationHashes: TurnRecord['observationHashes'];
+  probeHash?: Sha256Hash;
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash;
   channelEventHash: Sha256Hash | null;
@@ -556,11 +557,10 @@ export type AffectSubmitResult =
     };
 
 /**
- * A live §15.2 causal probe applied to one delivery: the receiver gets a
- * perturbed artifact while the channel event keeps the sender's validated
- * `publicArtifactHash`, so `deliveryReceipt.deliveredArtifactHash` differs
- * and the probe is visible to the verifier. `scrambling` is offline only and
- * is deliberately not representable here.
+ * A live §15.2 causal probe requested for one delivery. The Gateway applies
+ * it after communication controls and reports the exact before/after
+ * artifacts and hashes so the runtime can bind the perturbation to evidence.
+ * `scrambling` is offline only and is deliberately not representable here.
  */
 export interface ArtifactProbe {
   probeId: string;
@@ -571,6 +571,28 @@ export interface ArtifactProbe {
   substitute?: string;
   /** Ledger hypothesis the probe tests, fixed before the outcome is seen. */
   hypothesisRef: string;
+}
+
+export type ArtifactProbeSkipReason =
+  | 'no-delivery'
+  | 'unsupported-carrier'
+  | 'position-out-of-range'
+  | 'would-empty-artifact'
+  | 'missing-substitute'
+  | 'substitute-not-in-inventory'
+  | 'no-artifact-change'
+  | 'invalid-perturbed-artifact';
+
+/** Gateway result for a requested live probe, before the receiver runs. */
+export interface ArtifactProbeApplication {
+  probe: ArtifactProbe;
+  probeHash: Sha256Hash;
+  status: 'applied' | 'skipped';
+  reasonCode?: ArtifactProbeSkipReason;
+  artifactBefore: AgentActionProposal['publicArtifact'] | null;
+  artifactAfter: AgentActionProposal['publicArtifact'] | null;
+  artifactHashBefore: Sha256Hash;
+  artifactHashAfter: Sha256Hash;
 }
 
 // ---------------------------------------------------------------------------
@@ -713,6 +735,8 @@ export type GatewaySubmitResult =
       delivery: DeliveredChannelArtifact | null;
       babyProposalHash: Sha256Hash;
       deliveredArtifactHash: Sha256Hash;
+      /** Present when the trusted turn context requested a live causal probe. */
+      probeApplication?: ArtifactProbeApplication;
     }
   | {
       kind: 'rejected';

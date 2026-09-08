@@ -7,7 +7,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { verifyCrossBindings, type LoadedStream, type LoadedStreams } from '@ald/verifier';
-import { STREAM_HASH_DOMAIN, type EventStream } from '@ald/types';
+import { hashCanonical, hashCarrierMark } from '@ald/hashing';
+import { HASH_DOMAINS, STREAM_HASH_DOMAIN, type EventStream } from '@ald/types';
 
 function hash(seed: string): string {
   return `sha256:${seed.padEnd(64, '0').slice(0, 64).replace(/[^0-9a-f]/gu, '1')}`;
@@ -40,12 +41,14 @@ function streams(overrides: {
   babyB?: Record<string, unknown>[];
   channel?: Record<string, unknown>[];
   turns?: Record<string, unknown>[];
+  intervention?: Record<string, unknown>[];
 }): LoadedStreams {
   const map: LoadedStreams = new Map();
   map.set('baby-a-ledger', loaded('baby-a-ledger', overrides.babyA ?? []));
   map.set('baby-b-ledger', loaded('baby-b-ledger', overrides.babyB ?? []));
   map.set('channel', loaded('channel', overrides.channel ?? []));
   map.set('turns', loaded('turns', overrides.turns ?? []));
+  map.set('intervention', loaded('intervention', overrides.intervention ?? []));
   return map;
 }
 
@@ -227,6 +230,150 @@ describe('verifyCrossBindings', () => {
     );
 
     expect(failures).toEqual([]);
+  });
+
+  it('accepts an applied probe whose descriptor and artifacts bind to the turn', () => {
+    const probe = {
+      probeId: 'probe:t5:substitution',
+      kind: 'substitution',
+      position: 0,
+      substitute: 'S02',
+      hypothesisRef: 'ledger:h1',
+    };
+    const before = { symbols: ['S01', 'S03'] };
+    const after = { symbols: ['S02', 'S03'] };
+    const probeHash = hashCanonical(HASH_DOMAINS.causalProbe, probe);
+    const deliveredHash = hashCarrierMark('fixed-token', after);
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        channel: [
+          {
+            ...acceptedChannelEvent(),
+            turn: 5,
+            carrier: 'fixed-token',
+            publicArtifactHash: deliveredHash,
+            deliveryReceipt: {
+              recipient: 'baby-b',
+              deliveredArtifactHash: deliveredHash,
+            },
+          },
+        ],
+        turns: [
+          {
+            sequence: 5,
+            turn: 5,
+            phase: 'evaluating',
+            channelEventHash: CHANNEL_HASH,
+            probeHash,
+            deliveredArtifactHash: deliveredHash,
+          },
+        ],
+        intervention: [
+          {
+            sequence: 1,
+            eventType: 'causal-probe',
+            details: {
+              turn: 5,
+              application: {
+                probe,
+                probeHash,
+                status: 'applied',
+                artifactBefore: before,
+                artifactAfter: after,
+                artifactHashBefore: hashCarrierMark('fixed-token', before),
+                artifactHashAfter: deliveredHash,
+              },
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(failures).toEqual([]);
+  });
+
+  it('rejects a turn probe hash with no matching applied probe event', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        channel: [{ ...acceptedChannelEvent(), turn: 5 }],
+        turns: [
+          {
+            sequence: 5,
+            turn: 5,
+            phase: 'evaluating',
+            channelEventHash: CHANNEL_HASH,
+            probeHash: hash('eeee'),
+          },
+        ],
+      }),
+    );
+
+    expect(failures.join(' | ')).toContain('has no applied causal-probe event');
+  });
+
+  it('rejects probe artifacts whose hashes agree but whose transformation is wrong', () => {
+    const probe = {
+      probeId: 'probe:t5:substitution',
+      kind: 'substitution',
+      position: 0,
+      substitute: 'S02',
+      hypothesisRef: 'ledger:h1',
+    };
+    const before = { symbols: ['S01', 'S03'] };
+    const wrongAfter = { symbols: ['S04', 'S03'] };
+    const probeHash = hashCanonical(HASH_DOMAINS.causalProbe, probe);
+    const wrongHash = hashCarrierMark('fixed-token', wrongAfter);
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        channel: [
+          {
+            ...acceptedChannelEvent(),
+            turn: 5,
+            carrier: 'fixed-token',
+            publicArtifactHash: wrongHash,
+            deliveryReceipt: {
+              recipient: 'baby-b',
+              deliveredArtifactHash: wrongHash,
+            },
+          },
+        ],
+        turns: [
+          {
+            sequence: 5,
+            turn: 5,
+            phase: 'evaluating',
+            channelEventHash: CHANNEL_HASH,
+            probeHash,
+            deliveredArtifactHash: wrongHash,
+          },
+        ],
+        intervention: [
+          {
+            sequence: 1,
+            eventType: 'causal-probe',
+            details: {
+              turn: 5,
+              application: {
+                probe,
+                probeHash,
+                status: 'applied',
+                artifactBefore: before,
+                artifactAfter: wrongAfter,
+                artifactHashBefore: hashCarrierMark('fixed-token', before),
+                artifactHashAfter: wrongHash,
+              },
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(failures.join(' | ')).toContain(
+      'artifactAfter is not the recorded probe applied to artifactBefore',
+    );
   });
 
   it('rejects an interpretation recorded outside the ledgerLagTurns window', () => {

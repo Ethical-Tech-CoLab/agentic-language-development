@@ -115,8 +115,8 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   Nursery's end-to-end SPEC §8 turn cycle; and pre-registered analysis primitives.
 - `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
   process transport and learner-host confinement; API telemetry, snapshot/restore,
-  and failure supervision; configuration-driven causal probes, repair, held-out,
-  curriculum, drift, and statistical scaffolds; and the committed observation-text
+  and failure supervision; configuration-driven, verifier-bound live causal probes,
+  plus repair, held-out, curriculum, drift, and statistical scaffolds; and the committed observation-text
   and quarantine-bypass corpus. These are tested foundations, not a completed Mode R
   deployment or a scientific result.
 - DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
@@ -128,8 +128,8 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is live causal-probe and repair execution, an active
-side-channel harness, and Mode R
+The next critical-path work is repair execution, an active side-channel harness,
+and Mode R
 container/network isolation, exercising frozen-LLM with real open weights, enforcing
 retention, anchoring on Base Sepolia with a funded wallet, and binding an external
 pre-registration.

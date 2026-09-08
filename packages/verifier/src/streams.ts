@@ -11,6 +11,8 @@
  */
 import {
   formatChainViolation,
+  hashCanonical,
+  hashCarrierMark,
   parseJsonlEvents,
   type ChainViolationCode,
 } from '@ald/hashing';
@@ -18,10 +20,13 @@ import {
   AffectEventSchema,
   AuditLedgerEntrySchema,
   ChannelEventSchema,
+  HASH_DOMAINS,
   InterventionEventSchema,
   LedgerEventSchema,
   TurnRecordSchema,
   ledgerStreamForRole,
+  type AgentActionProposal,
+  type ArtifactProbe,
   type EventStream,
   type RunManifest,
   type StreamDeclaration,
@@ -317,6 +322,47 @@ export interface CrossBindingOptions {
 /** Widest lag the schema allows (`packages/types/src/schemas.ts`). */
 const MAX_LEDGER_LAG_TURNS = 2;
 
+/** Independently replay one symbolic §15.2 perturbation from recorded data. */
+function replayProbeArtifact(
+  carrier: 'fixed-token' | 'fixed-glyph',
+  probe: Record<string, unknown>,
+  artifactBefore: unknown,
+): AgentActionProposal['publicArtifact'] | undefined {
+  if (!isRecord(artifactBefore)) {
+    return undefined;
+  }
+  const field = carrier === 'fixed-token' ? 'symbols' : 'glyphs';
+  const source = artifactBefore[field];
+  const position = readNumber(probe, 'position');
+  const kind = readString(probe, 'kind');
+  if (
+    !Array.isArray(source) ||
+    source.some((mark) => typeof mark !== 'string') ||
+    position === undefined ||
+    !Number.isInteger(position) ||
+    position < 0 ||
+    position >= source.length
+  ) {
+    return undefined;
+  }
+  const marks = [...(source as string[])];
+  if (kind === 'ablation') {
+    if (marks.length <= 1) {
+      return undefined;
+    }
+    marks.splice(position, 1);
+  } else if (kind === 'substitution') {
+    const substitute = readString(probe, 'substitute');
+    if (substitute === undefined) {
+      return undefined;
+    }
+    marks[position] = substitute;
+  } else {
+    return undefined;
+  }
+  return { [field]: marks } as AgentActionProposal['publicArtifact'];
+}
+
 /**
  * The intention → message → interpretation → turn graph of LEDGER §6, listed
  * as mandatory verifier checks in docs/evidence-bundle-format.md §3. Returns
@@ -352,6 +398,119 @@ export function verifyCrossBindings(
     const hash = normalizeHash(event['entryHash']);
     if (hash !== undefined && !channelByHash.has(hash)) {
       channelByHash.set(hash, event);
+    }
+  }
+
+  const channelByTurn = new Map<number, Record<string, unknown>>();
+  for (const event of channelEvents) {
+    const turn = readNumber(event, 'turn');
+    if (turn !== undefined && !channelByTurn.has(turn)) {
+      channelByTurn.set(turn, event);
+    }
+  }
+
+  const appliedProbes = new Map<
+    string,
+    {
+      at: string;
+      turn: number;
+      probeHash: string;
+      application: Record<string, unknown>;
+    }
+  >();
+  for (const event of streams.get('intervention')?.events ?? []) {
+    if (readString(event, 'eventType') !== 'causal-probe') {
+      continue;
+    }
+    const at = `intervention#${String(readNumber(event, 'sequence') ?? -1)}`;
+    const details = readRecord(event, 'details');
+    const application =
+      details === undefined ? undefined : readRecord(details, 'application');
+    if (application === undefined || readString(application, 'status') !== 'applied') {
+      continue;
+    }
+    const turn = details === undefined ? undefined : readNumber(details, 'turn');
+    const probeHash = normalizeHash(application?.['probeHash']);
+    const probe = readRecord(application, 'probe');
+    if (turn === undefined || probeHash === undefined || probe === undefined) {
+      failures.push(`${at} applied causal probe is missing turn, probe, or probeHash`);
+      continue;
+    }
+    try {
+      const rebuilt = hashCanonical(
+        HASH_DOMAINS.causalProbe,
+        probe as unknown as ArtifactProbe,
+      );
+      if (rebuilt !== probeHash) {
+        failures.push(`${at} probeHash does not match its canonical probe descriptor`);
+      }
+    } catch {
+      failures.push(`${at} probe descriptor cannot be canonically hashed`);
+    }
+
+    const channelEvent = channelByTurn.get(turn);
+    const carrier = channelEvent === undefined
+      ? undefined
+      : readString(channelEvent, 'carrier');
+    const supportedCarrier = (
+      [
+        'fixed-token',
+        'fixed-glyph',
+        'generative-bitmap',
+        'generative-canvas',
+        'generative-tone',
+      ] as const
+    ).find((candidate) => candidate === carrier);
+    const beforeHash = normalizeHash(application['artifactHashBefore']);
+    const afterHash = normalizeHash(application['artifactHashAfter']);
+    if (channelEvent === undefined || supportedCarrier === undefined) {
+      failures.push(`${at} applied causal probe has no channel event/carrier for turn ${String(turn)}`);
+    } else {
+      try {
+        const rebuiltBefore = hashCarrierMark(
+          supportedCarrier,
+          application['artifactBefore'] as AgentActionProposal['publicArtifact'],
+        );
+        const rebuiltAfter = hashCarrierMark(
+          supportedCarrier,
+          application['artifactAfter'] as AgentActionProposal['publicArtifact'],
+        );
+        if (beforeHash !== rebuiltBefore) {
+          failures.push(`${at} artifactHashBefore does not match artifactBefore`);
+        }
+        if (afterHash !== rebuiltAfter) {
+          failures.push(`${at} artifactHashAfter does not match artifactAfter`);
+        }
+        if (rebuiltBefore === rebuiltAfter) {
+          failures.push(`${at} applied causal probe did not change the artifact`);
+        }
+        if (
+          supportedCarrier !== 'fixed-token' &&
+          supportedCarrier !== 'fixed-glyph'
+        ) {
+          failures.push(`${at} applied causal probe uses non-symbolic carrier ${supportedCarrier}`);
+        } else {
+          const expected = replayProbeArtifact(
+            supportedCarrier,
+            probe,
+            application['artifactBefore'],
+          );
+          if (expected === undefined) {
+            failures.push(`${at} causal probe cannot be replayed from artifactBefore`);
+          } else if (hashCarrierMark(supportedCarrier, expected) !== rebuiltAfter) {
+            failures.push(`${at} artifactAfter is not the recorded probe applied to artifactBefore`);
+          }
+        }
+      } catch {
+        failures.push(`${at} probe artifacts cannot be canonically hashed`);
+      }
+    }
+
+    const key = `${String(turn)}:${probeHash}`;
+    if (appliedProbes.has(key)) {
+      failures.push(`${at} duplicates an applied causal probe for turn ${String(turn)}`);
+    } else {
+      appliedProbes.set(key, { at, turn, probeHash, application });
     }
   }
 
@@ -472,6 +631,7 @@ export function verifyCrossBindings(
     }
   }
 
+  const boundProbes = new Set<string>();
   for (const event of streams.get('turns')?.events ?? []) {
     const at = `turns#${String(readNumber(event, 'sequence') ?? -1)}`;
     const channelEventHash = event['channelEventHash'];
@@ -496,6 +656,37 @@ export function verifyCrossBindings(
     ) {
       failures.push(
         `${at} channelEventHash references the channel event of turn ${String(channelTurn)}, not this record's turn ${String(recordTurn)}`,
+      );
+    }
+
+    const probeHash = normalizeHash(event['probeHash']);
+    if (probeHash !== undefined && recordTurn !== undefined) {
+      const key = `${String(recordTurn)}:${probeHash}`;
+      const probe = appliedProbes.get(key);
+      if (readString(event, 'phase') !== 'evaluating') {
+        failures.push(`${at} carries probeHash outside the evaluating phase`);
+      }
+      if (probe === undefined) {
+        failures.push(
+          `${at} probeHash ${probeHash} has no applied causal-probe event for this turn`,
+        );
+      } else {
+        boundProbes.add(key);
+        const delivered = normalizeHash(event['deliveredArtifactHash']);
+        const after = normalizeHash(probe.application['artifactHashAfter']);
+        if (delivered === undefined || after === undefined || delivered !== after) {
+          failures.push(
+            `${at} deliveredArtifactHash does not match the applied probe artifactHashAfter`,
+          );
+        }
+      }
+    }
+  }
+
+  for (const [key, probe] of appliedProbes) {
+    if (!boundProbes.has(key)) {
+      failures.push(
+        `${probe.at} applied causal probe is not bound by a turn record probeHash`,
       );
     }
   }

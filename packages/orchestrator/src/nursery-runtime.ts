@@ -113,7 +113,13 @@ import {
   type EvidenceDatabase,
 } from '@ald/evidence';
 import { RunLifecycle, validateRunConfig } from '@ald/lifecycle';
-import { CurriculumExecutor } from '@ald/interventions';
+import {
+  CurriculumExecutor,
+  buildInterventionRunPlan,
+  evaluationTurnRange,
+  type PlannedProbe,
+  type ProbeSchedule,
+} from '@ald/interventions';
 import {
   ReferentialScenarioEngine,
   ScenarioBundleRegistry,
@@ -132,6 +138,7 @@ import {
   InterpretationRejectedError,
   SymbolGatewayImpl,
   TurnDeadlineExceededError,
+  carrierInventory,
 } from '@ald/gateway';
 
 import {
@@ -365,6 +372,8 @@ interface RunRuntime {
   curriculum: CurriculumExecutor | null;
   /** Highest curriculum transition turn already applied; starts at -1. */
   lastCurriculumTurn: number;
+  /** Ledger-derived E16 schedule, frozen before evaluation starts. */
+  probeSchedule: ProbeSchedule | null;
 }
 
 export interface RunToCompletionOptions {
@@ -423,6 +432,7 @@ interface TurnScratch {
   channelEvent: ChannelEvent | null;
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash | undefined;
+  probeHash: Sha256Hash | undefined;
 }
 
 /**
@@ -545,6 +555,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new DuplicateRunError(runId);
     }
     this.#assertConditionSupported(runConfig);
+    this.#assertLiveProbeSupported(runConfig);
     this.#assertAnchorPolicy(runConfig);
 
     const curriculum = CurriculumExecutor.fromRunConfig(runConfig);
@@ -575,9 +586,11 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     lifecycle.apply('preregister');
     lifecycle.apply('start');
 
-    const symbolInventory = fixedTokenInventory(
-      runConfig.symbolInventorySize ?? 32,
-    );
+    const carrierForms = carrierInventory(runConfig);
+    const symbolInventory =
+      carrierForms.length > 0
+        ? carrierForms
+        : fixedTokenInventory(runConfig.symbolInventorySize ?? 32);
     const gateway = new SymbolGatewayImpl(
       {
         runId,
@@ -618,6 +631,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       policiesDirCreated: false,
       curriculum,
       lastCurriculumTurn: -1,
+      probeSchedule: null,
     };
     this.#runs.set(runId, run);
 
@@ -668,6 +682,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       channelEvent: null,
       babyProposalHash: null,
       deliveredArtifactHash: undefined,
+      probeHash: undefined,
     };
 
     let outcome: Outcome;
@@ -734,6 +749,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         babyA: hashObservation(observations['baby-a']),
         babyB: hashObservation(observations['baby-b']),
       },
+      ...(scratch.probeHash === undefined
+        ? {}
+        : { probeHash: scratch.probeHash }),
       babyProposalHash: scratch.babyProposalHash,
       // §11.5: a turn that delivered nothing — a rejection, a `disabled`
       // channel, or a crashed adapter — records the carrier mark of `null`.
@@ -895,6 +913,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       sender,
       recipient: receiver,
       ...this.#batchBinding(run, turn),
+      ...(phase === 'evaluating'
+        ? {
+            probe: run.probeSchedule?.probes.find(
+              (planned) => planned.turn === turn,
+            )?.probe,
+          }
+        : {}),
     };
 
     let action: AgentActionProposal | null = null;
@@ -916,6 +941,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     } else {
       const submission = await this.#submitSender(run, turnContext, slot, sender);
       scratch.channelEvent = submission.channelEvent;
+      const plannedProbe = run.probeSchedule?.probes.find(
+        (planned) => planned.turn === turn,
+      );
+      if (plannedProbe !== undefined) {
+        scratch.probeHash = await this.#recordProbeApplication(
+          run,
+          plannedProbe,
+          submission,
+        );
+      }
 
       if (submission.kind === 'rejected') {
         // §8.3, §9.4: a rejected proposal forfeits the turn; the Scenario
@@ -980,6 +1015,46 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     return { outcome, action, pauseRequested };
+  }
+
+  /**
+   * Bind one pre-outcome E16 probe attempt to the intervention chain. Only an
+   * actually perturbed delivery is copied into `TurnRecord.probeHash`; every
+   * rejection or carrier shortfall remains visible as a skipped attempt.
+   */
+  async #recordProbeApplication(
+    run: RunRuntime,
+    planned: PlannedProbe,
+    submission: GatewaySubmitResult,
+  ): Promise<Sha256Hash | undefined> {
+    const application =
+      submission.kind === 'accepted' ? submission.probeApplication : undefined;
+    const applied = application?.status === 'applied';
+    await run.writer.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'causal-probe',
+      actorId: this.#actorId,
+      reasonCode: applied ? 'live-probe-applied' : 'live-probe-skipped',
+      details: {
+        turn: planned.turn,
+        scheduleVersion: run.probeSchedule?.scheduleVersion ?? 'unknown',
+        planned,
+        ...(application === undefined
+          ? {
+              application: {
+                probe: planned.probe,
+                probeHash: planned.probeHash,
+                status: 'skipped',
+                reasonCode:
+                  submission.kind === 'rejected'
+                    ? 'sender-proposal-rejected'
+                    : 'gateway-did-not-report-application',
+              },
+            }
+          : { application }),
+      },
+    });
+    return applied ? application.probeHash : undefined;
   }
 
   /**
@@ -1605,6 +1680,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       await this.#initializeAdapter(run, role, policy);
     }
     const curriculumStageRestored = await this.#restoreCurriculumState(run);
+    const probeScheduleRestored = await this.#restoreProbeSchedule(run);
 
     await run.writer.appendInterventionEvent({
       runId,
@@ -1617,6 +1693,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         heads: report.heads,
         policyRestored,
         curriculumStageRestored,
+        probeScheduleRestored,
       },
     });
     await this.#checkpoint(run, 'recovery');
@@ -2162,6 +2239,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       run.lifecycle.state === 'running' &&
       run.turn >= run.config.maxTurnsPerRun
     ) {
+      await this.#freezeProbeSchedule(run);
       await this.#policyCheckpoint(run, turn);
       run.lifecycle.apply('begin-evaluation');
       return true;
@@ -2174,6 +2252,78 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return true;
     }
     return false;
+  }
+
+  /**
+   * E16: select ledger hypotheses and freeze the live-probe schedule before
+   * the first evaluation outcome exists. The full schedule is recorded in
+   * the intervention chain and is then covered by the transition checkpoint.
+   */
+  async #freezeProbeSchedule(run: RunRuntime): Promise<void> {
+    const suite = run.config.interventionPlan?.evaluationSuite;
+    if (suite === undefined || run.probeSchedule !== null) {
+      return;
+    }
+    const plan = this.#buildInterventionPlan(run);
+    run.probeSchedule = plan.probeSchedule;
+    await run.writer.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'probe-schedule',
+      actorId: this.#actorId,
+      reasonCode: 'pre-evaluation-probe-schedule-frozen',
+      details: {
+        frozenBeforeTurn: run.turn,
+        threshold: plan.threshold,
+        scramblingControl: plan.scramblingControl,
+        schedule: plan.probeSchedule,
+      },
+    });
+  }
+
+  #buildInterventionPlan(run: RunRuntime) {
+    const ledgers = this.ledgers(run.runId);
+    return buildInterventionRunPlan({
+      config: run.config,
+      evaluationTurns: evaluationTurnRange(
+        run.config.maxTurnsPerRun,
+        run.evaluationTurns,
+      ),
+      ledgers: {
+        babyA: ledgers.babyA.filter(
+          (event) => event.turn < run.config.maxTurnsPerRun,
+        ),
+        babyB: ledgers.babyB.filter(
+          (event) => event.turn < run.config.maxTurnsPerRun,
+        ),
+      },
+      policies: {
+        babyA: run.adapters['baby-a'].exportPolicy(),
+        babyB: run.adapters['baby-b'].exportPolicy(),
+      },
+      symbolInventory: run.symbolInventory,
+    });
+  }
+
+  /** Rebuild the frozen schedule from training-only evidence after restart. */
+  async #restoreProbeSchedule(run: RunRuntime): Promise<boolean> {
+    if (
+      run.config.interventionPlan?.evaluationSuite === undefined ||
+      run.turn < run.config.maxTurnsPerRun
+    ) {
+      return false;
+    }
+    const recorded = run.writer
+      .readEvents(run.runId, 'intervention')
+      .map((event) =>
+        InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      )
+      .some((event) => event.eventType === 'probe-schedule');
+    if (recorded) {
+      run.probeSchedule = this.#buildInterventionPlan(run).probeSchedule;
+    } else {
+      await this.#freezeProbeSchedule(run);
+    }
+    return run.probeSchedule !== null;
   }
 
   // -------------------------------------------------------------------------
@@ -2670,7 +2820,11 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         ? 'evaluating'
         : 'running');
 
-    const symbolInventory = fixedTokenInventory(config.symbolInventorySize ?? 32);
+    const carrierForms = carrierInventory(config);
+    const symbolInventory =
+      carrierForms.length > 0
+        ? carrierForms
+        : fixedTokenInventory(config.symbolInventorySize ?? 32);
     const curriculum = CurriculumExecutor.fromRunConfig(config);
     const adapters = this.#createAdapters(config);
     const curriculumTurns = writer
@@ -2717,6 +2871,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       curriculum,
       lastCurriculumTurn:
         curriculumTurns.length === 0 ? -1 : Math.max(...curriculumTurns),
+      probeSchedule: null,
     };
     this.#runs.set(runId, run);
     return run;
@@ -2803,6 +2958,37 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         'the shuffled condition pre-generates a batch of proposals and is ' +
           'therefore restricted to the stateless no-learning track (SPEC §9.6)',
       );
+    }
+  }
+
+  #assertLiveProbeSupported(config: RunConfig): void {
+    const suite = config.interventionPlan?.evaluationSuite;
+    const liveProbeEnabled =
+      suite !== undefined &&
+      suite.probeShare > 0 &&
+      (suite.ablation || suite.substitution);
+    if (!liveProbeEnabled) {
+      return;
+    }
+    if (
+      config.carrierMode !== 'fixed-token' &&
+      config.carrierMode !== 'fixed-glyph'
+    ) {
+      throw new RunConfigurationError([
+        {
+          path: 'interventionPlan.evaluationSuite',
+          message:
+            'live ablation/substitution probes require a symbolic fixed-token or fixed-glyph carrier',
+        },
+      ]);
+    }
+    if (config.communicationCondition === 'oracle') {
+      throw new RunConfigurationError([
+        {
+          path: 'interventionPlan.evaluationSuite',
+          message: 'live probes cannot target gateway-origin oracle artifacts',
+        },
+      ]);
     }
   }
 

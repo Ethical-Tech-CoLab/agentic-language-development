@@ -28,6 +28,8 @@ import {
   type AffectSubmitResult,
   type AffectWindow,
   type AgentActionProposal,
+  type ArtifactProbe,
+  type ArtifactProbeApplication,
   type BabyRole,
   type ChannelEvent,
   type DeliveredChannelArtifact,
@@ -42,7 +44,7 @@ import {
   type SymbolGateway,
   type TurnProposalEnvelope,
 } from '@ald/types';
-import { hashCanonical, SeededPrng } from '@ald/hashing';
+import { hashCanonical, hashCarrierMark, SeededPrng } from '@ald/hashing';
 import { validateLedgerEventDraft } from '@ald/evidence';
 
 import { AffectProtocol, type DerivedAffectResult } from './affect.js';
@@ -298,10 +300,18 @@ export class SymbolGatewayImpl implements SymbolGateway {
 
     // 6. §9.6: control replacement happens after validation, before the
     //    channel event is constructed.
-    const deliveredArtifact = this.applyCommunicationControl(
+    const controlledArtifact = this.applyCommunicationControl(
       turn,
       parsed.proposal.publicArtifact,
     );
+    const probeApplication =
+      turn.probe === undefined
+        ? undefined
+        : this.applyArtifactProbe(turn.probe, controlledArtifact);
+    const deliveredArtifact =
+      probeApplication?.status === 'applied'
+        ? probeApplication.artifactAfter
+        : controlledArtifact;
 
     const commit = await this.evidence.commitTurn({
       runId: this.runContext.runId,
@@ -332,6 +342,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
       delivery: commit.delivery,
       babyProposalHash: hashCanonical(HASH_DOMAINS.babyProposal, parsed.proposal),
       deliveredArtifactHash: commit.channelEvent.publicArtifactHash,
+      ...(probeApplication === undefined ? {} : { probeApplication }),
     };
   }
 
@@ -626,6 +637,95 @@ export class SymbolGatewayImpl implements SymbolGateway {
       case 'oracle':
         throw new OracleRequiresControlArtifactError();
     }
+  }
+
+  /**
+   * Apply a trusted §15.2 probe to a symbolic delivery. A probe that cannot be
+   * applied is returned as an explicit shortfall and leaves the artifact
+   * unchanged; it is never silently converted into a different intervention.
+   */
+  private applyArtifactProbe(
+    probe: ArtifactProbe,
+    artifact: PublicArtifact | null,
+  ): ArtifactProbeApplication {
+    const probeHash = hashCanonical(HASH_DOMAINS.causalProbe, probe);
+    const artifactHashBefore = hashCarrierMark(this.carrier, artifact);
+    const skipped = (
+      reasonCode: ArtifactProbeApplication['reasonCode'],
+    ): ArtifactProbeApplication => ({
+      probe,
+      probeHash,
+      status: 'skipped',
+      ...(reasonCode === undefined ? {} : { reasonCode }),
+      artifactBefore: artifact,
+      artifactAfter: artifact,
+      artifactHashBefore,
+      artifactHashAfter: artifactHashBefore,
+    });
+
+    if (artifact === null) {
+      return skipped('no-delivery');
+    }
+    const field =
+      this.carrier === 'fixed-token'
+        ? 'symbols'
+        : this.carrier === 'fixed-glyph'
+          ? 'glyphs'
+          : null;
+    if (field === null || !isPlainObject(artifact)) {
+      return skipped('unsupported-carrier');
+    }
+    const rawMarks = (artifact as Record<string, unknown>)[field];
+    if (!Array.isArray(rawMarks) || rawMarks.some((mark) => typeof mark !== 'string')) {
+      return skipped('invalid-perturbed-artifact');
+    }
+    if (
+      !Number.isInteger(probe.position) ||
+      probe.position < 0 ||
+      probe.position >= rawMarks.length
+    ) {
+      return skipped('position-out-of-range');
+    }
+
+    const marks = [...(rawMarks as string[])];
+    if (probe.kind === 'ablation') {
+      if (marks.length === 1) {
+        return skipped('would-empty-artifact');
+      }
+      marks.splice(probe.position, 1);
+    } else {
+      if (probe.substitute === undefined) {
+        return skipped('missing-substitute');
+      }
+      if (!this.runContext.symbolInventory.includes(probe.substitute)) {
+        return skipped('substitute-not-in-inventory');
+      }
+      marks[probe.position] = probe.substitute;
+    }
+
+    const candidate = { [field]: marks } as PublicArtifact;
+    const kind = this.module.allowedKinds[0] as AgentActionProposal['kind'];
+    const validation = this.module.validate(
+      { kind, publicArtifact: candidate },
+      this.carrierContext,
+    );
+    if (!validation.ok) {
+      return skipped('invalid-perturbed-artifact');
+    }
+    const artifactAfter = validation.artifact;
+    const artifactHashAfter = hashCarrierMark(this.carrier, artifactAfter);
+    if (artifactHashAfter === artifactHashBefore) {
+      return skipped('no-artifact-change');
+    }
+    return {
+      probe,
+      probeHash,
+      status: 'applied',
+      artifactBefore: artifact,
+      artifactAfter,
+      artifactHashBefore,
+      artifactHashAfter,
+    };
   }
 
   /**

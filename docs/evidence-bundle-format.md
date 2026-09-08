@@ -81,6 +81,10 @@ Cross-bindings (LEDGER §6) that the verifier MUST check:
   equal to an existing `ChannelEvent.entryHash` whose `deliveryReceipt.recipient`
   is that Baby.
 - `TurnRecord.channelEventHash` references the turn's channel event when one exists.
+- `TurnRecord.probeHash`, when present, references exactly one applied
+  `causal-probe` intervention on the same evaluation turn. The verifier rebuilds
+  the probe hash, both recorded artifact hashes, and the ablation/substitution
+  transformation independently.
 - `deliveryReceipt.deliveredArtifactHash` equals `publicArtifactHash` for
   accepted deliveries.
 
@@ -89,6 +93,7 @@ Cross-bindings (LEDGER §6) that the verifier MUST check:
 - `publicArtifactHash` = `sha256(carrierMark || 0x00 || utf8(carrierMode) || 0x00 || utf8(canonical(artifact)))`.
   For the `disabled` condition the artifact is canonical `null`.
 - `babyProposalHash` = `sha256(babyProposal || 0x00 || utf8(canonical(AgentActionProposal)))`.
+- `probeHash` = `sha256(causalProbe || 0x00 || utf8(canonical(ArtifactProbe)))`.
 - Rejected events store `publicArtifactHash` = `sha256(rejectedPayload || 0x00 || utf8(canonical(rejectedPayload)))`
   and never the raw payload.
 

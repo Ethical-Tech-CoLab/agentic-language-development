@@ -277,6 +277,8 @@ export const InterventionEventTypeSchema = z.enum([
   'hygiene-block',
   /** Runtime-recorded facts about the run: isolation descriptors, provenance, initial policy hashes. */
   'runtime-attestation',
+  /** The ledger-derived live-probe schedule frozen before evaluation begins. */
+  'probe-schedule',
   /** SPEC §15.2 live probe applied to one delivery (details carry the probe hash). */
   'causal-probe',
   /** E22 pre-registered stage applied (details carry policy hashes before/after). */

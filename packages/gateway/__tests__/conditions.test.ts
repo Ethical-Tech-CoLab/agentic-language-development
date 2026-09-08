@@ -48,6 +48,81 @@ describe('SPEC §9.6 communication-control conditions', () => {
     expect(result.channelEvent.babyProposalHash).toBe(result.babyProposalHash);
   });
 
+  it('applies live ablation and substitution probes after validation', async () => {
+    const ablationRun = harness({ communicationCondition: 'normal' });
+    const ablation = accepted(
+      await ablationRun.gateway.submitProposal(
+        turn({
+          probe: {
+            probeId: 'probe:t1:ablation',
+            kind: 'ablation',
+            position: 1,
+            hypothesisRef: 'ledger:h1',
+          },
+        }),
+        symbolEnvelope(PROPOSED),
+      ),
+    );
+    expect(symbolsOf(ablation.delivery?.publicArtifact)).toEqual(['S13']);
+    expect(ablation.probeApplication).toMatchObject({
+      status: 'applied',
+      artifactBefore: { symbols: PROPOSED },
+      artifactAfter: { symbols: ['S13'] },
+    });
+    expect(ablation.probeApplication?.artifactHashAfter).toBe(
+      ablation.deliveredArtifactHash,
+    );
+
+    const substitutionRun = harness({ communicationCondition: 'normal' });
+    const substitution = accepted(
+      await substitutionRun.gateway.submitProposal(
+        turn({
+          probe: {
+            probeId: 'probe:t1:substitution',
+            kind: 'substitution',
+            position: 0,
+            substitute: 'S09',
+            hypothesisRef: 'ledger:h2',
+          },
+        }),
+        symbolEnvelope(PROPOSED),
+      ),
+    );
+    expect(symbolsOf(substitution.delivery?.publicArtifact)).toEqual([
+      'S09',
+      'S04',
+    ]);
+    expect(substitution.probeApplication).toMatchObject({
+      status: 'applied',
+      artifactBefore: { symbols: PROPOSED },
+      artifactAfter: { symbols: ['S09', 'S04'] },
+    });
+  });
+
+  it('reports a live-probe shortfall without changing the delivery', async () => {
+    const { gateway } = harness({ communicationCondition: 'normal' });
+    const result = accepted(
+      await gateway.submitProposal(
+        turn({
+          probe: {
+            probeId: 'probe:t1:ablation',
+            kind: 'ablation',
+            position: 0,
+            hypothesisRef: 'ledger:h1',
+          },
+        }),
+        symbolEnvelope(['S13']),
+      ),
+    );
+    expect(symbolsOf(result.delivery?.publicArtifact)).toEqual(['S13']);
+    expect(result.probeApplication).toMatchObject({
+      status: 'skipped',
+      reasonCode: 'would-empty-artifact',
+      artifactBefore: { symbols: ['S13'] },
+      artifactAfter: { symbols: ['S13'] },
+    });
+  });
+
   it('disabled delivers no artifact but still records both hashes', async () => {
     const { gateway, context } = harness({ communicationCondition: 'disabled' });
     const result = accepted(
