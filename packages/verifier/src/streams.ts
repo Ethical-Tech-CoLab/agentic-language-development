@@ -418,7 +418,24 @@ export function verifyCrossBindings(
       application: Record<string, unknown>;
     }
   >();
+  const scheduledRepairs = new Map<
+    number,
+    { at: string; details: Record<string, unknown> }
+  >();
   for (const event of streams.get('intervention')?.events ?? []) {
+    if (readString(event, 'eventType') === 'repair-turn') {
+      const at = `intervention#${String(readNumber(event, 'sequence') ?? -1)}`;
+      const details = readRecord(event, 'details');
+      const originalTurn =
+        details === undefined ? undefined : readNumber(details, 'originalTurn');
+      if (details === undefined || originalTurn === undefined) {
+        failures.push(`${at} repair-turn is missing its originalTurn details`);
+      } else if (scheduledRepairs.has(originalTurn)) {
+        failures.push(`${at} duplicates repair scheduling for turn ${String(originalTurn)}`);
+      } else {
+        scheduledRepairs.set(originalTurn, { at, details });
+      }
+    }
     if (readString(event, 'eventType') !== 'causal-probe') {
       continue;
     }
@@ -687,6 +704,61 @@ export function verifyCrossBindings(
     if (!boundProbes.has(key)) {
       failures.push(
         `${probe.at} applied causal probe is not bound by a turn record probeHash`,
+      );
+    }
+  }
+
+  const turnByNumber = new Map<number, Record<string, unknown>>();
+  for (const record of streams.get('turns')?.events ?? []) {
+    const turn = readNumber(record, 'turn');
+    if (turn !== undefined && !turnByNumber.has(turn)) {
+      turnByNumber.set(turn, record);
+    }
+  }
+  const boundRepairs = new Set<number>();
+  for (const record of streams.get('turns')?.events ?? []) {
+    const repair = readRecord(record, 'repairAttempt');
+    if (repair === undefined) {
+      continue;
+    }
+    const at = `turns#${String(readNumber(record, 'sequence') ?? -1)}`;
+    const originalTurn = readNumber(repair, 'originalTurn');
+    if (originalTurn === undefined) {
+      failures.push(`${at} repairAttempt is missing originalTurn`);
+      continue;
+    }
+    const original = turnByNumber.get(originalTurn);
+    const scheduled = scheduledRepairs.get(originalTurn);
+    if (original === undefined) {
+      failures.push(`${at} repairAttempt references missing turn ${String(originalTurn)}`);
+      continue;
+    }
+    if (scheduled === undefined) {
+      failures.push(`${at} repairAttempt has no matching repair-turn intervention`);
+      continue;
+    }
+    boundRepairs.add(originalTurn);
+    const recordTurn = readNumber(record, 'turn');
+    if (recordTurn !== readNumber(scheduled.details, 'repairTurn')) {
+      failures.push(`${at} repairAttempt does not occur on its scheduled repairTurn`);
+    }
+    if (record['scenarioRef'] !== original['scenarioRef']) {
+      failures.push(`${at} repairAttempt does not reuse the original scenario`);
+    }
+    if (repair['episodeId'] !== original['scenarioRef']) {
+      failures.push(`${at} repairAttempt episodeId does not match the original scenario`);
+    }
+    if (record['phase'] !== original['phase']) {
+      failures.push(`${at} repairAttempt changed phase from its original episode`);
+    }
+    if (readRecord(original, 'outcome')?.['success'] !== false) {
+      failures.push(`${at} repairAttempt follows an original turn that did not fail`);
+    }
+  }
+  for (const [originalTurn, scheduled] of scheduledRepairs) {
+    if (!boundRepairs.has(originalTurn)) {
+      failures.push(
+        `${scheduled.at} scheduled repair is not bound by a repairAttempt turn record`,
       );
     }
   }

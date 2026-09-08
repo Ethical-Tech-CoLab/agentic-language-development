@@ -330,6 +330,14 @@ interface EpisodeBatch {
   indexByTurn: Map<number, number>;
 }
 
+interface PendingRepair {
+  episodeId: string;
+  originalTurn: number;
+  phase: TurnRecord['phase'];
+  split: ScenarioSplit;
+  instance: ScenarioInstance;
+}
+
 /** Everything the runtime keeps for one live run. */
 interface RunRuntime {
   runId: string;
@@ -374,6 +382,8 @@ interface RunRuntime {
   lastCurriculumTurn: number;
   /** Ledger-derived E16 schedule, frozen before evaluation starts. */
   probeSchedule: ProbeSchedule | null;
+  /** One pre-registered E14 second attempt waiting to run. */
+  pendingRepair: PendingRepair | null;
 }
 
 export interface RunToCompletionOptions {
@@ -433,6 +443,7 @@ interface TurnScratch {
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash | undefined;
   probeHash: Sha256Hash | undefined;
+  repairAttempt: TurnRecord['repairAttempt'] | undefined;
 }
 
 /**
@@ -556,6 +567,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
     this.#assertConditionSupported(runConfig);
     this.#assertLiveProbeSupported(runConfig);
+    this.#assertRepairSupported(runConfig);
     this.#assertAnchorPolicy(runConfig);
 
     const curriculum = CurriculumExecutor.fromRunConfig(runConfig);
@@ -632,6 +644,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       curriculum,
       lastCurriculumTurn: -1,
       probeSchedule: null,
+      pendingRepair: null,
     };
     this.#runs.set(runId, run);
 
@@ -666,23 +679,35 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const run = this.#requireRun(runId);
     run.lifecycle.assertAcceptsTurn();
 
+    const pendingRepair = run.pendingRepair;
     const phase: TurnRecord['phase'] =
-      run.lifecycle.state === 'evaluating' ? 'evaluating' : 'running';
+      pendingRepair?.phase ??
+      (run.lifecycle.state === 'evaluating' ? 'evaluating' : 'running');
     const turn = run.turn;
     await this.#applyCurriculumTransitions(run, turn);
     const sender = senderForTurn(turn, run.config.roleReversalPeriod);
     const scratch: TurnScratch = {
       turn,
       phase,
-      split: phase === 'evaluating' ? 'evaluation' : 'train',
+      split:
+        pendingRepair?.split ??
+        (phase === 'evaluating' ? 'evaluation' : 'train'),
       sender,
       receiver: otherRole(sender),
-      instance: undefined,
+      instance: pendingRepair?.instance,
       observations: undefined,
       channelEvent: null,
       babyProposalHash: null,
       deliveredArtifactHash: undefined,
       probeHash: undefined,
+      repairAttempt:
+        pendingRepair === null
+          ? undefined
+          : {
+              episodeId: pendingRepair.episodeId,
+              attempt: 1,
+              originalTurn: pendingRepair.originalTurn,
+            },
     };
 
     let outcome: Outcome;
@@ -749,6 +774,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         babyA: hashObservation(observations['baby-a']),
         babyB: hashObservation(observations['baby-b']),
       },
+      ...(scratch.repairAttempt === undefined
+        ? {}
+        : { repairAttempt: scratch.repairAttempt }),
       ...(scratch.probeHash === undefined
         ? {}
         : { probeHash: scratch.probeHash }),
@@ -766,10 +794,42 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     run.lastOutcome = outcome;
     run.turn = turn + 1;
-    if (phase === 'running') {
+    if (scratch.repairAttempt !== undefined) {
+      run.pendingRepair = null;
+    } else if (phase === 'running') {
       run.trainingCount += 1;
     } else {
       run.evaluationCount += 1;
+    }
+
+    if (
+      scratch.repairAttempt === undefined &&
+      run.config.interventionPlan?.repair?.enabled === true &&
+      !outcome.success &&
+      failure === undefined &&
+      !pauseRequested
+    ) {
+      run.pendingRepair = {
+        episodeId: instance.scenarioRef,
+        originalTurn: turn,
+        phase,
+        split: scratch.split,
+        instance,
+      };
+      await run.writer.appendInterventionEvent({
+        runId,
+        eventType: 'repair-turn',
+        actorId: this.#actorId,
+        reasonCode: 'pre-registered-repair-scheduled',
+        details: {
+          episodeId: instance.scenarioRef,
+          originalTurn: turn,
+          repairTurn: turn + 1,
+          phase,
+          split: scratch.split,
+          maxExtraTurns: 1,
+        },
+      });
     }
 
     await this.#checkpointEventBoundaries(run);
@@ -883,6 +943,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     const slot = await this.#slotFor(run, turn, phase, split);
     const instance =
+      scratch.instance ??
       slot?.instance ??
       run.engine.generate(this.#episodeIndex(run, phase), split, {
         sender,
@@ -1655,10 +1716,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const last = records.at(-1);
     run.turn = last === undefined ? 0 : last.turn + 1;
     run.trainingCount = records.filter(
-      (record) => record.phase === 'running',
+      (record) =>
+        record.phase === 'running' && record.repairAttempt === undefined,
     ).length;
     run.evaluationCount = records.filter(
-      (record) => record.phase === 'evaluating',
+      (record) =>
+        record.phase === 'evaluating' && record.repairAttempt === undefined,
     ).length;
     run.lastCheckpointEventTotal = this.#eventTotal(run);
     run.batch = undefined;
@@ -2237,7 +2300,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   ): Promise<boolean> {
     if (
       run.lifecycle.state === 'running' &&
-      run.turn >= run.config.maxTurnsPerRun
+      run.trainingCount >= run.config.maxTurnsPerRun &&
+      run.pendingRepair === null
     ) {
       await this.#freezeProbeSchedule(run);
       await this.#policyCheckpoint(run, turn);
@@ -2246,7 +2310,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
     if (
       run.lifecycle.state === 'evaluating' &&
-      run.evaluationCount >= run.evaluationTurns
+      run.evaluationCount >= run.evaluationTurns &&
+      run.pendingRepair === null
     ) {
       run.lifecycle.apply('evaluation-complete');
       return true;
@@ -2264,7 +2329,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (suite === undefined || run.probeSchedule !== null) {
       return;
     }
-    const plan = this.#buildInterventionPlan(run);
+    const plan = this.#buildInterventionPlan(run, run.turn);
     run.probeSchedule = plan.probeSchedule;
     await run.writer.appendInterventionEvent({
       runId: run.runId,
@@ -2280,12 +2345,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     });
   }
 
-  #buildInterventionPlan(run: RunRuntime) {
+  #buildInterventionPlan(run: RunRuntime, firstEvaluationTurn: number) {
     const ledgers = this.ledgers(run.runId);
     return buildInterventionRunPlan({
       config: run.config,
       evaluationTurns: evaluationTurnRange(
-        run.config.maxTurnsPerRun,
+        firstEvaluationTurn,
         run.evaluationTurns,
       ),
       ledgers: {
@@ -2317,9 +2382,25 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       .map((event) =>
         InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
       )
-      .some((event) => event.eventType === 'probe-schedule');
-    if (recorded) {
-      run.probeSchedule = this.#buildInterventionPlan(run).probeSchedule;
+      .reverse()
+      .find((event) => event.eventType === 'probe-schedule');
+    if (recorded !== undefined) {
+      const schedule = recorded.details['schedule'];
+      if (
+        schedule === null ||
+        typeof schedule !== 'object' ||
+        !Array.isArray((schedule as { probes?: unknown }).probes) ||
+        typeof (schedule as { scheduleVersion?: unknown }).scheduleVersion !==
+          'string'
+      ) {
+        throw new RunConfigurationError([
+          {
+            path: 'intervention.probe-schedule',
+            message: 'recorded probe schedule is malformed',
+          },
+        ]);
+      }
+      run.probeSchedule = schedule as ProbeSchedule;
     } else {
       await this.#freezeProbeSchedule(run);
     }
@@ -2808,15 +2889,37 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       .map((event) => TurnRecordSchema.parse(parseCanonicalJson(event.canonicalJson)));
     const lastRecord = records.at(-1);
     const evaluationCount = records.filter(
-      (record) => record.phase === 'evaluating',
+      (record) =>
+        record.phase === 'evaluating' && record.repairAttempt === undefined,
     ).length;
     const trainingCount = records.filter(
-      (record) => record.phase === 'running',
+      (record) =>
+        record.phase === 'running' && record.repairAttempt === undefined,
     ).length;
+    const completedRepairs = new Set(
+      records.flatMap((record) =>
+        record.repairAttempt === undefined
+          ? []
+          : [record.repairAttempt.originalTurn],
+      ),
+    );
+    const interventionEvents = writer
+      .readEvents(runId, 'intervention')
+      .map((event) =>
+        InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      );
+    const pendingRepairEvent = [...interventionEvents].reverse().find(
+      (event) =>
+        event.eventType === 'repair-turn' &&
+        typeof event.details['originalTurn'] === 'number' &&
+        !completedRepairs.has(event.details['originalTurn']),
+    );
+    const pendingRepairPhase = pendingRepairEvent?.details['phase'];
     const experimentRecords = writer.readExperimentRecords(runId);
     const state =
       this.#terminalStateFrom(writer, runId, experimentRecords) ??
-      (evaluationCount > 0 || trainingCount >= config.maxTurnsPerRun
+      (evaluationCount > 0 ||
+      (trainingCount >= config.maxTurnsPerRun && pendingRepairPhase !== 'running')
         ? 'evaluating'
         : 'running');
 
@@ -2827,14 +2930,57 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         : fixedTokenInventory(config.symbolInventorySize ?? 32);
     const curriculum = CurriculumExecutor.fromRunConfig(config);
     const adapters = this.#createAdapters(config);
-    const curriculumTurns = writer
-      .readEvents(runId, 'intervention')
-      .map((event) =>
-        InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
-      )
+    const curriculumTurns = interventionEvents
       .filter((event) => event.eventType === 'curriculum-transition')
       .map((event) => event.details['scheduledTurn'])
       .filter((turn): turn is number => typeof turn === 'number');
+    const engine = this.#buildEngine(config);
+    let pendingRepair: PendingRepair | null = null;
+    if (pendingRepairEvent !== undefined) {
+      const originalTurn = pendingRepairEvent.details['originalTurn'];
+      const episodeId = pendingRepairEvent.details['episodeId'];
+      const phase = pendingRepairEvent.details['phase'];
+      const split = pendingRepairEvent.details['split'];
+      if (
+        typeof originalTurn !== 'number' ||
+        typeof episodeId !== 'string' ||
+        (phase !== 'running' && phase !== 'evaluating') ||
+        (split !== 'train' && split !== 'evaluation')
+      ) {
+        throw new RunConfigurationError([
+          {
+            path: 'intervention.repair-turn',
+            message: 'recorded pending repair is malformed',
+          },
+        ]);
+      }
+      const original = records.find((record) => record.turn === originalTurn);
+      if (original === undefined) {
+        throw new RunConfigurationError([
+          {
+            path: 'intervention.repair-turn',
+            message: `pending repair references missing turn ${String(originalTurn)}`,
+          },
+        ]);
+      }
+      const episodeIndex =
+        records.filter(
+          (record) =>
+            record.repairAttempt === undefined &&
+            record.phase === phase &&
+            record.turn <= originalTurn,
+        ).length - 1;
+      const instance = engine.generate(episodeIndex, split, original.roles);
+      if (instance.scenarioRef !== episodeId) {
+        throw new RunConfigurationError([
+          {
+            path: 'intervention.repair-turn',
+            message: 'pending repair scenario does not replay to its recorded episode',
+          },
+        ]);
+      }
+      pendingRepair = { episodeId, originalTurn, phase, split, instance };
+    }
     const run: RunRuntime = {
       runId,
       config,
@@ -2846,7 +2992,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         { runId, config, symbolInventory, seed: config.randomSeed },
         writer,
       ),
-      engine: this.#buildEngine(config),
+      engine,
       adapters,
       checkpoints: this.#options.checkpointFactory(writer, signers),
       contracts,
@@ -2872,6 +3018,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lastCurriculumTurn:
         curriculumTurns.length === 0 ? -1 : Math.max(...curriculumTurns),
       probeSchedule: null,
+      pendingRepair,
     };
     this.#runs.set(runId, run);
     return run;
@@ -2987,6 +3134,33 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         {
           path: 'interventionPlan.evaluationSuite',
           message: 'live probes cannot target gateway-origin oracle artifacts',
+        },
+      ]);
+    }
+  }
+
+  #assertRepairSupported(config: RunConfig): void {
+    if (config.interventionPlan?.repair?.enabled !== true) {
+      return;
+    }
+    if (config.communicationCondition === 'shuffled') {
+      throw new RunConfigurationError([
+        {
+          path: 'interventionPlan.repair',
+          message:
+            'repair turns cannot use the shuffled condition because its proposals are pre-generated by episode batch',
+        },
+      ]);
+    }
+    if (
+      config.interventionPlan.evaluationSuite !== undefined ||
+      config.interventionPlan.curriculum !== undefined
+    ) {
+      throw new RunConfigurationError([
+        {
+          path: 'interventionPlan.repair',
+          message:
+            'repair execution must use a dedicated run without live probe or curriculum scheduling',
         },
       ]);
     }

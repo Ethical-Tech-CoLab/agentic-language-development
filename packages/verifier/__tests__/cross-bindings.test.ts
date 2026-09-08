@@ -376,6 +376,89 @@ describe('verifyCrossBindings', () => {
     );
   });
 
+  it('binds a repair attempt to one failed turn on the same scenario', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        turns: [
+          {
+            sequence: 1,
+            turn: 2,
+            phase: 'evaluating',
+            scenarioRef: 'scenario:one',
+            channelEventHash: null,
+            outcome: { success: false },
+          },
+          {
+            sequence: 2,
+            turn: 3,
+            phase: 'evaluating',
+            scenarioRef: 'scenario:one',
+            channelEventHash: null,
+            repairAttempt: {
+              episodeId: 'scenario:one',
+              attempt: 1,
+              originalTurn: 2,
+            },
+            outcome: { success: true },
+          },
+        ],
+        intervention: [
+          {
+            sequence: 1,
+            eventType: 'repair-turn',
+            details: {
+              episodeId: 'scenario:one',
+              originalTurn: 2,
+              repairTurn: 3,
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(failures).toEqual([]);
+  });
+
+  it('rejects a repair attempt that switches scenarios', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        turns: [
+          {
+            sequence: 1,
+            turn: 2,
+            phase: 'running',
+            scenarioRef: 'scenario:one',
+            channelEventHash: null,
+            outcome: { success: false },
+          },
+          {
+            sequence: 2,
+            turn: 3,
+            phase: 'running',
+            scenarioRef: 'scenario:other',
+            channelEventHash: null,
+            repairAttempt: {
+              episodeId: 'scenario:other',
+              attempt: 1,
+              originalTurn: 2,
+            },
+          },
+        ],
+        intervention: [
+          {
+            sequence: 1,
+            eventType: 'repair-turn',
+            details: { originalTurn: 2, repairTurn: 3 },
+          },
+        ],
+      }),
+    );
+
+    expect(failures.join(' | ')).toContain(
+      'repairAttempt does not reuse the original scenario',
+    );
+  });
+
   it('rejects an interpretation recorded outside the ledgerLagTurns window', () => {
     const failures = verifyCrossBindings(
       streams({

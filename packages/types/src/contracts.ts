@@ -223,6 +223,7 @@ export interface TurnRecordAppendRequest {
   scenarioRef: string;
   scenarioStateHash: Sha256Hash;
   observationHashes: TurnRecord['observationHashes'];
+  repairAttempt?: NonNullable<TurnRecord['repairAttempt']>;
   probeHash?: Sha256Hash;
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash;

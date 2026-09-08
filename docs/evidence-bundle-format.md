@@ -85,6 +85,9 @@ Cross-bindings (LEDGER §6) that the verifier MUST check:
   `causal-probe` intervention on the same evaluation turn. The verifier rebuilds
   the probe hash, both recorded artifact hashes, and the ablation/substitution
   transformation independently.
+- `TurnRecord.repairAttempt`, when present, references one failed primary turn
+  and one `repair-turn` intervention. The repair must occur on the scheduled
+  next turn, retain the original phase and `scenarioRef`, and use attempt `1`.
 - `deliveryReceipt.deliveredArtifactHash` equals `publicArtifactHash` for
   accepted deliveries.
 

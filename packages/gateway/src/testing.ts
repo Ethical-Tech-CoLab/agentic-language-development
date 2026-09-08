@@ -463,6 +463,9 @@ export class InMemoryEvidenceWriter implements EvidenceWriter {
         scenarioRef: request.scenarioRef,
         scenarioStateHash: request.scenarioStateHash,
         observationHashes: request.observationHashes,
+        ...(request.repairAttempt === undefined
+          ? {}
+          : { repairAttempt: request.repairAttempt }),
         ...(request.probeHash === undefined
           ? {}
           : { probeHash: request.probeHash }),

@@ -247,6 +247,14 @@ export const UnsignedTurnRecordSchema = z.object({
       index: nonNegativeInteger,
     })
     .optional(),
+  /** E14 bounded second attempt on the same scenario episode. */
+  repairAttempt: z
+    .object({
+      episodeId: nonEmptyString,
+      attempt: z.literal(1),
+      originalTurn: nonNegativeInteger,
+    })
+    .optional(),
   /** SPEC §15.2: hash of the live causal probe applied to this turn's delivery. */
   probeHash: strictHash.optional(),
   babyProposalHash: strictHash.nullable(),
@@ -279,6 +287,8 @@ export const InterventionEventTypeSchema = z.enum([
   'runtime-attestation',
   /** The ledger-derived live-probe schedule frozen before evaluation begins. */
   'probe-schedule',
+  /** An E14 bounded second attempt was scheduled after a failed episode. */
+  'repair-turn',
   /** SPEC §15.2 live probe applied to one delivery (details carry the probe hash). */
   'causal-probe',
   /** E22 pre-registered stage applied (details carry policy hashes before/after). */
