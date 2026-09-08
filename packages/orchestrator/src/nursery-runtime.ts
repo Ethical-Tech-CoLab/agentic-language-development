@@ -115,8 +115,10 @@ import {
 import { RunLifecycle, validateRunConfig } from '@ald/lifecycle';
 import {
   ReferentialScenarioEngine,
+  ScenarioBundleRegistry,
   assertObservationHygiene,
   hashObservation,
+  registerGeneratorConfig,
 } from '@ald/scenario';
 import {
   createLearnerAdapterFactory,
@@ -253,6 +255,14 @@ export interface NurseryRuntimeOptions {
    */
   signerProvider?: (runId: string) => SignerRegistry;
   scenarioFactory?: (config: RunConfig) => ScenarioEngine;
+  /**
+   * Fail-closed registry consulted before any run-owned state is created
+   * (SPEC §10.2; ALD-039). A runtime without an injected registry uses an
+   * in-memory one; its built-in asset-free generator is registered through
+   * the same quarantine pipeline before use. Custom scenario factories must
+   * supply a registry that already approves the returned engine's bundle.
+   */
+  scenarioBundleRegistry?: ScenarioBundleRegistry;
   /** Per-role learner knobs; `shared` applies to both Babies. */
   learnerOptions?: {
     babyA?: LearnerAdapterOptions;
@@ -462,10 +472,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   readonly #anchorPolicy: 'required' | 'skip';
   readonly #evaluationTurnsDefault: number;
   readonly #retryBudget: number;
+  readonly #scenarioBundleRegistry: ScenarioBundleRegistry;
 
   constructor(options: NurseryRuntimeOptions) {
     this.#options = options;
     this.#clock = options.clock ?? { now: () => new Date().toISOString() };
+    this.#scenarioBundleRegistry =
+      options.scenarioBundleRegistry ??
+      new ScenarioBundleRegistry({ clock: this.#clock });
     this.#actorId = options.actorId ?? NURSERY_ACTOR_ID;
     this.#anchorPolicy = options.anchorPolicy ?? 'required';
     this.#evaluationTurnsDefault =
@@ -494,6 +508,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     const contracts = this.#contractsFor(declared.config);
     const engine = this.#buildEngine(declared.config);
+    // ALD-039 criterion 1: this check happens before signer provisioning,
+    // Evidence Store registration, lifecycle transitions, or adapter init, so
+    // an unknown/quarantined bundle can leave no runnable partial run behind.
+    this.#scenarioBundleRegistry.assertApproved(engine.bundleHash);
 
     // SPEC §15.1: the run is bound to the bundles it actually loaded. A
     // caller may pass the documented genesis placeholder and let the runtime
@@ -2404,7 +2422,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (this.#options.scenarioFactory) {
       return this.#options.scenarioFactory(config);
     }
-    return new ReferentialScenarioEngine(
+    const engine = new ReferentialScenarioEngine(
       {
         version: 1,
         symbolInventory: fixedTokenInventory(config.symbolInventorySize ?? 32),
@@ -2412,6 +2430,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       },
       config.randomSeed,
     );
+    // The built-in engine is an asset-free synthetic generator. Register its
+    // fully resolved config rather than assuming it is text-free; the same
+    // authoring filter used for external bundles makes the decision.
+    registerGeneratorConfig({ ...engine.config }, {
+      registry: this.#scenarioBundleRegistry,
+    });
+    return engine;
   }
 
   #contractsFor(config: RunConfig): TrackLearnerContract[] {

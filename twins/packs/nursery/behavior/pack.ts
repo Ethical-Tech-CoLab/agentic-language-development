@@ -42,7 +42,7 @@ import {
 import { EvidenceCheckpointService } from '@ald/checkpoint';
 import { verifyBundle } from '@ald/verifier';
 import { InMemorySignerRegistry } from '@ald/hashing';
-import { RUN_ID_PATTERN } from '@ald/scenario';
+import { RUN_ID_PATTERN, ScenarioBundleRegistry } from '@ald/scenario';
 import {
   asRecord,
   createRouter,
@@ -602,6 +602,10 @@ export default class NurseryPack implements BehaviorPack {
 
     const database = openEvidenceDatabase(databasePath);
     const clock: Clock = { now: () => new Date().toISOString() };
+    const scenarioBundleRegistry = new ScenarioBundleRegistry({
+      directory: join(bundleRoot, 'scenario-registry'),
+      clock,
+    });
 
     const checkpointFactory = (
       evidence: SqliteEvidenceWriter,
@@ -655,6 +659,7 @@ export default class NurseryPack implements BehaviorPack {
           allowUnanchored: true,
         }),
       proofWriter,
+      scenarioBundleRegistry,
     });
     holder.runtime = runtime;
 

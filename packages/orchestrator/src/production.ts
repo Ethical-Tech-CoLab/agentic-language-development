@@ -27,6 +27,7 @@ import type {
   SignerRegistry,
   VerificationReport,
 } from '@ald/types';
+import { join } from 'node:path';
 import { FileKeyStore, InMemorySignerRegistry } from '@ald/hashing';
 import {
   openEvidenceDatabase,
@@ -35,6 +36,7 @@ import {
 } from '@ald/evidence';
 import { EvidenceCheckpointService } from '@ald/checkpoint';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
+import { ScenarioBundleRegistry } from '@ald/scenario';
 
 import {
   createNurseryRuntime,
@@ -64,6 +66,11 @@ export interface ProductionRuntimeOptions {
   allowUnanchored?: boolean;
   learnerOptions?: NurseryRuntimeOptions['learnerOptions'];
   scenarioFactory?: NurseryRuntimeOptions['scenarioFactory'];
+  /**
+   * Approved scenario-bundle registry. Defaults to a persistent registry
+   * under `bundleRoot`; inject a pre-populated registry with a custom factory.
+   */
+  scenarioBundleRegistry?: ScenarioBundleRegistry;
   retryBudget?: number;
 }
 
@@ -94,6 +101,12 @@ export function createProductionRuntime(
   };
   const allowUnanchored = options.allowUnanchored ?? true;
   const keyDir = options.keyDir;
+  const scenarioBundleRegistry =
+    options.scenarioBundleRegistry ??
+    new ScenarioBundleRegistry({
+      directory: join(options.bundleRoot, 'scenario-registry'),
+      clock,
+    });
 
   let pendingRunId: string | undefined;
   const checkpointServices = new Map<string, EvidenceCheckpointService>();
@@ -159,6 +172,7 @@ export function createProductionRuntime(
     anchorPolicy: 'skip',
     verifier,
     proofWriter,
+    scenarioBundleRegistry,
     ...(options.learnerOptions === undefined
       ? {}
       : { learnerOptions: options.learnerOptions }),

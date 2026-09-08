@@ -109,7 +109,7 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   every hash, signature, root, proof, binding, and anchor from a bundle alone.
 - `@ald/lifecycle`, `@ald/scenario`, `@ald/gateway`, `@ald/learners`,
   `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine; deterministic
-  scenarios, hygiene, and a quarantine registry; fixed-token, glyph, bitmap, canvas,
+  scenarios, hygiene, and a fail-closed run-registration quarantine gate; fixed-token, glyph, bitmap, canvas,
   tone, and six-display affect protocols; no-learning and scratch-RL runtime tracks;
   frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
   Nursery's end-to-end SPEC §8 turn cycle; and pre-registered analysis primitives.
@@ -128,8 +128,8 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is wiring quarantine and intervention plans into run
-registration/execution, completing the active side-channel harness, finishing Mode R
+The next critical-path work is wiring intervention plans into run execution,
+completing the active side-channel harness, finishing Mode R
 container/network isolation, exercising frozen-LLM with real open weights, enforcing
 retention, anchoring on Base Sepolia with a funded wallet, and binding an external
 pre-registration.
