@@ -128,8 +128,8 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is wiring intervention plans into run execution,
-completing the active side-channel harness, finishing Mode R
+The next critical-path work is live causal-probe and repair execution, an active
+side-channel harness, and Mode R
 container/network isolation, exercising frozen-LLM with real open weights, enforcing
 retention, anchoring on Base Sepolia with a funded wallet, and binding an external
 pre-registration.

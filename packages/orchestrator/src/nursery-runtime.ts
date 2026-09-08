@@ -113,6 +113,7 @@ import {
   type EvidenceDatabase,
 } from '@ald/evidence';
 import { RunLifecycle, validateRunConfig } from '@ald/lifecycle';
+import { CurriculumExecutor } from '@ald/interventions';
 import {
   ReferentialScenarioEngine,
   ScenarioBundleRegistry,
@@ -360,6 +361,10 @@ interface RunRuntime {
   anchorReceipt: AnchorReceipt | undefined;
   finalCheckpointHash: Sha256Hash | undefined;
   policiesDirCreated: boolean;
+  /** E22 fixed schedule, or null when this run has no curriculum. */
+  curriculum: CurriculumExecutor | null;
+  /** Highest curriculum transition turn already applied; starts at -1. */
+  lastCurriculumTurn: number;
 }
 
 export interface RunToCompletionOptions {
@@ -542,6 +547,21 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     this.#assertConditionSupported(runConfig);
     this.#assertAnchorPolicy(runConfig);
 
+    const curriculum = CurriculumExecutor.fromRunConfig(runConfig);
+    const adapters = this.#createAdapters(runConfig);
+    if (
+      curriculum !== null &&
+      BABY_ROLES.some((role) => adapters[role].applyCurriculumStage === undefined)
+    ) {
+      throw new RunConfigurationError([
+        {
+          path: 'interventionPlan.curriculum',
+          message:
+            'every adapter in a curriculum run must implement applyCurriculumStage',
+        },
+      ]);
+    }
+
     const signers = this.#signerProvider()(runId);
     const writer = new SqliteEvidenceWriter({
       database: this.#options.database,
@@ -577,7 +597,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lifecycle,
       gateway,
       engine,
-      adapters: this.#createAdapters(runConfig),
+      adapters,
       checkpoints: this.#options.checkpointFactory(writer, signers),
       contracts,
       symbolInventory,
@@ -596,6 +616,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       anchorReceipt: undefined,
       finalCheckpointHash: undefined,
       policiesDirCreated: false,
+      curriculum,
+      lastCurriculumTurn: -1,
     };
     this.#runs.set(runId, run);
 
@@ -633,6 +655,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const phase: TurnRecord['phase'] =
       run.lifecycle.state === 'evaluating' ? 'evaluating' : 'running';
     const turn = run.turn;
+    await this.#applyCurriculumTransitions(run, turn);
     const sender = senderForTurn(turn, run.config.roleReversalPeriod);
     const scratch: TurnScratch = {
       turn,
@@ -761,6 +784,66 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       turnRecord,
       state: run.lifecycle.state,
     };
+  }
+
+  /**
+   * E22: apply every pre-registered curriculum stage due before `turn` and
+   * bind the exact stage plus both Babies' policy hashes into the append-only
+   * intervention stream. Transitions are applied once, in schedule order,
+   * before either Baby observes the turn governed by the new stage.
+   */
+  async #applyCurriculumTransitions(
+    run: RunRuntime,
+    turn: number,
+  ): Promise<void> {
+    const curriculum = run.curriculum;
+    if (curriculum === null) {
+      return;
+    }
+    const transitions = curriculum.transitionsBetween(
+      run.lastCurriculumTurn,
+      turn,
+    );
+    for (const transition of transitions) {
+      const policyHashesBefore = {} as Record<BabyRole, Sha256Hash>;
+      const policyHashesAfter = {} as Record<BabyRole, Sha256Hash>;
+      for (const role of BABY_ROLES) {
+        const adapter = run.adapters[role];
+        const apply = adapter.applyCurriculumStage;
+        if (apply === undefined) {
+          throw new RunConfigurationError([
+            {
+              path: `interventionPlan.curriculum.${role}`,
+              message: `${role} does not implement applyCurriculumStage`,
+            },
+          ]);
+        }
+        policyHashesBefore[role] = hashCanonical(
+          HASH_DOMAINS.policyCheckpoint,
+          adapter.exportPolicy(),
+        );
+        await apply.call(adapter, transition.stage);
+        policyHashesAfter[role] = hashCanonical(
+          HASH_DOMAINS.policyCheckpoint,
+          adapter.exportPolicy(),
+        );
+      }
+      await run.writer.appendInterventionEvent({
+        runId: run.runId,
+        eventType: 'curriculum-transition',
+        actorId: this.#actorId,
+        reasonCode: 'pre-registered-curriculum-stage',
+        details: {
+          stageIndex: transition.stageIndex,
+          scheduledTurn: transition.turn,
+          appliedBeforeTurn: turn,
+          stage: transition.stage,
+          policyHashesBefore,
+          policyHashesAfter,
+        },
+      });
+      run.lastCurriculumTurn = transition.turn;
+    }
   }
 
   /**
@@ -1521,6 +1604,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       policyRestored[role] = policy !== undefined;
       await this.#initializeAdapter(run, role, policy);
     }
+    const curriculumStageRestored = await this.#restoreCurriculumState(run);
 
     await run.writer.appendInterventionEvent({
       runId,
@@ -1532,6 +1616,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         nextTurn: run.turn,
         heads: report.heads,
         policyRestored,
+        curriculumStageRestored,
       },
     });
     await this.#checkpoint(run, 'recovery');
@@ -2427,6 +2512,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         version: 1,
         symbolInventory: fixedTokenInventory(config.symbolInventorySize ?? 32),
         interactionMode: config.interactionMode,
+        heldOutTypeCodes: config.interventionPlan?.heldOutTypeCodes ?? [],
       },
       config.randomSeed,
     );
@@ -2437,6 +2523,32 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       registry: this.#scenarioBundleRegistry,
     });
     return engine;
+  }
+
+  /**
+   * Reapply the stage governing the last consumed turn after adapter policy
+   * restore. This rebuilds transient adapter knobs (not all are part of a
+   * policy export) without appending a second curriculum-transition event.
+   */
+  async #restoreCurriculumState(run: RunRuntime): Promise<number | null> {
+    if (run.curriculum === null || run.lastCurriculumTurn < 0) {
+      return null;
+    }
+    const active = run.curriculum.stageForTurn(Math.max(0, run.turn - 1));
+    for (const role of BABY_ROLES) {
+      const adapter = run.adapters[role];
+      const apply = adapter.applyCurriculumStage;
+      if (apply === undefined) {
+        throw new RunConfigurationError([
+          {
+            path: `interventionPlan.curriculum.${role}`,
+            message: `${role} does not implement applyCurriculumStage`,
+          },
+        ]);
+      }
+      await apply.call(adapter, active.stage);
+    }
+    return active.stageIndex;
   }
 
   #contractsFor(config: RunConfig): TrackLearnerContract[] {
@@ -2559,6 +2671,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         : 'running');
 
     const symbolInventory = fixedTokenInventory(config.symbolInventorySize ?? 32);
+    const curriculum = CurriculumExecutor.fromRunConfig(config);
+    const adapters = this.#createAdapters(config);
+    const curriculumTurns = writer
+      .readEvents(runId, 'intervention')
+      .map((event) =>
+        InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      )
+      .filter((event) => event.eventType === 'curriculum-transition')
+      .map((event) => event.details['scheduledTurn'])
+      .filter((turn): turn is number => typeof turn === 'number');
     const run: RunRuntime = {
       runId,
       config,
@@ -2571,7 +2693,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         writer,
       ),
       engine: this.#buildEngine(config),
-      adapters: this.#createAdapters(config),
+      adapters,
       checkpoints: this.#options.checkpointFactory(writer, signers),
       contracts,
       symbolInventory,
@@ -2592,6 +2714,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       anchorReceipt: undefined,
       finalCheckpointHash: undefined,
       policiesDirCreated: false,
+      curriculum,
+      lastCurriculumTurn:
+        curriculumTurns.length === 0 ? -1 : Math.max(...curriculumTurns),
     };
     this.#runs.set(runId, run);
     return run;

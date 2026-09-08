@@ -280,9 +280,9 @@ export class CurriculumExecutor {
   }
 
   /**
-   * E22 "consolidation intervals": true while the active stage forbids policy
-   * updates. The runtime must skip `updatePolicy` for these turns; this is the
-   * predicate it asks.
+   * E22 "consolidation intervals": true while the active stage forbids model
+   * learning. Adapters use the applied stage to discard rather than defer the
+   * affected turns when `updatePolicy` is called.
    */
   consolidating(turn: number): boolean {
     return this.stageForTurn(turn).stage.consolidation === true;

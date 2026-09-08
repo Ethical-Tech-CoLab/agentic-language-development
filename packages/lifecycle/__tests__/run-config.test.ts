@@ -167,17 +167,29 @@ describe('buildRunConfig defaults (SPEC §18)', () => {
   });
 
   it('honours explicit overrides, including placeholders', () => {
+    const glyphBundleHash = `sha256:${'2'.repeat(64)}`;
     const overridden = buildRunConfig({
       ...BASE,
       protocolGitCommit: 'a'.repeat(40),
       maxTurnsPerRun: 12,
       turnResponseBudgetMs: 5_000,
       preRegistrationHash: `sha256:${'1'.repeat(64)}`,
+      registrationClass: 'qualification',
+      interventionPlan: { version: 1, heldOutTypeCodes: [3, 7] },
+      glyphBundleHash,
+      affectDerivedMapping: 'argmax-v1',
     });
     expect(overridden.protocolGitCommit).toBe('a'.repeat(40));
     expect(overridden.maxTurnsPerRun).toBe(12);
     expect(overridden.turnResponseBudgetMs).toBe(5_000);
     expect(overridden.preRegistrationHash).toBe(`sha256:${'1'.repeat(64)}`);
+    expect(overridden.registrationClass).toBe('qualification');
+    expect(overridden.interventionPlan).toEqual({
+      version: 1,
+      heldOutTypeCodes: [3, 7],
+    });
+    expect(overridden.glyphBundleHash).toBe(glyphBundleHash);
+    expect(overridden.affectDerivedMapping).toBe('argmax-v1');
   });
 });
 

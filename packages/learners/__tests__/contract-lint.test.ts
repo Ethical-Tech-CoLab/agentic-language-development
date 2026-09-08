@@ -106,8 +106,10 @@ describe('the shipped contracts', () => {
   it('holds one contract per implemented track and nothing else', () => {
     expect(readdirSync(learnerContractsDirectory()).sort()).toEqual([
       'learner-contract.frozen-llm.v1.md',
+      'learner-contract.hybrid.v1.md',
       'learner-contract.no-learning.v1.md',
       'learner-contract.scratch-rl.v1.md',
+      'learner-contract.self-supervised.v1.md',
     ]);
   });
 
@@ -123,7 +125,7 @@ describe('scripts/lint-learner-contracts.mjs', () => {
   it('exits 0 and reports the count for the shipped contracts', () => {
     const result = runScript(learnerContractsDirectory());
     expect(result.status).toBe(0);
-    expect(result.output).toContain('3 contract file(s) clean');
+    expect(result.output).toContain('5 contract file(s) clean');
   });
 
   it('exits 1 and prints file:line: rule for a seeded contract', () => {

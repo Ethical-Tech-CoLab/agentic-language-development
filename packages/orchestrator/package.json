@@ -22,6 +22,7 @@
     "@ald/evidence": "*",
     "@ald/gateway": "*",
     "@ald/hashing": "*",
+    "@ald/interventions": "*",
     "@ald/learners": "*",
     "@ald/lifecycle": "*",
     "@ald/merkle": "*",

@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 161 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, and configuration-driven interventions. The acceptance checkboxes below are authoritative: intervention runtime wiring, the active side-channel harness, retention enforcement, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
+- **Status:** Implementation active, with 162 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, held-out scenario splits, and fixed-schedule curriculum execution. The acceptance checkboxes below are authoritative: live causal-probe and repair execution, the active side-channel harness, retention enforcement, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -959,7 +959,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [ ] `E20` readiness: `ALD-033` affect protocol independently passes conformance with all six displays exercised.
   - [ ] `E21` readiness: no-learning (`ALD-042`), frozen-LLM (`ALD-044`), extrinsic/intrinsic scratch-RL (`ALD-045`), and self-supervised (`ALD-046`) modes run under the same scenario configuration.
-  - [ ] `E22` readiness: `ALD-072`'s scaffold supports a staged/curriculum sequence of interventions within a single run.
+  - [x] `E22` readiness: `ALD-072`'s scaffold supports a staged/curriculum sequence of interventions within a single run.
 
 #### ALD-076 — Gate G4: Transfer and negotiation-scenario readiness (E30–E32)
 - **Priority:** P2 · **Size:** S · **Class:** Later-Research · **Depends on:** ALD-028, ALD-041, ALD-072

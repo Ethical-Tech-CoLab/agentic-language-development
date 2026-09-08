@@ -489,6 +489,18 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
       overrides.protocolGitCommit ?? RUN_CONFIG_DEFAULTS.protocolGitCommit,
     preRegistrationHash:
       overrides.preRegistrationHash ?? RUN_CONFIG_DEFAULTS.placeholderHash,
+    ...(overrides.registrationClass === undefined
+      ? {}
+      : { registrationClass: overrides.registrationClass }),
+    ...(overrides.interventionPlan === undefined
+      ? {}
+      : { interventionPlan: overrides.interventionPlan }),
+    ...(overrides.glyphBundleHash === undefined
+      ? {}
+      : { glyphBundleHash: overrides.glyphBundleHash }),
+    ...(overrides.affectDerivedMapping === undefined
+      ? {}
+      : { affectDerivedMapping: overrides.affectDerivedMapping }),
   };
 
   return assertValidRunConfig(candidate).config;

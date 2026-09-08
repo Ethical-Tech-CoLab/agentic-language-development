@@ -67,8 +67,15 @@ describe('loadLearnerContract', () => {
     expect(() => loadLearnerContract('scratch-rl', 2)).toThrow();
   });
 
-  it('rejects a track with no contract file', () => {
-    expect(() => loadLearnerContract('hybrid')).toThrow();
+  it('loads contracts for the self-supervised and hybrid tracks', () => {
+    expect(loadLearnerContract('self-supervised')).toMatchObject({
+      track: 'self-supervised',
+      version: '1',
+    });
+    expect(loadLearnerContract('hybrid')).toMatchObject({
+      track: 'hybrid',
+      version: '1',
+    });
   });
 });
 
