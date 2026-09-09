@@ -1,0 +1,20 @@
+{
+  "claimBoundary": "software-readiness-only",
+  "experiments": [
+    { "gate": "G1", "ids": ["E00"], "requires": ["ALD-015", "ALD-019", "ALD-021"], "evidence": ["packages/verifier/__tests__/mutation-matrix.test.ts", "packages/anchor/__tests__/verify-anchor.test.ts"] },
+    { "gate": "G1", "ids": ["E01", "E02"], "requires": ["ALD-067", "ALD-068"], "evidence": ["packages/redteam/__tests__/side-channel.test.ts", "packages/redteam/__tests__/observation-and-measurement.test.ts"] },
+    { "gate": "G1", "ids": ["E03"], "requires": ["ALD-029", "ALD-036", "ALD-041", "ALD-042", "ALD-072"], "evidence": ["packages/orchestrator/__tests__/experiments/e03-controls.test.ts"] },
+    { "gate": "G2", "ids": ["E10", "E11", "E12"], "requires": ["ALD-044", "ALD-045", "ALD-046", "ALD-056", "ALD-057"], "evidence": ["packages/learners/__tests__/conformance.test.ts", "packages/leakage/__tests__/semantic-leakage.test.ts", "scripts/run-mode-r-smoke.mjs"] },
+    { "gate": "G2", "ids": ["E13"], "requires": ["ALD-031", "ALD-032"], "evidence": ["packages/gateway/__tests__/conformance.test.ts", "packages/analysis/__tests__/carrier-leakage.test.ts"] },
+    { "gate": "G2", "ids": ["E14", "E15", "E16"], "requires": ["ALD-064", "ALD-072"], "evidence": ["packages/interventions/__tests__/interventions.test.ts", "packages/orchestrator/__tests__/audit-interpreter.test.ts"] },
+    { "gate": "G3", "ids": ["E20"], "requires": ["ALD-033"], "evidence": ["packages/gateway/__tests__/affect-conformance.test.ts"] },
+    { "gate": "G3", "ids": ["E21"], "requires": ["ALD-042", "ALD-044", "ALD-045", "ALD-046"], "evidence": ["packages/interventions/__tests__/readiness-gates.test.ts"] },
+    { "gate": "G3", "ids": ["E22"], "requires": ["ALD-072"], "evidence": ["packages/interventions/__tests__/interventions.test.ts"] },
+    { "gate": "G4", "ids": ["E30"], "requires": ["ALD-028"], "evidence": ["packages/orchestrator/__tests__/derived-run-evidence.test.ts"] },
+    { "gate": "G4", "ids": ["E31"], "requires": ["ALD-072"], "evidence": ["packages/analysis/__tests__/intervention-analysis.test.ts", "packages/interventions/__tests__/interventions.test.ts"] },
+    { "gate": "G4", "ids": ["E32"], "requires": ["ALD-041"], "evidence": ["packages/scenario/__tests__/referential-engine.test.ts"] },
+    { "gate": "G5", "ids": ["E40"], "requires": ["ALD-069", "ALD-070"], "evidence": ["packages/crypto-research/__tests__/harness.test.ts", "scripts/lint-crypto-boundary.mjs"] },
+    { "gate": "G5", "ids": ["E50"], "requires": ["ALD-028", "ALD-072"], "evidence": ["packages/interventions/__tests__/readiness-gates.test.ts"] }
+  ],
+  "publicationChecklistMapping": "docs/publication-checklist-mapping.md"
+}

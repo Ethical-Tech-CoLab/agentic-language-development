@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 219 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, actual experiment execution, and external operator validation remain open.
+- **Status:** Implementation active, with 228 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, and executable readiness gates covering all 19 experiments without crossing the research-judgment boundary. The acceptance checkboxes below are authoritative: funded Base anchoring, CI operation, and external operator validation remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -743,7 +743,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§5.1 Prototype Mode (Mode P)](SPECIFICATION.md#51-prototype-mode-mode-p), [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r), [§5.3 Mode Comparison Table](SPECIFICATION.md#53-mode-comparison-table)
 - **Scope:** Implement the configuration switch selecting Mode P or Mode R for a run, wiring each mode's distinct behaviors from §5.3 (e.g., isolation strictness, claim labeling) into the nursery run-creation path.
 - **Acceptance criteria:**
-  - [ ] A run created under Mode P and one under Mode R differ exactly along the dimensions listed in §5.3 — no undocumented behavioral difference.
+  - [x] A run created under Mode P and one under Mode R differ exactly along the dimensions listed in §5.3 — no undocumented behavioral difference.
   - [x] The mode is immutable for the lifetime of a run once created (cannot be switched mid-run).
   - [x] The active mode is recorded in the Run Configuration and visible in every exported evidence bundle.
 
@@ -948,7 +948,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E10](EXPERIMENT-NOTEBOOK.md#e10-frozen-pretrained-llm-protocol-baseline), [E11](EXPERIMENT-NOTEBOOK.md#e11-from-scratch-rl-naming-game), [E12](EXPERIMENT-NOTEBOOK.md#e12-self-supervised-ungrounded-baseline), [E13](EXPERIMENT-NOTEBOOK.md#e13-no-predefined-symbol-library), [E14](EXPERIMENT-NOTEBOOK.md#e14-turn-taking-role-reversal-and-repair), [E15](EXPERIMENT-NOTEBOOK.md#e15-composition-and-held-out-generalization), [E16](EXPERIMENT-NOTEBOOK.md#e16-causal-listening-and-ledger-validity)
 - **Scope:** Define and check the readiness gate confirming every model track and protocol capability that `E10`–`E16` require exists and passes conformance, across all seven experiments in this range.
 - **Acceptance criteria:**
-  - [ ] `E10`/`E11`/`E12` readiness: `ALD-044`/`ALD-045`/`ALD-046` complete full turns; ungrounded tracks pass training isolation and semantic-leakage qualification.
+  - [x] `E10`/`E11`/`E12` readiness: `ALD-044`/`ALD-045`/`ALD-046` complete full turns; ungrounded tracks pass training isolation and semantic-leakage qualification.
   - [x] `E13` readiness: all `ALD-031` alternate carriers pass conformance and `ALD-032` leakage evaluation can compare all five notebook carrier conditions.
   - [x] `E14`/`E15`/`E16` readiness: `ALD-072` supports role reversal, held-out splits, and causal interventions, and `ALD-064` produces separately labeled human audit interpretations.
 
@@ -957,8 +957,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E20](EXPERIMENT-NOTEBOOK.md#e20-constrained-affect-channel-study), [E21](EXPERIMENT-NOTEBOOK.md#e21-rl-versus-non-rl-learning-comparison), [E22](EXPERIMENT-NOTEBOOK.md#e22-developmental-plasticity-and-curriculum)
 - **Scope:** Define and check the readiness gate confirming the six-display affect channel and the RL/non-RL comparison capability required for `E20`–`E22` exist and pass conformance.
 - **Acceptance criteria:**
-  - [ ] `E20` readiness: `ALD-033` affect protocol independently passes conformance with all six displays exercised.
-  - [ ] `E21` readiness: no-learning (`ALD-042`), frozen-LLM (`ALD-044`), extrinsic/intrinsic scratch-RL (`ALD-045`), and self-supervised (`ALD-046`) modes run under the same scenario configuration.
+  - [x] `E20` readiness: `ALD-033` affect protocol independently passes conformance with all six displays exercised.
+  - [x] `E21` readiness: no-learning (`ALD-042`), frozen-LLM (`ALD-044`), extrinsic/intrinsic scratch-RL (`ALD-045`), and self-supervised (`ALD-046`) modes run under the same scenario configuration.
   - [x] `E22` readiness: `ALD-072`'s scaffold supports a staged/curriculum sequence of interventions within a single run.
 
 #### ALD-076 — Gate G4: Transfer and negotiation-scenario readiness (E30–E32)
@@ -966,9 +966,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E30](EXPERIMENT-NOTEBOOK.md#e30-partner-replacement-and-zero-shot-transfer), [E31](EXPERIMENT-NOTEBOOK.md#e31-longitudinal-drift-and-stability), [E32](EXPERIMENT-NOTEBOOK.md#e32-cooperative-signaling-versus-negotiation)
 - **Scope:** Define and check the readiness gate confirming derived-run support, deterministic long-run analysis, and the Scenario Engine's aligned/private/semi-cooperative/conflicting utility configurations are sufficient for partner-replacement, longitudinal, and negotiation experiments.
 - **Acceptance criteria:**
-  - [ ] `E30` readiness: `ALD-028` derived-run support can substitute a new learner adapter in the child run without altering the parent.
-  - [ ] `E31` readiness: `ALD-072`'s baseline/statistics scaffold can compare metrics across a long sequence of turns/checkpoints for drift analysis.
-  - [ ] `E32` readiness: `ALD-041` produces each pre-registered cooperative and negotiation utility condition from configuration without a code change.
+  - [x] `E30` readiness: `ALD-028` derived-run support can substitute a new learner adapter in the child run without altering the parent.
+  - [x] `E31` readiness: `ALD-072`'s baseline/statistics scaffold can compare metrics across a long sequence of turns/checkpoints for drift analysis.
+  - [x] `E32` readiness: `ALD-041` produces each pre-registered cooperative and negotiation utility condition from configuration without a code change.
 
 #### ALD-077 — Gate G5: Cryptography-research and replication readiness (E40, E50)
 - **Priority:** P2 · **Size:** S · **Class:** Later-Research · **Depends on:** ALD-069, ALD-070, ALD-028, ALD-072
@@ -976,8 +976,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Define and check the readiness gate confirming the cryptography research harness and its safety-separation policy are in place for `E40`, and that multi-seed replication tooling is ready for `E50`.
 - **Acceptance criteria:**
   - [x] `E40` readiness: `ALD-069` harness and `ALD-070` separation policy both pass their own acceptance criteria.
-  - [ ] `E50` readiness: `ALD-028` derived-run support and `ALD-072`'s scaffold together launch the same pre-registered configuration across independent seeds and aggregate baseline statistics.
-  - [ ] This gate's checklist cross-references the `EXPERIMENT-NOTEBOOK.md` [§12. Publication Checklist](EXPERIMENT-NOTEBOOK.md#12-publication-checklist) items that are software-verifiable, without asserting any of the checklist's research-judgment items are satisfied.
+  - [x] `E50` readiness: `ALD-028` derived-run support and `ALD-072`'s scaffold together launch the same pre-registered configuration across independent seeds and aggregate baseline statistics.
+  - [x] This gate's checklist cross-references the `EXPERIMENT-NOTEBOOK.md` [§12. Publication Checklist](EXPERIMENT-NOTEBOOK.md#12-publication-checklist) items that are software-verifiable, without asserting any of the checklist's research-judgment items are satisfied.
 
 ### EPIC-15 — CI/Test Suites, Documentation, Operations, and Release
 

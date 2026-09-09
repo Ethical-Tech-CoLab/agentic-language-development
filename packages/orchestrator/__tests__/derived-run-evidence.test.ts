@@ -118,4 +118,37 @@ describe('derived-run evidence lineage (SPEC §7.4, ALD-028)', () => {
       'lineage-parent-bundle-required derived runs require the immutable parent export via --parent-bundle',
     );
   });
+
+  it('substitutes a child learner for E30 without mutating the parent configuration', async () => {
+    const parent = testConfig({
+      runId: 'run-e30-parent',
+      experimentId: 'E30',
+      randomSeed: 'e30-parent-seed',
+      babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
+      babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
+      learningSignal: 'none',
+    });
+    const parentBefore = structuredClone(parent);
+    const checkpointHash = `sha256:${'a'.repeat(64)}`;
+
+    const child = createDerivedRunConfig(
+      parent,
+      checkpointHash,
+      'run-e30-replacement-child',
+      {
+        babyAInitialPolicyRef: 'policies/baby-a-policy-initial.json',
+        babyBInitialPolicyRef: 'policies/baby-b-policy-initial.json',
+        overrides: {
+          babyB: { track: 'frozen-llm', modelRef: 'open-weights:test-model' },
+          symmetricTracks: false,
+        },
+      },
+    );
+
+    expect(parent).toEqual(parentBefore);
+    expect(child.babyA.track).toBe('no-learning');
+    expect(child.babyB.track).toBe('frozen-llm');
+    expect(child.parentRunId).toBe(parent.runId);
+    expect(child.derivedFromCheckpointHash).toBe(checkpointHash);
+  });
 });

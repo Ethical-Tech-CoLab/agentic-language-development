@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createLearnerAdapterFactory } from '@ald/learners';
 import {
+  MODE_COMPARISON,
   ConsistencyProofSchema,
   GENESIS_HASH,
   InclusionProofSchema,
@@ -396,6 +397,77 @@ describe('run creation guard rails', () => {
     expect(JSON.parse(stored?.configurationJson ?? '{}')).toMatchObject({
       deploymentMode: 'research-grade',
     });
+  });
+
+  it('changes only the six documented §5.3 deployment dimensions between Mode P and Mode R', async () => {
+    const runId = 'run-mode-comparison';
+    harness = await createHarness();
+    const prototypeConfig = testConfig(
+      noLearningOverrides({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'ald-mode-comparison',
+        maxTurnsPerRun: 1,
+        evaluationTurns: 1,
+      }),
+    );
+    const prototypeSummary = await harness.runtime.createRun(prototypeConfig);
+
+    const researchHarness = await createHarness({
+      anchorPolicy: 'required',
+      anchorPublisher: anchorPublisherFor(runId),
+      adapterFactoryFor: (_config, role) =>
+        declaredIsolationFactory(role, {
+          boundary: 'separate-container',
+          timingNormalization: 'normalized',
+          processId: role === 'baby-a' ? 301 : 302,
+          containerId: role === 'baby-a' ? 'mode-r-a' : 'mode-r-b',
+        }),
+    });
+    try {
+      const researchConfig = {
+        ...prototypeConfig,
+        deploymentMode: 'research-grade',
+      } as const;
+      const researchSummary = await researchHarness.runtime.createRun(researchConfig);
+
+      expect(
+        Object.keys(prototypeSummary)
+          .filter(
+            (key) =>
+              JSON.stringify(prototypeSummary[key as keyof typeof prototypeSummary]) !==
+              JSON.stringify(researchSummary[key as keyof typeof researchSummary]),
+          )
+          .sort(),
+      ).toEqual(['configurationHash', 'deploymentMode']);
+      expect(
+        Object.keys(MODE_COMPARISON),
+      ).toEqual([
+        'processBoundaryBetweenBabies',
+        'networkRouteBetweenBabies',
+        'ledgerWriterKeyIsolation',
+        'turnTimingNormalization',
+        'suitableFor',
+        'requiredBeforePublicBaseMainnetRuns',
+      ]);
+      for (const dimension of Object.values(MODE_COMPARISON)) {
+        expect(dimension.prototype).not.toEqual(dimension['research-grade']);
+      }
+
+      const configKeys = new Set([
+        ...Object.keys(prototypeConfig),
+        ...Object.keys(researchConfig),
+      ]);
+      expect(
+        [...configKeys].filter(
+          (key) =>
+            JSON.stringify(prototypeConfig[key as keyof typeof prototypeConfig]) !==
+            JSON.stringify(researchConfig[key as keyof typeof researchConfig]),
+        ),
+      ).toEqual(['deploymentMode']);
+    } finally {
+      await researchHarness.cleanup();
+    }
   });
 
   it('refuses an anchoring run without a publisher', async () => {

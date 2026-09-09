@@ -210,6 +210,38 @@ export const CLAIM_BOUNDARY_STATEMENTS = {
 } as const;
 
 /**
+ * The complete, closed set of deployment-mode differences from SPEC §5.3.
+ * Consumers compare modes through this table so a new behavioral difference
+ * cannot be introduced without changing the normative contract and its test.
+ */
+export const MODE_COMPARISON = {
+  processBoundaryBetweenBabies: {
+    prototype: 'none-shared-process',
+    'research-grade': 'separate-process-or-container-per-baby',
+  },
+  networkRouteBetweenBabies: {
+    prototype: 'not-applicable-in-process',
+    'research-grade': 'denied-only-gateway-reachable',
+  },
+  ledgerWriterKeyIsolation: {
+    prototype: 'logical-separate-service-objects',
+    'research-grade': 'separate-processes-separate-key-material',
+  },
+  turnTimingNormalization: {
+    prototype: 'should',
+    'research-grade': 'must',
+  },
+  suitableFor: {
+    prototype: 'E00-E03-infrastructure-and-ux',
+    'research-grade': 'E10-onward-with-channel-isolation-claims',
+  },
+  requiredBeforePublicBaseMainnetRuns: {
+    prototype: false,
+    'research-grade': true,
+  },
+} as const;
+
+/**
  * Claim labels that describe Mode R guarantees only (SPEC §5.2, §5.3, §10.3).
  * ALD-054: a report, export, or console view of a `prototype` run that
  * carries any of these MUST be blocked with a specific error, never silently
