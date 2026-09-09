@@ -182,6 +182,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     const processId = options.transport.current()?.processId;
     this.descriptor = {
       boundary: options.transport.boundary,
+      timingNormalization: this.timing,
       ...(processId === undefined ? {} : { processId }),
       ...(options.transport.hostLabel === undefined
         ? {}
@@ -680,6 +681,9 @@ function mergeDescriptor(
   const hostLabel = reported.hostLabel ?? local.hostLabel;
   return {
     boundary: reported.boundary,
+    ...(local.timingNormalization === undefined
+      ? {}
+      : { timingNormalization: local.timingNormalization }),
     ...(processId === undefined ? {} : { processId }),
     ...(reported.containerId === undefined
       ? {}

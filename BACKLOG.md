@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 165 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process isolation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: the active side-channel harness, real open weights, funded Base anchoring, Research-Grade container isolation, and external pre-registration remain open.
+- **Status:** Implementation active, with 169 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: the active side-channel harness, real open weights, funded Base anchoring, complete Research-Grade training/key isolation, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -744,7 +744,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement the configuration switch selecting Mode P or Mode R for a run, wiring each mode's distinct behaviors from §5.3 (e.g., isolation strictness, claim labeling) into the nursery run-creation path.
 - **Acceptance criteria:**
   - [ ] A run created under Mode P and one under Mode R differ exactly along the dimensions listed in §5.3 — no undocumented behavioral difference.
-  - [ ] The mode is immutable for the lifetime of a run once created (cannot be switched mid-run).
+  - [x] The mode is immutable for the lifetime of a run once created (cannot be switched mid-run).
   - [x] The active mode is recorded in the Run Configuration and visible in every exported evidence bundle.
 
 #### ALD-054 — Claim-boundary enforcement
@@ -761,9 +761,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r)
 - **Scope:** Run each learner adapter in Mode R in its own container/process with no shared mutable memory, communicating only through the Gateway and evidence store.
 - **Acceptance criteria:**
-  - [ ] In Mode R, `baby-a` and `baby-b` learner processes run in distinct OS processes/containers, verified by distinct process IDs / container IDs.
-  - [ ] No in-memory object reference is shared between the two learner containers (verified by an isolation test attempting cross-container object access and observing failure).
-  - [ ] Killing one learner container does not corrupt or crash the other, or the Gateway/evidence store.
+  - [x] In Mode R, `baby-a` and `baby-b` learner processes run in distinct OS processes/containers, verified by distinct process IDs / container IDs.
+  - [x] No in-memory object reference is shared between the two learner containers (verified by an isolation test attempting cross-container object access and observing failure).
+  - [x] Killing one learner container does not corrupt or crash the other, or the Gateway/evidence store.
 
 #### ALD-056 — Training isolation guarantees
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-055, ALD-045, ALD-046, ALD-047

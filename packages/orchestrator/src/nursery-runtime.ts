@@ -572,6 +572,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     const curriculum = CurriculumExecutor.fromRunConfig(runConfig);
     const adapters = this.#createAdapters(runConfig);
+    this.#assertDeploymentMode(runConfig, adapters, false);
     if (
       curriculum !== null &&
       BABY_ROLES.some((role) => adapters[role].applyCurriculumStage === undefined)
@@ -649,6 +650,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     this.#runs.set(runId, run);
 
     await this.#initializeAdapters(run);
+    this.#assertDeploymentMode(runConfig, adapters, true);
     this.#appendExperimentRecord(run, {
       disposition: 'invalid',
       checkpointManifestRef: GENESIS_HASH,
@@ -3179,6 +3181,84 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new AnchorPolicyError(
         'anchorPolicy "required" needs an anchorPublisher (SPEC §7.2, §13.4)',
       );
+    }
+  }
+
+  /**
+   * Enforce the §5 mode boundary from facts reported by the adapters, not
+   * from the requested mode alone. A Mode R label is inadmissible until two
+   * initialized, normalized, distinct container hosts have attested their
+   * own boundary identifiers.
+   */
+  #assertDeploymentMode(
+    config: RunConfig,
+    adapters: Record<BabyRole, LearnerAdapter>,
+    initialized: boolean,
+  ): void {
+    const descriptors = BABY_ROLES.map((role) => ({
+      role,
+      descriptor: adapters[role].isolation,
+    }));
+
+    if (config.deploymentMode === 'prototype') {
+      const external = descriptors.find(
+        ({ descriptor }) =>
+          descriptor !== undefined && descriptor.boundary !== 'in-process',
+      );
+      if (external !== undefined) {
+        throw new RunConfigurationError([
+          {
+            path: `deploymentMode.${external.role}`,
+            message:
+              'prototype mode requires in-process learner adapters (SPEC §5.1)',
+          },
+        ]);
+      }
+      return;
+    }
+
+    const errors = descriptors.flatMap(({ role, descriptor }) => {
+      const roleErrors: { path: string; message: string }[] = [];
+      if (descriptor?.boundary !== 'separate-container') {
+        roleErrors.push({
+          path: `deploymentMode.${role}.boundary`,
+          message:
+            'research-grade mode requires a separate-container learner adapter',
+        });
+      }
+      if (descriptor?.timingNormalization !== 'normalized') {
+        roleErrors.push({
+          path: `deploymentMode.${role}.timingNormalization`,
+          message:
+            'research-grade mode requires normalized turn timing (SPEC §5.3)',
+        });
+      }
+      if (initialized && descriptor?.containerId === undefined) {
+        roleErrors.push({
+          path: `deploymentMode.${role}.containerId`,
+          message:
+            'research-grade learner host did not self-report a container id',
+        });
+      }
+      return roleErrors;
+    });
+    if (errors.length > 0) {
+      throw new RunConfigurationError(errors);
+    }
+
+    if (initialized) {
+      const [babyA, babyB] = descriptors.map(
+        ({ descriptor }) => descriptor?.containerId,
+      );
+      if (babyA === babyB) {
+        throw new RunConfigurationError([
+          {
+            path: 'deploymentMode.containerIds',
+            message:
+              'research-grade mode requires distinct learner containers for baby-a and baby-b',
+          },
+        ]);
+      }
     }
   }
 

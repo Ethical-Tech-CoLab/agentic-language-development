@@ -6,10 +6,14 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { createLearnerAdapterFactory } from '@ald/learners';
 import {
   ConsistencyProofSchema,
   GENESIS_HASH,
   InclusionProofSchema,
+  type BabyRole,
+  type IsolationDescriptor,
+  type LearnerAdapterFactory,
 } from '@ald/types';
 import { verifyConsistency, verifyInclusion } from '@ald/merkle';
 
@@ -25,6 +29,20 @@ import {
   testConfig,
   type Harness,
 } from './helpers.js';
+
+function declaredIsolationFactory(
+  role: BabyRole,
+  descriptor: IsolationDescriptor,
+): LearnerAdapterFactory {
+  const inner = createLearnerAdapterFactory('no-learning', {
+    seed: `mode-guard-${role}`,
+  });
+  return {
+    track: 'no-learning',
+    isolation: descriptor.boundary,
+    create: () => Object.assign(inner.create(), { isolation: descriptor }),
+  };
+}
 
 describe('anchored seal path (ALD-071)', () => {
   let harness: Harness | undefined;
@@ -289,6 +307,95 @@ describe('run creation guard rails', () => {
         ),
       ),
     ).rejects.toThrow(/prototype mode/u);
+  });
+
+  it('refuses an external learner boundary under Prototype Mode', async () => {
+    harness = await createHarness({
+      adapterFactoryFor: (_config, role) =>
+        declaredIsolationFactory(role, {
+          boundary: 'separate-process',
+          timingNormalization: 'immediate',
+          processId: role === 'baby-a' ? 101 : 102,
+        }),
+    });
+    await expect(
+      harness.runtime.createRun(
+        testConfig(
+          noLearningOverrides({
+            runId: 'run-prototype-external',
+            experimentId: 'E03',
+            randomSeed: 'ald-prototype-external',
+            maxTurnsPerRun: 1,
+            evaluationTurns: 1,
+          }),
+        ),
+      ),
+    ).rejects.toThrow(/prototype mode requires in-process/u);
+  });
+
+  it('refuses a Research-Grade label without normalized distinct containers', async () => {
+    const runId = 'run-research-grade-process';
+    harness = await createHarness({
+      anchorPolicy: 'required',
+      anchorPublisher: anchorPublisherFor(runId),
+      adapterFactoryFor: (_config, role) =>
+        declaredIsolationFactory(role, {
+          boundary: 'separate-process',
+          timingNormalization: 'immediate',
+          processId: role === 'baby-a' ? 201 : 202,
+        }),
+    });
+    await expect(
+      harness.runtime.createRun({
+        ...testConfig(
+          noLearningOverrides({
+            runId,
+            experimentId: 'E03',
+            randomSeed: 'ald-research-grade-process',
+            maxTurnsPerRun: 1,
+            evaluationTurns: 1,
+          }),
+        ),
+        deploymentMode: 'research-grade',
+      }),
+    ).rejects.toThrow(/separate-container/u);
+  });
+
+  it('accepts a Research-Grade label only for normalized distinct containers', async () => {
+    const runId = 'run-research-grade-containers';
+    harness = await createHarness({
+      anchorPolicy: 'required',
+      anchorPublisher: anchorPublisherFor(runId),
+      adapterFactoryFor: (_config, role) =>
+        declaredIsolationFactory(role, {
+          boundary: 'separate-container',
+          timingNormalization: 'normalized',
+          processId: 1,
+          containerId: role === 'baby-a' ? 'container-a' : 'container-b',
+        }),
+    });
+    const config = {
+      ...testConfig(
+        noLearningOverrides({
+          runId,
+          experimentId: 'E03',
+          randomSeed: 'ald-research-grade-containers',
+          maxTurnsPerRun: 1,
+          evaluationTurns: 1,
+        }),
+      ),
+      deploymentMode: 'research-grade',
+    } as const;
+    const summary = await harness.runtime.createRun(config);
+    expect(summary.state).toBe('running');
+
+    // The caller cannot switch the live run by mutating its input object.
+    (config as { deploymentMode: 'prototype' | 'research-grade' }).deploymentMode =
+      'prototype';
+    const stored = harness.runtime.writerFor(runId).readRunMetadata(runId);
+    expect(JSON.parse(stored?.configurationJson ?? '{}')).toMatchObject({
+      deploymentMode: 'research-grade',
+    });
   });
 
   it('refuses an anchoring run without a publisher', async () => {

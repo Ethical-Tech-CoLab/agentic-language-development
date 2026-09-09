@@ -1,0 +1,7 @@
+node_modules
+.git
+evidence
+reports
+**/dist
+**/*.tsbuildinfo
+*.sqlite*

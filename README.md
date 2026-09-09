@@ -114,12 +114,14 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
   Nursery's end-to-end SPEC §8 turn cycle; and pre-registered analysis primitives.
 - `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
-  process transport and learner-host confinement; API telemetry, snapshot/restore,
+  process transport, a two-container Mode R network-isolation gate, and learner-host confinement; API telemetry, snapshot/restore,
   and failure supervision; configuration-driven, verifier-bound live causal probes
   and bounded repair turns, plus held-out, curriculum, drift, and statistical
   scaffolds; and the committed observation-text and quarantine-bypass corpus.
-  These are tested foundations, not a completed Mode R deployment or a
-  scientific result.
+  These are tested foundations, not a completed production Mode R deployment or
+  a scientific result. `npm run test:mode-r` builds the locked-down learner image,
+  denies Baby-to-Baby routes on separate internal networks, checks host capability
+  denial and normalized timing, then kills one learner and verifies the other survives.
 - DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
   with role guards in Prototype Mode.
 
@@ -129,8 +131,8 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is an active side-channel harness and Mode R
-container/network isolation, exercising frozen-LLM with real open weights,
+The next critical-path work is the active side-channel harness and complete Mode R
+training/key isolation, exercising frozen-LLM with real open weights,
 anchoring on Base Sepolia with a funded wallet, and binding an external
 pre-registration. The retention job is implemented and covered against real exported
 bundles and evidence-store rows.

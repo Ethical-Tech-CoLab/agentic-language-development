@@ -89,10 +89,14 @@ export interface LearnerHostOptions {
 }
 
 /** Container id when this host can tell it is in one, else `undefined`. */
-export function detectContainerId(): string | undefined {
+export function detectContainerId(assumeContainer = false): string | undefined {
   const declared = process.env.ALD_CONTAINER_ID;
   if (declared !== undefined && declared.length > 0) {
     return declared;
+  }
+  if (assumeContainer) {
+    const name = hostname();
+    return name.length > 0 ? name : undefined;
   }
   try {
     // Docker's default hostname is the short container id. Reading
@@ -293,9 +297,10 @@ export class LearnerHost {
   }
 
   private describeIsolation(): Record<string, unknown> {
-    const containerId = detectContainerId();
+    const boundary = this.options.boundary ?? 'separate-process';
+    const containerId = detectContainerId(boundary === 'separate-container');
     return {
-      boundary: this.options.boundary ?? 'separate-process',
+      boundary,
       processId: process.pid,
       ...(containerId === undefined ? {} : { containerId }),
       ...(this.options.hostLabel === undefined

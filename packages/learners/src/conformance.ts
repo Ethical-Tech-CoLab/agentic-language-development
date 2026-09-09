@@ -127,6 +127,8 @@ function ownKeysDeep(value: object): string[] {
 }
 
 export interface ConformanceOptions {
+  /** Mode recorded in the adapter-visible configuration. Default `prototype`. */
+  deploymentMode?: RunConfig['deploymentMode'];
   episodes?: number;
   /** Run-level seed; per-Baby seeds are derived from it (SPEC §14.3). */
   seed?: string;
@@ -349,7 +351,7 @@ export function buildConformanceRunConfig(
   return RunConfigSchema.parse({
     version: 1,
     runId: resolved.runId,
-    deploymentMode: 'prototype',
+    deploymentMode: options.deploymentMode ?? 'prototype',
     babyA: learner,
     babyB: learner,
     symmetricTracks: true,

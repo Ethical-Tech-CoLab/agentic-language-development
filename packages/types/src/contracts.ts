@@ -472,6 +472,8 @@ export type IsolationBoundary =
  */
 export interface IsolationDescriptor {
   boundary: IsolationBoundary;
+  /** Runtime-side turn scheduling policy; Mode R requires `normalized`. */
+  timingNormalization?: 'immediate' | 'normalized';
   processId?: number;
   containerId?: string;
   /** Free-form operator label (host name, compose service); never Baby-visible. */

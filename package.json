@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -12,6 +12,7 @@
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "test": "vitest run",
+    "test:mode-r": "node scripts/run-mode-r-smoke.mjs",
     "test:watch": "vitest",
     "lint": "eslint packages twins",
     "book:research": "node scripts/build-research-book.mjs",
