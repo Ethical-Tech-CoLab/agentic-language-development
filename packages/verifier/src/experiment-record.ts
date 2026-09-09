@@ -53,6 +53,7 @@ export interface ExperimentRecordBindings {
   receipts: readonly AnchorReceipt[];
   /** Hash-bound run configuration, when the bundle carries a usable one. */
   config?: RunConfig | undefined;
+  attachmentHashes: ReadonlySet<string>;
 }
 
 function sameTx(left: string, right: string): boolean {
@@ -208,6 +209,14 @@ export async function verifyExperimentRecord(
         `${at}: anchorTxRef ${record.anchorTxRef} is not a transaction in anchors/base-receipts.json`,
       );
     }
+    for (const hash of record.analysisAttachmentRefs ?? []) {
+      if (!bindings.attachmentHashes.has(hash)) {
+        accumulator.failStructural(
+          'experiment-record-attachment-unknown',
+          `${at}: analysisAttachmentRefs contains ${hash}, which is absent from analysis/index.json`,
+        );
+      }
+    }
   });
 
   const last = history.at(-1);
@@ -220,6 +229,17 @@ export async function verifyExperimentRecord(
 
   const current = ExperimentRecordSchema.safeParse(file.data.current);
   if (current.success) {
+    const currentAttachments = new Set(
+      current.data.analysisAttachmentRefs ?? [],
+    );
+    for (const hash of bindings.attachmentHashes) {
+      if (!currentAttachments.has(hash)) {
+        accumulator.failStructural(
+          'experiment-record-attachment-missing',
+          `experiment-record.json current does not link attachment ${hash}`,
+        );
+      }
+    }
     const ref = normalizeHash(current.data.checkpointManifestRef);
     const expected =
       finalCheckpoint === undefined

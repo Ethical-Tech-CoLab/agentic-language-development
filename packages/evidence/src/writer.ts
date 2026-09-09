@@ -25,6 +25,7 @@ import {
   AuditLedgerEntrySchema,
   AUXILIARY_TREES,
   babyIdForRole,
+  BundleAttachmentSchema,
   ChannelEventSchema,
   CheckpointManifestSchema,
   EVENT_STREAMS,
@@ -40,6 +41,7 @@ import {
   STREAM_SIGNER,
   TurnRecordSchema,
   type AffectEvent,
+  type AnalysisAttachmentAppendRequest,
   type AnchorReceipt,
   type AuditLedgerEntry,
   type AuditLedgerAppendRequest,
@@ -69,6 +71,7 @@ import {
   type SignerPublicKey,
   type SignerRegistry,
   type StoredEvent,
+  type StoredAnalysisAttachment,
   type TreeReference,
   type TurnCommitRequest,
   type TurnCommitResult,
@@ -79,8 +82,10 @@ import {
   canonicalJson,
   computeEntryHash,
   domainHash,
+  encodeHash,
   hashCanonical,
   hashCarrierMark,
+  sha256Bytes,
   verifyHashSignature,
 } from '@ald/hashing';
 
@@ -398,6 +403,22 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
       )
       .all(runId)
       .map((row) => ExperimentRecordSchema.parse(JSON.parse(row.canonical_json)));
+  }
+
+  readAnalysisAttachments(runId: string): StoredAnalysisAttachment[] {
+    return this.db
+      .prepare<
+        [string],
+        { descriptor_json: string; canonical_json: string }
+      >(
+        `SELECT descriptor_json, canonical_json FROM analysis_attachments
+          WHERE run_id = ? ORDER BY path`,
+      )
+      .all(runId)
+      .map((row) => ({
+        descriptor: BundleAttachmentSchema.parse(JSON.parse(row.descriptor_json)),
+        canonicalJson: row.canonical_json,
+      }));
   }
 
   /** LEDGER §11: the public halves of this run's per-run keys, never seeds. */
@@ -815,6 +836,76 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
     return this.mutex.run(async () => {
       this.assertWritableRun(request.runId);
       return this.insertInterventionEvent(request);
+    });
+  }
+
+  appendAnalysisAttachment(
+    request: AnalysisAttachmentAppendRequest,
+  ): Promise<StoredAnalysisAttachment> {
+    return this.mutex.run(async () => {
+      this.assertWritableRun(request.runId);
+      const canonical = canonicalJson(request.value);
+      const sha256 = encodeHash(
+        sha256Bytes(Buffer.from(`${canonical}\n`, 'utf8')),
+      );
+      const producedAt = this.clock.now();
+      let stored: StoredAnalysisAttachment | undefined;
+
+      await this.insertInterventionEvent(
+        {
+          runId: request.runId,
+          eventType: 'analysis-attached',
+          actorId: request.actorId,
+          reasonCode: request.reasonCode,
+          details: {
+            path: request.path,
+            sha256,
+            kind: request.kind,
+            analysisVersion: request.analysisVersion,
+          },
+        },
+        (event) => {
+          const descriptor = BundleAttachmentSchema.parse({
+            path: request.path,
+            sha256,
+            kind: request.kind,
+            analysisVersion: request.analysisVersion,
+            producedAt,
+            boundBy: { stream: 'intervention', entryHash: event.entryHash },
+          });
+          this.db
+            .prepare(
+              `INSERT INTO analysis_attachments (
+                 run_id, path, sha256, kind, analysis_version, produced_at,
+                 bound_stream, bound_entry_hash, descriptor_json, canonical_json
+               ) VALUES (
+                 @runId, @path, @sha256, @kind, @analysisVersion, @producedAt,
+                 @boundStream, @boundEntryHash, @descriptorJson, @canonicalJson
+               )`,
+            )
+            .run({
+              runId: request.runId,
+              path: descriptor.path,
+              sha256: descriptor.sha256,
+              kind: descriptor.kind,
+              analysisVersion: descriptor.analysisVersion,
+              producedAt: descriptor.producedAt,
+              boundStream: descriptor.boundBy?.stream,
+              boundEntryHash: descriptor.boundBy?.entryHash,
+              descriptorJson: canonicalJson(descriptor),
+              canonicalJson: canonical,
+            });
+          stored = { descriptor, canonicalJson: canonical };
+        },
+      );
+
+      if (stored === undefined) {
+        throw new EvidenceWriterError(
+          'analysis-attachment',
+          `Analysis attachment ${request.path} was not stored`,
+        );
+      }
+      return stored;
     });
   }
 
@@ -1356,6 +1447,7 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
 
   private async insertInterventionEvent(
     request: InterventionAppendRequest,
+    insertAfter?: (event: InterventionEvent) => void,
   ): Promise<InterventionEvent> {
     const head = this.chainHead(request.runId, 'intervention');
     const unsigned = {
@@ -1407,6 +1499,7 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
             recordedAt: event.recordedAt,
             canonicalJson: canonical,
           });
+        insertAfter?.(event);
       },
     );
 

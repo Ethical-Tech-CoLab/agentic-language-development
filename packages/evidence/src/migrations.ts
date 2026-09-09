@@ -298,6 +298,34 @@ const forkArtifactConstraintsSchema = `
     ON fork_artifacts(run_id, stream, sequence);
 `;
 
+/**
+ * Runtime-produced analysis artifacts. Content and descriptor are append-only;
+ * `bound_entry_hash` points at the intervention event created in the same
+ * transaction, whose Merkle prefix is witness-committed by checkpoints.
+ */
+const analysisAttachmentSchema = `
+  CREATE TABLE analysis_attachments (
+    run_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    analysis_version TEXT NOT NULL,
+    produced_at TEXT NOT NULL,
+    bound_stream TEXT NOT NULL CHECK (bound_stream = 'intervention'),
+    bound_entry_hash TEXT NOT NULL UNIQUE,
+    descriptor_json TEXT NOT NULL,
+    canonical_json TEXT NOT NULL,
+    PRIMARY KEY (run_id, path),
+    FOREIGN KEY (run_id) REFERENCES run_metadata(run_id),
+    FOREIGN KEY (bound_entry_hash) REFERENCES intervention_log(entry_hash)
+  ) STRICT;
+
+  ${appendOnlyTriggers('analysis_attachments')}
+
+  CREATE INDEX analysis_attachments_run_hash_idx
+    ON analysis_attachments(run_id, sha256);
+`;
+
 export const migrations: readonly Migration[] = [
   {
     version: 1,
@@ -313,6 +341,11 @@ export const migrations: readonly Migration[] = [
     version: 3,
     name: 'fork-artifact-stream-check-and-run-reference',
     sql: forkArtifactConstraintsSchema,
+  },
+  {
+    version: 4,
+    name: 'analysis-attachments',
+    sql: analysisAttachmentSchema,
   },
 ];
 

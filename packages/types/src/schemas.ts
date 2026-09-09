@@ -574,6 +574,8 @@ export const ExperimentRecordSchema = z.object({
   checkpointManifestRef: hashString,
   anchorTxRef: z.string().regex(/^0x[a-f0-9]{64}$/iu),
   verifierReportRef: nonEmptyString,
+  /** Hashes in `analysis/index.json` linked to this record version. */
+  analysisAttachmentRefs: z.array(hashString).optional(),
   claimBoundaryStatement: nonEmptyString,
   deviations: z.array(nonEmptyString),
 });

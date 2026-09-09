@@ -29,6 +29,7 @@ import {
 } from '@ald/types';
 
 import { verifyAnchors, type ChainReader } from './anchors.js';
+import { verifyAttachments } from './attachments.js';
 import {
   bundlePath,
   formatIssues,
@@ -487,10 +488,24 @@ export async function verifyBundleDetailed(
   }
   reportUnanchoredTail(streams, committedSizes, accumulator, allowUnanchored);
 
+  const attachments = await verifyAttachments(
+    bundleDir,
+    manifest,
+    streams,
+    checkpoints,
+    anchors.anchoredThroughCheckpoint,
+    accumulator,
+  );
+
   const experimentRecord = await verifyExperimentRecord(
     bundleDir,
     manifest,
-    { checkpoints, receipts: anchors.receipts, config },
+    {
+      checkpoints,
+      receipts: anchors.receipts,
+      config,
+      attachmentHashes: attachments.hashes,
+    },
     accumulator,
   );
 

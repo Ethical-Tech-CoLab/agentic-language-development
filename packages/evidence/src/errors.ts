@@ -18,6 +18,7 @@ export type EvidenceErrorCode =
   | 'integrity-blocked'
   | 'checkpoint-chain'
   | 'experiment-record-version'
+  | 'analysis-attachment'
   | 'invalid-request';
 
 export class EvidenceWriterError extends Error {

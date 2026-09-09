@@ -19,6 +19,7 @@ import {
   AnchorReceiptSchema,
   AuditLedgerEntrySchema,
   babyIdForRole,
+  BundleAttachmentSchema,
   ChannelEventSchema,
   CheckpointManifestSchema,
   EVENT_STREAMS,
@@ -34,6 +35,7 @@ import {
   TurnRecordSchema,
   type AffectAppendRequest,
   type AffectEvent,
+  type AnalysisAttachmentAppendRequest,
   type AnchorReceipt,
   type AuditLedgerAppendRequest,
   type AuditLedgerEntry,
@@ -64,6 +66,7 @@ import {
   type SignerPublicKey,
   type SignerRegistry,
   type StoredEvent,
+  type StoredAnalysisAttachment,
   type TurnCommitRequest,
   type TurnCommitResult,
   type TurnRecord,
@@ -72,10 +75,12 @@ import {
 import {
   canonicalJson,
   computeEntryHash,
+  encodeHash,
   hashCanonical,
   hashCarrierMark,
   hashRunId,
   InMemorySignerRegistry,
+  sha256Bytes,
 } from '@ald/hashing';
 import { validateLedgerEventDraft } from '@ald/evidence';
 
@@ -139,6 +144,7 @@ export class InMemoryEvidenceWriter implements EvidenceWriter {
   private readonly checkpoints: CheckpointManifest[] = [];
   private readonly anchors: AnchorReceipt[] = [];
   private readonly experiments: ExperimentRecord[] = [];
+  private readonly attachments: StoredAnalysisAttachment[] = [];
   /** Serializes the async sign-then-append sequence, as the writer mutex does. */
   private tail: Promise<unknown> = Promise.resolve();
 
@@ -206,6 +212,18 @@ export class InMemoryEvidenceWriter implements EvidenceWriter {
 
   readExperimentRecords(runId: string): ExperimentRecord[] {
     return this.experiments.filter((record) => record.runId === runId);
+  }
+
+  readAnalysisAttachments(runId: string): StoredAnalysisAttachment[] {
+    return this.attachments.filter((attachment) => {
+      const binding = attachment.descriptor.boundBy;
+      if (binding === undefined) {
+        return false;
+      }
+      return this.readEvents(runId, binding.stream).some(
+        (event) => event.entryHash === binding.entryHash,
+      );
+    });
   }
 
   /** Every committed channel event of a run, in sequence order. */
@@ -513,6 +531,52 @@ export class InMemoryEvidenceWriter implements EvidenceWriter {
       });
       this.append(request.runId, 'intervention', event);
       return event;
+    });
+  }
+
+  appendAnalysisAttachment(
+    request: AnalysisAttachmentAppendRequest,
+  ): Promise<StoredAnalysisAttachment> {
+    return this.serialize(async () => {
+      this.assertKnownRun(request.runId);
+      const canonical = canonicalJson(request.value);
+      const sha256 = encodeHash(
+        sha256Bytes(Buffer.from(`${canonical}\n`, 'utf8')),
+      );
+      const producedAt = this.clock.now();
+      const head = this.chainHead(request.runId, 'intervention');
+      const unsigned = {
+        version: 1 as const,
+        runId: request.runId,
+        sequence: head.size + 1,
+        eventType: 'analysis-attached' as const,
+        actorId: request.actorId,
+        reasonCode: request.reasonCode,
+        details: {
+          path: request.path,
+          sha256,
+          kind: request.kind,
+          analysisVersion: request.analysisVersion,
+        },
+        previousEntryHash: head.lastEntryHash,
+        recordedAt: this.clock.now(),
+      };
+      const event = InterventionEventSchema.parse({
+        ...unsigned,
+        entryHash: computeEntryHash('intervention', unsigned),
+      });
+      const descriptor = BundleAttachmentSchema.parse({
+        path: request.path,
+        sha256,
+        kind: request.kind,
+        analysisVersion: request.analysisVersion,
+        producedAt,
+        boundBy: { stream: 'intervention', entryHash: event.entryHash },
+      });
+      const stored = { descriptor, canonicalJson: canonical };
+      this.append(request.runId, 'intervention', event);
+      this.attachments.push(stored);
+      return stored;
     });
   }
 

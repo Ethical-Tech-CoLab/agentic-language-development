@@ -187,7 +187,8 @@ evaluations — live under `analysis/`:
 - `analysis/index.json` lists every file under `analysis/` except itself as a
   `BundleAttachmentSchema` entry: relative `path`, plain `sha256:<hex>` of the
   file bytes (no domain separator, so any tool reproduces it), `kind`,
-  `analysisVersion`, `producedAt`, and an optional `boundBy`.
+  `analysisVersion`, `producedAt`, and an optional `boundBy`. The exporter
+  writes the index even when the attachment list is empty.
 - `boundBy` names a chained evidence entry (`audit`, `intervention`, or `turns`
   stream) whose content carries the same `sha256`. An attachment produced while
   the run was live is bound this way; it is covered by the checkpoint and
@@ -203,3 +204,6 @@ evaluations — live under `analysis/`:
 - Attachments never contain raw observations, raw rejected payloads, private
   keys, or Baby-visible text; the same §13.6 privacy rules as every other bundle
   file apply.
+- The latest `ExperimentRecord.analysisAttachmentRefs` lists the hashes of all
+  attachments currently in the bundle. Earlier append-only record versions may
+  list only the attachments that existed when that version was written.

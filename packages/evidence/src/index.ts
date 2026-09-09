@@ -6,8 +6,8 @@
  * (ALD-010 criterion 3): every SQL statement against `ledger_events`,
  * `channel_events`, `affect_events`, `audit_ledger_entries`, `turn_records`,
  * `intervention_log`, `checkpoint_manifests`, `anchor_receipts`,
- * `experiment_records`, `run_metadata`, `run_signers`, and `fork_artifacts`
- * is private to `writer.ts`.
+ * `experiment_records`, `analysis_attachments`, `run_metadata`, `run_signers`,
+ * and `fork_artifacts` is private to `writer.ts`.
  */
 export { openEvidenceDatabase, type EvidenceDatabase } from './database.js';
 export { applyMigrations, migrations } from './migrations.js';

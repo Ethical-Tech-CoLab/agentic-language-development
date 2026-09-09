@@ -271,6 +271,7 @@ describe('evidence database migrations', () => {
     expect(journalMode).toBe('wal');
     expect(tables).toEqual([
       'affect_events',
+      'analysis_attachments',
       'anchor_receipts',
       'audit_ledger_entries',
       'channel_events',
@@ -302,6 +303,7 @@ describe('evidence database migrations', () => {
       { version: 1, name: 'initial-evidence-schema' },
       { version: 2, name: 'turn-records-signers-and-fork-artifacts' },
       { version: 3, name: 'fork-artifact-stream-check-and-run-reference' },
+      { version: 4, name: 'analysis-attachments' },
     ]);
 
     second.close();

@@ -102,7 +102,8 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC
   6962 ordered Merkle trees with inclusion and consistency proofs, and the single
-  atomic SQLite Evidence Writer with fork detection, recovery, and bundle export.
+  atomic SQLite Evidence Writer with fork detection, recovery, bundle export, and
+  analysis attachments atomically bound to witness-committed intervention events.
 - `@ald/checkpoint`, `@ald/anchor`, `@ald/verifier`: signed checkpoint manifests and
   proof files, the Base anchor publisher (fake chain and viem transports; no funded
   wallet is configured here), and the standalone `ald-verify` CLI that re-derives
@@ -132,11 +133,13 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is binding E01/E02 red-team outputs into run evidence,
-complete Mode R training/key isolation, exercising frozen-LLM with real open weights,
-anchoring on Base Sepolia with a funded wallet, and binding an external
-pre-registration. The retention job is implemented and covered against real exported
-bundles and evidence-store rows.
+The E01/E02 software-readiness outputs now have a hashed attachment path linked from
+the append-only Experiment Record and independently checked against their evidence
+event and anchored prefix. The next critical-path work is complete Mode R
+training/key isolation, exercising frozen-LLM with real open weights, anchoring on
+Base Sepolia with a funded wallet, and binding an external pre-registration. The
+retention job is implemented and covered against real exported bundles and
+evidence-store rows.
 
 No experiment results are claimed.
 

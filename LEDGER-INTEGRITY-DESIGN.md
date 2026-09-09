@@ -81,7 +81,9 @@ Recommended tables:
 - `channel_events`;
 - `checkpoint_manifests`;
 - `anchor_receipts`;
-- `run_metadata`.
+- `run_metadata`;
+- `analysis_attachments` (canonical analysis bytes plus the descriptor bound to
+  an `analysis-attached` intervention event).
 
 Enable WAL mode and serialize writes through one evidence-writer service. Database
 permissions and triggers should reject `UPDATE` and `DELETE` operations on event

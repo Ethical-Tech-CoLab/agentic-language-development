@@ -14,10 +14,11 @@
  * it only creates the `proofs/` directories the Checkpoint Service fills in.
  */
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import {
   AUXILIARY_TREES,
+  BundleAttachmentIndexSchema,
   CLAIM_BOUNDARY_STATEMENTS,
   EVENT_STREAMS,
   HASH_DOMAINS,
@@ -35,7 +36,13 @@ import {
   type SignerPublicKey,
   type StreamDeclaration,
 } from '@ald/types';
-import { canonicalJson, domainHash } from '@ald/hashing';
+import {
+  canonicalJson,
+  domainHash,
+  encodeHash,
+  parseCanonicalJson,
+  sha256Bytes,
+} from '@ald/hashing';
 
 import { InvalidRequestError, UnknownRunError } from './errors.js';
 
@@ -259,6 +266,7 @@ export async function exportRunBundle(
     join(outputDir, 'anchors'),
     join(outputDir, 'configuration'),
     join(outputDir, 'prompts'),
+    join(outputDir, 'analysis'),
   ]) {
     await mkdir(directory, { recursive: true });
   }
@@ -306,6 +314,29 @@ export async function exportRunBundle(
       'utf8',
     );
   }
+
+  const attachments = reader.readAnalysisAttachments(runId);
+  for (const attachment of attachments) {
+    parseCanonicalJson(attachment.canonicalJson);
+    const bytes = `${attachment.canonicalJson}\n`;
+    const actualHash = encodeHash(sha256Bytes(Buffer.from(bytes, 'utf8')));
+    if (actualHash !== attachment.descriptor.sha256) {
+      throw new InvalidRequestError(
+        `Analysis attachment ${attachment.descriptor.path} hashes to ${actualHash}, stored descriptor declares ${attachment.descriptor.sha256}`,
+      );
+    }
+    const path = join(outputDir, attachment.descriptor.path);
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, bytes, 'utf8');
+  }
+  await writeCanonical(
+    join(outputDir, 'analysis', 'index.json'),
+    BundleAttachmentIndexSchema.parse({
+      version: 1,
+      runId,
+      attachments: attachments.map((attachment) => attachment.descriptor),
+    }),
+  );
 
   const records = reader.readExperimentRecords(runId);
   const current = records.at(-1);

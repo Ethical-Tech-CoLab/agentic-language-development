@@ -185,6 +185,7 @@ describe('exportRunBundle', () => {
 
     expect(RunManifestSchema.parse(manifest)).toEqual(manifest);
     expect(await listFiles(directory)).toEqual([
+      'analysis/index.json',
       'anchors/base-receipts.json',
       'baby-a-ledger.jsonl',
       'baby-b-ledger.jsonl',
@@ -386,6 +387,48 @@ describe('exportRunBundle', () => {
       hashDomain: 'dtsf-audit-ledger-entry-v1',
       signerDomain: 'audit',
       treeName: 'audit',
+    });
+
+    context.close();
+  });
+
+  it('stores and exports an analysis attachment with its atomic intervention binding', async () => {
+    const context = await populate();
+    const directory = await temporaryDirectory();
+    const value = { status: 'software-readiness', passed: true };
+    const stored = await context.writer.appendAnalysisAttachment({
+      runId: RUN_ID,
+      path: 'analysis/red-team-observation/e02-readiness.json',
+      kind: 'red-team-observation',
+      analysisVersion: 'observation-suite-v1',
+      value,
+      actorId: 'researcher:red-team',
+      reasonCode: 'e02-readiness',
+    });
+
+    await exportRunBundle(context.writer, RUN_ID, directory, exportOptions);
+
+    expect(
+      await readFile(
+        join(directory, 'analysis', 'red-team-observation', 'e02-readiness.json'),
+        'utf8',
+      ),
+    ).toBe(`${canonicalJson(value)}\n`);
+    expect(
+      JSON.parse(await readFile(join(directory, 'analysis', 'index.json'), 'utf8')),
+    ).toEqual({ version: 1, runId: RUN_ID, attachments: [stored.descriptor] });
+    const binding = context.writer
+      .readEvents(RUN_ID, 'intervention')
+      .map((event) => JSON.parse(event.canonicalJson) as Record<string, unknown>)
+      .find((event) => event['entryHash'] === stored.descriptor.boundBy?.entryHash);
+    expect(binding).toMatchObject({
+      eventType: 'analysis-attached',
+      details: {
+        path: stored.descriptor.path,
+        sha256: stored.descriptor.sha256,
+        kind: stored.descriptor.kind,
+        analysisVersion: stored.descriptor.analysisVersion,
+      },
     });
 
     context.close();

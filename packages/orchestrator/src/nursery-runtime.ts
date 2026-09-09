@@ -59,6 +59,7 @@ import {
   ledgerStreamForRole,
   otherRole,
   type AgentActionProposal,
+  type AnalysisAttachmentAppendRequest,
   type AnchorPublisher,
   type AnchorReceipt,
   type BabyRole,
@@ -92,6 +93,7 @@ import {
   type ScenarioSplit,
   type Sha256Hash,
   type SignerRegistry,
+  type StoredAnalysisAttachment,
   type TurnProposalEnvelope,
   type TurnRecord,
   type VerificationReport,
@@ -1850,6 +1852,23 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     );
   }
 
+  /**
+   * Bind a runtime-produced analysis artifact to the intervention chain, then
+   * witness its new prefix immediately. The Experiment Record links the hash
+   * when its next append-only version is written during sealing.
+   */
+  async attachAnalysis(
+    request: AnalysisAttachmentAppendRequest,
+  ): Promise<StoredAnalysisAttachment> {
+    const run = this.#requireRun(request.runId);
+    if (run.lifecycle.state !== 'running') {
+      throw new RunStateError(request.runId, run.lifecycle.state, 'running');
+    }
+    const attachment = await run.writer.appendAnalysisAttachment(request);
+    await this.#checkpoint(run, 'intervention');
+    return attachment;
+  }
+
   checkpoints(runId: string): CheckpointManifest[] {
     return this.#requireRun(runId).writer.readCheckpoints(runId);
   }
@@ -2546,6 +2565,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       runConfigRef: run.configurationHash,
       protocolGitCommit: run.config.protocolGitCommit,
       preRegistrationHash: run.config.preRegistrationHash,
+      analysisAttachmentRefs: run.writer
+        .readAnalysisAttachments(run.runId)
+        .map((attachment) => attachment.descriptor.sha256),
       claimBoundaryStatement:
         CLAIM_BOUNDARY_STATEMENTS[run.config.deploymentMode],
       ...fields,

@@ -43,6 +43,7 @@ import {
   babyIdForRole,
   otherRole,
   type BabyRole,
+  type BundleAttachment,
   type CheckpointManifest,
   type CheckpointReason,
   type EventStream,
@@ -111,6 +112,7 @@ export interface BuiltBundle {
   /** Hex Ed25519 seeds, so a test can re-sign a mutated artifact. */
   signerSeeds: Record<string, string>;
   config: RunConfig;
+  attachment?: BundleAttachment;
   cleanup(): Promise<void>;
 }
 
@@ -160,7 +162,9 @@ function proofSequences(treeSize: number): number[] {
 }
 
 /** Builds the fixture bundle in a fresh temp directory. */
-export async function buildFixtureBundle(): Promise<BuiltBundle> {
+export async function buildFixtureBundle(options: {
+  attachment?: boolean;
+} = {}): Promise<BuiltBundle> {
   const workDir = await mkdtemp(join(tmpdir(), 'ald-verifier-fixture-'));
   const bundleDir = join(workDir, 'bundle');
   const runId = 'run-e00-verifier-fixture';
@@ -300,6 +304,21 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
     }
   }
 
+  const storedAttachment = options.attachment === true
+    ? await writer.appendAnalysisAttachment({
+        runId,
+        path: 'analysis/red-team-observation/readiness.json',
+        kind: 'red-team-observation',
+        analysisVersion: 'fixture-red-team-v1',
+        value: { status: 'software-readiness', passed: true },
+        actorId: 'researcher:fixture',
+        reasonCode: 'red-team-readiness',
+      })
+    : undefined;
+  if (storedAttachment !== undefined) {
+    await createCheckpoint('intervention');
+  }
+
   const finalCheckpoint = checkpoints[checkpoints.length - 1];
   if (finalCheckpoint === undefined) {
     throw new Error('fixture must produce at least one checkpoint');
@@ -338,6 +357,9 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
     verifierReportRef: 'verification-report.json',
     claimBoundaryStatement: CLAIM_BOUNDARY_STATEMENTS.prototype,
     deviations: [],
+    ...(storedAttachment === undefined
+      ? {}
+      : { analysisAttachmentRefs: [storedAttachment.descriptor.sha256] }),
   };
   const midCheckpoint = checkpoints[1] ?? finalCheckpoint;
   writer.appendExperimentRecord({
@@ -460,6 +482,9 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
     checkpoints,
     signerSeeds: signers.exportSeeds(),
     config,
+    ...(storedAttachment === undefined
+      ? {}
+      : { attachment: storedAttachment.descriptor }),
     cleanup: async () => {
       await rm(workDir, { recursive: true, force: true });
     },

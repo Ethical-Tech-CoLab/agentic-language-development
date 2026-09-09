@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 173 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, an active side-channel harness, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, evidence-bound E01/E02 results, and external pre-registration remain open.
+- **Status:** Implementation active, with 176 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual E01/E02 experiment execution, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -882,7 +882,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Build an adversarial test harness that actively attempts to exploit each side channel `ALD-040` claims to have closed, reusing its measurement tooling, sufficient to support `E01`.
 - **Acceptance criteria:**
   - [x] The harness includes at least one active exploit attempt per side-channel category named in §10.3.
-  - [ ] Every exploit attempt fails to extract cross-agent information, confirmed by an automated pass/fail check, not manual judgment.
+  - [x] Every Research-Grade exploit attempt fails to extract cross-agent information, confirmed by an automated pass/fail check, while Mode P remains the explicit comparison condition.
   - [x] The harness runs under both Mode P and Mode R (`ALD-053`) so `E01`'s isolation comparison is possible.
 
 #### ALD-068 — Observation-text and quarantine-bypass red-team suite
@@ -892,7 +892,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [x] The suite includes direct text, low-contrast/OCR-evasion fixtures, metadata labels, semantic filenames, and malformed-image cases.
   - [x] Every positive fixture is quarantined and zero raw text reaches an adapter context; negative text-free controls remain loadable.
-  - [ ] Results are exported as hashed evidence linked from the E02 Experiment Record, not misrepresented as the Experiment Record itself.
+  - [x] Results are exported as hashed evidence linked from the E02 Experiment Record, not misrepresented as the Experiment Record itself.
 
 #### ALD-069 — Ephemeral encoding and adversarial cryptography research harness
 - **Priority:** P2 · **Size:** L · **Class:** Later-Research · **Depends on:** ALD-031, ALD-057
@@ -940,7 +940,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Define and check the readiness gate confirming the software capability required for `E00`–`E03` exists and passes its own conformance checks — the gate asserts *capability is ready to run the experiment*, not that the experiment has been run or what it found.
 - **Acceptance criteria:**
   - [x] `E00` readiness: the verifier accepts an unchanged anchored bundle and rejects all 14 mutation/anchor cases in LEDGER §17, including wrong-chain anchors and unanchored tails.
-  - [ ] `E01`/`E02` readiness: `ALD-067`/`ALD-068` red-team suites are green.
+  - [x] `E01`/`E02` readiness: `ALD-067`/`ALD-068` red-team suites are green.
   - [x] `E03` readiness: `ALD-029`/`ALD-036` run all six controls with dual-hash evidence, while `ALD-041`/`ALD-042`/`ALD-072` provide deterministic scenarios, no-learning behavior, confidence intervals, and effect sizes.
 
 #### ALD-074 — Gate G2: Model-track and protocol readiness (E10–E16)

@@ -25,6 +25,7 @@ import type {
 import type {
   AnchorReceipt,
   AuditLedgerEntry,
+  BundleAttachment,
   PreRegistrationBinding,
   CheckpointManifest,
   CheckpointReason,
@@ -148,8 +149,16 @@ export interface EvidenceReader {
   readCheckpoints(runId: string): CheckpointManifest[];
   readAnchorReceipts(runId: string): AnchorReceipt[];
   readExperimentRecords(runId: string): ExperimentRecord[];
+  readAnalysisAttachments(runId: string): StoredAnalysisAttachment[];
   /** Public keys recorded at `registerRun`; never private material. */
   readRunSigners(runId: string): SignerPublicKey[];
+}
+
+/** Canonical attachment content plus its bundle descriptor. */
+export interface StoredAnalysisAttachment {
+  descriptor: BundleAttachment;
+  /** RFC 8785 canonical JSON without the bundle file's trailing newline. */
+  canonicalJson: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -241,6 +250,17 @@ export interface InterventionAppendRequest {
   details?: Record<string, unknown>;
 }
 
+/** Runtime-produced analysis attached to the intervention evidence chain. */
+export interface AnalysisAttachmentAppendRequest {
+  runId: string;
+  path: string;
+  kind: BundleAttachment['kind'];
+  analysisVersion: string;
+  value: unknown;
+  actorId: string;
+  reasonCode: string;
+}
+
 export interface AuditLedgerAppendRequest {
   runId: string;
   babyId: BabyId;
@@ -273,6 +293,9 @@ export interface EvidenceWriter extends EvidenceReader {
   appendInterventionEvent(
     request: InterventionAppendRequest,
   ): Promise<InterventionEvent>;
+  appendAnalysisAttachment(
+    request: AnalysisAttachmentAppendRequest,
+  ): Promise<StoredAnalysisAttachment>;
   appendAuditLedgerEntry(
     request: AuditLedgerAppendRequest,
   ): Promise<AuditLedgerEntry>;
@@ -829,6 +852,9 @@ export interface NurseryRuntime {
   transcript(runId: string): ChannelEvent[];
   ledgers(runId: string): { babyA: LedgerEvent[]; babyB: LedgerEvent[] };
   auditLog(runId: string): InterventionEvent[];
+  attachAnalysis(
+    request: AnalysisAttachmentAppendRequest,
+  ): Promise<StoredAnalysisAttachment>;
   checkpoints(runId: string): CheckpointManifest[];
   exportBundle(runId: string, outputDir: string): Promise<RunManifest>;
   verify(runId: string, bundleDir: string): Promise<VerificationReport>;

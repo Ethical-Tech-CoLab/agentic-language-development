@@ -1080,6 +1080,7 @@ interface ExperimentRecord {
   checkpointManifestRef: string;     // final checkpoint hash
   anchorTxRef: string;               // Base transaction hash
   verifierReportRef: string;
+  analysisAttachmentRefs?: string[]; // hashes in analysis/index.json
   claimBoundaryStatement: string;    // verbatim §5.1/§5.2 sentence
   deviations: string[];              // pointers into EXPERIMENT-NOTEBOOK.md §9
 }
