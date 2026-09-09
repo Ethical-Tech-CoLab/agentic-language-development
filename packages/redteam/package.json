@@ -15,6 +15,9 @@
     "build": "tsc --build"
   },
   "dependencies": {
+    "@ald/analysis": "*",
+    "@ald/gateway": "*",
+    "@ald/isolation": "*",
     "@ald/types": "*",
     "@ald/hashing": "*",
     "@ald/scenario": "*",

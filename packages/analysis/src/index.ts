@@ -112,6 +112,21 @@ export {
   type E11SummaryInput,
   type E11TrainingWindow,
 } from './e11.js';
+export {
+  AFFECT_LEAKAGE_ANALYSIS_VERSION,
+  AFFECT_LEAKAGE_ESTIMATOR,
+  E20_EXCESS_CMI_BOUND_BITS,
+  E20_MINIMUM_SEEDS,
+  E20_MINIMUM_WINDOWS_PER_SEED,
+  E20_PERMUTATIONS,
+  evaluateAffectLeakage,
+  type AffectLeakageDecision,
+  type AffectLeakageInput,
+  type AffectLeakageResult,
+  type AffectLeakageSeedInput,
+  type AffectLeakageSeedResult,
+  type AffectLeakageWindow,
+} from './affect-leakage.js';
 
 // ---------------------------------------------------------------------------
 // Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;

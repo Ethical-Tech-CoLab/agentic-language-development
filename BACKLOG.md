@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 169 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: the active side-channel harness, real open weights, funded Base anchoring, complete Research-Grade training/key isolation, and external pre-registration remain open.
+- **Status:** Implementation active, with 173 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, an active side-channel harness, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, evidence-bound E01/E02 results, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -615,8 +615,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Audit and close the transport-level side channels named in §10.3 (e.g., timing channels, response-size channels, error-message channels) in the Gateway and Observation delivery path.
 - **Acceptance criteria:**
   - [ ] Each side-channel category named in §10.3 has a corresponding mitigation implemented (e.g., constant-shape error responses, timing normalization where specified).
-  - [ ] A test harness measuring the relevant channel (e.g., response latency variance) confirms the mitigation is effective within the tolerance §10.3 implies.
-  - [ ] This item's test harness is reused (not duplicated) by the red-team suite in `ALD-067`.
+  - [x] A test harness measuring the relevant channel (e.g., response latency variance) confirms the mitigation is effective within the tolerance §10.3 implies.
+  - [x] This item's test harness is reused (not duplicated) by the red-team suite in `ALD-067`.
 
 #### ALD-041 — Deterministic scenario/task engine
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-023, ALD-037
@@ -881,9 +881,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§10.3 Side Channel Controls](SPECIFICATION.md#103-side-channel-controls), `EXPERIMENT-NOTEBOOK.md` [E01 — Channel Isolation and Side-Channel Red-Team](EXPERIMENT-NOTEBOOK.md#e01-channel-isolation-and-side-channel-red-team)
 - **Scope:** Build an adversarial test harness that actively attempts to exploit each side channel `ALD-040` claims to have closed, reusing its measurement tooling, sufficient to support `E01`.
 - **Acceptance criteria:**
-  - [ ] The harness includes at least one active exploit attempt per side-channel category named in §10.3.
+  - [x] The harness includes at least one active exploit attempt per side-channel category named in §10.3.
   - [ ] Every exploit attempt fails to extract cross-agent information, confirmed by an automated pass/fail check, not manual judgment.
-  - [ ] The harness runs under both Mode P and Mode R (`ALD-053`) so `E01`'s isolation comparison is possible.
+  - [x] The harness runs under both Mode P and Mode R (`ALD-053`) so `E01`'s isolation comparison is possible.
 
 #### ALD-068 — Observation-text and quarantine-bypass red-team suite
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-039

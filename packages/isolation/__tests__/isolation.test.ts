@@ -105,6 +105,7 @@ describe('separate-process learner host', () => {
       });
       expect(probe?.permissionModel).toBe(true);
       expect(probe?.fsRead).toBe('denied');
+      expect(probe?.clipboard).toBe('denied');
       expect(probe?.childProcess).toBe('denied');
       expect(probe?.worker).toBe('denied');
     } finally {

@@ -117,7 +117,8 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   process transport, a two-container Mode R network-isolation gate, and learner-host confinement; API telemetry, snapshot/restore,
   and failure supervision; configuration-driven, verifier-bound live causal probes
   and bounded repair turns, plus held-out, curriculum, drift, and statistical
-  scaffolds; and the committed observation-text and quarantine-bypass corpus.
+  scaffolds; the committed observation-text and quarantine-bypass corpus; and
+  an active twelve-category side-channel red-team suite shared by Mode P and Mode R.
   These are tested foundations, not a completed production Mode R deployment or
   a scientific result. `npm run test:mode-r` builds the locked-down learner image,
   denies Baby-to-Baby routes on separate internal networks, checks host capability
@@ -131,8 +132,8 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The next critical-path work is the active side-channel harness and complete Mode R
-training/key isolation, exercising frozen-LLM with real open weights,
+The next critical-path work is binding E01/E02 red-team outputs into run evidence,
+complete Mode R training/key isolation, exercising frozen-LLM with real open weights,
 anchoring on Base Sepolia with a funded wallet, and binding an external
 pre-registration. The retention job is implemented and covered against real exported
 bundles and evidence-store rows.

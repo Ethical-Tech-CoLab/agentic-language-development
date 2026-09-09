@@ -399,6 +399,7 @@ export async function isolationProbe(
   return {
     permissionModel,
     fsRead: probeFsRead(request.readPath),
+    clipboard: await probeClipboard(),
     childProcess: await probeChildProcess(),
     worker: await probeWorker(),
     network: await probeNetwork(request.connect),
@@ -406,6 +407,26 @@ export async function isolationProbe(
     argvCount: process.argv.length,
     processId: process.pid,
   };
+}
+
+/** Attempt the platform clipboard command without retaining any output. */
+async function probeClipboard(): Promise<ProbeOutcome> {
+  try {
+    const childProcess = await import('node:child_process');
+    const [command, args] =
+      process.platform === 'darwin'
+        ? ['pbpaste', []]
+        : process.platform === 'win32'
+          ? ['powershell.exe', ['-NoProfile', '-Command', 'Get-Clipboard']]
+          : ['xclip', ['-selection', 'clipboard', '-o']];
+    const result = childProcess.spawnSync(command, args, { stdio: 'ignore' });
+    if (result.error !== undefined) {
+      return classify(result.error);
+    }
+    return result.status === 0 ? 'allowed' : 'refused';
+  } catch (error) {
+    return classify(error);
+  }
 }
 
 function hasPermissionModel(): boolean {

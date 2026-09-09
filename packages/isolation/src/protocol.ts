@@ -304,6 +304,7 @@ export const IsolationProbeResultSchema = z.strictObject({
   /** Whether Node's permission model is active in this host. */
   permissionModel: z.boolean(),
   fsRead: z.enum(PROBE_OUTCOMES),
+  clipboard: z.enum(PROBE_OUTCOMES),
   childProcess: z.enum(PROBE_OUTCOMES),
   worker: z.enum(PROBE_OUTCOMES),
   network: z.enum(PROBE_OUTCOMES),

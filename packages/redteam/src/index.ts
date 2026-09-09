@@ -1,9 +1,9 @@
 /**
  * `@ald/redteam` — adversarial suites and side-channel measurement tooling
- * (BACKLOG ALD-040 measurement half, ALD-068; SPECIFICATION.md §10.1, §10.2,
+ * (BACKLOG ALD-040, ALD-067, ALD-068; SPECIFICATION.md §10.1, §10.2,
  * §10.3; EXPERIMENT-NOTEBOOK.md E01, E02).
  *
- * Three parts:
+ * Four parts:
  *
  * - `fixtures/` — the pre-registered ALD-068 fixture set: deterministically
  *   generated PNGs (embedded bitmap typefaces, seeded PRNG, stored-DEFLATE
@@ -15,19 +15,51 @@
  *   `kind: 'red-team-observation'` attachment object.
  * - `measure/` — the generic timing/size/error-shape measurement library
  *   ALD-040 criterion 2 needs and ALD-067's active exploits reuse.
+ * - `side-channel/` — active Gateway, transport, host-capability, and hidden
+ *   correlation attacks, joined into the Mode P/Mode R comparison gate.
  *
  * Claim boundary (SPEC §5.1, §5.4): everything here is **software
  * readiness**. A green suite says the implemented filter quarantined the
  * implemented attack set; it is not the E01 or E02 result, and E01/E02 remain
- * `Not started` until the notebook says otherwise. `ALD-067`'s active
- * exploits and the Mode R comparison are not in this package yet
- * (`src/side-channel/` is where they land).
+ * `Not started` until the notebook says otherwise. The active Gateway attack
+ * set lives under `src/side-channel/`; its Mode P/Mode R comparison is a
+ * software-readiness gate rather than an E01 result.
  */
 export {
   RedTeamError,
   assertFiniteSample,
   type RedTeamErrorCode,
 } from './errors.js';
+export {
+  runHiddenStateCorrelationAttack,
+  type CorrelationAttackReport,
+} from './side-channel/correlation.js';
+export {
+  runGatewaySideChannelAttacks,
+  type GatewayAttackCategory,
+  type GatewayAttackResult,
+  type GatewaySideChannelReport,
+} from './side-channel/gateway.js';
+export {
+  evaluateHostIsolationAttacks,
+  type HostAttackCategory,
+  type HostAttackResult,
+  type HostIsolationAttackReport,
+} from './side-channel/isolation.js';
+export {
+  runActiveTransportAttacks,
+  type ActiveTransportAttackOptions,
+  type ActiveTransportAttackReport,
+  type TransportAttackCondition,
+  type TransportAttackObservation,
+} from './side-channel/transport.js';
+export {
+  SIDE_CHANNEL_ATTACK_CATEGORIES,
+  runSideChannelRedTeamSuite,
+  type SideChannelAttackCategory,
+  type SideChannelRedTeamOptions,
+  type SideChannelRedTeamReport,
+} from './side-channel/suite.js';
 export {
   FIXTURE_SET_VERSION,
   FIXTURE_TYPEFACES,

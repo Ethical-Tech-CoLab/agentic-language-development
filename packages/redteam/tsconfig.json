@@ -18,6 +18,15 @@
     },
     {
       "path": "../scenario"
+    },
+    {
+      "path": "../gateway"
+    },
+    {
+      "path": "../isolation"
+    },
+    {
+      "path": "../analysis"
     }
   ]
 }
