@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 228 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, and executable readiness gates covering all 19 experiments without crossing the research-judgment boundary. The acceptance checkboxes below are authoritative: funded Base anchoring, CI operation, and external operator validation remain open.
+- **Status:** Implementation active, with 235 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, executable readiness gates covering all 19 experiments, and a consolidated all-change CI/documentation/release contract. The acceptance checkboxes below are authoritative: funded Base anchoring, a hosted required CI run, and independent operator restore validation remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -989,16 +989,16 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Stand up a CI pipeline running, on every change: the crash-safety suite (`ALD-011`), the Gateway conformance suite (`ALD-036`), the semantic-leakage battery (`ALD-057`), and both red-team suites (`ALD-067`/`068`), plus every other item's own acceptance tests referenced elsewhere in this backlog.
 - **Acceptance criteria:**
   - [ ] CI runs on every proposed change and blocks merge on any failing suite.
-  - [ ] The consolidated suite includes at least one test per `Done` item's acceptance criteria at the time CI is stood up.
-  - [ ] CI run time and flakiness are tracked; a flaky test is quarantined with a tracked follow-up, not silently ignored.
+  - [x] The consolidated suite includes at least one test per `Done` item's acceptance criteria at the time CI is stood up.
+  - [x] CI run time and flakiness are tracked; a flaky test is quarantined with a tracked follow-up, not silently ignored.
 
 #### ALD-079 — Architecture/API/operations documentation set
 - **Priority:** P1 · **Size:** M · **Class:** MVP · **Depends on:** ALD-048, ALD-049, ALD-050, ALD-055, ALD-060
 - **Spec refs:** `SPECIFICATION.md` [§1.5 Relationship to Companion Documents](SPECIFICATION.md#15-relationship-to-companion-documents)
 - **Scope:** Write the documentation set covering: architecture overview, full API reference (all routes from EPIC-09), Mode R operational runbook (container isolation, `ALD-055`), and the snapshot/restore/recovery runbook (`ALD-060`).
 - **Acceptance criteria:**
-  - [ ] Every route implemented in EPIC-09 has a corresponding API reference entry with request/response shape.
-  - [ ] The Mode R runbook lets an operator who has not read the source code stand up an isolated run following the documented steps alone.
+  - [x] Every route implemented in EPIC-09 has a corresponding API reference entry with request/response shape.
+  - [x] The Mode R runbook lets an operator who has not read the source code stand up an isolated run following the documented steps alone.
   - [ ] The snapshot/restore runbook is validated by having someone other than the implementer follow it to perform a real restore.
 
 #### ALD-080 — Release process and publication-checklist mapping
@@ -1006,9 +1006,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `EXPERIMENT-NOTEBOOK.md` [§12. Publication Checklist](EXPERIMENT-NOTEBOOK.md#12-publication-checklist)
 - **Scope:** Define the release process for the software (versioning, tagging, changelog) and produce a mapping from each `EXPERIMENT-NOTEBOOK.md` §12 publication-checklist item to the specific backlog item(s)/gate(s) that make it achievable, without claiming any research-judgment checklist item as satisfied by software alone.
 - **Acceptance criteria:**
-  - [ ] A documented release process exists (version scheme, changelog convention, tagging) consistent with §1's normative-language conventions.
-  - [ ] Every software-verifiable item in the §12 publication checklist is mapped to at least one `ALD-XXX` ID or Gate (`ALD-073`–`077`).
-  - [ ] The mapping explicitly flags which §12 checklist items are research-judgment calls outside this backlog's scope (e.g., "results support the stated hypothesis"), rather than silently omitting them.
+  - [x] A documented release process exists (version scheme, changelog convention, tagging) consistent with §1's normative-language conventions.
+  - [x] Every software-verifiable item in the §12 publication checklist is mapped to at least one `ALD-XXX` ID or Gate (`ALD-073`–`077`).
+  - [x] The mapping explicitly flags which §12 checklist items are research-judgment calls outside this backlog's scope (e.g., "results support the stated hypothesis"), rather than silently omitting them.
 
 ## 13. Experiment Readiness Gate Mapping
 
