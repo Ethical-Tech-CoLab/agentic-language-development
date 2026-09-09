@@ -107,6 +107,22 @@ export {
   type EpisodeCounts,
 } from './e03.js';
 export {
+  E03_COMMUNICATION_CONDITIONS,
+  E03_DESIGN_MINIMUM_POWER,
+  E03_DESIGN_REPETITIONS,
+  E03_DESIGN_ROWS,
+  E03_DESIGN_SEED,
+  E03_DESIGN_SIMULATION_VERSION,
+  E03_SEED_LABEL,
+  buildE03SeedManifest,
+  simulateE03DesignPower,
+  type E03DesignPowerRow,
+  type E03DesignSimulation,
+  type E03DesignSimulationOptions,
+  type E03SeedManifest,
+  type E03SeedManifestEntry,
+} from './e03-design.js';
+export {
   E03_CHANCE_RATE,
   e11Summary,
   type E11Summary,

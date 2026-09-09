@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "claimBoundary": "outcome-blind-design-simulation",
+  "samplingModel": "normal-seed-rate-with-binomial-episode-variance",
+  "seed": "ald-e03-v1-design-check",
+  "repetitions": 30000,
+  "mean": 0.25,
+  "episodesPerSeed": 200,
+  "equivalenceBounds": [
+    0.2,
+    0.3
+  ],
+  "alpha": 0.01,
+  "minimumPower": 0.9,
+  "rows": [
+    {
+      "maximumBetweenSeedSd": 0.05,
+      "primarySeeds": 25,
+      "totalSeedRateSd": 0.05863019699779287,
+      "equivalentReplicates": 27280,
+      "repetitions": 30000,
+      "estimatedPower": 0.9093333333333333,
+      "monteCarloStandardError": 0.0016577718200667447,
+      "monteCarloLower95": 0.9060841005660025,
+      "passesMinimumPower": true
+    },
+    {
+      "maximumBetweenSeedSd": 0.1,
+      "primarySeeds": 75,
+      "totalSeedRateSd": 0.10458250331675946,
+      "equivalentReplicates": 27587,
+      "repetitions": 30000,
+      "estimatedPower": 0.9195666666666666,
+      "monteCarloStandardError": 0.0015701784635535566,
+      "monteCarloLower95": 0.9164891168781016,
+      "passesMinimumPower": true
+    },
+    {
+      "maximumBetweenSeedSd": 0.15,
+      "primarySeeds": 155,
+      "totalSeedRateSd": 0.15309310892394862,
+      "equivalentReplicates": 27327,
+      "repetitions": 30000,
+      "estimatedPower": 0.9109,
+      "monteCarloStandardError": 0.0016448018117694299,
+      "monteCarloLower95": 0.9076761884489319,
+      "passesMinimumPower": true
+    },
+    {
+      "maximumBetweenSeedSd": 0.2,
+      "primarySeeds": 300,
+      "totalSeedRateSd": 0.2023301757029831,
+      "equivalentReplicates": 28462,
+      "repetitions": 30000,
+      "estimatedPower": 0.9487333333333333,
+      "monteCarloStandardError": 0.0012732948801639989,
+      "monteCarloLower95": 0.9462376753682119,
+      "passesMinimumPower": true
+    }
+  ],
+  "passes": true
+}
