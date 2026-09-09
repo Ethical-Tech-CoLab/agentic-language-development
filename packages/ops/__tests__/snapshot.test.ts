@@ -573,21 +573,29 @@ describe('ALD-060: final snapshot on shutdown (SPEC §14.4 SIGINT/SIGTERM)', () 
       const child = spawn(
         process.execPath,
         [join(process.cwd(), 'node_modules', 'tsx', 'dist', 'cli.mjs'), fixture, directory],
-        { stdio: ['ignore', 'pipe', 'pipe'] },
+        { stdio: ['ignore', 'pipe', 'pipe', 'ipc'] },
       );
-      let out = '';
-      child.stdout?.on('data', (chunk: Buffer) => {
-        out += chunk.toString('utf8');
-        if (out.includes('ready')) {
+      let signalSent = false;
+      child.on('message', (message: unknown) => {
+        if (
+          !signalSent &&
+          typeof message === 'object' &&
+          message !== null &&
+          (message as { type?: unknown }).type === 'shutdown-snapshot-ready'
+        ) {
+          signalSent = true;
           child.kill('SIGTERM');
         }
       });
       child.on('error', reject);
-      child.on('exit', (code) => resolve(code));
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         child.kill('SIGKILL');
         reject(new Error('child process did not exit in time'));
       }, 30_000).unref();
+      child.on('exit', (code) => {
+        clearTimeout(timeout);
+        resolve(code);
+      });
     });
 
     expect(exitCode).toBe(0);

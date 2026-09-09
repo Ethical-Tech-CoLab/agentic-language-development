@@ -4,8 +4,9 @@
  *
  * Run by `packages/ops/__tests__/snapshot.test.ts` under `tsx`. It installs
  * the real shutdown handler over a minimal `SnapshotSource` double — a real
- * evidence store is not what is under test here, the signal path is — prints
- * `ready`, and waits. The parent sends SIGTERM; this process must write
+ * evidence store is not what is under test here, the signal path is — sends
+ * an IPC readiness message, and waits. The parent sends SIGTERM only after
+ * that handshake; this process must write
  * exactly one snapshot file and exit 0.
  *
  * Imports only `../../src/snapshot.js` (which reaches no further than
@@ -59,4 +60,7 @@ installShutdownSnapshot({
 const keepAlive = setInterval(() => undefined, 1_000);
 process.on('exit', () => clearInterval(keepAlive));
 
-process.stdout.write('ready\n');
+if (typeof process.send !== 'function') {
+  throw new Error('shutdown snapshot fixture requires an IPC channel');
+}
+process.send({ type: 'shutdown-snapshot-ready' });
