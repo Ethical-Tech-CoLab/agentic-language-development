@@ -49,6 +49,35 @@ function artifactStrings(envelopeValue: unknown): string[] {
   return found.filter((value) => value.length > 0);
 }
 
+/**
+ * Plaintext-bearing strings from a result. Cryptographic commitments are
+ * intentionally opaque: a short token such as `S01` can occur by chance in
+ * a hash or Ed25519 signature without disclosing the rejected artifact.
+ */
+function nonCryptographicStrings(value: unknown): string[] {
+  const found: string[] = [];
+  const walk = (candidate: unknown, key = ''): void => {
+    if (/hash|signature/iu.test(key)) {
+      return;
+    }
+    if (typeof candidate === 'string') {
+      found.push(candidate);
+      return;
+    }
+    if (Array.isArray(candidate)) {
+      candidate.forEach((entry) => walk(entry));
+      return;
+    }
+    if (typeof candidate === 'object' && candidate !== null) {
+      Object.entries(candidate).forEach(([entryKey, entry]) =>
+        walk(entry, entryKey),
+      );
+    }
+  };
+  walk(value);
+  return found;
+}
+
 describe('fixed-token conformance vectors (ALD-036)', () => {
   it('declares a 32-symbol inventory and the SPEC §9.1 defaults', () => {
     expect(CONFORMANCE_INVENTORY).toHaveLength(32);
@@ -174,7 +203,9 @@ describe('fixed-token conformance vectors (ALD-036)', () => {
       const serialized = JSON.stringify(result);
       expect(serialized).not.toContain('symbols');
       for (const leaked of artifactStrings(vector.envelope)) {
-        expect(serialized).not.toContain(leaked);
+        for (const visible of nonCryptographicStrings(result)) {
+          expect(visible).not.toContain(leaked);
+        }
       }
     });
   }
