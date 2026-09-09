@@ -25,6 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit dependency graph
+        run: |
+          mkdir -p artifacts
+          npm audit --audit-level=high --json > artifacts/npm-audit.json
+
       - name: Run consolidated suite with timing
         run: |
           mkdir -p artifacts
