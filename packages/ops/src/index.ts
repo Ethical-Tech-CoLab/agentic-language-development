@@ -159,3 +159,14 @@ export {
   type RunRetentionDecision,
   type RunRetentionOptions,
 } from './retention.js';
+
+export {
+  RESEARCH_PREFLIGHT_CLAIM_BOUNDARY,
+  RESEARCH_PREFLIGHT_VERSION,
+  evaluateResearchPreflight,
+  formatResearchPreflight,
+  type ResearchPreflightCheck,
+  type ResearchPreflightCheckId,
+  type ResearchPreflightInput,
+  type ResearchPreflightReport,
+} from './research-preflight.js';
