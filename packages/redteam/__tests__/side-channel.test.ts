@@ -5,6 +5,7 @@ import { isolationProbe, type IsolationProbeResult } from '@ald/isolation';
 
 import {
   SIDE_CHANNEL_ATTACK_CATEGORIES,
+  SIDE_CHANNEL_MITIGATIONS,
   evaluateHostIsolationAttacks,
   runActiveTransportAttacks,
   runGatewaySideChannelAttacks,
@@ -27,6 +28,12 @@ function deniedProbe(processId: number): IsolationProbeResult {
 }
 
 describe('ALD-067 active side-channel harness', () => {
+  it('maps every SPEC §10.3 category to one enforced mitigation', () => {
+    expect(Object.keys(SIDE_CHANNEL_MITIGATIONS).sort()).toEqual(
+      [...SIDE_CHANNEL_ATTACK_CATEGORIES].sort(),
+    );
+    expect(Object.values(SIDE_CHANNEL_MITIGATIONS).every(Boolean)).toBe(true);
+  });
   it.each(['prototype', 'research-grade'] as const)(
     'actively rejects Gateway extraction attempts in %s mode',
     async (deploymentMode) => {

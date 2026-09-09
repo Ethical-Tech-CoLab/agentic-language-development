@@ -193,6 +193,14 @@ describe('DTSF twin pack manifests', () => {
     },
   );
 
+  it('keeps the exhaustive route contract matrix synchronized with every exported route', () => {
+    const paths = (cases: readonly RouteCase[]): string[] =>
+      [...new Set(cases.map(({ path }) => path))].sort();
+    expect(paths(NURSERY_CASES)).toEqual([...NURSERY_ROUTE_PATTERNS].sort());
+    expect(paths(BABY_CASES)).toEqual([...BABY_A_ROUTE_PATTERNS].sort());
+    expect(paths(BABY_CASES)).toEqual([...BABY_B_ROUTE_PATTERNS].sort());
+  });
+
   it.each(packs)(
     'registers only unprefixed $name routes (SPEC §12.1)',
     ({ name, routePatterns }) => {

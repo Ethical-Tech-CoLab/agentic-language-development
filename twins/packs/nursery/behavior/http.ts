@@ -278,6 +278,29 @@ export function failure(
   return { response, mutations: [] };
 }
 
+/** Runtime guard shared by every route, including routes added later. */
+export function assertResponseEnvelope(
+  result: BehaviorPackResult,
+): BehaviorPackResult {
+  const body = result.response.body;
+  const record =
+    typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : undefined;
+  const successShape = record?.['ok'] === true && !('error' in record);
+  const error = record?.['error'];
+  const errorShape =
+    !('ok' in (record ?? {})) &&
+    typeof error === 'object' &&
+    error !== null &&
+    typeof (error as Record<string, unknown>)['code'] === 'string' &&
+    typeof (error as Record<string, unknown>)['message'] === 'string';
+  if (!successShape && !errorShape) {
+    throw new Error('route returned a non-conforming SPEC §12.3 response envelope');
+  }
+  return result;
+}
+
 /** Thrown by the small body validators below; mapped to `400 INVALID_REQUEST`. */
 export class InvalidRequestError extends Error {
   constructor(
@@ -715,14 +738,16 @@ export function createRouter(
       try {
         const body = parseBody(request.body);
         return {
-          result: await route.handler({
-            request,
-            params,
-            body,
-            role: auth.role,
-            actorId: actorIdFor(request, auth.role),
-            context,
-          }),
+          result: assertResponseEnvelope(
+            await route.handler({
+              request,
+              params,
+              body,
+              role: auth.role,
+              actorId: actorIdFor(request, auth.role),
+              context,
+            }),
+          ),
           ...dimensions,
         };
       } catch (error) {

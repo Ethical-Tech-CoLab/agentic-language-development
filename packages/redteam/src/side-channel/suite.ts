@@ -32,6 +32,25 @@ export const SIDE_CHANNEL_ATTACK_CATEGORIES = [
 export type SideChannelAttackCategory =
   (typeof SIDE_CHANNEL_ATTACK_CATEGORIES)[number];
 
+/** SPEC §10.3 category-to-enforced-mitigation traceability (ALD-040). */
+export const SIDE_CHANNEL_MITIGATIONS: Record<
+  SideChannelAttackCategory,
+  string
+> = {
+  timing: 'normalized turn deadline and measured timing tolerance',
+  'response-size': 'fixed transport envelope and measured byte tolerance',
+  'error-behavior': 'constant-shape public error response',
+  'carrier-bounds': 'allowlisted carrier grammar with absolute size ceilings',
+  'silence-and-retry': 'fixed turn schedule and bounded retry count',
+  filesystem: 'learner host filesystem denial',
+  clipboard: 'learner host clipboard denial',
+  environment: 'allowlisted empty learner environment',
+  process: 'learner host process and worker denial',
+  network: 'Gateway-only learner network policy',
+  'model-generated-identifiers': 'Nursery-owned public identifiers',
+  'hidden-state-correlation': 'mandatory carrier and affect correlation audit',
+};
+
 export interface SideChannelRedTeamOptions {
   config: RunConfig;
   hostProbes: readonly IsolationProbeResult[];

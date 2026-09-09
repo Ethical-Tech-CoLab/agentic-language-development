@@ -55,6 +55,7 @@ export {
 } from './side-channel/transport.js';
 export {
   SIDE_CHANNEL_ATTACK_CATEGORIES,
+  SIDE_CHANNEL_MITIGATIONS,
   runSideChannelRedTeamSuite,
   type SideChannelAttackCategory,
   type SideChannelRedTeamOptions,
