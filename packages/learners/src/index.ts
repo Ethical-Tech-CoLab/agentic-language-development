@@ -68,8 +68,29 @@ export function createLearnerAdapterFactory(
 }
 
 export { createFrozenLlmAdapterFactory, type FrozenLlmAdapterOptions } from './frozen-llm.js';
-export { formatModelRef } from './llm-client.js';
+export {
+  formatModelRef,
+  type LocalModelClient,
+  type LocalModelDescription,
+} from './llm-client.js';
+export {
+  LOOPBACK_HOSTNAMES,
+  OpenAiCompatibleLocalClient,
+  assertLoopbackEndpoint,
+  isLoopbackEndpoint,
+  type FetchLike,
+  type FetchLikeResponse,
+  type OpenAiCompatibleLocalClientOptions,
+} from './llm-server-client.js';
 export { ScriptedModelClient } from './llm-scripted-client.js';
+export {
+  FROZEN_MODEL_QUALIFICATION_LABEL,
+  FROZEN_MODEL_QUALIFICATION_VERSION,
+  runFrozenModelQualification,
+  type FrozenModelQualificationOptions,
+  type FrozenModelQualificationReport,
+  type FrozenModelRoleQualification,
+} from './frozen-qualification.js';
 export {
   createSelfSupervisedAdapterFactory,
   type SelfSupervisedAdapterOptions,
