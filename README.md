@@ -113,6 +113,7 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   scenarios, hygiene, and a fail-closed run-registration quarantine gate; fixed-token, glyph, bitmap, canvas,
   tone, and six-display affect protocols; no-learning and scratch-RL runtime tracks;
   frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
+  independently seeded scratch-RL policies and witness-committed initial hashes;
   Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
   interpreter whose generated entries are separately signed and checkpointed; and
   pre-registered analysis primitives, including immutable mark-level leakage

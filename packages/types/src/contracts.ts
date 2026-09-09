@@ -732,6 +732,8 @@ export interface LearnerAdapter {
   describeProvenance?(): LearnerProvenance;
   /** SPEC §5.3: where this adapter executes; `in-process` when absent. */
   readonly isolation?: IsolationDescriptor;
+  /** Hash of the initialized policy before the first turn, when trainable. */
+  initialPolicyHash?(): Sha256Hash;
   /** Canonicalizable policy state for policy-checkpoint hashing and derived runs. */
   exportPolicy(): unknown;
 }

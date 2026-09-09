@@ -125,6 +125,7 @@ async function receiverTurn(
 describe('scratch-rl receiver under the SPEC §9.6 random control', () => {
   it('acts on a message longer than its configured messageLength', async () => {
     const { adapter, ledger, config } = await initAdapter(1, 4);
+    const before = adapter.exportPolicy();
     const delivered = [
       inventory[2] as string,
       inventory[5] as string,
@@ -150,14 +151,15 @@ describe('scratch-rl receiver under the SPEC §9.6 random control', () => {
     // Only the prefix has a receiver table, so only the prefix is credited.
     const policy = adapter.exportPolicy();
     expect(policy.thetaReceiver).toHaveLength(1);
-    expect(policy.thetaReceiver[0]?.[2]?.some((logit) => logit !== 0)).toBe(true);
-    expect(policy.thetaReceiver[0]?.[5]?.every((logit) => logit === 0)).toBe(
-      true,
+    expect(policy.thetaReceiver[0]?.[2]).not.toEqual(
+      before.thetaReceiver[0]?.[2],
     );
+    expect(policy.thetaReceiver[0]?.[5]).toEqual(before.thetaReceiver[0]?.[5]);
   });
 
   it('acts on a message shorter than its configured messageLength', async () => {
     const { adapter, ledger, config } = await initAdapter(2, 4);
+    const before = adapter.exportPolicy();
     const delivered = [inventory[3] as string];
 
     const { interpretation, intention } = await receiverTurn(
@@ -175,10 +177,10 @@ describe('scratch-rl receiver under the SPEC §9.6 random control', () => {
     // table is untouched.
     const policy = adapter.exportPolicy();
     expect(policy.thetaReceiver).toHaveLength(2);
-    expect(policy.thetaReceiver[0]?.[3]?.some((logit) => logit !== 0)).toBe(true);
-    expect(
-      policy.thetaReceiver[1]?.flat().every((logit) => logit === 0),
-    ).toBe(true);
+    expect(policy.thetaReceiver[0]?.[3]).not.toEqual(
+      before.thetaReceiver[0]?.[3],
+    );
+    expect(policy.thetaReceiver[1]).toEqual(before.thetaReceiver[1]);
   });
 
   it('still refuses a delivered symbol outside the inventory', async () => {

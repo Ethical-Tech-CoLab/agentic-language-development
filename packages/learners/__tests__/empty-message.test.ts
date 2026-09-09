@@ -165,6 +165,7 @@ describe('scratch-rl receiver with no delivered message (SPEC §9.6 disabled)', 
       'scratch-rl',
     );
     const before = policyHash(adapter);
+    const receiverBefore = adapter.exportPolicy().thetaReceiver;
     for (let turn = 1; turn <= 200; turn += 1) {
       await adapter.observe(observation(config, turn, RECEIVER_PAYLOAD));
       await adapter.act({
@@ -197,9 +198,7 @@ describe('scratch-rl receiver with no delivered message (SPEC §9.6 disabled)', 
       thetaReceiver: number[][][];
     };
     expect(policy.baseline).toBe(0);
-    expect(
-      policy.thetaReceiver.flat(2).every((value) => value === 0),
-    ).toBe(true);
+    expect(policy.thetaReceiver).toEqual(receiverBefore);
   }, 30_000);
 
   it('still updates the sender side of a run whose receiver turns are empty', async () => {
@@ -207,6 +206,7 @@ describe('scratch-rl receiver with no delivered message (SPEC §9.6 disabled)', 
       new TabularReinforceAdapter({ learningRate: 1, temperature: 0.5 }),
       'scratch-rl',
     );
+    const receiverBefore = adapter.exportPolicy().thetaReceiver;
     for (let turn = 1; turn <= 40; turn += 1) {
       const isSender = turn % 2 === 1;
       await adapter.observe(
@@ -250,9 +250,7 @@ describe('scratch-rl receiver with no delivered message (SPEC §9.6 disabled)', 
     // The sender half learned; the receiver half saw no symbol at all.
     expect(policy.thetaSender.flat().some((value) => value !== 0)).toBe(true);
     expect(policy.baseline).toBeGreaterThan(0);
-    expect(policy.thetaReceiver.flat(2).every((value) => value === 0)).toBe(
-      true,
-    );
+    expect(policy.thetaReceiver).toEqual(receiverBefore);
   });
 
   it('does not reuse a message delivered on an earlier turn', async () => {

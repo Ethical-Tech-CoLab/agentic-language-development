@@ -672,6 +672,12 @@ describe('disabled channel with a learning track (SPEC §9.6)', () => {
         evaluationTurns: 2,
       }),
     );
+    const initialReceiverTables = Object.fromEntries(
+      Object.entries(harness.runtime.adaptersFor(runId)).map(([role, adapter]) => [
+        role,
+        (adapter.exportPolicy() as { thetaReceiver: number[][][] }).thetaReceiver,
+      ]),
+    );
     for (let turn = 0; turn < turns; turn += 1) {
       const result = await harness.runtime.step(runId);
       expect(result.turn, `turn ${String(turn)}`).toBe(turn);
@@ -722,9 +728,7 @@ describe('disabled channel with a learning track (SPEC §9.6)', () => {
       const policy = adapters[role].exportPolicy() as {
         thetaReceiver: number[][][];
       };
-      expect(
-        policy.thetaReceiver.flat(2).every((value) => value === 0),
-      ).toBe(true);
+      expect(policy.thetaReceiver).toEqual(initialReceiverTables[role]);
     }
 
     const rate = successRate(

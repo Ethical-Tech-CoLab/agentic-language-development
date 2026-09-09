@@ -36,6 +36,8 @@ export interface ActiveTransportAttackOptions {
   timingTolerance: ChannelTolerance;
   sizeTolerance: ChannelTolerance;
   errorTolerance?: ErrorShapeTolerance;
+  /** Monotonic millisecond clock; injectable for deterministic conformance tests. */
+  now?: () => number;
 }
 
 export interface ActiveTransportAttackReport {
@@ -69,13 +71,14 @@ export async function runActiveTransportAttacks(
   const durations: Array<{ label: string; durationMs: number }> = [];
   const sizes: Array<{ label: string; sizeBytes: number }> = [];
   const responses: Array<{ label: string; body: string | Uint8Array }> = [];
+  const now = options.now ?? (() => performance.now());
   for (let sample = 0; sample < options.samplesPerCondition; sample += 1) {
     for (const condition of options.conditions) {
-      const startedAt = performance.now();
+      const startedAt = now();
       const observation = await condition.execute();
       durations.push({
         label: condition.label,
-        durationMs: performance.now() - startedAt,
+        durationMs: now() - startedAt,
       });
       sizes.push({ label: condition.label, sizeBytes: observation.sizeBytes });
       responses.push({ label: condition.label, body: observation.responseBody });

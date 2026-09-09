@@ -109,6 +109,44 @@ describe('E11 scratch-rl run (ALD-025)', () => {
     expect(new Set(training.map((sample) => sample.babyA)).size).toBeGreaterThan(1);
   });
 
+  it('records each independently initialized policy and its pre-turn hash', async () => {
+    const attestation = harness.runtime
+      .auditLog(RUN_ID)
+      .find(
+        (event) =>
+          event.eventType === 'runtime-attestation' &&
+          event.reasonCode === 'learner-initialization',
+      );
+    expect(attestation).toBeDefined();
+    const initialPolicies = attestation?.details?.['initialPolicies'] as Record<
+      string,
+      { initialPolicyHash: string; policyFile: string; track: string }
+    >;
+    const hashes: string[] = [];
+    for (const role of ['baby-a', 'baby-b'] as const) {
+      const record = initialPolicies[role];
+      expect(record).toMatchObject({
+        track: 'scratch-rl',
+        policyFile: `policies/${role}-policy-initial.json`,
+      });
+      const text = await readFile(
+        join(bundleDir(harness, RUN_ID), record?.policyFile ?? ''),
+        'utf8',
+      );
+      const rebuilt = hashCanonical(
+        HASH_DOMAINS.policyCheckpoint,
+        JSON.parse(text),
+      );
+      expect(record?.initialPolicyHash).toBe(rebuilt);
+      hashes.push(rebuilt);
+    }
+    expect(new Set(hashes).size).toBe(2);
+    expect(
+      harness.runtime.checkpoints(RUN_ID)[0]?.auxiliaryTrees['intervention']
+        ?.treeSize,
+    ).toBe(1);
+  });
+
   it('leaves the exported latest policy equal to the final in-memory policy', async () => {
     const adapters = harness.runtime.adaptersFor(RUN_ID);
     for (const role of ['baby-a', 'baby-b'] as const) {

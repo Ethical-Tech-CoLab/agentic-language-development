@@ -96,31 +96,21 @@ describe('TabularReinforceAdapter conformance (ALD-045)', () => {
     expect(typeof adapter.updatePolicy).toBe('function');
   });
 
-  it('starts from an exactly uniform policy', async () => {
-    const { adapter, ledger, config } = await initAdapter();
-    await adapter.observe({
-      runId: config.runId,
-      turn: 1,
-      recipient: 'baby-a',
-      encoding: 'opaque-numeric',
-      payload: [
-        [0, 0, 1],
-        [1, 1, 0],
-      ],
-      scenarioRef: 'scenario:x',
-    });
-    const envelope = await adapter.act({
-      turn: 1,
-      role: 'sender',
-      responseBudgetMs: 1_000,
-      availableActions: ['emit_symbols'],
-    });
-    const weights = envelope.privateLedgerDraft.content
-      .associationWeights as number[];
-    expect(weights).toHaveLength(8);
-    expect(new Set(weights)).toEqual(new Set([0.125]));
-    expect(envelope.privateLedgerDraft.content.probability).toBe(0.125);
-    expect(ledger.countOf('term.first_emitted')).toBe(1);
+  it('starts from seeded random parameters and exposes their initial hash', async () => {
+    const first = await initAdapter({}, { seed: 'random-init-a' });
+    const again = await initAdapter({}, { seed: 'random-init-a' });
+    const other = await initAdapter({}, { seed: 'random-init-b' });
+    const firstPolicy = first.adapter.exportPolicy();
+
+    expect(firstPolicy.thetaSender.flat().some((value) => value !== 0)).toBe(true);
+    expect(firstPolicy.thetaReceiver.flat(2).some((value) => value !== 0)).toBe(
+      true,
+    );
+    expect(again.adapter.exportPolicy()).toEqual(firstPolicy);
+    expect(other.adapter.exportPolicy()).not.toEqual(firstPolicy);
+    expect(first.adapter.initialPolicyHash()).toBe(
+      hashCanonical(HASH_DOMAINS.policyCheckpoint, firstPolicy),
+    );
   });
 });
 

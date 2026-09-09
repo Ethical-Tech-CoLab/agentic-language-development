@@ -149,10 +149,15 @@ describe('ALD-067 active side-channel harness', () => {
       second.envKeys = ['PATH'];
     }
     const response = '{"turnComplete":true}';
+    let clockTick = 0;
     const report = await runSideChannelRedTeamSuite({
       config,
       hostProbes: [deniedProbe(301), second],
       transport: {
+        now: () => {
+          clockTick += 1;
+          return clockTick;
+        },
         samplesPerCondition: 2,
         timingTolerance: { maxAbsoluteMeanDifference: 10 },
         sizeTolerance: { maxAbsoluteMeanDifference: 0 },

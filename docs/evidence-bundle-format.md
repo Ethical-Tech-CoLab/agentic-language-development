@@ -31,6 +31,7 @@
   prompts/
     learner-contract.<track>.v<n>.md   exact contract texts referenced by the run
   policies/
+    <role>-policy-initial.json   trainable adapter state before the first turn
     <role>-policy-<turn>.json    optional exported policy checkpoints
   experiment-record.json         { current, history[] } (ExperimentRecordFileSchema)
   verification-report.json       written by the verifier, never by the exporter
@@ -90,6 +91,11 @@ Cross-bindings (LEDGER §6) that the verifier MUST check:
   next turn, retain the original phase and `scenarioRef`, and use attempt `1`.
 - `deliveryReceipt.deliveredArtifactHash` equals `publicArtifactHash` for
   accepted deliveries.
+
+For each trainable Baby, checkpoint 0 commits a `runtime-attestation` intervention
+whose `initialPolicyHash` equals the policy-checkpoint-domain hash of
+`policies/<role>-policy-initial.json`. These files contain the exact independently
+seeded parameters before any turn or update.
 
 ## 4. Artifact Hashes
 

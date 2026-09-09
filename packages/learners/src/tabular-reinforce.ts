@@ -41,11 +41,10 @@
  * so a SPEC §14.5 retry of a crashed adapter call replays the same draw
  * instead of advancing the private streams and breaking §14.3 seeded replay.
  *
- * Initialization is all-zero logits, i.e. an exactly uniform policy. That is a
- * deliberate substitute for random initialization: it is reproducible, its
- * hash is recorded in the evidence bundle like any other checkpoint, and it
- * removes an uncontrolled source of seed-to-seed variance from the E11
- * baseline. Symmetry is broken by sampling, not by initialization.
+ * Initialization uses small, independently seeded random logits. The seed is
+ * private per Baby and the resulting policy hash is recorded before the first
+ * turn, satisfying E11's random-initialization requirement without exposing
+ * parameters through a Baby-visible surface.
  */
 import {
   HASH_DOMAINS,
@@ -61,6 +60,7 @@ import {
   type PolicyCheckpointRef,
   type PrivateLedgerClient,
   type RunConfig,
+  type Sha256Hash,
   type TurnBudget,
   type TurnProposalEnvelope,
   type UpdateBatch,
@@ -95,7 +95,6 @@ import {
   roundMatrix,
   roundTo,
   softmax,
-  zeroMatrix,
   type GameShapeOptions,
   type ParsedObservation,
   type ResolvedGameShape,
@@ -221,6 +220,7 @@ interface AdapterState {
 const MAX_PENDING_TURNS = 4_096;
 
 const PROBABILITY_EPSILON = 1e-6;
+const INITIAL_LOGIT_SCALE = 0.01;
 
 export class TabularReinforceAdapter implements LearnerAdapter {
   readonly track = 'scratch-rl' as const;
@@ -243,6 +243,8 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    * the live registries.
    */
   private registryCheckpoint: ExportedEpisodicRegistries | undefined;
+  /** Hash of the initialized policy before any turn or update. */
+  private initialHash: Sha256Hash | undefined;
   /** Non-fatal findings from the last `initialPolicy` load (SPEC §7.4). */
   private diagnostics: string[] = [];
 
@@ -304,10 +306,21 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     };
 
     const symbolCount = this.state.support.formCount;
-    this.thetaSender = zeroMatrix(shape.typeCount, symbolCount);
+    const policyStream = prng.derive('scratch-rl/policy-init');
+    const draw = (): number =>
+      roundTo(
+        (policyStream.nextFloat() * 2 - 1) * INITIAL_LOGIT_SCALE,
+        POLICY_DECIMALS,
+      );
+    this.thetaSender = Array.from({ length: shape.typeCount }, () =>
+      Array.from({ length: symbolCount }, draw),
+    );
     this.thetaReceiver = Array.from(
       { length: this.state.support.marksPerMessage },
-      () => zeroMatrix(symbolCount, shape.typeCount),
+      () =>
+        Array.from({ length: symbolCount }, () =>
+          Array.from({ length: shape.typeCount }, draw),
+        ),
     );
     this.baseline = 0;
     this.observation = undefined;
@@ -319,7 +332,19 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     if (context.initialPolicy !== undefined) {
       this.loadPolicy(context.initialPolicy);
     }
+    this.initialHash = hashCanonical(
+      HASH_DOMAINS.policyCheckpoint,
+      this.exportPolicy(),
+    );
     return Promise.resolve();
+  }
+
+  /** Hash of the initialized parameters before the first turn (ALD-045). */
+  initialPolicyHash(): Sha256Hash {
+    if (this.initialHash === undefined) {
+      throw new LearnerStateError('init() must be called before any other method');
+    }
+    return this.initialHash;
   }
 
   async observe(observation: Observation): Promise<void> {

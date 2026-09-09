@@ -460,6 +460,12 @@ subject only to the linting rule in §6.4.
 | `scratch-rl` | GRU or LSTM actor-critic, independent PPO-style update per Baby |
 | `self-supervised` | Same backbone as `scratch-rl`, predictive/contrastive loss in place of a scalar reward |
 | `hybrid` | From-scratch encoder + small recurrent world model + randomly initialized communication head |
+
+Every trainable adapter exports its exact policy immediately after initialization.
+The Nursery writes that policy under `policies/<role>-policy-initial.json`, records
+its domain-separated `initialPolicyHash` in a `runtime-attestation` event, and
+includes that event in checkpoint 0's intervention auxiliary tree before the first
+turn. Per-Baby private seeds produce independent scratch-RL initial parameters.
 | BabySitter narration | MAY use a larger reasoning model for audit summaries only; MUST NOT feed its output back into either Baby during a run (CONCEPT-IDEA.md §20.7) |
 
 ## 7. Run Lifecycle and State Machine

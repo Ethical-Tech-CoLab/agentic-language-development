@@ -670,6 +670,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     await this.#initializeAdapters(run);
     this.#assertDeploymentMode(runConfig, adapters, true);
+    await this.#recordInitialPolicies(run);
     this.#appendExperimentRecord(run, {
       disposition: 'invalid',
       checkpointManifestRef: GENESIS_HASH,
@@ -2512,6 +2513,50 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // -------------------------------------------------------------------------
   // Checkpoints, policies, records
   // -------------------------------------------------------------------------
+
+  /**
+   * Record trainable adapters' exact pre-turn parameters and hashes in the
+   * witness-committed intervention tree. The exported initial policy files let
+   * a reviewer independently rebuild each hash (ALD-045).
+   */
+  async #recordInitialPolicies(run: RunRuntime): Promise<void> {
+    const initialPolicies: Record<string, unknown> = {};
+    for (const role of BABY_ROLES) {
+      const adapter = run.adapters[role];
+      if (adapter.updatePolicy === undefined) {
+        continue;
+      }
+      const policy = adapter.exportPolicy();
+      const initialPolicyHash = hashCanonical(
+        HASH_DOMAINS.policyCheckpoint,
+        policy,
+      );
+      const declared = adapter.initialPolicyHash?.();
+      if (declared !== undefined && declared !== initialPolicyHash) {
+        throw new RunConfigurationError([
+          {
+            path: `${role}.initialPolicyHash`,
+            message: `adapter reported ${declared} but its exported initial policy hashes to ${initialPolicyHash}`,
+          },
+        ]);
+      }
+      await this.#writePolicyFile(run, role, 'initial');
+      initialPolicies[role] = {
+        track: adapter.track,
+        initialPolicyHash,
+        policyFile: `policies/${this.#policyFileName(role, 'initial')}`,
+      };
+    }
+    if (Object.keys(initialPolicies).length > 0) {
+      await run.writer.appendInterventionEvent({
+        runId: run.runId,
+        eventType: 'runtime-attestation',
+        actorId: this.#actorId,
+        reasonCode: 'learner-initialization',
+        details: { initialPolicies },
+      });
+    }
+  }
 
   async #checkpoint(
     run: RunRuntime,
