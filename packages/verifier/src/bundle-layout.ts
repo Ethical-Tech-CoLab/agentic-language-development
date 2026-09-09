@@ -57,7 +57,7 @@ export function expectedHashDomain(stream: EventStream): string {
   return STREAM_HASH_DOMAIN[stream];
 }
 
-/** Checkpoint tree name of a stream, or `undefined` when it has none. */
+/** Checkpoint tree name of a stream. */
 export function expectedTreeName(stream: EventStream): string | undefined {
   if (
     stream === 'baby-a-ledger' ||
@@ -66,7 +66,12 @@ export function expectedTreeName(stream: EventStream): string | undefined {
   ) {
     return MANDATORY_TREES[stream];
   }
-  if (stream === 'affect' || stream === 'audit' || stream === 'turns') {
+  if (
+    stream === 'affect' ||
+    stream === 'audit' ||
+    stream === 'turns' ||
+    stream === 'intervention'
+  ) {
     return AUXILIARY_TREES[stream];
   }
   return undefined;

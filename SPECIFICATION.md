@@ -1053,7 +1053,8 @@ interface AffectEvent {
 ### 11.7 Checkpoint Manifest (Reference)
 
 Normative shape is LEDGER-INTEGRITY-DESIGN.md §8, including its optional named
-`auxiliaryTrees` map for `affect` and `audit` roots. Every run manifest MUST
+`auxiliaryTrees` map for `affect`, `audit`, `turns`, and witness-committed
+unsigned `intervention` roots. Every run manifest MUST
 additionally be reachable from an `ExperimentRecord` (§11.9) via
 `checkpointManifestRef`.
 

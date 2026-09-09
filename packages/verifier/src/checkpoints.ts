@@ -367,18 +367,21 @@ export async function verifyCheckpoints(
       ['channel', checkpoint.channel],
     ];
     for (const [treeName, reference] of Object.entries(checkpoint.auxiliaryTrees)) {
-      // Bundle format §6: an auxiliary tree must be a declared stream with a
-      // signer whose public key is listed in the run manifest.
+      // Bundle format §6: an auxiliary tree must be a declared stream. Signed
+      // streams also need their public key listed; the unsigned intervention
+      // stream is protected by this checkpoint's witness signature.
       const declaredStream = trees.get(treeName);
       const signerDomain = signerDomainForTree(manifest, treeName);
       const signerPresent =
-        signerDomain !== undefined &&
-        manifest.signers.some((signer) => signer.domain === signerDomain);
+        declaredStream === 'intervention'
+          ? signerDomain === undefined
+          : signerDomain !== undefined &&
+            manifest.signers.some((signer) => signer.domain === signerDomain);
       if (declaredStream === undefined || !signerPresent) {
         accumulator.fail(
           'merkleRootsRebuilt',
           'undeclared-auxiliary-tree',
-          `${relative}: auxiliary tree ${treeName} is not declared in run-manifest.json with a listed signer`,
+          `${relative}: auxiliary tree ${treeName} is not declared with its required signer in run-manifest.json`,
         );
         continue;
       }

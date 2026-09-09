@@ -94,7 +94,7 @@ function emptyDetails(): VerificationDetails {
 
 /**
  * `finalVerifiedSizes` (SPEC §11.10) carries one entry per exported stream —
- * including the unsigned `intervention` log — plus one per checkpoint tree
+ * including the witness-committed unsigned `intervention` log — plus one per checkpoint tree
  * name, so a reader can compare committed tree sizes without knowing the
  * stream-to-tree mapping.
  */
@@ -379,9 +379,8 @@ async function verifyManifestAndConfiguration(
 
 /**
  * LEDGER §17 "unanchored final ledger tail": every event beyond the sizes
- * committed by the last confirmed-anchored checkpoint. The unsigned
- * `intervention` log has no checkpoint tree in the v1 schema (LEDGER §8), so
- * it is excluded rather than reported as permanently unanchored.
+ * committed by the last confirmed-anchored checkpoint, including the
+ * witness-committed unsigned intervention stream.
  */
 function reportUnanchoredTail(
   streams: LoadedStreams,

@@ -192,6 +192,7 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
     reason: CheckpointReason,
   ): Promise<CheckpointManifest> => {
     const turns = treeReference(writer, runId, 'turns');
+    const intervention = treeReference(writer, runId, 'intervention');
     const unsigned = {
       version: 1 as const,
       runIdHash,
@@ -201,7 +202,10 @@ export async function buildFixtureBundle(): Promise<BuiltBundle> {
       babyA: treeReference(writer, runId, 'baby-a-ledger'),
       babyB: treeReference(writer, runId, 'baby-b-ledger'),
       channel: treeReference(writer, runId, 'channel'),
-      auxiliaryTrees: turns.treeSize === 0 ? {} : { turns },
+      auxiliaryTrees: {
+        ...(turns.treeSize === 0 ? {} : { turns }),
+        ...(intervention.treeSize === 0 ? {} : { intervention }),
+      },
       runConfigurationHash: configurationHash,
       promptBundleHash: config.promptBundleHash,
       softwareCommit: 'git:fixture',

@@ -1426,9 +1426,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * disposition and the unanchored status are permanent.
    *
    * No further checkpoint is created: the run's final checkpoint is the one
-   * the blocked seal already produced and exported, and `intervention` is not
-   * a checkpoint tree (LEDGER §8), so the governance decision is preserved by
-   * its own hash chain. The bundle is re-exported so the decision is in it.
+   * the blocked seal already produced and exported. The later governance
+   * decision remains an explicitly unanchored intervention tail, which the
+   * verifier reports. The bundle is re-exported so the decision is in it.
    */
   async abandonSeal(
     runId: string,

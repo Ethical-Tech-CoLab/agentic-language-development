@@ -3,9 +3,9 @@
  * `TreeReference` a manifest commits for each one
  * (LEDGER-INTEGRITY-DESIGN.md §7, §8; docs/evidence-bundle-format.md §5, §6).
  *
- * `intervention` is hash-chained and exported but is not a checkpoint tree,
- * because the v1 schema stores it unsigned (`packages/types/src/domains.ts`),
- * so every function here rejects it.
+ * The unsigned `intervention` stream is included: its entries do not carry
+ * individual signatures, but the witness-signed checkpoint commits its exact
+ * Merkle prefix like every other auxiliary stream.
  */
 import { EMPTY_MERKLE_ROOT, merkleLeafHashes, merkleRoot } from '@ald/merkle';
 import {
@@ -21,16 +21,13 @@ import {
   type UnsignedCheckpointManifest,
 } from '@ald/types';
 
-import { CheckpointIntegrityError, InvalidCheckpointRequestError } from './errors.js';
+import { CheckpointIntegrityError } from './errors.js';
 
 /** Streams that carry a Merkle root in a checkpoint manifest. */
-export type CheckpointStream = Exclude<EventStream, 'intervention'>;
+export type CheckpointStream = EventStream;
 
 /** Every checkpointed stream, in the canonical `EVENT_STREAMS` order. */
-export const CHECKPOINT_STREAMS: readonly CheckpointStream[] =
-  EVENT_STREAMS.filter(
-    (stream): stream is CheckpointStream => stream !== 'intervention',
-  );
+export const CHECKPOINT_STREAMS: readonly CheckpointStream[] = EVENT_STREAMS;
 
 const MANDATORY_STREAMS = Object.keys(
   MANDATORY_TREES,
@@ -47,16 +44,9 @@ function isMandatory(
 }
 
 /**
- * Narrows an arbitrary stream to a checkpointed one. `intervention` is
- * refused rather than silently skipped, so a caller asking for an
- * intervention-log proof gets a clear error.
+ * Narrows an arbitrary event stream to a checkpointed one.
  */
 export function assertCheckpointStream(stream: EventStream): CheckpointStream {
-  if (stream === 'intervention') {
-    throw new InvalidCheckpointRequestError(
-      'the intervention stream is hash-chained but is not a checkpoint tree',
-    );
-  }
   return stream;
 }
 

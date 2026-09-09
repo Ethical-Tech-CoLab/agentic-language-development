@@ -253,6 +253,7 @@ describe('exportRunBundle', () => {
         stream: 'intervention',
         file: 'intervention-log.jsonl',
         hashDomain: 'dtsf-intervention-event-v1',
+        treeName: 'intervention',
       },
     ]);
 

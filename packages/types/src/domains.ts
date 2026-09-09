@@ -97,8 +97,9 @@ export const GENESIS_HASH = `sha256:${'0'.repeat(64)}`;
  * chains (LEDGER §6). `affect` and `audit` are the auxiliary trees named in
  * LEDGER §8. `turns` is the implementation-defined Nursery turn-record
  * stream that carries the replay-digest tuples of SPEC §14.3 and is signed
- * by the Nursery witness key. `intervention` is hash-chained and exported
- * but is not a checkpoint tree because the v1 schema stores it unsigned.
+ * by the Nursery witness key. `intervention` is hash-chained and committed as
+ * an auxiliary tree; the witness-signed checkpoint protects that unsigned
+ * stream's exact prefix.
  */
 export const EVENT_STREAMS = [
   'baby-a-ledger',
@@ -124,6 +125,7 @@ export const AUXILIARY_TREES = {
   affect: 'affect',
   audit: 'audit',
   turns: 'turns',
+  intervention: 'intervention',
 } as const;
 
 export type CheckpointTreeName =

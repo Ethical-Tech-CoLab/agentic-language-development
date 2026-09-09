@@ -119,12 +119,14 @@ RFC 6962 ordered tree over leaves in sequence order:
 Checkpoint `0` is created at run initialization with `previousCheckpointHash`
 equal to the genesis hash. `auxiliaryTrees` is always present; it contains an
 entry for each auxiliary stream that has at least one event (`affect`, `audit`,
-`turns`). A verifier MUST read an auxiliary tree that is absent from a
+`turns`, `intervention`). The intervention entries are unsigned, but their
+tree prefix is protected by the checkpoint witness signature. A verifier MUST
+read an auxiliary tree that is absent from a
 manifest as the empty tree (`treeSize: 0`, the empty root), so a consistency
 proof from such a checkpoint to a later one where the tree first appears is
 well-formed with `fromSize: 0`. A verifier MUST reject any auxiliary tree whose name is not declared
-in `run-manifest.json` `streams[].treeName` with a signer whose public key is
-listed in `signers`.
+in `run-manifest.json` `streams[].treeName`; every signed stream must also have
+its signer's public key listed in `signers`.
 
 ## 7. Run Manifest
 
@@ -188,8 +190,9 @@ evaluations — live under `analysis/`:
   `analysisVersion`, `producedAt`, and an optional `boundBy`.
 - `boundBy` names a chained evidence entry (`audit`, `intervention`, or `turns`
   stream) whose content carries the same `sha256`. An attachment produced while
-  the run was live is bound this way and therefore covered by the checkpoint
-  and anchor chain. An attachment without `boundBy` was produced after sealing;
+  the run was live is bound this way; it is covered by the checkpoint and
+  anchor chain only when that entry is inside the anchored tree prefix. An
+  attachment without `boundBy` was produced after sealing;
   it is tamper-evident (its hash is listed) but not chain-bound, and a verifier
   MUST report it as an *unbound analysis attachment*, never as anchored evidence.
 - A verifier MUST fail the bundle when an entry's `sha256` does not match the

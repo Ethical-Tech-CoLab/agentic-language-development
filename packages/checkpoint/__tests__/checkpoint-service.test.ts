@@ -24,7 +24,6 @@ import {
   CheckpointIntegrityError,
   CheckpointNotFoundError,
   CheckpointProofRangeError,
-  InvalidCheckpointRequestError,
 } from '../src/errors.js';
 import { referenceFor } from '../src/trees.js';
 import {
@@ -449,7 +448,7 @@ describe('EvidenceCheckpointService.inclusionProof', () => {
     ).toThrow(CheckpointNotFoundError);
     expect(() =>
       context.service.inclusionProof(context.runId, 'intervention', 1, 0),
-    ).toThrow(InvalidCheckpointRequestError);
+    ).toThrow(CheckpointProofRangeError);
 
     context.close();
   });

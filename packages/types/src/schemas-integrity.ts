@@ -299,7 +299,10 @@ export const InterventionEventTypeSchema = z.enum([
   'retention-purge',
 ]);
 
-/** Append-only `intervention_log` row (SPEC §14.2, §14.5). Hash-chained, unsigned. */
+/**
+ * Append-only `intervention_log` row (SPEC §14.2, §14.5). Entries are
+ * hash-chained and unsigned; checkpoint manifests witness their Merkle prefix.
+ */
 export const UnsignedInterventionEventSchema = z.object({
   version: z.literal(1),
   runId: nonEmptyString,

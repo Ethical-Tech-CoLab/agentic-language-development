@@ -103,8 +103,9 @@ describe('verifyBundle on an unchanged bundle', () => {
     expect(details.streamSizes['turns']).toBe(
       final.auxiliaryTrees['turns']?.treeSize,
     );
-    // The unsigned intervention log is not a checkpoint tree (LEDGER §8).
-    expect(details.streamSizes['intervention']).toBe(1);
+    expect(details.streamSizes['intervention']).toBe(
+      final.auxiliaryTrees['intervention']?.treeSize,
+    );
   });
 
   it('independently reproduces the final anchored checkpoint hash', async () => {

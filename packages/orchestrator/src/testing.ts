@@ -45,7 +45,7 @@ import type { SqliteEvidenceWriter } from '@ald/evidence';
 const MANDATORY_STREAMS = ['baby-a-ledger', 'baby-b-ledger', 'channel'] as const;
 
 /** Streams committed under `auxiliaryTrees` once they carry an event. */
-const AUXILIARY_STREAMS = ['affect', 'audit', 'turns'] as const;
+const AUXILIARY_STREAMS = ['affect', 'audit', 'turns', 'intervention'] as const;
 
 export interface SimpleCheckpointServiceOptions {
   evidence: SqliteEvidenceWriter;
@@ -59,10 +59,15 @@ export function treeNameForStream(stream: EventStream): CheckpointTreeName {
   if (stream === 'baby-a-ledger' || stream === 'baby-b-ledger' || stream === 'channel') {
     return MANDATORY_TREES[stream];
   }
-  if (stream === 'affect' || stream === 'audit' || stream === 'turns') {
+  if (
+    stream === 'affect' ||
+    stream === 'audit' ||
+    stream === 'turns' ||
+    stream === 'intervention'
+  ) {
     return AUXILIARY_TREES[stream];
   }
-  throw new Error(`stream ${stream} is not a checkpoint tree`);
+  throw new Error(`unknown checkpoint stream ${stream}`);
 }
 
 function strictHash(value: string): string {

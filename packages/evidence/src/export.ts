@@ -112,7 +112,12 @@ function treeNameFor(stream: EventStream): string | undefined {
   if (stream === 'baby-a-ledger' || stream === 'baby-b-ledger' || stream === 'channel') {
     return MANDATORY_TREES[stream];
   }
-  if (stream === 'affect' || stream === 'audit' || stream === 'turns') {
+  if (
+    stream === 'affect' ||
+    stream === 'audit' ||
+    stream === 'turns' ||
+    stream === 'intervention'
+  ) {
     return AUXILIARY_TREES[stream];
   }
   return undefined;
@@ -124,9 +129,7 @@ function streamDeclaration(stream: EventStream): StreamDeclaration {
     stream,
     file: STREAM_FILES[stream],
     hashDomain: STREAM_HASH_DOMAIN[stream],
-    ...(stream === 'intervention'
-      ? {}
-      : { signerDomain: STREAM_SIGNER[stream] }),
+    ...(stream === 'intervention' ? {} : { signerDomain: STREAM_SIGNER[stream] }),
     ...(treeName === undefined ? {} : { treeName }),
   };
 }
