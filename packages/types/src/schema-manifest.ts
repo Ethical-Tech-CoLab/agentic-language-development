@@ -33,6 +33,7 @@ export const EXPECTED_SCHEMA_EXPORTS = [
   'RegistrationClassSchema',
   'CurriculumStageSchema',
   'InterventionPlanSchema',
+  'CarrierLeakageProbePlanSchema',
   'AffectDisplayIdSchema',
   'PreRegistrationArtifactSchema',
   'PreRegistrationBindingSchema',

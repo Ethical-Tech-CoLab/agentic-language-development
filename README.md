@@ -115,7 +115,8 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
   Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
   interpreter whose generated entries are separately signed and checkpointed; and
-  pre-registered analysis primitives.
+  pre-registered analysis primitives, including immutable mark-level leakage
+  probes across all five carrier conditions with an evidence-preserving claim gate.
 - `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
   process transport, a two-container Mode R network-isolation gate, and learner-host confinement; API telemetry, snapshot/restore,
   and failure supervision; configuration-driven, verifier-bound live causal probes

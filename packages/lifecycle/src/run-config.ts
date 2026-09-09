@@ -495,6 +495,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     ...(overrides.interventionPlan === undefined
       ? {}
       : { interventionPlan: overrides.interventionPlan }),
+    ...(overrides.carrierLeakageProbePlan === undefined
+      ? {}
+      : { carrierLeakageProbePlan: overrides.carrierLeakageProbePlan }),
     ...(overrides.glyphBundleHash === undefined
       ? {}
       : { glyphBundleHash: overrides.glyphBundleHash }),

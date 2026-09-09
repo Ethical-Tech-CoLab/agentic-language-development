@@ -504,10 +504,12 @@ describe('ALD-033 criterion 2: derived mode', () => {
     // The measurement never reaches the public event or the affect stream.
     const stored = h.evidence
       .readEvents(h.context.runId, 'affect')
-      .map((record_) => record_.canonicalJson)
-      .join('');
-    expect(stored).not.toContain('scores');
-    expect(stored).not.toContain('0.9');
+      .map((record_) => JSON.parse(record_.canonicalJson));
+    // Compare the structured event rather than searching serialized text for
+    // a score such as `0.9`, which can occur coincidentally in timestamps or
+    // signatures without disclosing the measurement.
+    expect(stored).toEqual([ok.affectEvent]);
+    expect(stored[0]).not.toHaveProperty('scores');
     expect(JSON.stringify(ok.affectEvent)).not.toContain('scores');
   });
 

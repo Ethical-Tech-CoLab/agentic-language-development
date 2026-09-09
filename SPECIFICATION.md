@@ -672,6 +672,15 @@ separation pattern) so that a repeated form can be recognized without assigning 
 a meaning. No grammar supplies a semantic tag; each only bounds what can be
 physically expressed (resolves Q5 jointly with §18's variable registry).
 
+Offline carrier-leakage analysis uses the hash-bound
+`carrierLeakageProbePlan` from `RunConfig`. For every accepted observation it
+rebuilds the carrier-qualified `markHash`, records reuse and a bounded structural
+feature signature, and evaluates the pre-registered recognizable-glyph rate and
+feature/referent mutual-information bounds. Each probe reports `pass`, `fail`, or
+`inconclusive`; the evaluator never rewrites an artifact. Any result other than
+`pass` blocks an ungrounded-language claim, but has no effect on evidence-integrity
+validity and remains publishable as negative or integrity evidence.
+
 ### 9.3 Six-Display Affect Protocol
 
 Disabled by default (`affectMode: "none"`); enabling it selects one of the five
@@ -882,6 +891,7 @@ interface RunConfig {
   protocolGitCommit: string;
   preRegistrationHash: string;
   randomSeed: string;
+  carrierLeakageProbePlan?: { recognizableGlyph: { enabled: boolean; maximumRecognizableRate: number }; unintendedFeature: { enabled: boolean; maximumMutualInformationBits: number; minimumObservations: number } };
 }
 ```
 

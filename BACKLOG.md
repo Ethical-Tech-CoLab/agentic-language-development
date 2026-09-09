@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 187 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual experiment execution, and external pre-registration remain open.
+- **Status:** Implementation active, with 191 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage evaluation, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual experiment execution, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -538,9 +538,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§9.2 Alternate Neutral Carrier Protocols](SPECIFICATION.md#92-alternate-neutral-carrier-protocols), [§15.3 Evaluation Baselines and Statistics](SPECIFICATION.md#153-evaluation-baselines-and-statistics)
 - **Scope:** Add offline evaluation hooks for measuring whether alternate-carrier artifacts reproduce recognizable human-language forms or encode task/referent information through unintended glyph, bitmap, stroke, or tone features. The evaluator reports evidence and claim-boundary impact; it does not silently rewrite accepted artifacts.
 - **Acceptance criteria:**
-  - [ ] The evaluator records mark-level leakage metrics and the exact analysis version in the run evidence bundle.
-  - [ ] Pre-registered recognizable-glyph and unintended-feature probes produce explicit pass, fail, or inconclusive results without altering the original canvas artifact.
-  - [ ] A failed leakage evaluation blocks an ungrounded-language claim while preserving the run as valid negative or integrity evidence.
+  - [x] The evaluator records mark-level leakage metrics and the exact analysis version in the run evidence bundle.
+  - [x] Pre-registered recognizable-glyph and unintended-feature probes produce explicit pass, fail, or inconclusive results without altering the original canvas artifact.
+  - [x] A failed leakage evaluation blocks an ungrounded-language claim while preserving the run as valid negative or integrity evidence.
 
 #### ALD-033 — Six-display affect protocol
 - **Priority:** P2 · **Size:** M · **Class:** Later-Research · **Depends on:** ALD-029
@@ -949,7 +949,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Define and check the readiness gate confirming every model track and protocol capability that `E10`–`E16` require exists and passes conformance, across all seven experiments in this range.
 - **Acceptance criteria:**
   - [ ] `E10`/`E11`/`E12` readiness: `ALD-044`/`ALD-045`/`ALD-046` complete full turns; ungrounded tracks pass training isolation and semantic-leakage qualification.
-  - [ ] `E13` readiness: all `ALD-031` alternate carriers pass conformance and `ALD-032` leakage evaluation can compare all five notebook carrier conditions.
+  - [x] `E13` readiness: all `ALD-031` alternate carriers pass conformance and `ALD-032` leakage evaluation can compare all five notebook carrier conditions.
   - [x] `E14`/`E15`/`E16` readiness: `ALD-072` supports role reversal, held-out splits, and causal interventions, and `ALD-064` produces separately labeled human audit interpretations.
 
 #### ALD-075 — Gate G3: Affect and learning-comparison readiness (E20–E22)

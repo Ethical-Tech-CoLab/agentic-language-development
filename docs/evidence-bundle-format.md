@@ -205,6 +205,11 @@ evaluations — live under `analysis/`:
   missing. It MUST NOT interpret attachment contents; interpretation is the
   researcher's job (SPEC §15.1: the notebook is authoritative for scientific
   status).
+- `carrier-leakage` attachments record `carrier-leakage-v1`, per-mark reuse and
+  structural-feature metrics, explicit recognizable-glyph and unintended-feature
+  probe decisions, and the ungrounded-language claim gate. Their probe thresholds
+  must exactly match the hash-bound `RunConfig.carrierLeakageProbePlan`; a failed
+  analysis blocks that claim, not the integrity validity of the bundle.
 - Attachments never contain raw observations, raw rejected payloads, private
   keys, or Baby-visible text; the same §13.6 privacy rules as every other bundle
   file apply.

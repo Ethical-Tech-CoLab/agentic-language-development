@@ -113,6 +113,12 @@ import {
   validateChain,
 } from '@ald/hashing';
 import {
+  CARRIER_LEAKAGE_ANALYSIS_VERSION,
+  evaluateCarrierLeakage,
+  type CarrierLeakageInput,
+  type CarrierLeakageResult,
+} from '@ald/analysis';
+import {
   SqliteEvidenceWriter,
   exportRunBundle,
   type EvidenceDatabase,
@@ -315,6 +321,13 @@ export interface NurseryRuntimeOptions {
    * §14.5 forbids.
    */
   retryBudget?: number;
+}
+
+export interface CarrierLeakageEvaluationRequest {
+  runId: string;
+  input: CarrierLeakageInput;
+  actorId: string;
+  reasonCode?: string;
 }
 
 /** One prepared episode of a §9.6 `shuffled` batch. */
@@ -1904,6 +1917,37 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const attachment = await run.writer.appendAnalysisAttachment(request);
     await this.#checkpoint(run, 'intervention');
     return attachment;
+  }
+
+  /** Evaluate ALD-032 offline and bind the exact versioned result to evidence. */
+  async recordCarrierLeakageEvaluation(
+    request: CarrierLeakageEvaluationRequest,
+  ): Promise<CarrierLeakageResult> {
+    const run = this.#requireRun(request.runId);
+    if (
+      run.config.carrierLeakageProbePlan === undefined ||
+      canonicalJson(run.config.carrierLeakageProbePlan) !==
+        canonicalJson(request.input.probePlan)
+    ) {
+      throw new RunConfigurationError([
+        {
+          path: 'carrierLeakageProbePlan',
+          message:
+            'evaluation probe plan must exactly match the pre-registered RunConfig plan',
+        },
+      ]);
+    }
+    const result = evaluateCarrierLeakage(request.input);
+    await this.attachAnalysis({
+      runId: request.runId,
+      path: 'analysis/carrier-leakage/report.json',
+      kind: 'carrier-leakage',
+      analysisVersion: CARRIER_LEAKAGE_ANALYSIS_VERSION,
+      value: result,
+      actorId: request.actorId,
+      reasonCode: request.reasonCode ?? 'carrier-leakage-evaluation',
+    });
+    return result;
   }
 
   checkpoints(runId: string): CheckpointManifest[] {

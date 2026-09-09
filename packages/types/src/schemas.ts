@@ -62,6 +62,25 @@ export const AffectModeSchema = z.enum([
 /** SPEC §18 `registrationClass`-adjacent: how a run is labeled for §15.1 binding. */
 export const RegistrationClassSchema = z.enum(['qualification', 'confirmatory']);
 
+/** Pre-registered ALD-032 offline carrier-leakage decision rules. */
+export const CarrierLeakageProbePlanSchema = z
+  .object({
+    recognizableGlyph: z
+      .object({
+        enabled: z.boolean(),
+        maximumRecognizableRate: z.number().min(0).max(1),
+      })
+      .strict(),
+    unintendedFeature: z
+      .object({
+        enabled: z.boolean(),
+        maximumMutualInformationBits: z.number().nonnegative(),
+        minimumObservations: positiveInteger,
+      })
+      .strict(),
+  })
+  .strict();
+
 /**
  * One pre-registered developmental stage (EXPERIMENT-NOTEBOOK.md E22,
  * SPEC §18 `curriculumMode: fixed-schedule`). Stages are applied by the
@@ -186,6 +205,8 @@ export const RunConfigSchema = z
     registrationClass: RegistrationClassSchema.optional(),
     /** SPEC §15.2 / §18: pre-registered interventions (ALD-072). */
     interventionPlan: InterventionPlanSchema.optional(),
+    /** SPEC §9.2 / §15.3: pre-registered offline leakage probes (ALD-032). */
+    carrierLeakageProbePlan: CarrierLeakageProbePlanSchema.optional(),
     /** SPEC §9.2: hash of the frozen unfamiliar-glyph bundle (`fixed-glyph` only). */
     glyphBundleHash: hashString.optional(),
     /** SPEC §9.3 `derived`: name of the fixed pre-registered measurement→display mapping. */
@@ -610,6 +631,9 @@ export const VerificationReportSchema = z.object({
 
 export type LearnerTrackId = z.infer<typeof LearnerTrackIdSchema>;
 export type RegistrationClass = z.infer<typeof RegistrationClassSchema>;
+export type CarrierLeakageProbePlan = z.infer<
+  typeof CarrierLeakageProbePlanSchema
+>;
 export type CurriculumStage = z.infer<typeof CurriculumStageSchema>;
 export type InterventionPlan = z.infer<typeof InterventionPlanSchema>;
 export type AffectDisplayId = z.infer<typeof AffectDisplayIdSchema>;

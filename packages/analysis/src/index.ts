@@ -1,6 +1,6 @@
 /**
  * @ald/analysis — the pre-registered statistics toolkit for the experiment
- * harnesses (BACKLOG ALD-072 "baseline/statistics scaffold";
+ * harnesses (BACKLOG ALD-032 carrier leakage and ALD-072 statistics scaffold;
  * SPECIFICATION.md §15.2-§15.3; RESEARCH.md §7.3 and Appendix D §D.6-§D.7;
  * EXPERIMENT-NOTEBOOK.md E03 and E11).
  *
@@ -25,6 +25,7 @@
  * - `bootstrap.ts` — seeded percentile bootstrap, unpaired and paired.
  * - `equivalence.ts` — the control-equivalence decision helper.
  * - `e03.ts` / `e11.ts` — the two experiment-shaped readouts.
+ * - `carrier-leakage.ts` — immutable, pre-registered mark-level leakage probes.
  */
 export {
   AnalysisError,
@@ -127,6 +128,18 @@ export {
   type AffectLeakageSeedResult,
   type AffectLeakageWindow,
 } from './affect-leakage.js';
+export {
+  CARRIER_LEAKAGE_ANALYSIS_VERSION,
+  evaluateCarrierLeakage,
+  type CarrierLeakageInput,
+  type CarrierLeakageObservation,
+  type CarrierLeakageProbeDecision,
+  type CarrierLeakageProbePlan,
+  type CarrierLeakageProbeResult,
+  type CarrierLeakageResult,
+  type CarrierMarkLeakageMetric,
+  type RecognizableGlyphOutcome,
+} from './carrier-leakage.js';
 
 // ---------------------------------------------------------------------------
 // Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;
