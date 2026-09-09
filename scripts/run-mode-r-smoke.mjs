@@ -9,6 +9,7 @@ function docker(args, options = {}) {
     cwd: process.cwd(),
     encoding: 'utf8',
     stdio: options.capture ? 'pipe' : 'inherit',
+    env: { ...process.env, ...(options.env ?? {}) },
   });
   if (result.error !== undefined) {
     throw result.error;
@@ -36,6 +37,14 @@ try {
     throw new Error('baby-a should be exited after kill');
   }
   docker(['run', '--rm', '--no-deps', 'nursery', 'survivor']);
+  for (const track of ['scratch-rl', 'self-supervised', 'hybrid']) {
+    const env = { ALD_LEARNER_TRACK: track };
+    docker(['up', '--detach', '--force-recreate', 'baby-a', 'baby-b'], { env });
+    docker(
+      ['run', '--rm', '--no-deps', 'nursery', 'training', track],
+      { env },
+    );
+  }
 } finally {
   try {
     docker(['down', '--volumes', '--remove-orphans']);

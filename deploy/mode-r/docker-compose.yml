@@ -7,7 +7,7 @@ services:
       - --transport=tcp
       - --bind=0.0.0.0
       - --port=4318
-      - --track=no-learning
+      - --track=${ALD_LEARNER_TRACK:-no-learning}
       - --host-label=baby-a
     read_only: true
     tmpfs:
@@ -25,7 +25,7 @@ services:
       - --transport=tcp
       - --bind=0.0.0.0
       - --port=4318
-      - --track=no-learning
+      - --track=${ALD_LEARNER_TRACK:-no-learning}
       - --host-label=baby-b
     read_only: true
     tmpfs:

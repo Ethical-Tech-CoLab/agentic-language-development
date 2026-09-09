@@ -14,10 +14,11 @@ import {
 
 const PORT = 4318;
 const mode = process.argv[2] ?? 'both';
+const requestedTrack = process.argv[3] ?? 'no-learning';
 
-function factoryFor(host, label) {
+function factoryFor(host, label, track = requestedTrack) {
   return createIsolatedAdapterFactory({
-    track: 'no-learning',
+    track,
     transport: 'container',
     endpoint: {
       host,
@@ -32,20 +33,24 @@ function factoryFor(host, label) {
   });
 }
 
-async function initialized(host, role) {
-  const factory = factoryFor(host, role);
+async function initialized(host, role, track = requestedTrack) {
+  const factory = factoryFor(host, role, track);
   const adapter = factory.create();
-  const config = buildConformanceRunConfig('no-learning', {
+  const learningSignal =
+    track === 'self-supervised' ? 'self-supervised' :
+    track === 'no-learning' ? 'none' : 'extrinsic-task';
+  const config = buildConformanceRunConfig(track, {
     deploymentMode: 'research-grade',
-    runId: `mode-r-${mode}`,
-    seed: `mode-r-${mode}-${role}`,
+    runId: `mode-r-${mode}-${track}`,
+    seed: `mode-r-${mode}-${track}-${role}`,
+    learningSignal,
   });
   await adapter.init({
     runId: config.runId,
     role,
     babyId: role === 'baby-a' ? 'A' : 'B',
     config,
-    learnerContract: loadLearnerContract('no-learning'),
+    learnerContract: loadLearnerContract(track),
     seed: `private-${role}`,
     symbolInventory: fixedTokenInventory(config.symbolInventorySize),
     ledger: new RecordingLedgerClient(config.runId, role),
@@ -79,6 +84,54 @@ async function exercise(adapter, role) {
     availableActions: ['emit_symbols'],
   });
   assert.equal(proposal.proposal.kind, 'emit_symbols');
+}
+
+async function exerciseTraining(adapter, role, track) {
+  const runId = `mode-r-${mode}-${track}`;
+  await adapter.observe({
+    runId,
+    turn: 1,
+    recipient: role,
+    encoding: 'opaque-numeric',
+    payload: [[0, 1, 1], [1, 0, 0]],
+    scenarioRef: `scenario:mode-r-training-${track}`,
+  });
+  await adapter.act({
+    turn: 1,
+    role: 'sender',
+    responseBudgetMs: 100,
+    availableActions: ['emit_symbols'],
+  });
+  await adapter.onOutcome({
+    runId,
+    turn: 1,
+    role: 'sender',
+    success: true,
+    reward: track === 'self-supervised' ? null : 1,
+    payload: [1],
+  });
+
+  const before = JSON.stringify(adapter.exportPolicy());
+  let counterpartStateRead = false;
+  const batch = {
+    runId,
+    turns: [1],
+    learningSignal:
+      track === 'self-supervised' ? 'self-supervised' : 'extrinsic-task',
+  };
+  Object.defineProperty(batch, 'counterpartState', {
+    enumerable: true,
+    get() {
+      counterpartStateRead = true;
+      throw new Error('counterpart state crossed the training boundary');
+    },
+  });
+  await adapter.updatePolicy(batch);
+  const after = JSON.stringify(adapter.exportPolicy());
+  assert.equal(counterpartStateRead, false);
+  assert.notEqual(after, before, `${track} must perform a real local-buffer update`);
+  assert.equal(after.includes('counterpart state'), false);
+  return { counterpartStateRead, policyChanged: true };
 }
 
 async function transportObservation(adapter, execute) {
@@ -216,10 +269,42 @@ async function runSurvivor() {
   }
 }
 
+async function runTraining() {
+  assert.ok(
+    ['scratch-rl', 'self-supervised', 'hybrid'].includes(requestedTrack),
+    `unsupported training track: ${requestedTrack}`,
+  );
+  const a = await initialized('baby-a', 'baby-a', requestedTrack);
+  const b = await initialized('baby-b', 'baby-b', requestedTrack);
+  try {
+    assert.equal(a.adapter.isolation.boundary, 'separate-container');
+    assert.equal(b.adapter.isolation.boundary, 'separate-container');
+    assert.ok(a.adapter.isolation.containerId);
+    assert.ok(b.adapter.isolation.containerId);
+    assert.notEqual(a.adapter.isolation.containerId, b.adapter.isolation.containerId);
+    const results = await Promise.all([
+      exerciseTraining(a.adapter, 'baby-a', requestedTrack),
+      exerciseTraining(b.adapter, 'baby-b', requestedTrack),
+    ]);
+    process.stdout.write(`${JSON.stringify({
+      mode: 'research-grade-training',
+      track: requestedTrack,
+      containers: [a.adapter.isolation.containerId, b.adapter.isolation.containerId],
+      updateSource: 'private-local-buffer',
+      counterpartStateRead: results.some((result) => result.counterpartStateRead),
+      policiesChanged: results.every((result) => result.policyChanged),
+    })}\n`);
+  } finally {
+    await Promise.all([a.factory.dispose(), b.factory.dispose()]);
+  }
+}
+
 if (mode === 'both') {
   await runBoth();
 } else if (mode === 'survivor') {
   await runSurvivor();
+} else if (mode === 'training') {
+  await runTraining();
 } else {
   throw new Error(`unknown verification mode: ${mode}`);
 }
