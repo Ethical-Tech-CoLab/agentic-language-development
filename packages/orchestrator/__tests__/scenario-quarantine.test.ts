@@ -10,7 +10,7 @@ import {
   registerGeneratorConfig,
   type ReferentialScenarioConfigInput,
 } from '@ald/scenario';
-import { fixedTokenInventory, type RunConfig } from '@ald/types';
+import { fixedTokenInventory, type BabyRole, type Observation, type RunConfig, type ScenarioInstance } from '@ald/types';
 
 import {
   createHarness,
@@ -48,6 +48,20 @@ function scenarioConfig(
     interactionMode: config.interactionMode,
     ...(evaluationSeedLabel === undefined ? {} : { evaluationSeedLabel }),
   };
+}
+
+class TaintedObservationEngine extends ReferentialScenarioEngine {
+  override observationFor(
+    instance: ScenarioInstance,
+    runId: string,
+    turn: number,
+    recipient: BabyRole,
+  ): Observation {
+    return {
+      ...super.observationFor(instance, runId, turn, recipient),
+      runId: 'the red target is correct',
+    };
+  }
 }
 
 describe('ALD-039 run-registration quarantine gate', () => {
@@ -128,5 +142,35 @@ describe('ALD-039 run-registration quarantine gate', () => {
       runId: approvedConfig.runId,
       state: 'running',
     });
+  });
+
+  it('records a machine-readable audit event when runtime hygiene blocks a field', async () => {
+    const config = runConfig('hygiene-runtime-audit');
+    const resolved = new ReferentialScenarioEngine(
+      scenarioConfig(config),
+      config.randomSeed,
+    ).config;
+    const registry = new ScenarioBundleRegistry();
+    registerGeneratorConfig({ ...resolved }, { registry });
+    harness = await createHarness({
+      scenarioBundleRegistry: registry,
+      scenarioFactory: (run) =>
+        new TaintedObservationEngine(scenarioConfig(run), run.randomSeed),
+    });
+    await harness.runtime.createRun(config);
+
+    await expect(harness.runtime.step(config.runId)).rejects.toMatchObject({
+      reasonCodes: expect.arrayContaining(['run-id-format']),
+    });
+    expect(harness.runtime.auditLog(config.runId)).toContainEqual(
+      expect.objectContaining({
+        eventType: 'hygiene-block',
+        reasonCode: 'observation-hygiene-violation',
+        details: expect.objectContaining({
+          turn: 0,
+          reasonCodes: expect.arrayContaining(['run-id-format']),
+        }),
+      }),
+    );
   });
 });

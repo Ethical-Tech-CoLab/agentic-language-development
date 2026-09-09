@@ -134,6 +134,7 @@ import {
 import {
   ReferentialScenarioEngine,
   ScenarioBundleRegistry,
+  HygieneViolationError,
   assertObservationHygiene,
   hashObservation,
   registerGeneratorConfig,
@@ -979,14 +980,33 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     // §8.1 step 1 / §10.1: the only observation a Baby ever sees comes from
     // the engine's builder and is re-checked by the hygiene filter here, so
     // there is no path into an adapter that bypasses the gate.
-    const observations: Record<BabyRole, Observation> = {
-      'baby-a': assertObservationHygiene(
-        run.engine.observationFor(instance, runId, turn, 'baby-a'),
-      ),
-      'baby-b': assertObservationHygiene(
-        run.engine.observationFor(instance, runId, turn, 'baby-b'),
-      ),
-    };
+    let observations: Record<BabyRole, Observation>;
+    try {
+      observations = {
+        'baby-a': assertObservationHygiene(
+          run.engine.observationFor(instance, runId, turn, 'baby-a'),
+        ),
+        'baby-b': assertObservationHygiene(
+          run.engine.observationFor(instance, runId, turn, 'baby-b'),
+        ),
+      };
+    } catch (error) {
+      if (!(error instanceof HygieneViolationError)) {
+        throw error;
+      }
+      await run.writer.appendInterventionEvent({
+        runId,
+        eventType: 'hygiene-block',
+        actorId: this.#actorId,
+        reasonCode: 'observation-hygiene-violation',
+        details: {
+          turn,
+          reasonCodes: error.reasonCodes,
+          paths: error.errors.map((finding) => finding.path),
+        },
+      });
+      throw error;
+    }
     scratch.observations = observations;
     for (const role of BABY_ROLES) {
       await this.#callAdapter(run, role, 'observe', () =>
