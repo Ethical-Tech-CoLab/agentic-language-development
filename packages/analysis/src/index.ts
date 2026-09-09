@@ -123,6 +123,14 @@ export {
   type E03SeedManifestEntry,
 } from './e03-design.js';
 export {
+  E03_REGISTRATION_CLAIM_BOUNDARY,
+  E03_REGISTRATION_COMPILER_VERSION,
+  compileE03Registration,
+  type CompileE03RegistrationInput,
+  type CompiledE03Registration,
+  type E03RegisteredRun,
+} from './e03-registration.js';
+export {
   E03_CHANCE_RATE,
   e11Summary,
   type E11Summary,

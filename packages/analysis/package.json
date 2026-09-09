@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ald/types": "*",
-    "@ald/hashing": "*"
+    "@ald/hashing": "*",
+    "@ald/lifecycle": "*"
   }
 }

@@ -100,8 +100,12 @@ export const StreamDeclarationSchema = z.object({
 /**
  * The canonical pre-registration artifact (SPEC §15.1): hashed with
  * `HASH_DOMAINS.preRegistration` into `RunConfig.preRegistrationHash`.
- * `parameters` is the run configuration minus `runId`, `randomSeed`, and
- * `preRegistrationHash` itself; `seeds` lists the pre-registered seed labels.
+ * `parameters` is the complete registered run-configuration template and
+ * factor matrix minus realized run IDs, random seeds, condition assignments,
+ * and `preRegistrationHash` itself; `seeds` lists the pre-registered seed
+ * labels. This permits one study artifact to bind every condition in a
+ * pre-registered matrix without making per-run identity part of the study
+ * hypothesis.
  */
 export const PreRegistrationArtifactSchema = z.object({
   version: z.literal(1),

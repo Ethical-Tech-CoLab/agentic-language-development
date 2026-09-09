@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -16,6 +16,7 @@
     "test:mode-r": "node scripts/run-mode-r-smoke.mjs",
     "test:watch": "vitest",
     "design:e03": "npm run build && node scripts/run-e03-design-simulation.mjs",
+    "registration:e03": "npm run build && node scripts/build-e03-registration.mjs",
     "lint": "eslint packages twins",
     "book:research": "node scripts/build-research-book.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
