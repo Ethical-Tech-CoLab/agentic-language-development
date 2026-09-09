@@ -621,6 +621,8 @@ export const VerificationReportSchema = z.object({
   version: z.literal(1),
   runId: nonEmptyString,
   checkedAt: isoDateTime,
+  /** Hash of the exact run-manifest.json that identifies this bundle export. */
+  bundleManifestHash: hashString.nullable(),
   verifierVersion: nonEmptyString,
   checks: verificationChecksSchema,
   gaps: z.array(nonEmptyString),

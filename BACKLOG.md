@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 215 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, actual experiment execution, and external pre-registration remain open.
+- **Status:** Implementation active, with 219 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, actual experiment execution, and external operator validation remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -366,7 +366,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [x] A checkpoint is generated automatically once the configured trigger threshold from §9 is reached.
   - [x] No two checkpoints overlap in event range.
-  - [ ] The scheduler is a background timer with the crash-protection convention (registered under the process's `uncaughtException`/`unhandledRejection` handlers) so a scheduling failure logs rather than crashes the server.
+  - [x] The scheduler is a background timer with the crash-protection convention (registered under the process's `uncaughtException`/`unhandledRejection` handlers) so a scheduling failure logs rather than crashes the server.
 
 #### ALD-015 — Independent verifier CLI
 - **Priority:** P0 · **Size:** L · **Class:** MVP · **Depends on:** ALD-012, ALD-013, ALD-009
@@ -393,7 +393,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [x] Every verifier CLI run (`ALD-015`) produces a report conforming to the `ALD-002` schema for Verification Report.
   - [x] A failing verification produces a report with machine-readable failure codes, not just free text.
-  - [ ] Reports are timestamped and reference the exact bundle export they were generated from.
+  - [x] Reports are timestamped and reference the exact bundle export they were generated from.
 
 ### EPIC-04 — Base Sepolia and Mainnet Anchoring (Phases 2–3)
 
@@ -802,7 +802,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Implement append-only audit records for human views, operator interventions, and safety triggers. Pause/resume/abort/annotate actions must use this path, record actor/reason, and request the mandatory checkpoint; unplanned interventions also create a notebook deviation reference.
 - **Acceptance criteria:**
   - [x] Every §14.2 human view/intervention and §14.5 safety trigger produces an append-only audit record with authenticated actor and machine-readable reason.
-  - [ ] Each intervention produces a signed checkpoint, and any unplanned intervention links to an append-only notebook deviation record.
+  - [x] Each intervention produces a signed checkpoint, and any unplanned intervention links to an append-only notebook deviation record.
   - [x] Audit and intervention logs plus checkpoint references are included in every evidence bundle, not only Mode R.
 
 #### ALD-060 — Snapshot and restore mechanism
@@ -921,7 +921,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `EXPERIMENT-NOTEBOOK.md` [§4. Study Metadata](EXPERIMENT-NOTEBOOK.md#4-study-metadata)
 - **Scope:** Bind a notebook experiment and sealed hypothesis/parameters to RunConfig, create append-only versioned Experiment Records, and export `experiment-record.json` with disposition/checkpoint/anchor/verifier/deviation references.
 - **Acceptance criteria:**
-  - [ ] A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run anchor receipt.
+  - [x] A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run anchor receipt.
   - [x] Pre-registration creates Experiment Record version `1`; later disposition/evidence changes append higher versions without updating prior rows.
   - [x] Every evidence bundle contains the latest record plus its version history and references resolvable by an independent reviewer.
 

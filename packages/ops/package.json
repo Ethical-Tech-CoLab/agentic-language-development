@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ald/anchor": "*",
+    "@ald/checkpoint": "*",
     "@ald/evidence": "*",
     "@ald/hashing": "*",
     "@ald/orchestrator": "*",

@@ -33,6 +33,7 @@ import {
   type RunConfig,
   type RunManifest,
   type ModeROnlyClaimLabel,
+  type PreRegistrationBinding,
   type RunMetadataRecord,
   type Sha256Hash,
   type SignerPublicKey,
@@ -88,6 +89,7 @@ export interface ExportBundleOptions {
   policyFiles?: Readonly<Record<string, unknown>>;
   /** Optional Research-Grade claims requested by a report/export surface. */
   claimLabels?: readonly ModeROnlyClaimLabel[];
+  preRegistration?: PreRegistrationBinding;
   /** Allow writing into a directory that already contains files. */
   overwrite?: boolean;
   /** Reserved: the experiment record is never synthesized by the exporter. */
@@ -108,6 +110,7 @@ export interface RunManifestInput {
   softwareCommit: string;
   learnerContracts: LearnerContractText[];
   claimLabels?: readonly ModeROnlyClaimLabel[];
+  preRegistration?: PreRegistrationBinding;
 }
 
 /** `sha256:`-prefixed lowercase form; `RunConfig` allows the bare hex form. */
@@ -190,6 +193,9 @@ export function buildRunManifest(input: RunManifestInput): RunManifest {
       config.preRegistrationHash,
       'preRegistrationHash',
     ),
+    ...(input.preRegistration === undefined
+      ? {}
+      : { preRegistration: input.preRegistration }),
     softwareCommit: input.softwareCommit,
     createdAt: metadata.createdAt,
     ...(metadata.parentRunId === null ? {} : { parentRunId: metadata.parentRunId }),
@@ -280,6 +286,7 @@ export async function exportRunBundle(
     softwareCommit: options.softwareCommit,
     learnerContracts: options.learnerContracts,
     claimLabels: options.claimLabels,
+    preRegistration: options.preRegistration,
   });
 
   for (const directory of [

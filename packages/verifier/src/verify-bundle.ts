@@ -118,6 +118,7 @@ function finalVerifiedSizes(streams: LoadedStreams): Record<string, number> {
 function buildReport(
   runId: string,
   checkedAt: string,
+  bundleManifestHash: string | null,
   accumulator: VerificationAccumulator,
   sizes: Record<string, number>,
   options: VerifyBundleOptions,
@@ -126,6 +127,7 @@ function buildReport(
     version: 1,
     runId,
     checkedAt,
+    bundleManifestHash,
     verifierVersion: options.verifierVersion,
     checks: accumulator.checks(),
     gaps: accumulator.gaps,
@@ -173,6 +175,7 @@ async function persistOrNote(
   report: VerificationReport,
   runId: string,
   checkedAt: string,
+  bundleManifestHash: string | null,
   accumulator: VerificationAccumulator,
   sizes: Record<string, number>,
   options: VerifyBundleOptions,
@@ -185,7 +188,14 @@ async function persistOrNote(
     'report-write-failed',
     `verification-report.json could not be written: ${failure}`,
   );
-  return buildReport(runId, checkedAt, accumulator, sizes, options);
+  return buildReport(
+    runId,
+    checkedAt,
+    bundleManifestHash,
+    accumulator,
+    sizes,
+    options,
+  );
 }
 
 /**
@@ -331,6 +341,47 @@ async function verifyManifestAndConfiguration(
       'configuration-run-mismatch',
       `configuration/run-config.json deploymentMode ${config.data.deploymentMode} does not match the run manifest`,
     );
+  }
+  const registrationClass = config.data.registrationClass ?? 'qualification';
+  const binding = manifest.preRegistration;
+  if (registrationClass === 'confirmatory' && binding === undefined) {
+    accumulator.failStructural(
+      'pre-registration-binding-missing',
+      'confirmatory run has no pre-registration binding in run-manifest.json',
+    );
+  }
+  if (binding !== undefined) {
+    if (
+      binding.registrationClass !== registrationClass ||
+      normalizeHash(binding.preRegistrationHash) !==
+        normalizeHash(config.data.preRegistrationHash)
+    ) {
+      accumulator.failStructural(
+        'pre-registration-binding-mismatch',
+        'run-manifest.json pre-registration class/hash does not match RunConfig',
+      );
+    }
+    if (registrationClass === 'confirmatory') {
+      const expectedChainId =
+        config.data.anchorNetwork === 'base-mainnet' ? 8453 : 84532;
+      const expectedInput = `0x${(normalizeHash(config.data.preRegistrationHash) ?? '').slice(7)}`;
+      const anchor = binding.preRunAnchor;
+      if (
+        binding.externalRegistrationUrl === undefined ||
+        binding.registeredAt === undefined ||
+        anchor === undefined ||
+        anchor.status !== 'confirmed' ||
+        anchor.blockNumber === null ||
+        anchor.network !== config.data.anchorNetwork ||
+        anchor.chainId !== expectedChainId ||
+        anchor.inputData.toLowerCase() !== expectedInput
+      ) {
+        accumulator.failStructural(
+          'pre-registration-binding-invalid',
+          'confirmatory pre-registration lacks a matching external registration and confirmed pre-run anchor',
+        );
+      }
+    }
   }
 
   // The remaining provenance and lineage fields the exporter copies from the
@@ -688,13 +739,21 @@ export async function verifyBundleDetailed(
   const bound = await verifyManifestAndConfiguration(bundleDir, accumulator);
   if (bound === undefined) {
     accumulator.markAllUnverified();
-    const report = buildReport(UNKNOWN_RUN_ID, checkedAt, accumulator, {}, options);
+    const report = buildReport(
+      UNKNOWN_RUN_ID,
+      checkedAt,
+      null,
+      accumulator,
+      {},
+      options,
+    );
     return {
       report: await persistOrNote(
         bundleDir,
         report,
         UNKNOWN_RUN_ID,
         checkedAt,
+        null,
         accumulator,
         {},
         options,
@@ -791,6 +850,7 @@ export async function verifyBundleDetailed(
   const report = buildReport(
     manifest.runId,
     checkedAt,
+    hashCanonical(HASH_DOMAINS.runManifest, manifest),
     accumulator,
     sizes,
     options,
@@ -802,6 +862,7 @@ export async function verifyBundleDetailed(
       report,
       manifest.runId,
       checkedAt,
+      hashCanonical(HASH_DOMAINS.runManifest, manifest),
       accumulator,
       sizes,
       options,

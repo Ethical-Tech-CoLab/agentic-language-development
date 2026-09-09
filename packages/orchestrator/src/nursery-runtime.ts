@@ -52,6 +52,7 @@ import {
   HASH_DOMAINS,
   InterventionEventSchema,
   LedgerEventSchema,
+  PreRegistrationBindingSchema,
   RunConfigSchema,
   STREAM_SIGNER,
   TurnProposalEnvelopeSchema,
@@ -71,6 +72,7 @@ import {
   type CheckpointReason,
   type CheckpointService,
   type Clock,
+  type CreateRunOptions,
   type EventStream,
   type ExperimentRecord,
   type GatewaySubmitResult,
@@ -86,6 +88,7 @@ import {
   type Observation,
   type Outcome,
   type PolicyCheckpointRef,
+  type PreRegistrationBinding,
   type RunConfig,
   type RunManifest,
   type RunState,
@@ -376,6 +379,7 @@ interface PendingRepair {
 interface RunRuntime {
   runId: string;
   config: RunConfig;
+  preRegistration: PreRegistrationBinding | undefined;
   configurationHash: Sha256Hash;
   writer: SqliteEvidenceWriter;
   signers: SignerRegistry;
@@ -562,7 +566,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // Run creation (SPEC §7.2 draft -> preregistered -> initializing -> running)
   // -------------------------------------------------------------------------
 
-  async createRun(config: RunConfig): Promise<RunSummary> {
+  async createRun(
+    config: RunConfig,
+    options: CreateRunOptions = {},
+  ): Promise<RunSummary> {
     const declared = validateRunConfig(config);
     if (!declared.ok) {
       throw new RunConfigurationError(declared.errors);
@@ -597,6 +604,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new RunConfigurationError(validated.errors);
     }
     const runConfig = validated.config;
+    const preRegistration = this.#validatePreRegistration(
+      runConfig,
+      options.preRegistration,
+    );
     const runId = runConfig.runId;
     if (this.#runs.has(runId)) {
       throw new DuplicateRunError(runId);
@@ -653,6 +664,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const run: RunRuntime = {
       runId,
       config: runConfig,
+      preRegistration,
       configurationHash,
       writer,
       signers,
@@ -1345,7 +1357,18 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         : { details: intervention.details }),
     });
     if (this.#finalCheckpoint(run) === undefined) {
-      await this.#checkpoint(run, 'intervention');
+      const checkpoint = await this.#checkpoint(run, 'intervention');
+      const deviation =
+        `unplanned-intervention:${event.entryHash}:` +
+        intervention.reasonCode;
+      run.deviations.push(deviation);
+      this.#appendExperimentRecord(run, {
+        disposition: 'invalid',
+        checkpointManifestRef: checkpoint.checkpointHash,
+        anchorTxRef: UNANCHORED_TX_REF,
+        verifierReportRef: 'pending',
+        deviations: [...run.deviations],
+      });
     }
     return event;
   }
@@ -2099,6 +2122,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         text: contract.text,
       })),
       policyFiles,
+      preRegistration: run.preRegistration,
       overwrite: true,
     });
   }
@@ -2714,6 +2738,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         details: {
           initialPolicies,
           provenance,
+          ...(run.preRegistration === undefined
+            ? {}
+            : { preRegistration: run.preRegistration }),
           ...(lineage === undefined ? {} : { lineage }),
         },
       });
@@ -3327,6 +3354,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const run: RunRuntime = {
       runId,
       config,
+      preRegistration: this.#recordedPreRegistration(interventionEvents),
       configurationHash: strictHash(metadata.configurationHash),
       writer,
       signers,
@@ -3524,6 +3552,93 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         'anchorPolicy "required" needs an anchorPublisher (SPEC §7.2, §13.4)',
       );
     }
+  }
+
+  #validatePreRegistration(
+    config: RunConfig,
+    candidate: PreRegistrationBinding | undefined,
+  ): PreRegistrationBinding | undefined {
+    if (candidate === undefined) {
+      if (config.registrationClass === 'confirmatory') {
+        throw new RunConfigurationError([
+          {
+            path: 'preRegistration',
+            message: 'confirmatory runs require a bound external pre-registration',
+          },
+        ]);
+      }
+      return undefined;
+    }
+    const parsed = PreRegistrationBindingSchema.safeParse(candidate);
+    if (!parsed.success) {
+      throw new RunConfigurationError(
+        parsed.error.issues.map((issue) => ({
+          path: `preRegistration.${issue.path.join('.')}`,
+          message: issue.message,
+        })),
+      );
+    }
+    const binding = parsed.data;
+    const errors: { path: string; message: string }[] = [];
+    if (binding.registrationClass !== (config.registrationClass ?? 'qualification')) {
+      errors.push({
+        path: 'preRegistration.registrationClass',
+        message: 'binding class must match RunConfig.registrationClass',
+      });
+    }
+    if (strictHash(binding.preRegistrationHash) !== strictHash(config.preRegistrationHash)) {
+      errors.push({
+        path: 'preRegistration.preRegistrationHash',
+        message: 'binding hash must match RunConfig.preRegistrationHash',
+      });
+    }
+    if (binding.registrationClass === 'confirmatory') {
+      if (binding.externalRegistrationUrl === undefined) {
+        errors.push({
+          path: 'preRegistration.externalRegistrationUrl',
+          message: 'confirmatory binding requires an external registration URL',
+        });
+      }
+      if (binding.registeredAt === undefined) {
+        errors.push({
+          path: 'preRegistration.registeredAt',
+          message: 'confirmatory binding requires a registration timestamp',
+        });
+      }
+      const anchor = binding.preRunAnchor;
+      const expectedChainId = config.anchorNetwork === 'base-mainnet' ? 8453 : 84532;
+      const expectedInput = `0x${strictHash(config.preRegistrationHash).slice(7)}`;
+      if (
+        anchor === undefined ||
+        anchor.status !== 'confirmed' ||
+        anchor.blockNumber === null ||
+        anchor.network !== config.anchorNetwork ||
+        anchor.chainId !== expectedChainId ||
+        anchor.inputData.toLowerCase() !== expectedInput
+      ) {
+        errors.push({
+          path: 'preRegistration.preRunAnchor',
+          message:
+            'confirmatory binding requires a confirmed matching pre-run anchor receipt',
+        });
+      }
+    }
+    if (errors.length > 0) {
+      throw new RunConfigurationError(errors);
+    }
+    return binding;
+  }
+
+  #recordedPreRegistration(
+    events: readonly InterventionEvent[],
+  ): PreRegistrationBinding | undefined {
+    const value = events.find(
+      (event) => event.reasonCode === 'learner-initialization',
+    )?.details['preRegistration'];
+    if (value === undefined) {
+      return undefined;
+    }
+    return PreRegistrationBindingSchema.parse(value);
   }
 
   /**

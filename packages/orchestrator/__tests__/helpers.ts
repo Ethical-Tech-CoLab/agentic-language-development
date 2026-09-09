@@ -565,6 +565,7 @@ export function fakeVerifier(
       version: 1,
       runId,
       checkedAt: new Date(Date.UTC(2026, 0, 3)).toISOString(),
+      bundleManifestHash: null,
       verifierVersion: 'fake-verifier-v1',
       checks: {
         canonicalJsonValid: true,

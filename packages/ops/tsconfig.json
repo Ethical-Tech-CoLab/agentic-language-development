@@ -23,6 +23,9 @@
       "path": "../anchor"
     },
     {
+      "path": "../checkpoint"
+    },
+    {
       "path": "../orchestrator"
     }
   ]

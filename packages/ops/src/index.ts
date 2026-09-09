@@ -132,6 +132,12 @@ export {
 } from './failure-policy.js';
 
 export {
+  startProtectedCheckpointScheduler,
+  type ProtectedCheckpointScheduler,
+  type ProtectedCheckpointSchedulerOptions,
+} from './checkpoint-scheduler.js';
+
+export {
   PublicReleaseMarkerSchema,
   PURGEABLE_BUNDLE_ENTRIES,
   PURGE_TOMBSTONE,

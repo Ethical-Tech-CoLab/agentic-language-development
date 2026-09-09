@@ -133,6 +133,11 @@ describe('operator interventions (SPEC §7.3, §14.2)', () => {
       .checkpoints(runId)
       .map((manifest) => manifest.reason);
     expect(reasons.filter((reason) => reason === 'intervention')).toHaveLength(1);
+    const deviationRecord = harness.runtime.experimentRecords(runId).at(-1);
+    expect(deviationRecord?.recordVersion).toBe(2);
+    expect(deviationRecord?.deviations).toEqual([
+      `unplanned-intervention:${annotation.entryHash}:unplanned-observation`,
+    ]);
     const next = await harness.runtime.step(runId);
     expect(next.turn).toBe(1);
   }, 60_000);

@@ -143,6 +143,12 @@ describe('verification report generation (ALD-017)', () => {
       expect(VerificationReportSchema.parse(onDisk)).toEqual(report);
       expect(report.exitCode).toBe(0);
       expect(report.checkedAt).toBe(CHECKED_AT);
+      expect(report.bundleManifestHash).toBe(
+        hashCanonical(
+          HASH_DOMAINS.runManifest,
+          await readJsonFile(join(copy.dir, 'run-manifest.json')),
+        ),
+      );
     } finally {
       await copy.cleanup();
     }

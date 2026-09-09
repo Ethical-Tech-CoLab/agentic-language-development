@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 
 import {
+  PreRegistrationBindingSchema,
   RunConfigSchema,
   type BehaviorPack,
   type BehaviorPackContext,
@@ -259,9 +260,15 @@ const routes: RouteDefinition[] = [
     roles: ['researcher-operator'],
     handler: async ({ body, context }) => {
       const { runtime } = internalsFrom(context);
-      const config = RunConfigSchema.parse(body);
+      const record = asRecord(body, 'create-run body');
+      const wrapped = 'config' in record;
+      const config = RunConfigSchema.parse(wrapped ? record['config'] : body);
+      const preRegistration =
+        !wrapped || record['preRegistration'] === undefined
+          ? undefined
+          : PreRegistrationBindingSchema.parse(record['preRegistration']);
       assertPathSafeRunId(config.runId);
-      const run = await runtime.createRun(config);
+      const run = await runtime.createRun(config, { preRegistration });
       return success({ run }, 201);
     },
   },
