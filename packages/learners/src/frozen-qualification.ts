@@ -4,7 +4,11 @@ import { HASH_DOMAINS, type BabyRole } from '@ald/types';
 
 import { runLearnerAdapterConformance } from './conformance.js';
 import { createFrozenLlmAdapterFactory } from './frozen-llm.js';
-import type { LocalModelClient, LocalModelDescription } from './llm-client.js';
+import {
+  formatModelRef,
+  type LocalModelClient,
+  type LocalModelDescription,
+} from './llm-client.js';
 
 export const FROZEN_MODEL_QUALIFICATION_VERSION = 1;
 export const FROZEN_MODEL_QUALIFICATION_LABEL =
@@ -55,6 +59,7 @@ export async function runFrozenModelQualification(
     throw new Error('frozen-model qualification requires at least two episodes');
   }
   const seed = options.seed ?? 'ald-real-frozen-model-qualification-v1';
+  const model = options.client.describe();
   const factory = createFrozenLlmAdapterFactory({
     client: options.client,
     maxOutputTokens: 192,
@@ -64,6 +69,7 @@ export async function runFrozenModelQualification(
     deploymentMode: 'prototype',
     experimentId: 'E10',
     runId: 'frozen-model-qualification',
+    modelRef: formatModelRef(model.modelId, model.weightsHash),
     episodes,
     seed,
     roleReversalPeriod: 1,
@@ -91,7 +97,7 @@ export async function runFrozenModelQualification(
     claimBoundary: FROZEN_MODEL_QUALIFICATION_LABEL,
     softwareCommit: options.softwareCommit,
     executedAt: options.executedAt,
-    model: options.client.describe(),
+    model,
     seedHash: hashCanonical(HASH_DOMAINS.seed, seed),
     episodes: result.episodes,
     proposals: result.proposals,

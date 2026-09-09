@@ -134,6 +134,8 @@ export interface ConformanceOptions {
   seed?: string;
   runId?: string;
   experimentId?: string;
+  /** Exact pre-registered model reference; defaults to the harness namespace. */
+  modelRef?: string;
   attributeCount?: number;
   valuesPerAttribute?: number;
   candidateCount?: number;
@@ -344,7 +346,7 @@ export function buildConformanceRunConfig(
     options.learningSignal ?? (track === 'scratch-rl' ? 'extrinsic-task' : 'none');
   const learner = {
     track,
-    modelRef: `reference:${track}`,
+    modelRef: options.modelRef ?? `reference:${track}`,
     trainingIsolation: 'independent' as const,
   };
 
