@@ -19,6 +19,7 @@ import { writeFile } from 'node:fs/promises';
 import { canonicalJson, hashCanonical, hashRunId } from '@ald/hashing';
 import {
   CLAIM_BOUNDARY_STATEMENTS,
+  CheckpointManifestSchema,
   HASH_DOMAINS,
   RunConfigSchema,
   RunManifestSchema,
@@ -32,7 +33,9 @@ import { verifyAnchors, type ChainReader } from './anchors.js';
 import { verifyAttachments } from './attachments.js';
 import {
   bundlePath,
+  containedBundlePath,
   formatIssues,
+  listJsonFiles,
   readCanonicalJsonFile,
   unknownFieldDetail,
 } from './bundle-io.js';
@@ -42,7 +45,7 @@ import { verifyExperimentRecord } from './experiment-record.js';
 import { verifyPromptBundle } from './prompts.js';
 import { describeRedacted } from './redact.js';
 import { loadStreams, verifyCrossBindings, type LoadedStreams } from './streams.js';
-import { normalizeHash } from './values.js';
+import { isRecord, normalizeHash, readRecord, readString } from './values.js';
 
 /** Version reported when a caller does not supply one. */
 export const VERIFIER_VERSION = '0.1.0';
@@ -58,6 +61,8 @@ export interface VerifyBundleOptions {
   allowUnanchored?: boolean | undefined;
   /** `false` leaves `verification-report.json` untouched (default: write). */
   writeReport?: boolean | undefined;
+  /** Immutable parent export required to validate a derived run's lineage. */
+  parentBundleDir?: string | undefined;
 }
 
 export interface VerificationDetails {
@@ -374,6 +379,18 @@ async function verifyManifestAndConfiguration(
     config.data.derivedFromCheckpointHash,
     { hash: true },
   );
+  bindManifestField(
+    accumulator,
+    'initialPolicyRefs.babyA',
+    manifest.initialPolicyRefs?.babyA,
+    config.data.babyA.initialPolicyRef,
+  );
+  bindManifestField(
+    accumulator,
+    'initialPolicyRefs.babyB',
+    manifest.initialPolicyRefs?.babyB,
+    config.data.babyB.initialPolicyRef,
+  );
 
   return { manifest, config: config.data };
 }
@@ -410,6 +427,174 @@ function reportUnanchoredTail(
 
   if (reported) {
     accumulator.markUnanchoredTail(allowUnanchored);
+  }
+}
+
+async function verifyDerivedLineage(
+  parentBundleDir: string | undefined,
+  config: RunConfig,
+  streams: LoadedStreams,
+  checkpoints: readonly { sequence: number; manifest: { auxiliaryTrees: Record<string, { treeSize: number }> } }[],
+  accumulator: VerificationAccumulator,
+): Promise<void> {
+  if (config.parentRunId === undefined) {
+    if (parentBundleDir !== undefined) {
+      accumulator.failStructural(
+        'lineage-unexpected-parent-bundle',
+        'a root run does not accept --parent-bundle',
+      );
+    }
+    return;
+  }
+  if (parentBundleDir === undefined) {
+    accumulator.failStructural(
+      'lineage-parent-bundle-required',
+      'derived runs require the immutable parent export via --parent-bundle',
+    );
+    return;
+  }
+
+  const parentVerification = await verifyBundleDetailed(parentBundleDir, {
+    verifierVersion: 'lineage-parent-verification',
+    now: () => new Date(0).toISOString(),
+    allowUnanchored: true,
+    writeReport: false,
+  });
+  if (parentVerification.report.exitCode !== 0) {
+    accumulator.failStructural(
+      'lineage-parent-bundle-invalid',
+      `parent verification failed: ${parentVerification.report.gaps.join('; ')}`,
+    );
+  }
+
+  const parentManifestRaw = await readCanonicalJsonFile(
+    bundlePath(parentBundleDir, 'run-manifest.json'),
+  );
+  const parentManifest = parentManifestRaw.ok
+    ? RunManifestSchema.safeParse(parentManifestRaw.value)
+    : undefined;
+  if (parentManifest === undefined || !parentManifest.success) {
+    accumulator.failStructural(
+      'lineage-parent-manifest-invalid',
+      parentManifestRaw.ok
+        ? formatIssues(parentManifest?.error.issues ?? [])
+        : parentManifestRaw.detail,
+    );
+    return;
+  }
+  if (parentManifest.data.runId !== config.parentRunId) {
+    accumulator.failStructural(
+      'lineage-parent-run-mismatch',
+      `parent export names ${parentManifest.data.runId}, child names ${config.parentRunId}`,
+    );
+  }
+
+  let checkpointFound = false;
+  for (const file of await listJsonFiles(bundlePath(parentBundleDir, 'checkpoints'))) {
+    const raw = await readCanonicalJsonFile(
+      bundlePath(parentBundleDir, 'checkpoints', file),
+    );
+    if (!raw.ok) {
+      continue;
+    }
+    const parsed = CheckpointManifestSchema.safeParse(raw.value);
+    if (
+      parsed.success &&
+      normalizeHash(parsed.data.checkpointHash) ===
+        normalizeHash(config.derivedFromCheckpointHash)
+    ) {
+      checkpointFound = true;
+      break;
+    }
+  }
+  if (!checkpointFound) {
+    accumulator.failStructural(
+      'lineage-parent-checkpoint-missing',
+      `parent export does not contain ${String(config.derivedFromCheckpointHash)}`,
+    );
+  }
+
+  const initialization = streams
+    .get('intervention')
+    ?.events.find(
+      (event) =>
+        event['eventType'] === 'runtime-attestation' &&
+        event['reasonCode'] === 'learner-initialization',
+    );
+  const details = isRecord(initialization) ? readRecord(initialization, 'details') : undefined;
+  const recordedLineage = details === undefined ? undefined : readRecord(details, 'lineage');
+  const recordedRefs =
+    recordedLineage === undefined
+      ? undefined
+      : readRecord(recordedLineage, 'initialPolicyRefs');
+  const expectedRefs = {
+    babyA: config.babyA.initialPolicyRef,
+    babyB: config.babyB.initialPolicyRef,
+  };
+  if (
+    readString(recordedLineage ?? {}, 'parentRunId') !== config.parentRunId ||
+    normalizeHash(readString(recordedLineage ?? {}, 'derivedFromCheckpointHash')) !==
+      normalizeHash(config.derivedFromCheckpointHash) ||
+    readString(recordedRefs ?? {}, 'babyA') !== expectedRefs.babyA ||
+    readString(recordedRefs ?? {}, 'babyB') !== expectedRefs.babyB
+  ) {
+    accumulator.failStructural(
+      'lineage-initialization-mismatch',
+      'the first learner-initialization event does not repeat the child RunConfig lineage',
+    );
+  }
+  const initializationSequence =
+    typeof initialization?.['sequence'] === 'number'
+      ? initialization['sequence']
+      : undefined;
+  const checkpointZero = checkpoints.find((checkpoint) => checkpoint.sequence === 0);
+  if (
+    initializationSequence !== 1 ||
+    (checkpointZero?.manifest.auxiliaryTrees['intervention']?.treeSize ?? 0) < 1
+  ) {
+    accumulator.failStructural(
+      'lineage-initialization-not-witnessed',
+      'derived lineage must be intervention sequence 1 and committed by checkpoint 0',
+    );
+  }
+
+  const initialPolicies = details === undefined ? undefined : readRecord(details, 'initialPolicies');
+  for (const [role, ref] of [
+    ['babyA', config.babyA.initialPolicyRef],
+    ['babyB', config.babyB.initialPolicyRef],
+  ] as const) {
+    if (ref === undefined) {
+      continue;
+    }
+    const parts = ref.split('/');
+    const contained = containedBundlePath(parentBundleDir, ...parts);
+    if (!contained.ok || parts[0] !== 'policies' || parts.length !== 2) {
+      accumulator.failStructural(
+        'lineage-policy-ref-invalid',
+        `${role} policy reference is not a contained policies/ file: ${ref}`,
+      );
+      continue;
+    }
+    const policy = await readCanonicalJsonFile(contained.path);
+    if (!policy.ok) {
+      accumulator.failStructural(
+        'lineage-policy-missing',
+        `${ref}: ${policy.detail}`,
+      );
+      continue;
+    }
+    const roleRecord =
+      initialPolicies === undefined
+        ? undefined
+        : readRecord(initialPolicies, role === 'babyA' ? 'baby-a' : 'baby-b');
+    const recordedHash = readString(roleRecord ?? {}, 'sourcePolicyHash');
+    const actualHash = hashCanonical(HASH_DOMAINS.policyCheckpoint, policy.value);
+    if (recordedHash === undefined || normalizeHash(recordedHash) !== actualHash) {
+      accumulator.failStructural(
+        'lineage-policy-hash-mismatch',
+        `${ref} hashes to ${actualHash}, child initialization records ${recordedHash}`,
+      );
+    }
   }
 }
 
@@ -456,6 +641,15 @@ export async function verifyBundleDetailed(
     streams,
     accumulator,
   );
+  if (config !== undefined) {
+    await verifyDerivedLineage(
+      options.parentBundleDir,
+      config,
+      streams,
+      checkpoints,
+      accumulator,
+    );
+  }
   const proofFilesChecked = await verifyProofs(
     bundleDir,
     checkpoints,

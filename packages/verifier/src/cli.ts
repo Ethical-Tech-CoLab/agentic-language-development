@@ -25,6 +25,7 @@ export const USAGE = `Usage: ald-verify <bundle-dir> [options]
 Options:
   --rpc-url <url>            verify the anchor transaction against this JSON-RPC endpoint
   --chain-id <n>             expected chain id (skips eth_chainId)
+  --parent-bundle <dir>      immutable parent export for derived-run lineage
   --allow-unanchored         report an unanchored tail without failing
   --json                     print the verification report as canonical JSON
   --verifier-version <v>     value recorded in the report (default ${VERIFIER_VERSION})
@@ -35,6 +36,7 @@ export interface CliOptions {
   bundleDir: string;
   rpcUrl?: string;
   chainId?: number;
+  parentBundleDir?: string;
   allowUnanchored: boolean;
   json: boolean;
   verifierVersion: string;
@@ -65,6 +67,7 @@ export function parseArgs(argv: readonly string[]): CliParseResult {
   let bundleDir: string | undefined;
   let rpcUrl: string | undefined;
   let chainId: number | undefined;
+  let parentBundleDir: string | undefined;
   let allowUnanchored = false;
   let json = false;
   let writeReport = true;
@@ -110,6 +113,15 @@ export function parseArgs(argv: readonly string[]): CliParseResult {
         index += 1;
         break;
       }
+      case '--parent-bundle': {
+        const value = requireValue(argument, argv[index + 1]);
+        if (!value.ok) {
+          return value;
+        }
+        parentBundleDir = value.value;
+        index += 1;
+        break;
+      }
       case '--verifier-version': {
         const value = requireValue(argument, argv[index + 1]);
         if (!value.ok) {
@@ -140,6 +152,7 @@ export function parseArgs(argv: readonly string[]): CliParseResult {
       bundleDir,
       ...(rpcUrl === undefined ? {} : { rpcUrl }),
       ...(chainId === undefined ? {} : { chainId }),
+      ...(parentBundleDir === undefined ? {} : { parentBundleDir }),
       allowUnanchored,
       json,
       verifierVersion,
@@ -249,6 +262,7 @@ export async function runCli(
       chainReader,
       allowUnanchored: options.allowUnanchored,
       writeReport: options.writeReport,
+      parentBundleDir: options.parentBundleDir,
     });
   } catch (error) {
     // `runCli` promises an exit code (LEDGER §14 item 12), so an unexpected

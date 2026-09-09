@@ -154,6 +154,12 @@ export const RunManifestSchema = z.object({
   createdAt: isoDateTime,
   parentRunId: nonEmptyString.optional(),
   derivedFromCheckpointHash: strictHash.optional(),
+  initialPolicyRefs: z
+    .object({
+      babyA: nonEmptyString,
+      babyB: nonEmptyString,
+    })
+    .optional(),
   learnerContractVersions: z.object({
     babyA: nonEmptyString,
     babyB: nonEmptyString,

@@ -152,6 +152,9 @@ its signer's public key listed in `signers`.
 - `runIdHash` = `sha256(runId || 0x00 || utf8(runId))`.
 - `claimBoundaryStatement` MUST equal the SPEC §5.1 or §5.2 sentence for
   `deploymentMode` verbatim.
+- Derived runs repeat `parentRunId`, `derivedFromCheckpointHash`, and both
+  `initialPolicyRefs` from `configuration/run-config.json`; root runs omit all
+  four lineage values.
 - `preRegistration` (optional, `PreRegistrationBindingSchema`) records how the
   run was bound under SPEC §15.1: `registrationClass` (`qualification` or
   `confirmatory`), the `preRegistrationHash` it binds, the external
@@ -161,6 +164,11 @@ its signer's public key listed in `signers`.
   a `confirmatory` binding without them MUST fail the run. A bundle without this
   field is a run created before ALD-071 completed and is read as
   `qualification`.
+- A derived export repeats both learner `initialPolicyRef` values as
+  `initialPolicyRefs`. The verifier requires the immutable parent export via
+  `--parent-bundle`, confirms the named parent checkpoint exists, resolves both
+  references inside the parent's `policies/` directory, and checks the child's
+  checkpoint-0 initialization attestation against those artifacts.
 
 ## 8. Anchor Receipts
 

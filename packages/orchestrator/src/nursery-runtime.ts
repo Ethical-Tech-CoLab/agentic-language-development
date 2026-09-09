@@ -40,7 +40,7 @@
  *   seal's evidence half being written exactly once per run (`#sealEvidence`),
  *   which is also what makes `seal` itself idempotent on re-entry.
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -380,6 +380,8 @@ interface RunRuntime {
   evaluationCount: number;
   evaluationTurns: number;
   policyRefs: Partial<Record<BabyRole, PolicyCheckpointRef>>;
+  /** Hashes of immutable parent artifacts loaded for a derived run. */
+  sourcePolicyHashes: Partial<Record<BabyRole, Sha256Hash>>;
   lastOutcome: Outcome | undefined;
   /** `size` sum of the three mandatory chains at the last checkpoint. */
   lastCheckpointEventTotal: number;
@@ -652,6 +654,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       evaluationCount: 0,
       evaluationTurns: runConfig.evaluationTurns ?? this.#evaluationTurnsDefault,
       policyRefs: {},
+      sourcePolicyHashes: {},
       lastOutcome: undefined,
       lastCheckpointEventTotal: 0,
       nonces: new SeededPrng(runConfig.randomSeed).derive('nursery/nonce'),
@@ -1965,6 +1968,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async exportBundle(runId: string, outputDir: string): Promise<RunManifest> {
     const run = this.#requireRun(runId);
+    const policyFiles = await this.#exportedPolicyFiles(run);
     return exportRunBundle(run.writer, runId, outputDir, {
       softwareCommit: this.#options.softwareCommit,
       learnerContracts: run.contracts.map((contract) => ({
@@ -1972,6 +1976,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         version: contract.version,
         text: contract.text,
       })),
+      policyFiles,
       overwrite: true,
     });
   }
@@ -2545,15 +2550,32 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         track: adapter.track,
         initialPolicyHash,
         policyFile: `policies/${this.#policyFileName(role, 'initial')}`,
+        ...(run.sourcePolicyHashes[role] === undefined
+          ? {}
+          : { sourcePolicyHash: run.sourcePolicyHashes[role] }),
       };
     }
     if (Object.keys(initialPolicies).length > 0) {
+      const lineage =
+        run.config.parentRunId === undefined
+          ? undefined
+          : {
+              parentRunId: run.config.parentRunId,
+              derivedFromCheckpointHash: run.config.derivedFromCheckpointHash,
+              initialPolicyRefs: {
+                babyA: run.config.babyA.initialPolicyRef,
+                babyB: run.config.babyB.initialPolicyRef,
+              },
+            };
       await run.writer.appendInterventionEvent({
         runId: run.runId,
         eventType: 'runtime-attestation',
         actorId: this.#actorId,
         reasonCode: 'learner-initialization',
-        details: { initialPolicies },
+        details: {
+          initialPolicies,
+          ...(lineage === undefined ? {} : { lineage }),
+        },
       });
     }
   }
@@ -2965,6 +2987,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async #initializeAdapters(run: RunRuntime): Promise<void> {
     for (const role of BABY_ROLES) {
       const initialPolicy = await this.#readParentPolicy(run, role);
+      if (initialPolicy !== undefined) {
+        run.sourcePolicyHashes[role] = hashCanonical(
+          HASH_DOMAINS.policyCheckpoint,
+          initialPolicy,
+        );
+      }
       await this.#initializeAdapter(run, role, initialPolicy);
     }
   }
@@ -3010,11 +3038,36 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (run.config.parentRunId === undefined) {
       return undefined;
     }
-    return this.#readPolicyFileAt(
-      join(this.#bundleDirFor(run.config.parentRunId), 'policies'),
-      role,
-      'latest',
+    const ref =
+      role === 'baby-a'
+        ? run.config.babyA.initialPolicyRef
+        : run.config.babyB.initialPolicyRef;
+    const expected = new RegExp(
+      `^policies/${role}-(?:latest|policy-(?:initial|[0-9]+))\\.json$`,
+      'u',
     );
+    if (ref === undefined || !expected.test(ref)) {
+      throw new RunConfigurationError([
+        {
+          path: `${role}.initialPolicyRef`,
+          message: `derived policy reference must name an exported ${role} policy file`,
+        },
+      ]);
+    }
+    try {
+      const text = await readFile(
+        join(this.#bundleDirFor(run.config.parentRunId), ref),
+        'utf8',
+      );
+      return parseCanonicalJson(text.trimEnd());
+    } catch {
+      throw new RunConfigurationError([
+        {
+          path: `${role}.initialPolicyRef`,
+          message: `parent policy artifact is missing or invalid: ${ref}`,
+        },
+      ]);
+    }
   }
 
   #reconstruct(runId: string): RunRuntime {
@@ -3153,6 +3206,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       evaluationCount,
       evaluationTurns,
       policyRefs: {},
+      sourcePolicyHashes: {},
       lastOutcome: undefined,
       lastCheckpointEventTotal: 0,
       nonces: new SeededPrng(config.randomSeed).derive('nursery/nonce'),
@@ -3434,6 +3488,21 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   #policiesDir(run: RunRuntime): string {
     return join(run.bundleDir, 'policies');
+  }
+
+  async #exportedPolicyFiles(run: RunRuntime): Promise<Record<string, unknown>> {
+    let files: string[];
+    try {
+      files = await readdir(this.#policiesDir(run));
+    } catch {
+      return {};
+    }
+    const policies: Record<string, unknown> = {};
+    for (const file of files.filter((candidate) => candidate.endsWith('.json')).sort()) {
+      const text = await readFile(join(this.#policiesDir(run), file), 'utf8');
+      policies[file] = parseCanonicalJson(text.trimEnd());
+    }
+    return policies;
   }
 
   async #writePolicyFile(

@@ -82,6 +82,8 @@ export interface ExportBundleOptions {
   softwareCommit: string;
   /** Contract texts for the tracks named by the run configuration. */
   learnerContracts: LearnerContractText[];
+  /** Canonical policy artifacts keyed by their single-segment file name. */
+  policyFiles?: Readonly<Record<string, unknown>>;
   /** Allow writing into a directory that already contains files. */
   overwrite?: boolean;
   /** Reserved: the experiment record is never synthesized by the exporter. */
@@ -187,6 +189,15 @@ export function buildRunManifest(input: RunManifestInput): RunManifest {
             'derivedFromCheckpointHash',
           ),
         }),
+    ...(config.babyA.initialPolicyRef === undefined ||
+    config.babyB.initialPolicyRef === undefined
+      ? {}
+      : {
+          initialPolicyRefs: {
+            babyA: config.babyA.initialPolicyRef,
+            babyB: config.babyB.initialPolicyRef,
+          },
+        }),
     learnerContractVersions: {
       babyA: contractFor(input.learnerContracts, config.babyA.track).version,
       babyB: contractFor(input.learnerContracts, config.babyB.track).version,
@@ -266,6 +277,7 @@ export async function exportRunBundle(
     join(outputDir, 'anchors'),
     join(outputDir, 'configuration'),
     join(outputDir, 'prompts'),
+    ...(options.policyFiles === undefined ? [] : [join(outputDir, 'policies')]),
     join(outputDir, 'analysis'),
   ]) {
     await mkdir(directory, { recursive: true });
@@ -313,6 +325,22 @@ export async function exportRunBundle(
       contract.text,
       'utf8',
     );
+  }
+
+  for (const [file, policy] of Object.entries(options.policyFiles ?? {}).sort(
+    ([left], [right]) => left.localeCompare(right),
+  )) {
+    if (
+      file.length === 0 ||
+      file.includes('/') ||
+      file.includes('\\') ||
+      !file.endsWith('.json')
+    ) {
+      throw new InvalidRequestError(
+        `Policy artifact name must be a single JSON file segment: ${file}`,
+      );
+    }
+    await writeCanonical(join(outputDir, 'policies', file), policy);
   }
 
   const attachments = reader.readAnalysisAttachments(runId);
