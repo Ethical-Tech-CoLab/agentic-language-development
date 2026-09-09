@@ -15,6 +15,8 @@ const { values } = parseArgs({
     model: { type: 'string' },
     weights: { type: 'string' },
     quantization: { type: 'string' },
+    'runtime-id': { type: 'string' },
+    'runtime-artifact-hash': { type: 'string' },
     episodes: { type: 'string', default: '2' },
     out: {
       type: 'string',
@@ -26,6 +28,8 @@ for (const [name, value] of [
   ['--endpoint', values.endpoint],
   ['--model', values.model],
   ['--weights', values.weights],
+  ['--runtime-id', values['runtime-id']],
+  ['--runtime-artifact-hash', values['runtime-artifact-hash']],
 ]) {
   if (value === undefined) throw new Error(`${name} is required`);
 }
@@ -48,6 +52,10 @@ const report = await runFrozenModelQualification({
   client,
   softwareCommit,
   executedAt: new Date().toISOString(),
+  runtime: {
+    id: values['runtime-id'],
+    artifactHash: values['runtime-artifact-hash'],
+  },
   episodes,
 });
 const outputPath = resolve(values.out);
@@ -56,5 +64,6 @@ await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 console.log(`Wrote ${outputPath}`);
 console.log(`model=${report.model.modelId}`);
 console.log(`weightsHash=${report.model.weightsHash}`);
+console.log(`runtime=${report.runtime.id}@${report.runtime.artifactHash}`);
 console.log(`episodes=${String(report.episodes)} proposals=${String(report.proposals)}`);
 console.log(report.claimBoundary);

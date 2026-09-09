@@ -136,6 +136,8 @@ export interface ConformanceOptions {
   experimentId?: string;
   /** Exact pre-registered model reference; defaults to the harness namespace. */
   modelRef?: string;
+  /** Per-turn response deadline; defaults to the protocol's 30 seconds. */
+  turnResponseBudgetMs?: number;
   attributeCount?: number;
   valuesPerAttribute?: number;
   candidateCount?: number;
@@ -367,7 +369,7 @@ export function buildConformanceRunConfig(
     affectWindowSchedule: 'none',
     observationEncoding: 'opaque-numeric',
     roleReversalPeriod: resolved.roleReversalPeriod,
-    turnResponseBudgetMs: 30_000,
+    turnResponseBudgetMs: options.turnResponseBudgetMs ?? 30_000,
     maxTurnsPerRun: Math.max(resolved.episodes, 1),
     maxConsecutiveRejections: 3,
     ledgerLagTurns: 0,

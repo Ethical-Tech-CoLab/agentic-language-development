@@ -327,6 +327,7 @@ describe('ALD-044 constrained completion over the loopback endpoint', () => {
       seed: number;
       max_tokens: number;
       temperature: number;
+      tool_choice: string;
     };
     expect(body.messages[0]).toEqual({
       role: 'system',
@@ -349,6 +350,7 @@ describe('ALD-044 constrained completion over the loopback endpoint', () => {
     expect(body.seed).toBe(7);
     expect(body.max_tokens).toBe(64);
     expect(body.temperature).toBe(0);
+    expect(body.tool_choice).toBe('required');
 
     // The user message carries only opaque numeric observation state and the
     // memory digest (SPEC §10.1: no attribute names anywhere).

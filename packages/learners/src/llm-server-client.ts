@@ -268,10 +268,10 @@ export class OpenAiCompatibleLocalClient implements LocalModelClient {
         type: 'function',
         function: { name: definition.name, parameters: definition.parameters },
       })),
-      tool_choice: {
-        type: 'function',
-        function: { name: tool.name },
-      },
+      // One schema is exposed per turn, so the portable OpenAI-compatible
+      // string form is equivalent to naming it and is accepted by llama.cpp,
+      // Ollama and vLLM.
+      tool_choice: 'required',
       response_format: {
         type: 'json_schema',
         json_schema: {

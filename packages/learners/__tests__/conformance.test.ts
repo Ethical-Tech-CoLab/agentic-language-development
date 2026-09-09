@@ -500,6 +500,14 @@ describe('buildConformanceRunConfig', () => {
     expect(buildConformanceRunConfig('scratch-rl', { messageLength: 2 })
       .maxSymbolsPerMessage).toBe(2);
   });
+
+  it('allows software qualification to extend the turn response budget', () => {
+    expect(
+      buildConformanceRunConfig('frozen-llm', {
+        turnResponseBudgetMs: 120_000,
+      }).turnResponseBudgetMs,
+    ).toBe(120_000);
+  });
 });
 
 describe('RecordingLedgerClient', () => {

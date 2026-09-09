@@ -16,10 +16,16 @@ export const FROZEN_MODEL_QUALIFICATION_LABEL =
   'learner contract and tool boundary only; it is not pre-registered, not ' +
   'anchored, and is not a research finding about model behavior.';
 
+export interface FrozenModelRuntimeDescription {
+  readonly id: string;
+  readonly artifactHash: `sha256:${string}`;
+}
+
 export interface FrozenModelQualificationOptions {
   readonly client: LocalModelClient;
   readonly softwareCommit: string;
   readonly executedAt: string;
+  readonly runtime: FrozenModelRuntimeDescription;
   readonly episodes?: number;
   readonly seed?: string;
   readonly symbolInventorySize?: number;
@@ -40,6 +46,7 @@ export interface FrozenModelQualificationReport {
   readonly claimBoundary: typeof FROZEN_MODEL_QUALIFICATION_LABEL;
   readonly softwareCommit: string;
   readonly executedAt: string;
+  readonly runtime: FrozenModelRuntimeDescription;
   readonly model: LocalModelDescription;
   readonly seedHash: string;
   readonly episodes: number;
@@ -58,18 +65,26 @@ export async function runFrozenModelQualification(
   if (!Number.isInteger(episodes) || episodes < 2) {
     throw new Error('frozen-model qualification requires at least two episodes');
   }
+  if (
+    options.runtime.id.trim() === '' ||
+    !/^sha256:[0-9a-f]{64}$/u.test(options.runtime.artifactHash)
+  ) {
+    throw new Error('frozen-model qualification requires exact runtime provenance');
+  }
   const seed = options.seed ?? 'ald-real-frozen-model-qualification-v1';
   const model = options.client.describe();
   const factory = createFrozenLlmAdapterFactory({
     client: options.client,
     maxOutputTokens: 192,
     temperature: 0,
+    modelBudgetFraction: 0.95,
   });
   const result = await runLearnerAdapterConformance(factory, {
     deploymentMode: 'prototype',
     experimentId: 'E10',
     runId: 'frozen-model-qualification',
     modelRef: formatModelRef(model.modelId, model.weightsHash),
+    turnResponseBudgetMs: 120_000,
     episodes,
     seed,
     roleReversalPeriod: 1,
@@ -97,6 +112,7 @@ export async function runFrozenModelQualification(
     claimBoundary: FROZEN_MODEL_QUALIFICATION_LABEL,
     softwareCommit: options.softwareCommit,
     executedAt: options.executedAt,
+    runtime: options.runtime,
     model,
     seedHash: hashCanonical(HASH_DOMAINS.seed, seed),
     episodes: result.episodes,

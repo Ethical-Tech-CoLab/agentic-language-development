@@ -25,6 +25,10 @@ describe('frozen-model qualification report', () => {
       client,
       softwareCommit: '1'.repeat(40),
       executedAt: '2026-09-09T00:00:00.000Z',
+      runtime: {
+        id: 'llama.cpp-b10870',
+        artifactHash: `sha256:${'3'.repeat(64)}`,
+      },
       episodes: 2,
     });
     expect(report.claimBoundary).toBe(FROZEN_MODEL_QUALIFICATION_LABEL);
@@ -37,6 +41,10 @@ describe('frozen-model qualification report', () => {
     expect(report.model).toMatchObject({
       modelId: 'real-provenance-double',
       weightsHashSource: 'weights-file',
+    });
+    expect(report.runtime).toEqual({
+      id: 'llama.cpp-b10870',
+      artifactHash: `sha256:${'3'.repeat(64)}`,
     });
 
     const json = JSON.stringify(report);
@@ -58,8 +66,27 @@ describe('frozen-model qualification report', () => {
         client: new ScriptedModelClient(),
         softwareCommit: '1'.repeat(40),
         executedAt: '2026-09-09T00:00:00.000Z',
+        runtime: {
+          id: 'llama.cpp-b10870',
+          artifactHash: `sha256:${'3'.repeat(64)}`,
+        },
         episodes: 1,
       }),
     ).rejects.toThrow(/at least two episodes/u);
+  });
+
+  it('rejects incomplete inference-runtime provenance', async () => {
+    await expect(
+      runFrozenModelQualification({
+        client: new ScriptedModelClient(),
+        softwareCommit: '1'.repeat(40),
+        executedAt: '2026-09-09T00:00:00.000Z',
+        runtime: {
+          id: 'llama.cpp-b10870',
+          artifactHash: 'sha256:not-a-digest',
+        },
+        episodes: 2,
+      }),
+    ).rejects.toThrow(/exact runtime provenance/u);
   });
 });
