@@ -226,6 +226,27 @@ export const MODE_R_ONLY_CLAIM_LABELS = [
 
 export type ModeROnlyClaimLabel = (typeof MODE_R_ONLY_CLAIM_LABELS)[number];
 
+export class ClaimBoundaryError extends Error {
+  readonly code = 'claim-boundary-violation';
+
+  constructor(readonly label: ModeROnlyClaimLabel) {
+    super(
+      `Prototype Mode cannot surface the Research-Grade-only claim label "${label}" (SPEC §5.4)`,
+    );
+    this.name = 'ClaimBoundaryError';
+  }
+}
+
+/** Fail closed before a report, export, or console can render a Mode-R claim. */
+export function assertClaimLabelsAllowed(
+  deploymentMode: 'prototype' | 'research-grade',
+  labels: readonly ModeROnlyClaimLabel[],
+): void {
+  if (deploymentMode === 'prototype' && labels[0] !== undefined) {
+    throw new ClaimBoundaryError(labels[0]);
+  }
+}
+
 /**
  * SPEC §10.3 scope boundary that MUST be restated verbatim in any Mode R
  * publication alongside `CLAIM_BOUNDARY_STATEMENTS['research-grade']`.

@@ -9,6 +9,8 @@
  */
 import { z } from 'zod';
 
+import { MODE_R_ONLY_CLAIM_LABELS } from './domains.js';
+
 const strictHash = z.string().regex(/^sha256:[a-f0-9]{64}$/u);
 const ed25519Signature = z.string().regex(/^ed25519:[A-Za-z0-9+/]+=*$/u);
 const ed25519PublicKey = z.string().regex(/^ed25519-pub:[A-Za-z0-9+/]+=*$/u);
@@ -145,6 +147,7 @@ export const RunManifestSchema = z.object({
   experimentId: z.string().regex(/^E\d{2}$/u),
   deploymentMode: z.enum(['prototype', 'research-grade']),
   claimBoundaryStatement: nonEmptyString,
+  claimLabels: z.enum(MODE_R_ONLY_CLAIM_LABELS).array().optional(),
   configurationHash: strictHash,
   scenarioBundleHash: strictHash,
   promptBundleHash: strictHash,

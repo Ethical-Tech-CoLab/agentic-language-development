@@ -68,6 +68,8 @@ export function createLearnerAdapterFactory(
 }
 
 export { createFrozenLlmAdapterFactory, type FrozenLlmAdapterOptions } from './frozen-llm.js';
+export { formatModelRef } from './llm-client.js';
+export { ScriptedModelClient } from './llm-scripted-client.js';
 export {
   createSelfSupervisedAdapterFactory,
   type SelfSupervisedAdapterOptions,

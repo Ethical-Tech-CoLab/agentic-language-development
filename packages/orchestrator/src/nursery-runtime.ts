@@ -2546,8 +2546,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async #recordInitialPolicies(run: RunRuntime): Promise<void> {
     const initialPolicies: Record<string, unknown> = {};
+    const provenance: Record<string, unknown> = {};
     for (const role of BABY_ROLES) {
       const adapter = run.adapters[role];
+      if (adapter.describeProvenance !== undefined) {
+        provenance[role] = adapter.describeProvenance();
+      }
       if (adapter.updatePolicy === undefined) {
         continue;
       }
@@ -2575,7 +2579,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           : { sourcePolicyHash: run.sourcePolicyHashes[role] }),
       };
     }
-    if (Object.keys(initialPolicies).length > 0) {
+    if (
+      Object.keys(initialPolicies).length > 0 ||
+      Object.keys(provenance).length > 0
+    ) {
       const lineage =
         run.config.parentRunId === undefined
           ? undefined
@@ -2594,6 +2601,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         reasonCode: 'learner-initialization',
         details: {
           initialPolicies,
+          provenance,
           ...(lineage === undefined ? {} : { lineage }),
         },
       });

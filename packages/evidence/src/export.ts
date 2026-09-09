@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 
 import {
   AUXILIARY_TREES,
+  assertClaimLabelsAllowed,
   BundleAttachmentIndexSchema,
   CLAIM_BOUNDARY_STATEMENTS,
   EVENT_STREAMS,
@@ -31,6 +32,7 @@ import {
   type EvidenceReader,
   type RunConfig,
   type RunManifest,
+  type ModeROnlyClaimLabel,
   type RunMetadataRecord,
   type Sha256Hash,
   type SignerPublicKey,
@@ -84,6 +86,8 @@ export interface ExportBundleOptions {
   learnerContracts: LearnerContractText[];
   /** Canonical policy artifacts keyed by their single-segment file name. */
   policyFiles?: Readonly<Record<string, unknown>>;
+  /** Optional Research-Grade claims requested by a report/export surface. */
+  claimLabels?: readonly ModeROnlyClaimLabel[];
   /** Allow writing into a directory that already contains files. */
   overwrite?: boolean;
   /** Reserved: the experiment record is never synthesized by the exporter. */
@@ -103,6 +107,7 @@ export interface RunManifestInput {
   streams: readonly EventStream[];
   softwareCommit: string;
   learnerContracts: LearnerContractText[];
+  claimLabels?: readonly ModeROnlyClaimLabel[];
 }
 
 /** `sha256:`-prefixed lowercase form; `RunConfig` allows the bare hex form. */
@@ -163,6 +168,10 @@ function contractFor(
  */
 export function buildRunManifest(input: RunManifestInput): RunManifest {
   const { config, metadata } = input;
+  assertClaimLabelsAllowed(
+    metadata.deploymentMode,
+    input.claimLabels ?? [],
+  );
   const manifest: RunManifest = {
     version: 1,
     runId: metadata.runId,
@@ -170,6 +179,9 @@ export function buildRunManifest(input: RunManifestInput): RunManifest {
     experimentId: config.experimentId,
     deploymentMode: metadata.deploymentMode,
     claimBoundaryStatement: CLAIM_BOUNDARY_STATEMENTS[metadata.deploymentMode],
+    ...(input.claimLabels === undefined || input.claimLabels.length === 0
+      ? {}
+      : { claimLabels: [...input.claimLabels] }),
     configurationHash: strictHash(metadata.configurationHash, 'configurationHash'),
     scenarioBundleHash: strictHash(config.scenarioBundleHash, 'scenarioBundleHash'),
     promptBundleHash: strictHash(config.promptBundleHash, 'promptBundleHash'),
@@ -267,6 +279,7 @@ export async function exportRunBundle(
     streams: exported,
     softwareCommit: options.softwareCommit,
     learnerContracts: options.learnerContracts,
+    claimLabels: options.claimLabels,
   });
 
   for (const directory of [

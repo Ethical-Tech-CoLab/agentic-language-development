@@ -4,7 +4,9 @@ import { join, relative } from 'node:path';
 import { canonicalJson, domainHash, hashCanonical } from '@ald/hashing';
 import {
   CLAIM_BOUNDARY_STATEMENTS,
+  ClaimBoundaryError,
   HASH_DOMAINS,
+  MODE_R_ONLY_CLAIM_LABELS,
   RunManifestSchema,
   type AnchorReceipt,
   type CheckpointManifest,
@@ -172,6 +174,25 @@ async function populate(): Promise<TestWriter> {
 }
 
 describe('exportRunBundle', () => {
+  it.each(MODE_R_ONLY_CLAIM_LABELS)(
+    'blocks Prototype Mode from surfacing the %s claim label',
+    async (label) => {
+      const context = await populate();
+      const directory = await temporaryDirectory();
+      await expect(
+        exportRunBundle(context.writer, RUN_ID, directory, {
+          ...exportOptions,
+          claimLabels: [label],
+        }),
+      ).rejects.toMatchObject({
+        name: ClaimBoundaryError.name,
+        code: 'claim-boundary-violation',
+        label,
+      });
+      context.close();
+    },
+  );
+
   it('writes the documented layout and a schema-valid manifest', async () => {
     const context = await populate();
     const directory = await temporaryDirectory();
