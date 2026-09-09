@@ -430,6 +430,84 @@ function reportUnanchoredTail(
   }
 }
 
+async function verifyInitializationPolicies(
+  bundleDir: string,
+  streams: LoadedStreams,
+  checkpoints: readonly { sequence: number; manifest: { auxiliaryTrees: Record<string, { treeSize: number }> } }[],
+  accumulator: VerificationAccumulator,
+): Promise<void> {
+  const initialization = streams
+    .get('intervention')
+    ?.events.find(
+      (event) =>
+        event['eventType'] === 'runtime-attestation' &&
+        event['reasonCode'] === 'learner-initialization',
+    );
+  if (!isRecord(initialization)) {
+    return;
+  }
+  const details = readRecord(initialization, 'details');
+  const policies = details === undefined ? undefined : readRecord(details, 'initialPolicies');
+  if (policies === undefined || Object.keys(policies).length === 0) {
+    return;
+  }
+  const checkpointZero = checkpoints.find((checkpoint) => checkpoint.sequence === 0);
+  if (
+    initialization['sequence'] !== 1 ||
+    (checkpointZero?.manifest.auxiliaryTrees['intervention']?.treeSize ?? 0) < 1
+  ) {
+    accumulator.failStructural(
+      'initial-policy-not-witnessed',
+      'learner initialization must be intervention sequence 1 and committed by checkpoint 0',
+    );
+  }
+  for (const [role, value] of Object.entries(policies)) {
+    const record = isRecord(value) ? value : undefined;
+    const file = readString(record ?? {}, 'policyFile');
+    const expectedHash = readString(record ?? {}, 'initialPolicyHash');
+    if (file === undefined || expectedHash === undefined) {
+      accumulator.failStructural(
+        'initial-policy-record-invalid',
+        `${role} initialization does not name a policy file and hash`,
+      );
+      continue;
+    }
+    const parts = file.split('/');
+    const contained = containedBundlePath(bundleDir, ...parts);
+    if (!contained.ok || parts[0] !== 'policies' || parts.length !== 2) {
+      accumulator.failStructural(
+        'initial-policy-ref-invalid',
+        `${role} policy file is outside policies/: ${file}`,
+      );
+      continue;
+    }
+    const policy = await readCanonicalJsonFile(contained.path);
+    if (!policy.ok) {
+      accumulator.failStructural('initial-policy-missing', `${file}: ${policy.detail}`);
+      continue;
+    }
+    const actualHash = hashCanonical(HASH_DOMAINS.policyCheckpoint, policy.value);
+    if (normalizeHash(expectedHash) !== actualHash) {
+      accumulator.failStructural(
+        'initial-policy-hash-mismatch',
+        `${file} hashes to ${actualHash}, initialization records ${expectedHash}`,
+      );
+    }
+    const lossDefinition = readString(record ?? {}, 'lossDefinition');
+    if (
+      lossDefinition !== undefined &&
+      (!isRecord(policy.value) ||
+        readString(policy.value, 'lossDefinition') !== lossDefinition ||
+        record?.['outcomeLabelsIncluded'] !== false)
+    ) {
+      accumulator.failStructural(
+        'self-supervised-update-contract-mismatch',
+        `${role} loss/update contract does not match ${file}`,
+      );
+    }
+  }
+}
+
 async function verifyDerivedLineage(
   parentBundleDir: string | undefined,
   config: RunConfig,
@@ -639,6 +717,12 @@ export async function verifyBundleDetailed(
     bundleDir,
     manifest,
     streams,
+    accumulator,
+  );
+  await verifyInitializationPolicies(
+    bundleDir,
+    streams,
+    checkpoints,
     accumulator,
   );
   if (config !== undefined) {

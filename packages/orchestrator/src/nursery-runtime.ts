@@ -2574,6 +2574,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         track: adapter.track,
         initialPolicyHash,
         policyFile: `policies/${this.#policyFileName(role, 'initial')}`,
+        ...(typeof (policy as Record<string, unknown>)['lossDefinition'] !==
+        'string'
+          ? {}
+          : {
+              lossDefinition: (policy as Record<string, unknown>)[
+                'lossDefinition'
+              ],
+              updateBatchFields: ['runId', 'turns', 'learningSignal'],
+              outcomeLabelsIncluded: false,
+            }),
         ...(run.sourcePolicyHashes[role] === undefined
           ? {}
           : { sourcePolicyHash: run.sourcePolicyHashes[role] }),
