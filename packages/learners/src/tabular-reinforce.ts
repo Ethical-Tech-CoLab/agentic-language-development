@@ -53,6 +53,7 @@ import {
   type LearnerAdapter,
   type LearnerAdapterFactory,
   type LearnerInitContext,
+  type LearnerProvenance,
   type LedgerDraftEnvelope,
   type LedgerEventDraft,
   type Observation,
@@ -784,6 +785,33 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       registries: cloneRegistries(
         this.registryCheckpoint ?? this.snapshotRegistries(state),
       ),
+    };
+  }
+
+  /** Self-declared, hash-bound inputs for the independent §6.5 battery. */
+  describeProvenance(): LearnerProvenance {
+    const state = this.requireState();
+    return {
+      track: 'scratch-rl',
+      modelRef:
+        state.context.role === 'baby-a'
+          ? state.context.config.babyA.modelRef
+          : state.context.config.babyB.modelRef,
+      textTokenizerPresent: false,
+      textAlignedEncoderPresent: false,
+      weightUpdatePath: 'private-buffers-only',
+      components: [
+        {
+          name: 'tabular-communication-policy',
+          kind: 'communication-policy',
+          provenance:
+            state.context.initialPolicy === undefined
+              ? 'random-init'
+              : 'derived-run-policy',
+          hash: this.initialPolicyHash(),
+          textAligned: false,
+        },
+      ],
     };
   }
 

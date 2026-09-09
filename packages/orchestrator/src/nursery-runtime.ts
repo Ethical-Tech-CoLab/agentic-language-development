@@ -119,6 +119,12 @@ import {
   type CarrierLeakageResult,
 } from '@ald/analysis';
 import {
+  SEMANTIC_LEAKAGE_ANALYSIS_VERSION,
+  evaluateSemanticLeakage,
+  type SemanticLeakageInput,
+  type SemanticLeakageResult,
+} from '@ald/leakage';
+import {
   SqliteEvidenceWriter,
   exportRunBundle,
   type EvidenceDatabase,
@@ -327,6 +333,14 @@ export interface NurseryRuntimeOptions {
 export interface CarrierLeakageEvaluationRequest {
   runId: string;
   input: CarrierLeakageInput;
+  actorId: string;
+  reasonCode?: string;
+}
+
+export interface SemanticLeakageEvaluationRequest {
+  runId: string;
+  babyRole: BabyRole;
+  input: SemanticLeakageInput;
   actorId: string;
   reasonCode?: string;
 }
@@ -1970,6 +1984,55 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       value: result,
       actorId: request.actorId,
       reasonCode: request.reasonCode ?? 'carrier-leakage-evaluation',
+    });
+    return result;
+  }
+
+  /** Evaluate the §6.5 battery and bind its claim classification to evidence. */
+  async recordSemanticLeakageEvaluation(
+    request: SemanticLeakageEvaluationRequest,
+  ): Promise<SemanticLeakageResult> {
+    const run = this.#requireRun(request.runId);
+    const configured =
+      request.babyRole === 'baby-a' ? run.config.babyA : run.config.babyB;
+    if (request.input.provenance.track !== configured.track) {
+      throw new RunConfigurationError([
+        {
+          path: 'provenance.track',
+          message: 'semantic-leakage provenance track must match the selected Baby',
+        },
+      ]);
+    }
+    const initialization = this
+      .auditLog(request.runId)
+      .find((event) => event.reasonCode === 'learner-initialization');
+    const recordedProvenance = (
+      initialization?.details['provenance'] as
+        | Record<string, unknown>
+        | undefined
+    )?.[request.babyRole];
+    if (
+      recordedProvenance === undefined ||
+      canonicalJson(recordedProvenance) !==
+        canonicalJson(request.input.provenance)
+    ) {
+      throw new RunConfigurationError([
+        {
+          path: `provenance.${request.babyRole}`,
+          message:
+            'semantic-leakage provenance must exactly match initialization evidence',
+        },
+      ]);
+    }
+    const result = evaluateSemanticLeakage(request.input);
+    await this.attachAnalysis({
+      runId: request.runId,
+      path: `analysis/semantic-leakage/${request.babyRole}.json`,
+      kind: 'semantic-leakage-battery',
+      analysisVersion: SEMANTIC_LEAKAGE_ANALYSIS_VERSION,
+      value: result,
+      actorId: request.actorId,
+      reasonCode: request.reasonCode ?? 'semantic-leakage-evaluation',
     });
     return result;
   }

@@ -39,6 +39,7 @@ export {
   senderForTurn,
   type NurseryRuntimeOptions,
   type CarrierLeakageEvaluationRequest,
+  type SemanticLeakageEvaluationRequest,
   type RunToCompletionOptions,
 } from './nursery-runtime.js';
 export { RuntimePrivateLedgerClient } from './private-ledger.js';

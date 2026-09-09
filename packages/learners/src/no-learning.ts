@@ -23,6 +23,7 @@ import {
   type LearnerAdapter,
   type LearnerAdapterFactory,
   type LearnerInitContext,
+  type LearnerProvenance,
   type LedgerDraftEnvelope,
   type LedgerEventDraft,
   type Observation,
@@ -336,6 +337,30 @@ export class NoLearningAdapter implements LearnerAdapter {
             formCount: support.formCount,
             formInventoryHash: support.formInventoryHash,
           }),
+    };
+  }
+
+  /** Explicitly classifies this adapter as a non-learning control. */
+  describeProvenance(): LearnerProvenance {
+    const state = this.requireState();
+    return {
+      track: 'no-learning',
+      modelRef:
+        state.context.role === 'baby-a'
+          ? state.context.config.babyA.modelRef
+          : state.context.config.babyB.modelRef,
+      textTokenizerPresent: false,
+      textAlignedEncoderPresent: false,
+      weightUpdatePath: 'none',
+      components: [
+        {
+          name: 'uniform-random-policy',
+          kind: 'communication-policy',
+          provenance: 'none',
+          hash: hashCanonical(HASH_DOMAINS.policyCheckpoint, this.exportPolicy()),
+          textAligned: false,
+        },
+      ],
     };
   }
 

@@ -35,6 +35,9 @@
       "path": "../learners"
     },
     {
+      "path": "../leakage"
+    },
+    {
       "path": "../gateway"
     },
     {

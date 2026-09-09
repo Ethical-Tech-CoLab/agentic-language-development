@@ -24,6 +24,7 @@
     "@ald/hashing": "*",
     "@ald/interventions": "*",
     "@ald/learners": "*",
+    "@ald/leakage": "*",
     "@ald/lifecycle": "*",
     "@ald/merkle": "*",
     "@ald/scenario": "*",
