@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 176 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, and recoverable bounded repair turns. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual E01/E02 experiment execution, and external pre-registration remain open.
+- **Status:** Implementation active, with 183 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual experiment execution, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -899,18 +899,18 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§18. Experiment Variable Registry](SPECIFICATION.md#18-experiment-variable-registry), `EXPERIMENT-NOTEBOOK.md` [E40 — Ephemeral Encoding and Adversarial Cryptography](EXPERIMENT-NOTEBOOK.md#e40-ephemeral-encoding-and-adversarial-cryptography)
 - **Scope:** Build the research harness needed for `E40` — instrumentation to let two learners develop and test ephemeral, session-specific encodings over the generative carrier channel (`ALD-031`), with a third-party eavesdropper role able to attempt decoding.
 - **Acceptance criteria:**
-  - [ ] The harness supports at least three roles in a single run: two communicating learners and one eavesdropper observer.
-  - [ ] The harness logs every encoding scheme change as a distinct, timestamped event so `E40` can measure encoding lifetime.
-  - [ ] The harness itself makes no claim about cryptographic security — it only provides the measurement/instrumentation `E40`'s research execution needs; a passing harness build is not a security claim.
+  - [x] The harness supports at least three roles in a single run: two communicating learners and one eavesdropper observer.
+  - [x] The harness logs every encoding scheme change as a distinct, timestamped event so `E40` can measure encoding lifetime.
+  - [x] The harness itself makes no claim about cryptographic security — it only provides the measurement/instrumentation `E40`'s research execution needs; a passing harness build is not a security claim.
 
 #### ALD-070 — Cryptographic novelty-vs-security separation policy
 - **Priority:** P0 · **Size:** S · **Class:** Later-Research · **Depends on:** ALD-009, ALD-019
 - **Spec refs:** `SPECIFICATION.md` [§19. Deferred Decisions and ADRs](SPECIFICATION.md#19-deferred-decisions-and-adrs)
 - **Scope:** Document and enforce, via a documented review gate, that any learner-invented "encoding" or "cipher" from `ALD-069`'s research (or any other emergent scheme) is never substituted for the production signing/hashing mechanisms in `ALD-009`/`ALD-019` — novelty in a research harness must never be mistaken for or promoted to a security mechanism.
 - **Acceptance criteria:**
-  - [ ] A written policy statement exists distinguishing "research-harness encoding" from "production cryptographic signing," citing `ALD-009` and `ALD-019` as the only production mechanisms.
-  - [ ] A code-level check (e.g., module boundary or lint rule) prevents any `ALD-069`-harness-derived code from being imported into the `ALD-009`/`ALD-019` signing modules.
-  - [ ] This policy is included in the documentation set (`ALD-079`) and referenced by `E40`'s readiness gate (`ALD-077`).
+  - [x] A written policy statement exists distinguishing "research-harness encoding" from "production cryptographic signing," citing `ALD-009` and `ALD-019` as the only production mechanisms.
+  - [x] A code-level check (e.g., module boundary or lint rule) prevents any `ALD-069`-harness-derived code from being imported into the `ALD-009`/`ALD-019` signing modules.
+  - [x] This policy is included in the documentation set (`ALD-079`) and referenced by `E40`'s readiness gate (`ALD-077`).
 
 ### EPIC-14 — Experiment Pre-Registration and E00–E50 Readiness Gates
 
@@ -975,7 +975,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E40](EXPERIMENT-NOTEBOOK.md#e40-ephemeral-encoding-and-adversarial-cryptography), [E50](EXPERIMENT-NOTEBOOK.md#e50-multi-seed-replication-and-study-closeout), [§12. Publication Checklist](EXPERIMENT-NOTEBOOK.md#12-publication-checklist)
 - **Scope:** Define and check the readiness gate confirming the cryptography research harness and its safety-separation policy are in place for `E40`, and that multi-seed replication tooling is ready for `E50`.
 - **Acceptance criteria:**
-  - [ ] `E40` readiness: `ALD-069` harness and `ALD-070` separation policy both pass their own acceptance criteria.
+  - [x] `E40` readiness: `ALD-069` harness and `ALD-070` separation policy both pass their own acceptance criteria.
   - [ ] `E50` readiness: `ALD-028` derived-run support and `ALD-072`'s scaffold together launch the same pre-registered configuration across independent seeds and aggregate baseline statistics.
   - [ ] This gate's checklist cross-references the `EXPERIMENT-NOTEBOOK.md` [§12. Publication Checklist](EXPERIMENT-NOTEBOOK.md#12-publication-checklist) items that are software-verifiable, without asserting any of the checklist's research-judgment items are satisfied.
 

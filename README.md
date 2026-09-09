@@ -124,6 +124,10 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   a scientific result. `npm run test:mode-r` builds the locked-down learner image,
   denies Baby-to-Baby routes on separate internal networks, checks host capability
   denial and normalized timing, then kills one learner and verifies the other survives.
+- `@ald/crypto-research`: an E40 research-only, three-role instrumentation harness
+  that records hash-chained ephemeral scheme changes and Eve recovery attempts over
+  synthetic messages. A repository lint boundary prevents it from entering the
+  production hashing or anchoring packages; it never reports cryptographic security.
 - DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
   with role guards in Prototype Mode.
 
@@ -158,6 +162,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
 | [CONFIGURATION.md](CONFIGURATION.md) | Runtime environment variables, key-store layout, and secret handling |
 | [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
+| [docs/cryptographic-separation-policy.md](docs/cryptographic-separation-policy.md) | Mandatory boundary between E40 research encodings and production hashing/signing/anchoring |
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |
 
 ## Research Book

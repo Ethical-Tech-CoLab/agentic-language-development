@@ -1469,6 +1469,9 @@ NOT change the third field. Learned encodings MUST NOT be imported into the prod
 hashing, signing, anchoring, authentication, or key-management packages. This
 formalizes Q17 and the `cipherThreatModel` variable in §18.
 
+The mandatory repository boundary and E40 review gate are specified in
+[`docs/cryptographic-separation-policy.md`](docs/cryptographic-separation-policy.md).
+
 ### 15.5 Traceability to Experiment Notebook
 
 See §17.4 for the full E00-E50 traceability table. Every experiment section in
