@@ -121,6 +121,10 @@ equal to the genesis hash. `auxiliaryTrees` is always present; it contains an
 entry for each auxiliary stream that has at least one event (`affect`, `audit`,
 `turns`, `intervention`). The intervention entries are unsigned, but their
 tree prefix is protected by the checkpoint witness signature. A verifier MUST
+validate each audit entry's `sourceEntryHash` against the named Baby's exported
+`agent-native-ledger` event before accepting that auxiliary stream. An accepted
+interpreter batch creates an `analysis` checkpoint over the new audit prefix.
+A verifier MUST
 read an auxiliary tree that is absent from a
 manifest as the empty tree (`treeSize: 0`, the empty root), so a consistency
 proof from such a checkpoint to a later one where the tree first appears is

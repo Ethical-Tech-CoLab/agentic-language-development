@@ -217,17 +217,6 @@ class SnapshotNotFoundError extends Error {
   }
 }
 
-/**
- * SPEC §12.2: `researcher-viewer` reads "ledgers (audit layer only, not raw
- * agent-native internals unless also granted `researcher-operator`)" —
- * exactly the filter the Baby packs' own `GET /ledger` route already applies
- * to its single stream. This applies it to both streams for the nursery's
- * aggregate route.
- */
-function auditLayerOnly(events: readonly LedgerEvent[]): LedgerEvent[] {
-  return events.filter((event) => event.contentSchema === 'human-audit-ledger');
-}
-
 function agentNativeCount(events: readonly LedgerEvent[]): number {
   return events.filter((event) => event.contentSchema === 'agent-native-ledger')
     .length;
@@ -349,17 +338,15 @@ const routes: RouteDefinition[] = [
       const { runtime } = internalsFrom(context);
       const runId = params['id'] ?? '';
       const ledgers = runtime.ledgers(runId);
+      const auditLedgers = runtime.auditLedgers(runId);
       await runtime
         .recordHumanView(runId, { actorId, reasonCode: 'read-ledgers' })
         .catch(() => undefined);
       if (role === 'researcher-operator') {
-        return success({ ledgers });
+        return success({ ledgers, auditLedgers });
       }
       return success({
-        ledgers: {
-          babyA: auditLayerOnly(ledgers.babyA),
-          babyB: auditLayerOnly(ledgers.babyB),
-        },
+        ledgers: auditLedgers,
         agentNativeEventCounts: {
           babyA: agentNativeCount(ledgers.babyA),
           babyB: agentNativeCount(ledgers.babyB),

@@ -915,6 +915,23 @@ export class SqliteEvidenceWriter implements EvidenceWriter {
     return this.mutex.run(async () => {
       this.assertWritableRun(request.runId);
 
+      const sourceStream =
+        request.babyId === 'A' ? 'baby-a-ledger' : 'baby-b-ledger';
+      const source = this.readEvents(request.runId, sourceStream).find(
+        (event) => event.entryHash === request.sourceEntryHash,
+      );
+      if (source === undefined) {
+        throw new InterpretationBindingError(
+          `Audit interpretation source ${request.sourceEntryHash} is not an event in ${sourceStream}`,
+        );
+      }
+      const nativeEvent = LedgerEventSchema.parse(JSON.parse(source.canonicalJson));
+      if (nativeEvent.contentSchema !== 'agent-native-ledger') {
+        throw new InterpretationBindingError(
+          `Audit interpretation source ${request.sourceEntryHash} is not agent-native ledger state`,
+        );
+      }
+
       const head = this.chainHead(request.runId, 'audit');
       const signer = this.requireSigner('audit');
       const unsigned = {

@@ -4,10 +4,10 @@
  * §7.2 lifecycle (pause, resume, abort, seal), crash recovery and
  * integrity-fork handling of §7.3, the intervention and safety logging of
  * §14.2/§14.5, the versioned Experiment Record writer of §11.9, and the
- * §14.3 replay checks.
+ * §14.3 replay checks, and the delayed human audit-ledger interpreter (§13.6).
  *
  * Owning backlog items: ALD-025, ALD-026, ALD-027, ALD-059 (partial),
- * ALD-071 (partial).
+ * ALD-064, ALD-071 (partial).
  *
  * The runtime consumes the Checkpoint Service, the Base Anchor Publisher, and
  * the Verifier through their contracts only; nothing here imports those
@@ -41,6 +41,12 @@ export {
   type RunToCompletionOptions,
 } from './nursery-runtime.js';
 export { RuntimePrivateLedgerClient } from './private-ledger.js';
+export {
+  AUDIT_INTERPRETATION_DELAY_TURNS,
+  AuditInterpreterError,
+  AuditLedgerInterpreter,
+  type AuditInterpreterErrorCode,
+} from './audit-interpreter.js';
 export {
   replayDigest,
   replayTuples,

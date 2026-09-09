@@ -352,10 +352,12 @@ describe('exportRunBundle', () => {
       affectMode: 'declared',
       deliveredAt: new Date(0).toISOString(),
     });
+    const source = context.writer.readEvents(RUN_ID, 'baby-a-ledger')[0];
+    expect(source).toBeDefined();
     await context.writer.appendAuditLedgerEntry({
       runId: RUN_ID,
       babyId: 'A',
-      sourceEntryHash: hash('1'),
+      sourceEntryHash: source?.entryHash ?? hash('1'),
       interpreterVersion: 'interpreter-v1',
       content: { term: 'S01', hypothesis: 'target', evidence: 'turn 1' },
     });

@@ -2,7 +2,8 @@
  * Stream-level verification: steps 1-5 of LEDGER-INTEGRITY-DESIGN.md §14
  * (canonical JSON, run/baby/sequence consistency, rebuilt entry hashes,
  * previous-entry links, writer signatures) plus per-event schema validation
- * and the cross-bindings of LEDGER §6 / docs/evidence-bundle-format.md §3.
+ * and the cross-bindings of LEDGER §6 / docs/evidence-bundle-format.md §3,
+ * including every audit entry's reference to the named Baby's native stream.
  *
  * The chain walk itself is `validateChain` from `@ald/hashing`, which never
  * throws and reports one `ChainViolationCode` per broken rule; this module
@@ -532,16 +533,49 @@ export function verifyCrossBindings(
   }
 
   const ledgerBySequence = new Map<EventStream, Map<number, Record<string, unknown>>>();
+  const ledgerByHash = new Map<EventStream, Map<string, Record<string, unknown>>>();
   for (const stream of ['baby-a-ledger', 'baby-b-ledger'] as const) {
     const loaded = streams.get(stream);
     const index = new Map<number, Record<string, unknown>>();
+    const hashIndex = new Map<string, Record<string, unknown>>();
     for (const event of loaded?.events ?? []) {
       const sequence = readNumber(event, 'sequence');
       if (sequence !== undefined && !index.has(sequence)) {
         index.set(sequence, event);
       }
+      const entryHash = normalizeHash(event['entryHash']);
+      if (entryHash !== undefined && !hashIndex.has(entryHash)) {
+        hashIndex.set(entryHash, event);
+      }
     }
     ledgerBySequence.set(stream, index);
+    ledgerByHash.set(stream, hashIndex);
+  }
+
+  for (const event of streams.get('audit')?.events ?? []) {
+    const at = `audit#${String(readNumber(event, 'sequence') ?? -1)}`;
+    const babyId = readString(event, 'babyId');
+    const sourceHash = normalizeHash(event['sourceEntryHash']);
+    const sourceStream =
+      babyId === 'A'
+        ? 'baby-a-ledger'
+        : babyId === 'B'
+          ? 'baby-b-ledger'
+          : undefined;
+    if (sourceStream === undefined || sourceHash === undefined) {
+      failures.push(`${at} has no valid Baby/sourceEntryHash binding`);
+      continue;
+    }
+    const source = ledgerByHash.get(sourceStream)?.get(sourceHash);
+    if (source === undefined) {
+      failures.push(
+        `${at} sourceEntryHash ${sourceHash} is not an event in ${sourceStream}`,
+      );
+    } else if (readString(source, 'contentSchema') !== 'agent-native-ledger') {
+      failures.push(
+        `${at} sourceEntryHash ${sourceHash} does not reference agent-native ledger state`,
+      );
+    }
   }
 
   for (const event of channelEvents) {

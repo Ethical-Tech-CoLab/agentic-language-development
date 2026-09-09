@@ -45,6 +45,7 @@ import { join } from 'node:path';
 
 import {
   babyIdForRole,
+  AuditLedgerEntrySchema,
   CLAIM_BOUNDARY_STATEMENTS,
   ChannelEventSchema,
   GENESIS_HASH,
@@ -60,6 +61,8 @@ import {
   otherRole,
   type AgentActionProposal,
   type AnalysisAttachmentAppendRequest,
+  type AuditInterpretationBatchRequest,
+  type AuditLedgerEntry,
   type AnchorPublisher,
   type AnchorReceipt,
   type BabyRole,
@@ -157,6 +160,7 @@ import {
   type AdapterMethod,
 } from './errors.js';
 import { RuntimePrivateLedgerClient } from './private-ledger.js';
+import { AuditLedgerInterpreter } from './audit-interpreter.js';
 import {
   replayDigest,
   scenarioReplayCheck,
@@ -1844,6 +1848,39 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         LedgerEventSchema.parse(event),
       ),
     };
+  }
+
+  auditLedgers(runId: string): {
+    babyA: AuditLedgerEntry[];
+    babyB: AuditLedgerEntry[];
+  } {
+    const entries = this.#readStream(runId, 'audit').map((event) =>
+      AuditLedgerEntrySchema.parse(event),
+    );
+    return {
+      babyA: entries.filter((entry) => entry.babyId === 'A'),
+      babyB: entries.filter((entry) => entry.babyId === 'B'),
+    };
+  }
+
+  /**
+   * Run one delayed interpreter batch, then immediately witness the new audit
+   * prefix. The interpreter has only Evidence Writer access and cannot route
+   * generated content to either adapter or the Symbol Gateway (SPEC §13.6).
+   */
+  async interpretAuditBatch(
+    request: AuditInterpretationBatchRequest,
+  ): Promise<AuditLedgerEntry[]> {
+    const run = this.#requireRun(request.runId);
+    if (!['running', 'paused', 'evaluating'].includes(run.lifecycle.state)) {
+      throw new RunStateError(request.runId, run.lifecycle.state, 'running');
+    }
+    const entries = await new AuditLedgerInterpreter(run.writer).appendBatch(
+      request,
+      run.turn,
+    );
+    await this.#checkpoint(run, 'analysis');
+    return entries;
   }
 
   auditLog(runId: string): InterventionEvent[] {

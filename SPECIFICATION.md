@@ -1302,7 +1302,13 @@ architecture MUST NOT expose any Baby-reachable API for reading
 `audit_ledger_entries`, enforced by the same role model as §12.2 (only
 `researcher-viewer`/`researcher-operator`/`verifier-service` may read it). Every
 generated interpretation is labeled `source: "generated-analysis"` and MUST NOT be
-represented, in any report, as the Baby's own explanation.
+represented, in any report, as the Baby's own explanation. The reference
+implementation validates every `sourceEntryHash` against the named Baby's signed
+native stream, waits until at least one later turn is fully complete, validates the
+whole submitted batch before its first append, and creates an `analysis` checkpoint
+after the batch. The Interpreter has no adapter or Gateway dependency, so no
+generated interpretation can be delivered back to a Baby as observation, outcome,
+message, or ledger feedback.
 
 ## 14. Telemetry, Audit, Reproducibility, Snapshot/Restore, Failure Handling, Retention
 

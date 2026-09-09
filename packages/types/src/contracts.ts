@@ -269,6 +269,20 @@ export interface AuditLedgerAppendRequest {
   content: AuditLedgerEntry['content'];
 }
 
+/** One externally generated interpretation in a delayed audit batch (§13.6). */
+export interface AuditInterpretationDraft {
+  babyId: BabyId;
+  sourceEntryHash: Sha256Hash;
+  content: AuditLedgerEntry['content'];
+}
+
+/** Audit Interpreter request; the runtime supplies the authoritative turn age. */
+export interface AuditInterpretationBatchRequest {
+  runId: string;
+  interpreterVersion: string;
+  entries: AuditInterpretationDraft[];
+}
+
 /** One allowlisted affect display delivered in a Gateway-opened window (SPEC §9.3, §11.6). */
 export interface AffectAppendRequest {
   runId: string;
@@ -851,6 +865,13 @@ export interface NurseryRuntime {
   seal(runId: string): Promise<RunSummary>;
   transcript(runId: string): ChannelEvent[];
   ledgers(runId: string): { babyA: LedgerEvent[]; babyB: LedgerEvent[] };
+  auditLedgers(runId: string): {
+    babyA: AuditLedgerEntry[];
+    babyB: AuditLedgerEntry[];
+  };
+  interpretAuditBatch(
+    request: AuditInterpretationBatchRequest,
+  ): Promise<AuditLedgerEntry[]>;
   auditLog(runId: string): InterventionEvent[];
   attachAnalysis(
     request: AnalysisAttachmentAppendRequest,

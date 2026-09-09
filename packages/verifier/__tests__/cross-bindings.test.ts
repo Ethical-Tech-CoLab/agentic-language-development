@@ -42,6 +42,7 @@ function streams(overrides: {
   channel?: Record<string, unknown>[];
   turns?: Record<string, unknown>[];
   intervention?: Record<string, unknown>[];
+  audit?: Record<string, unknown>[];
 }): LoadedStreams {
   const map: LoadedStreams = new Map();
   map.set('baby-a-ledger', loaded('baby-a-ledger', overrides.babyA ?? []));
@@ -49,6 +50,7 @@ function streams(overrides: {
   map.set('channel', loaded('channel', overrides.channel ?? []));
   map.set('turns', loaded('turns', overrides.turns ?? []));
   map.set('intervention', loaded('intervention', overrides.intervention ?? []));
+  map.set('audit', loaded('audit', overrides.audit ?? []));
   return map;
 }
 
@@ -57,6 +59,7 @@ function intention(): Record<string, unknown> {
     sequence: 1,
     babyId: 'A',
     eventType: 'intention.recorded',
+    contentSchema: 'agent-native-ledger',
     entryHash: INTENTION_HASH,
   };
 }
@@ -135,6 +138,55 @@ describe('verifyCrossBindings', () => {
 
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('senderEntryHash does not match');
+  });
+
+  it('accepts an audit entry bound to the named Baby native event', () => {
+    const failures = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        audit: [
+          {
+            sequence: 1,
+            babyId: 'A',
+            sourceEntryHash: INTENTION_HASH,
+          },
+        ],
+      }),
+    );
+
+    expect(failures).toEqual([]);
+  });
+
+  it('rejects an audit entry bound to the wrong Baby stream or non-native state', () => {
+    const wrongBaby = verifyCrossBindings(
+      streams({
+        babyA: [intention()],
+        audit: [
+          {
+            sequence: 1,
+            babyId: 'B',
+            sourceEntryHash: INTENTION_HASH,
+          },
+        ],
+      }),
+    );
+    const nonNative = verifyCrossBindings(
+      streams({
+        babyA: [{ ...intention(), contentSchema: 'human-audit-ledger' }],
+        audit: [
+          {
+            sequence: 1,
+            babyId: 'A',
+            sourceEntryHash: INTENTION_HASH,
+          },
+        ],
+      }),
+    );
+
+    expect(wrongBaby.join(' | ')).toContain('is not an event in baby-b-ledger');
+    expect(nonNative.join(' | ')).toContain(
+      'does not reference agent-native ledger state',
+    );
   });
 
   it('rejects a delivery receipt that does not commit the public artifact', () => {

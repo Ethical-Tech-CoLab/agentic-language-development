@@ -298,6 +298,7 @@ Create a checkpoint:
 - at run initialization;
 - every 64 accepted ledger events or five minutes, whichever occurs first;
 - immediately before and after a policy checkpoint;
+- immediately after a delayed human audit-interpreter batch (`analysis`);
 - after a BabySitter or human intervention;
 - when the run is paused;
 - when the run ends or is aborted.

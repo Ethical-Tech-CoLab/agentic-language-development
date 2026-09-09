@@ -226,9 +226,7 @@ const routes: RouteDefinition[] = [
       }
       const runtime = getNurseryRuntime();
       const { babyA } = runtime.ledgers(runId);
-      const humanAudit = babyA.filter(
-        (event) => event.contentSchema === 'human-audit-ledger',
-      );
+      const { babyA: humanAudit } = runtime.auditLedgers(runId);
       const agentNativeEventCount = babyA.filter(
         (event) => event.contentSchema === 'agent-native-ledger',
       ).length;

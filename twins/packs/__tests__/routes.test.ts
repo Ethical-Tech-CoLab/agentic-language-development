@@ -19,7 +19,7 @@ import { parse } from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { buildRunConfig, type RunConfigOverrides } from '@ald/lifecycle';
-import { resetNurseryRuntime } from '@ald/orchestrator';
+import { getNurseryRuntime, resetNurseryRuntime } from '@ald/orchestrator';
 import {
   LedgerDraftEnvelopeSchema,
   TurnProposalEnvelopeSchema,
@@ -745,6 +745,36 @@ describe('Ledger role-based filtering (SPEC §12.2)', () => {
       }),
       new Map(),
     );
+    const runtime = getNurseryRuntime();
+    const firstLedgers = runtime.ledgers(runId);
+    const sourceA = firstLedgers.babyA.find((event) => event.turn === 0);
+    const sourceB = firstLedgers.babyB.find((event) => event.turn === 0);
+    expect(sourceA).toBeDefined();
+    expect(sourceB).toBeDefined();
+    await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/step`,
+        headers: authHeaders('internal-controller'),
+      }),
+      new Map(),
+    );
+    await runtime.interpretAuditBatch({
+      runId,
+      interpreterVersion: 'route-test-v1',
+      entries: [
+        {
+          babyId: 'A',
+          sourceEntryHash: sourceA?.entryHash ?? '',
+          content: { term: 'S01', hypothesis: 'target', evidence: 'turn 0' },
+        },
+        {
+          babyId: 'B',
+          sourceEntryHash: sourceB?.entryHash ?? '',
+          content: { term: 'S01', hypothesis: 'target', evidence: 'turn 0' },
+        },
+      ],
+    });
 
     const asViewer = await nursery.pack.handleRequest(
       request({
@@ -757,19 +787,19 @@ describe('Ledger role-based filtering (SPEC §12.2)', () => {
     expect(asViewer.response.status).toBe(200);
     const viewerBody = asViewer.response.body as {
       ledgers: {
-        babyA: { contentSchema: string }[];
-        babyB: { contentSchema: string }[];
+        babyA: { source: string }[];
+        babyB: { source: string }[];
       };
       agentNativeEventCounts: { babyA: number; babyB: number };
     };
     expect(
       viewerBody.ledgers.babyA.every(
-        (event) => event.contentSchema === 'human-audit-ledger',
+        (event) => event.source === 'generated-analysis',
       ),
     ).toBe(true);
     expect(
       viewerBody.ledgers.babyB.every(
-        (event) => event.contentSchema === 'human-audit-ledger',
+        (event) => event.source === 'generated-analysis',
       ),
     ).toBe(true);
     // The `no-learning` track's own ledger content is agent-native; the
@@ -791,6 +821,7 @@ describe('Ledger role-based filtering (SPEC §12.2)', () => {
         babyA: { contentSchema: string }[];
         babyB: { contentSchema: string }[];
       };
+      auditLedgers: { babyA: { source: string }[]; babyB: { source: string }[] };
     };
     // researcher-operator is granted the raw agent-native internals too
     // (SPEC §12.2: "unless also granted researcher-operator").
@@ -799,6 +830,9 @@ describe('Ledger role-based filtering (SPEC §12.2)', () => {
         (event) => event.contentSchema === 'agent-native-ledger',
       ),
     ).toBe(true);
+    expect(operatorBody.auditLedgers.babyA[0]?.source).toBe(
+      'generated-analysis',
+    );
   });
 });
 
@@ -875,7 +909,6 @@ describe('Human-view audit coverage (SPEC §14.2)', () => {
       }),
       new Map(),
     );
-
     const delta = await nursery.pack.handleRequest(
       request({
         method: 'GET',
@@ -1168,7 +1201,7 @@ describe('Baby routes (SPEC §12.4)', () => {
     expect(outcome.response.body).toMatchObject({ ok: true });
   });
 
-  it('GET /ledger exposes only human-audit content, plus an agent-native count', async () => {
+  it('GET /ledger exposes only generated audit entries, plus an agent-native count', async () => {
     const nursery = await createNurseryHarness();
     const babyA = await createBabyA();
     const runId = nextRunId();
@@ -1190,6 +1223,28 @@ describe('Baby routes (SPEC §12.4)', () => {
       }),
       new Map(),
     );
+    const runtime = getNurseryRuntime();
+    const source = runtime.ledgers(runId).babyA.find((event) => event.turn === 0);
+    expect(source).toBeDefined();
+    await nursery.pack.handleRequest(
+      request({
+        method: 'POST',
+        path: `/runs/${runId}/step`,
+        headers: authHeaders('internal-controller'),
+      }),
+      new Map(),
+    );
+    await runtime.interpretAuditBatch({
+      runId,
+      interpreterVersion: 'route-test-v1',
+      entries: [
+        {
+          babyId: 'A',
+          sourceEntryHash: source?.entryHash ?? '',
+          content: { term: 'S01', hypothesis: 'target', evidence: 'turn 0' },
+        },
+      ],
+    });
 
     const res = await babyA.handleRequest(
       request({
@@ -1202,15 +1257,25 @@ describe('Baby routes (SPEC §12.4)', () => {
     );
     expect(res.response.status).toBe(200);
     const body = res.response.body as {
-      ledger: { contentSchema: string }[];
+      ledger: { source: string }[];
       agentNativeEventCount: number;
     };
-    expect(
-      body.ledger.every((event) => event.contentSchema === 'human-audit-ledger'),
-    ).toBe(true);
+    expect(body.ledger).toHaveLength(1);
+    expect(body.ledger[0]?.source).toBe('generated-analysis');
     // The `no-learning` track's own ledger content is agent-native; the
     // audit layer exposes only its count, never its content (SPEC §12.4).
     expect(body.agentNativeEventCount).toBeGreaterThan(0);
+
+    const asBabyIdentity = await babyA.handleRequest(
+      request({
+        method: 'GET',
+        path: '/ledger',
+        headers: authHeaders('internal-gateway'),
+        query: { runId },
+      }),
+      new Map(),
+    );
+    expect(asBabyIdentity.response.status).toBe(403);
   });
 
   it('POST /observe fails closed on a hygiene violation and audits the rejection (SPEC §10.1, ALD-038)', async () => {

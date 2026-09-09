@@ -113,7 +113,9 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   scenarios, hygiene, and a fail-closed run-registration quarantine gate; fixed-token, glyph, bitmap, canvas,
   tone, and six-display affect protocols; no-learning and scratch-RL runtime tracks;
   frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
-  Nursery's end-to-end SPEC §8 turn cycle; and pre-registered analysis primitives.
+  Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
+  interpreter whose generated entries are separately signed and checkpointed; and
+  pre-registered analysis primitives.
 - `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
   process transport, a two-container Mode R network-isolation gate, and learner-host confinement; API telemetry, snapshot/restore,
   and failure supervision; configuration-driven, verifier-bound live causal probes
@@ -129,7 +131,8 @@ M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
   synthetic messages. A repository lint boundary prevents it from entering the
   production hashing or anchoring packages; it never reports cryptographic security.
 - DTSF twin packs for `baby-a`, `baby-b`, and `nursery` expose the SPEC §12 routes
-  with role guards in Prototype Mode.
+  with role guards in Prototype Mode; audit-ledger reads return only the separate
+  generated-analysis stream and reject Baby service identities.
 
 The qualification harness (`scripts/run-qualification.mjs`) executes E03-style
 chance controls and an E11-style naming game through the real pipeline and writes a

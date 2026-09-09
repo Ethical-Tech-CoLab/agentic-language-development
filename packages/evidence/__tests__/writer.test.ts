@@ -475,10 +475,16 @@ describe('auxiliary streams', () => {
       ),
     ).toBe(true);
 
+    const auditSource = await context.writer.appendLedgerEvent({
+      runId: 'run-test-001',
+      babyId: 'A',
+      turn: 1,
+      draft: intentionDraft(),
+    });
     const audit = await context.writer.appendAuditLedgerEntry({
       runId: 'run-test-001',
       babyId: 'A',
-      sourceEntryHash: hash('1'),
+      sourceEntryHash: auditSource.entryHash,
       interpreterVersion: 'interpreter-v1',
       content: {
         term: 'S01',
@@ -495,6 +501,16 @@ describe('auxiliary streams', () => {
         keys.get('audit') ?? '',
       ),
     ).toBe(true);
+
+    await expect(
+      context.writer.appendAuditLedgerEntry({
+        runId: 'run-test-001',
+        babyId: 'B',
+        sourceEntryHash: auditSource.entryHash,
+        interpreterVersion: 'interpreter-v1',
+        content: { term: 'S01', hypothesis: 'wrong Baby', evidence: 'turn 1' },
+      }),
+    ).rejects.toThrow(InterpretationBindingError);
 
     const affect = await context.writer.appendAffectEvent({
       runId: 'run-test-001',

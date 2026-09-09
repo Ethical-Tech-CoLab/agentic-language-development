@@ -30,6 +30,7 @@ export const CheckpointReasonSchema = z.enum([
   'event-interval',
   'time-interval',
   'policy-checkpoint',
+  'analysis',
   'intervention',
   'pause',
   'recovery',

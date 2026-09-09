@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 183 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual experiment execution, and external pre-registration remain open.
+- **Status:** Implementation active, with 187 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, frozen/self-supervised/hybrid adapters, fail-closed scenario quarantine and observation red-teaming, process and container isolation, active side-channel attacks, witness-committed analysis attachments, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, and a research-only three-role E40 encoding harness with an enforced production-crypto boundary. The acceptance checkboxes below are authoritative: real open weights, funded Base anchoring, complete Research-Grade training/key isolation, actual experiment execution, and external pre-registration remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -850,9 +850,9 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§13.6 Privacy Controls](SPECIFICATION.md#136-privacy-controls)
 - **Scope:** Implement delayed/batched conversion of agent-native ledger state into separately signed, append-only `audit_ledger_entries`, labeled `source: generated-analysis`, with no Baby-readable route or feedback path.
 - **Acceptance criteria:**
-  - [ ] Every generated interpretation references source native events and is explicitly labeled external analysis.
-  - [ ] Baby identities cannot read audit-ledger entries, while authorized researchers and the verifier can.
-  - [ ] Audit entries are included in their checkpoint auxiliary tree and exported evidence without modifying native ledger events.
+  - [x] Every generated interpretation references source native events and is explicitly labeled external analysis.
+  - [x] Baby identities cannot read audit-ledger entries, while authorized researchers and the verifier can.
+  - [x] Audit entries are included in their checkpoint auxiliary tree and exported evidence without modifying native ledger events.
 
 #### ALD-065 — Prohibited UX pattern review checklist
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-063
@@ -950,7 +950,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [ ] `E10`/`E11`/`E12` readiness: `ALD-044`/`ALD-045`/`ALD-046` complete full turns; ungrounded tracks pass training isolation and semantic-leakage qualification.
   - [ ] `E13` readiness: all `ALD-031` alternate carriers pass conformance and `ALD-032` leakage evaluation can compare all five notebook carrier conditions.
-  - [ ] `E14`/`E15`/`E16` readiness: `ALD-072` supports role reversal, held-out splits, and causal interventions, and `ALD-064` produces separately labeled human audit interpretations.
+  - [x] `E14`/`E15`/`E16` readiness: `ALD-072` supports role reversal, held-out splits, and causal interventions, and `ALD-064` produces separately labeled human audit interpretations.
 
 #### ALD-075 — Gate G3: Affect and learning-comparison readiness (E20–E22)
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-023, ALD-033, ALD-042, ALD-044, ALD-045, ALD-046, ALD-072
