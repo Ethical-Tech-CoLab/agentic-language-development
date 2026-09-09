@@ -25,6 +25,34 @@ every generated `REPORT.md`.
 Report directories are small (JSON and Markdown only) and are not
 gitignored; the underlying evidence is.
 
+## Real frozen-model software qualification
+
+[`frozen-model-qwen3-4b-q4-k-m.json`](qualification/frozen-model-qwen3-4b-q4-k-m.json)
+is a privacy-minimized, non-confirmatory qualification of the frozen-LLM
+adapter against the public Qwen3-4B Q4_K_M weights served by the official
+llama.cpp b10870 Linux x64 release. It records the exact SHA-256 hashes of both
+the weight file and runtime archive, the software commit exercised, bounded
+event counts, and policy hashes. It intentionally omits prompts, observations,
+raw model output, candidate references, and private ledger content.
+
+This report proves only that a real open-weight model completed both Baby roles
+through the tool-only learner boundary. Its two-episode descriptive success
+rate is not a behavioral result and must not be cited as one.
+
+Regenerate it against a loopback server with:
+
+```sh
+npm run qualify:frozen-model -- \
+  --endpoint http://127.0.0.1:18080 \
+  --model ../Qwen3-4B-Q4_K_M.gguf \
+  --weights /absolute/path/Qwen3-4B-Q4_K_M.gguf \
+  --quantization Q4_K_M \
+  --runtime-id llama.cpp-b10870-linux-x64 \
+  --runtime-artifact-hash sha256:<64-hex-digit-runtime-archive-digest> \
+  --episodes 2 \
+  --out reports/qualification/frozen-model-qwen3-4b-q4-k-m.json
+```
+
 ## `evidence/qualification/`
 
 The SQLite evidence database (`<runSetId>.sqlite`, plus SQLite's `-shm`/`-wal`

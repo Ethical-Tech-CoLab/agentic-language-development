@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "claimBoundary": "Non-confirmatory frozen-model software qualification: this exercises the learner contract and tool boundary only; it is not pre-registered, not anchored, and is not a research finding about model behavior.",
+  "softwareCommit": "443e66e0f53527776543dc75a0b4cc3dbe9acfde",
+  "executedAt": "2026-09-09T22:33:40.781Z",
+  "runtime": {
+    "id": "llama.cpp-b10870-linux-x64",
+    "artifactHash": "sha256:819c30050d77e4305a978cacccddac8b44f21b365fe7ae67a20213f4ae4e7e92"
+  },
+  "model": {
+    "modelId": "../Qwen3-4B-Q4_K_M.gguf",
+    "weightsHash": "sha256:7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "weightsHashSource": "weights-file",
+    "quantization": "Q4_K_M",
+    "contextLength": 8192,
+    "toolCallingMode": "json-schema-grammar"
+  },
+  "seedHash": "sha256:31459adc8bfcb29f0e5d70df9746eb217c99371981f8d1c15dfd47f6a7c2ebf2",
+  "episodes": 2,
+  "proposals": 4,
+  "successes": 1,
+  "descriptiveSuccessRate": 0.5,
+  "roles": {
+    "baby-a": {
+      "intentions": 2,
+      "interpretations": 1,
+      "firstEmissions": 1,
+      "firstReceipts": 1,
+      "hypotheses": 1,
+      "finalPolicyHash": "sha256:8e1ccd6da0170a87726eb45ef7a4dd2314deda37c8038016671c54dfd30f05cf"
+    },
+    "baby-b": {
+      "intentions": 2,
+      "interpretations": 1,
+      "firstEmissions": 1,
+      "firstReceipts": 1,
+      "hypotheses": 2,
+      "finalPolicyHash": "sha256:87d3de81177b1ff3f863fdf0808df438b2d2649d62ca65b31a3d7adfe14ea8c9"
+    }
+  },
+  "toolOnlyConformance": true,
+  "policyUpdatesObserved": false
+}
