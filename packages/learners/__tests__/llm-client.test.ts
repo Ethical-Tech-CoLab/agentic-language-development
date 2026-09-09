@@ -323,7 +323,6 @@ describe('ALD-044 constrained completion over the loopback endpoint', () => {
     const body = call?.body as {
       messages: { role: string; content: string }[];
       tools: { function: { name: string; parameters: unknown } }[];
-      response_format: { type: string; json_schema: { schema: unknown } };
       seed: number;
       max_tokens: number;
       temperature: number;
@@ -343,10 +342,6 @@ describe('ALD-044 constrained completion over the loopback endpoint', () => {
         },
       },
     });
-    expect(body.response_format.type).toBe('json_schema');
-    expect(body.response_format.json_schema.schema).toEqual(
-      body.tools[0]?.function.parameters,
-    );
     expect(body.seed).toBe(7);
     expect(body.max_tokens).toBe(64);
     expect(body.temperature).toBe(0);

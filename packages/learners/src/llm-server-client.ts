@@ -4,10 +4,9 @@
  * SPECIFICATION.md §6.7, §10.1, §10.3).
  *
  * It speaks the OpenAI-compatible `/v1/chat/completions` surface that
- * `llama.cpp`'s `llama-server`, Ollama, vLLM and LM Studio all expose, using
- * `response_format: { type: 'json_schema', … }` plus `tools` so decoding is
- * constrained to the turn's tool schema (SPEC §6.7 "reliable constrained
- * tool-calling").
+ * `llama.cpp`'s `llama-server`, Ollama, vLLM and LM Studio all expose. Every
+ * turn supplies exactly one required function tool whose parameters constrain
+ * the decoded arguments (SPEC §6.7 "reliable constrained tool-calling").
  *
  * The single most important property of this file is what it refuses.
  * SPEC §10.3 puts "no direct network … access from a Baby process/container
@@ -272,14 +271,6 @@ export class OpenAiCompatibleLocalClient implements LocalModelClient {
       // string form is equivalent to naming it and is accepted by llama.cpp,
       // Ollama and vLLM.
       tool_choice: 'required',
-      response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: tool.name,
-          strict: true,
-          schema: tool.parameters,
-        },
-      },
       max_tokens: request.maxOutputTokens,
       temperature: request.temperature,
       seed: request.samplingSeed,
