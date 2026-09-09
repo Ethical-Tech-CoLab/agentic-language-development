@@ -1,6 +1,6 @@
 {
   "generatedFrom": "research.pdf",
-  "pageCount": 49,
+  "pageCount": 47,
   "aspect": 0.7727,
   "pages": [
     "pages/p01.webp",
@@ -49,10 +49,8 @@
     "pages/p44.webp",
     "pages/p45.webp",
     "pages/p46.webp",
-    "pages/p47.webp",
-    "pages/p48.webp",
-    "pages/p49.webp"
+    "pages/p47.webp"
   ],
   "source": "RESEARCH.md",
-  "sourceSha256": "eb67c0141a46c560527dc9c5ede468c06b5867ed280a451c49a25496d6fa7d9c"
+  "sourceSha256": "4be21957d70584ff4811d66c0ffbda0547e51702011eda6ad9e366712a030428"
 }

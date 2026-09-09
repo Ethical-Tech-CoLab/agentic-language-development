@@ -209,6 +209,28 @@ async function printPdf(chrome) {
   }
 }
 
+/** Remove Chrome's wall-clock-only PDF metadata without changing xref offsets. */
+async function normalizePdfDates() {
+  const bytes = await readFile(pdfPath);
+  const source = bytes.toString('latin1');
+  const datePattern = /\/(CreationDate|ModDate) \(D:\d{14}[+-]\d{2}'\d{2}'\)/gu;
+  const matches = [...source.matchAll(datePattern)];
+  if (matches.length !== 2) {
+    throw new Error(
+      `Expected exactly two Chrome PDF date fields, found ${String(matches.length)}`,
+    );
+  }
+  const normalized = source.replace(
+    datePattern,
+    (_match, field) => `/${field} (D:20260902000000+00'00')`,
+  );
+  const normalizedBytes = Buffer.from(normalized, 'latin1');
+  if (normalizedBytes.byteLength !== bytes.byteLength) {
+    throw new Error('PDF date normalization changed byte offsets');
+  }
+  await writeFile(pdfPath, normalizedBytes);
+}
+
 async function renderPages() {
   const renderer = join(
     root,
@@ -290,6 +312,7 @@ async function main() {
   const chrome = await findChrome();
   console.log(`Printing RESEARCH.md with ${chrome}`);
   await printPdf(chrome);
+  await normalizePdfDates();
   await renderPages();
   const manifest = await stampManifest(markdown);
   await bundleViewer();

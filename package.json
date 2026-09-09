@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -23,13 +23,14 @@
     "book:research": "node scripts/build-research-book.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "audit:dependencies": "npm audit --audit-level=high",
-    "check": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:api-docs && npm run build && npm test && npm run scan:secrets && npm run audit:dependencies",
-    "check:ci": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:api-docs && npm run build && npm run test:ci && npm run scan:secrets",
+    "check": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:project-status && npm run lint:api-docs && npm run build && npm test && npm run scan:secrets && npm run audit:dependencies",
+    "check:ci": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:project-status && npm run lint:api-docs && npm run build && npm run test:ci && npm run scan:secrets",
     "lint:contracts": "node scripts/lint-learner-contracts.mjs",
     "lint:crypto-boundary": "node scripts/lint-crypto-boundary.mjs",
     "lint:research-console": "node scripts/check-research-console.mjs",
     "lint:readiness": "node scripts/check-readiness-gates.mjs",
     "lint:acceptance-coverage": "node scripts/check-acceptance-coverage.mjs",
+    "lint:project-status": "node scripts/check-project-status.mjs",
     "lint:api-docs": "node scripts/check-api-docs.mjs"
   },
   "devDependencies": {

@@ -95,9 +95,12 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-This repository is in the **verifiable-core implementation phase**. The evidence
-integrity spine and the communication MVP from [BACKLOG.md](BACKLOG.md) milestones
-M0-M2, plus most of M3's testnet-anchoring path, are implemented and tested:
+**Engineering snapshot:** v0.1.39 · 254/258 backlog acceptance criteria verified.
+
+The repository's locally executable **verifiable core and research-execution
+readiness path are complete**. The evidence integrity spine, communication MVP,
+Mode R isolation, experiment-readiness scaffolds, and operator preflight are
+implemented and tested:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC
@@ -143,13 +146,27 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The E01/E02 software-readiness outputs now have a hashed attachment path linked from
+The committed E03 design simulation and seed manifest make the manuscript's
+power rule reproducible; the registration compiler produces canonical hashed
+artifacts and all primary/reserve run templates; and the research preflight
+blocks confirmatory execution until its immutable software, isolation, external
+registration, and confirmed pre-run anchor bindings agree.
+
+The frozen-LLM operator path also completed a real two-episode qualification
+against Qwen3-4B Q4_K_M through llama.cpp. The retained
+[`reports/qualification/frozen-model-qwen3-4b-q4-k-m.json`](reports/qualification/frozen-model-qwen3-4b-q4-k-m.json)
+binds the exact model weights, runtime archive, software commit, and seed while
+omitting prompts and private output. It is software evidence, not an empirical
+finding.
+
+The E01/E02 software-readiness outputs have a hashed attachment path linked from
 the append-only Experiment Record and independently checked against their evidence
-event and anchored prefix. The next critical-path work is complete Mode R
-training/key isolation, exercising frozen-LLM with real open weights, anchoring on
-Base Sepolia with a funded wallet, and binding an external pre-registration. The
-retention job is implemented and covered against real exported bundles and
-evidence-store rows.
+event and anchored prefix. The remaining backlog criteria require authority or
+independent evidence outside this repository: funded Base Sepolia and explicitly
+approved mainnet transactions, upstream required-check enforcement, and a restore
+performed by a second human operator. External registration and governance approval
+remain mandatory before confirmatory collection. The retention job is implemented
+and covered against real exported bundles and evidence-store rows.
 
 No experiment results are claimed.
 
@@ -204,8 +221,23 @@ npm ci
 npm run check
 ```
 
-`npm run check` lints, lints the learner contracts, builds every workspace, runs the
-test suite, and scans for committed secrets.
+`npm run check` runs every source/contract/boundary/readiness/status lint, builds
+every workspace, runs the complete test suite, scans for committed secrets, and
+blocks on high/critical dependency advisories.
+
+Reproduce the E03 design inputs, compile the default 75-primary/8-reserve
+registration, and run the fail-closed preflight with:
+
+```bash
+npm run design:e03
+npm run registration:e03 -- --out evidence/preregistration/e03-v1-draft.json
+npm run preflight:research -- \
+  --registration evidence/preregistration/e03-v1-draft.json \
+  --binding /absolute/path/external-registration-and-anchor-binding.json
+```
+
+The preflight is expected to fail until the external registration and confirmed
+matching pre-run anchor are real and supplied in the binding file.
 
 Run the Prototype Mode qualification harness and verify a bundle independently:
 

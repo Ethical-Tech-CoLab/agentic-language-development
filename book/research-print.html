@@ -121,6 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
+<p><strong>Engineering snapshot:</strong> v0.1.39 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -148,8 +149,9 @@ hybrid models, and no-learning controls under common scenario, channel, evidence
 evaluation interfaces. Each agent is specified to maintain an independent chronological ledger of its own
 intentions and interpretations. The framework specifies append-only, hash-chained,
 signed ledger and channel records, ordered Merkle checkpoints, and periodic
-public-chain checkpoint anchoring. These mechanisms are not yet fully implemented and
-do not prove that an agent&#39;s interpretation is truthful; they are designed to preserve
+public-chain checkpoint anchoring. The local integrity, checkpoint, verifier, and
+anchoring paths are implemented and tested, while funded public-chain evidence remains
+an external execution gate. These mechanisms do not prove that an agent&#39;s interpretation is truthful; they are designed to preserve
 what was recorded and make later alteration detectable. Causal message interventions, held-out generalization, partner
 replacement, leakage tests, and control-channel conditions are therefore required in
 addition to task success.</p>
@@ -1065,29 +1067,32 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p>As of September 2, 2026, the repository records ALD-001 through ALD-007 as complete.
-This is engineering status, not an empirical result.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.39 · 254/258 backlog acceptance criteria verified.</p>
+<p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
+criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
 <ul>
-<li>npm/TypeScript workspaces;</li>
-<li>runtime-validated shared schemas;</li>
-<li>typed configuration and secret scanning;</li>
-<li>DTSF-compatible Learner A, Learner B, and Nursery twin-pack scaffolds;</li>
-<li>SQLite WAL evidence schema and append-only triggers;</li>
-<li>RFC 8785 canonical serialization;</li>
-<li>ledger event-type validators;</li>
-<li>automated lint, build, test, dependency-audit, and clean-clone checks.</li>
+<li>hash-chained, signed SQLite evidence; ordered Merkle checkpoints; exact bundle
+export; and an independent verifier;</li>
+<li>a Base anchor client with confirmation/recovery handling and explicit mainnet
+gating, tested without claiming a funded public transaction;</li>
+<li>deterministic scenarios, the tool-only Gateway, all declared carrier controls,
+five learner tracks, DTSF twin routes, and the complete turn lifecycle;</li>
+<li>process/container Mode R isolation, training separation, active side-channel and
+observation red teams, telemetry, retention, snapshot/restore, and failure policy;</li>
+<li>readiness gates for E00-E50, reproducible E03 design and seed artifacts, canonical
+E03 registration compilation, and a fail-closed confirmatory preflight;</li>
+<li>a privacy-minimized real-model software qualification of Qwen3-4B Q4_K_M through
+llama.cpp, with exact model/runtime hashes and both role directions exercised; and</li>
+<li>automated lint, build, test, dependency-audit, secret-scan, acceptance-coverage,
+API-documentation, project-status, clean-clone, hosted CI, and Mode R checks.</li>
 </ul>
-<p>Not yet implemented or empirically executed:</p>
+<p>Not yet externally evidenced or empirically executed:</p>
 <ul>
-<li>full hash-chain writing and signatures;</li>
-<li>atomic evidence writer;</li>
-<li>Merkle checkpoints and independent verifier;</li>
-<li>Base anchoring;</li>
-<li>complete gateway and scenario engine;</li>
-<li>model adapters and training;</li>
-<li>Research-Grade isolation;</li>
-<li>experiments E00-E50.</li>
+<li>funded Base Sepolia and expressly authorized mainnet anchor transactions;</li>
+<li>upstream required-check enforcement and independent-human restore validation;</li>
+<li>external registration/governance approval; and</li>
+<li>confirmatory experiments E00-E50 or any scientific results.</li>
 </ul>
 <p>The implementation backlog is maintained in <a href="BACKLOG.md">BACKLOG.md</a>, while normative
 requirements are in <a href="SPECIFICATION.md">SPECIFICATION.md</a>.</p>
@@ -1971,7 +1976,7 @@ seed count is selected by this fixed rule:</p>
 </tr>
 <tr>
 <td align="right">&gt; 0.10 and &lt;= 0.15</td>
-<td align="right">150</td>
+<td align="right">155</td>
 </tr>
 <tr>
 <td align="right">&gt; 0.15 and &lt;= 0.20</td>
@@ -1982,14 +1987,17 @@ seed count is selected by this fixed rule:</p>
 <td align="right">New simulation and amended registration required before collection</td>
 </tr>
 </tbody></table>
-<p>A 30,000-replicate Monte Carlo design check was run for this draft under a true
-seed-level mean of 0.25, between-seed standard deviation of 0.10, 200 binomial
-episodes per seed, and conservative per-test alpha of 0.01. Estimated equivalence-test
-power was 0.924 at 75 seeds per condition. Sensitivity checks produced approximately
-0.912 power at SD 0.05 with 25 seeds, 0.920 at SD 0.15 with 150 seeds, and 0.913 at
-SD 0.20 with 300 seeds. Before registration, the simulation code and output must be
-checked in and independently rerun. Failure to reproduce at least 90% power blocks
-registration; it does not permit post-hoc widening of the margin.</p>
+<p>A committed 30,000-replicate deterministic Monte Carlo design check uses a true
+seed-level mean of 0.25, 200 binomial episodes per seed, and conservative per-test
+alpha of 0.01. Estimated equivalence-test power was 0.9093 at SD 0.05 with 25
+seeds, 0.9196 at SD 0.10 with 75 seeds, 0.9109 at SD 0.15 with 155 seeds, and
+0.9487 at SD 0.20 with 300 seeds. The corresponding lower 95% Monte Carlo bounds
+were 0.9061, 0.9165, 0.9077, and 0.9462, respectively, so every registered row
+clears the 90% floor. The code, exact output, and derived seed manifest are
+committed as <code>packages/analysis/src/e03-design.ts</code>,
+<code>docs/e03-design-simulation.json</code>, and <code>docs/e03-seed-manifest.json</code> and must be
+independently rerun before registration. Failure to reproduce at least 90% power
+blocks registration; it does not permit post-hoc widening of the margin.</p>
 <p>Sensitivity analyses:</p>
 <ul>
 <li>Wilson intervals over pooled episodes are descriptive only;</li>

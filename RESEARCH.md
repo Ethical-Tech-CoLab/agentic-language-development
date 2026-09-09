@@ -8,6 +8,8 @@
 >
 > **Prepared:** September 2, 2026
 >
+> **Engineering snapshot:** v0.1.39 · 254/258 backlog acceptance criteria verified.
+>
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
 >
@@ -40,8 +42,9 @@ hybrid models, and no-learning controls under common scenario, channel, evidence
 evaluation interfaces. Each agent is specified to maintain an independent chronological ledger of its own
 intentions and interpretations. The framework specifies append-only, hash-chained,
 signed ledger and channel records, ordered Merkle checkpoints, and periodic
-public-chain checkpoint anchoring. These mechanisms are not yet fully implemented and
-do not prove that an agent's interpretation is truthful; they are designed to preserve
+public-chain checkpoint anchoring. The local integrity, checkpoint, verifier, and
+anchoring paths are implemented and tested, while funded public-chain evidence remains
+an external execution gate. These mechanisms do not prove that an agent's interpretation is truthful; they are designed to preserve
 what was recorded and make later alteration detectable. Causal message interventions, held-out generalization, partner
 replacement, leakage tests, and control-channel conditions are therefore required in
 addition to task success.
@@ -1014,30 +1017,34 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-As of September 2, 2026, the repository records ALD-001 through ALD-007 as complete.
-This is engineering status, not an empirical result.
+**Engineering snapshot:** v0.1.39 · 254/258 backlog acceptance criteria verified.
+
+As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
+criteria. This is engineering status, not an empirical result.
 
 Implemented:
 
-- npm/TypeScript workspaces;
-- runtime-validated shared schemas;
-- typed configuration and secret scanning;
-- DTSF-compatible Learner A, Learner B, and Nursery twin-pack scaffolds;
-- SQLite WAL evidence schema and append-only triggers;
-- RFC 8785 canonical serialization;
-- ledger event-type validators;
-- automated lint, build, test, dependency-audit, and clean-clone checks.
+- hash-chained, signed SQLite evidence; ordered Merkle checkpoints; exact bundle
+  export; and an independent verifier;
+- a Base anchor client with confirmation/recovery handling and explicit mainnet
+  gating, tested without claiming a funded public transaction;
+- deterministic scenarios, the tool-only Gateway, all declared carrier controls,
+  five learner tracks, DTSF twin routes, and the complete turn lifecycle;
+- process/container Mode R isolation, training separation, active side-channel and
+  observation red teams, telemetry, retention, snapshot/restore, and failure policy;
+- readiness gates for E00-E50, reproducible E03 design and seed artifacts, canonical
+  E03 registration compilation, and a fail-closed confirmatory preflight;
+- a privacy-minimized real-model software qualification of Qwen3-4B Q4_K_M through
+  llama.cpp, with exact model/runtime hashes and both role directions exercised; and
+- automated lint, build, test, dependency-audit, secret-scan, acceptance-coverage,
+  API-documentation, project-status, clean-clone, hosted CI, and Mode R checks.
 
-Not yet implemented or empirically executed:
+Not yet externally evidenced or empirically executed:
 
-- full hash-chain writing and signatures;
-- atomic evidence writer;
-- Merkle checkpoints and independent verifier;
-- Base anchoring;
-- complete gateway and scenario engine;
-- model adapters and training;
-- Research-Grade isolation;
-- experiments E00-E50.
+- funded Base Sepolia and expressly authorized mainnet anchor transactions;
+- upstream required-check enforcement and independent-human restore validation;
+- external registration/governance approval; and
+- confirmatory experiments E00-E50 or any scientific results.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).
@@ -1697,18 +1704,21 @@ seed count is selected by this fixed rule:
 |---:|---:|
 | <= 0.05 | 25 |
 | > 0.05 and <= 0.10 | 75 |
-| > 0.10 and <= 0.15 | 150 |
+| > 0.10 and <= 0.15 | 155 |
 | > 0.15 and <= 0.20 | 300 |
 | > 0.20 | New simulation and amended registration required before collection |
 
-A 30,000-replicate Monte Carlo design check was run for this draft under a true
-seed-level mean of 0.25, between-seed standard deviation of 0.10, 200 binomial
-episodes per seed, and conservative per-test alpha of 0.01. Estimated equivalence-test
-power was 0.924 at 75 seeds per condition. Sensitivity checks produced approximately
-0.912 power at SD 0.05 with 25 seeds, 0.920 at SD 0.15 with 150 seeds, and 0.913 at
-SD 0.20 with 300 seeds. Before registration, the simulation code and output must be
-checked in and independently rerun. Failure to reproduce at least 90% power blocks
-registration; it does not permit post-hoc widening of the margin.
+A committed 30,000-replicate deterministic Monte Carlo design check uses a true
+seed-level mean of 0.25, 200 binomial episodes per seed, and conservative per-test
+alpha of 0.01. Estimated equivalence-test power was 0.9093 at SD 0.05 with 25
+seeds, 0.9196 at SD 0.10 with 75 seeds, 0.9109 at SD 0.15 with 155 seeds, and
+0.9487 at SD 0.20 with 300 seeds. The corresponding lower 95% Monte Carlo bounds
+were 0.9061, 0.9165, 0.9077, and 0.9462, respectively, so every registered row
+clears the 90% floor. The code, exact output, and derived seed manifest are
+committed as `packages/analysis/src/e03-design.ts`,
+`docs/e03-design-simulation.json`, and `docs/e03-seed-manifest.json` and must be
+independently rerun before registration. Failure to reproduce at least 90% power
+blocks registration; it does not permit post-hoc widening of the margin.
 
 Sensitivity analyses:
 

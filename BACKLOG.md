@@ -23,10 +23,10 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 236 of 240 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, executable readiness gates covering all 19 experiments, and a hosted consolidated CI/Mode R execution with retained runtime and JUnit evidence. The acceptance checkboxes below are authoritative: funded Base anchoring, upstream required-check enforcement, and independent operator restore validation remain open.
+- **Status:** Implementation active, with 254 of 258 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, frozen/self-supervised/hybrid adapters with witnessed provenance, recorded per-Baby random policy initialization, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, externally anchored confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, executable readiness gates covering all 19 experiments, dependency-integrity enforcement, reproducible E03 design and registration artifacts, a fail-closed research preflight, a real open-weight frozen-model qualification, and hosted consolidated CI/Mode R evidence. The acceptance checkboxes below are authoritative: funded Base anchoring, upstream required-check enforcement, and independent operator restore validation remain open.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
-- **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-15`. Individual backlog items use stable IDs `ALD-001`…`ALD-080`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
+- **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-16`. Individual backlog items use stable IDs `ALD-001`…`ALD-086`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
 
 ## 2. Planning Assumptions
 
@@ -36,7 +36,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 - **Model default:** `scratch-rl` is the primary scientific baseline. A local open-weight `frozen-llm` is the orchestration-validation default; `self-supervised` is the initial reward-free comparison. `no-learning` and `hybrid` are explicit controls/variants.
 - **Isolation:** Research-Grade Mode (Mode R) runs learner processes in separate containers/processes with no shared mutable state beyond the Gateway and ledger, per `SPECIFICATION.md` [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r).
 - **On-chain privacy:** no private, raw-observation, or model-internal data is ever placed in an on-chain anchoring payload — only checkpoint root hashes and minimal metadata, per `SPECIFICATION.md` [§13.6 Privacy Controls](SPECIFICATION.md#136-privacy-controls) and `LEDGER-INTEGRITY-DESIGN.md` [§12. Privacy](LEDGER-INTEGRITY-DESIGN.md#12-privacy).
-- **No invented dates or staffing:** this backlog contains no calendar dates, durations, or headcount figures. Milestones are ordinal (`M0`…`M5`); the execution plan uses ordinal iterations (`Iteration 1`…`Iteration 4`, "Iteration 5+"). Sequencing is expressed purely through dependencies.
+- **No invented dates or staffing:** this backlog contains no calendar dates, durations, or headcount figures. Milestones are ordinal (`M0`…`M6`); the execution plan uses ordinal iterations (`Iteration 1`…`Iteration 4`, "Iteration 5+"). Sequencing is expressed purely through dependencies.
 - **Repository today:** an npm-workspaces TypeScript monorepo with the packages listed in README.md; each item's acceptance criteria assume only what earlier, lower-numbered ALD items established.
 - **Diplomacy-table reuse:** the repository's existing UX components (e.g., from a prior Diplomacy-style project) may be reused only within the boundaries `SPECIFICATION.md` [§16.2](SPECIFICATION.md#162-diplomacy-table-reuse-boundaries) defines; this is treated as a constraint, not an invitation to reuse everything available.
 
@@ -126,7 +126,12 @@ Milestones are ordinal and gate-based, not date-based. Each milestone's exit gat
 - **Entry gate:** M4 exit met.
 - **Exit gate:** Gate G5 (`ALD-077`) passes, `ALD-078` CI is green on the full consolidated suite, and `ALD-080` release/publication mapping is complete. Corresponds to `LEDGER-INTEGRITY-DESIGN.md` [Phase 3: Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#phase-3-public-anchoring).
 
-**Critical path across milestones:** M0 → M1 → M2 → M3 → M4 → M5 is a strict chain — each milestone's epics depend on the previous milestone's evidence/lifecycle foundations. Within M2–M4, epics not named in the critical-path narrative (§10) can proceed in parallel once their own dependencies clear; see §10 for the detailed item-level view.
+### M6 — Research-Execution Readiness
+- **Epics in scope:** EPIC-16 (`ALD-081`–`086`).
+- **Entry gate:** the locally executable M5 software checks are green; external authority gates remain explicitly open rather than simulated.
+- **Exit gate:** dependency integrity is enforced, E03's design and registration artifacts reproduce, research preflight fails closed, a real open-weight frozen model completes both roles, and project-status drift is blocked by the consolidated check.
+
+**Critical path across milestones:** M0 → M1 → M2 → M3 → M4 → M5 → M6 is a strict chain — each milestone's epics depend on the previous milestone's evidence/lifecycle foundations. Within M2–M4, epics not named in the critical-path narrative (§10) can proceed in parallel once their own dependencies clear; see §10 for the detailed item-level view.
 
 ## 9. Epic Overview
 
@@ -147,6 +152,7 @@ Milestones are ordinal and gate-based, not date-based. Each milestone's exit gat
 | EPIC-13 | Security, Red-Team, and Cryptography Track | ALD-067–070 | EPIC-06, EPIC-07, EPIC-10 | Red-team suites green; crypto novelty/security separation policy enforced |
 | EPIC-14 | Experiment Pre-Registration and E00–E50 Readiness Gates | ALD-071–077 | EPIC-05, EPIC-06, EPIC-08, EPIC-13 | Gates G1–G5 all pass; all 19 experiments have a readiness record |
 | EPIC-15 | CI/Test Suites, Documentation, Operations, and Release | ALD-078–080 | all prior epics | CI green on consolidated suite; docs and release/publication mapping complete |
+| EPIC-16 | Research-Execution Readiness | ALD-081–086 | EPIC-14, EPIC-15 | Reproducible design/registration, fail-closed preflight, real-model qualification, and status-drift enforcement pass |
 
 ## 10. Dependency and Critical Path View
 
@@ -224,7 +230,7 @@ dependencies are complete.
 - **Workstream F (Audit and Recovery):** `ALD-058`, `ALD-059`, `ALD-060`, sequenced after lifecycle, evidence, and Mode R dependencies.
 - **Exit state:** baby-a/baby-b/nursery routes live with authorization and standardized error shape; observation hygiene, sanitization, and seeded scenario determinism operational; Base Sepolia anchoring confirmed; Gate G1 (E00–E03 readiness) achievable.
 
-**Iteration 5+ (not detailed further here, no dates implied):** continues with the remaining branches — generative carrier and affect protocols (`ALD-031`–033), remaining adapter tracks (`ALD-046`–047), Mode R isolation and telemetry/audit/retention (EPIC-10, EPIC-11), the dashboard (EPIC-12), remaining security/crypto items (`ALD-069`–070), Gates G2–G5 (`ALD-074`–077), and CI/documentation/release (EPIC-15) — in the dependency order fixed by their IDs.
+**Iteration 5+ (not detailed further here, no dates implied):** continues with the remaining branches — generative carrier and affect protocols (`ALD-031`–033), remaining adapter tracks (`ALD-046`–047), Mode R isolation and telemetry/audit/retention (EPIC-10, EPIC-11), the dashboard (EPIC-12), remaining security/crypto items (`ALD-069`–070), Gates G2–G5 (`ALD-074`–077), CI/documentation/release (EPIC-15), and research-execution readiness (EPIC-16) — in the dependency order fixed by their IDs.
 
 ## 12. Backlog Items by Epic
 
@@ -1010,6 +1016,64 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
   - [x] Every software-verifiable item in the §12 publication checklist is mapped to at least one `ALD-XXX` ID or Gate (`ALD-073`–`077`).
   - [x] The mapping explicitly flags which §12 checklist items are research-judgment calls outside this backlog's scope (e.g., "results support the stated hypothesis"), rather than silently omitting them.
 
+### EPIC-16 — Research-Execution Readiness
+
+**Goal:** turn the completed software foundation into a reproducible, fail-closed operator path for research preparation without representing qualification as empirical evidence. **Depends on:** EPIC-14 and EPIC-15. **Acceptance gate:** E03 design and registration artifacts reproduce, the preflight blocks incomplete confirmatory bindings, a real open-weight model completes the frozen track, and the consolidated check rejects public-status drift.
+
+#### ALD-081 — Dependency-integrity enforcement
+- **Priority:** P0 · **Size:** S · **Class:** Research-Grade · **Depends on:** ALD-078
+- **Spec refs:** `SPECIFICATION.md` [§17.2 Test Strategy](SPECIFICATION.md#172-test-strategy)
+- **Scope:** Make high/critical dependency advisories a blocking local and hosted check while retaining a machine-readable audit artifact for review.
+- **Acceptance criteria:**
+  - [x] A clean lockfile install followed by `npm audit --audit-level=high` exits zero.
+  - [x] Hosted consolidated CI retains the audit JSON even when another check fails.
+  - [x] Required native dependency install scripts are explicitly allowlisted by exact package version.
+
+#### ALD-082 — Reproducible E03 design simulation and seed manifest
+- **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-072
+- **Spec refs:** `RESEARCH.md` [Appendix D.7](RESEARCH.md#d7-sensitivity-and-power)
+- **Scope:** Replace prose-only E03 power calculations with a deterministic Monte Carlo implementation and derived primary/reserve seed manifest.
+- **Acceptance criteria:**
+  - [x] A fixed seed reproduces byte-identical 30,000-replicate design output.
+  - [x] Every registered SD/sample-size row has a lower 95% Monte Carlo bound at or above the 90% power floor.
+  - [x] The committed seed manifest deterministically derives separate scenario, random-control, and shuffled-control seeds without exposing realized confirmatory outcomes.
+
+#### ALD-083 — Canonical E03 registration compiler
+- **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-082
+- **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), `RESEARCH.md` [Appendix D](RESEARCH.md#appendix-d-pre-registered-e03-protocol)
+- **Scope:** Compile E03's registered parameter template, its canonical domain-separated hash, complete seed allocation, and per-condition run-config templates into one validated artifact.
+- **Acceptance criteria:**
+  - [x] The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat.
+  - [x] Run IDs, realized random seeds, execution bindings, and the pre-registration hash are excluded from the hashed parameter template.
+  - [x] Every primary and reserve condition configuration carries the same exact pre-registration hash.
+
+#### ALD-084 — Fail-closed research preflight
+- **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-083
+- **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), [§7.2 Experiment Record](SPECIFICATION.md#72-experiment-record)
+- **Scope:** Check the immutable software, configuration, isolation, seed, registration, and pre-run anchor bindings before confirmatory collection and report every blocker together.
+- **Acceptance criteria:**
+  - [x] Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable commit, seed count, external registration, and confirmed matching pre-run anchor.
+  - [x] A missing external registration, mismatched binding, or absent/incorrect anchor blocks confirmatory readiness.
+  - [x] A passing preflight explicitly does not claim public-chain verification or scientific validity.
+
+#### ALD-085 — Real open-weight frozen-model qualification
+- **Priority:** P1 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-044, ALD-054, ALD-081
+- **Spec refs:** `SPECIFICATION.md` [§6.7 Frozen Pretrained LLM Track](SPECIFICATION.md#67-frozen-pretrained-llm-track), [§10.3 Research-Grade Isolation Threat Model](SPECIFICATION.md#103-research-grade-isolation-threat-model)
+- **Scope:** Exercise the frozen-LLM adapter against a public local model through the loopback-only OpenAI-compatible client and retain privacy-minimized exact provenance.
+- **Acceptance criteria:**
+  - [x] The report binds the exact weight-file hash, inference-runtime archive hash, model identity, quantization, software commit, and seed hash.
+  - [x] At least two episodes exercise intention and interpretation in both Baby roles with tool-only conformance and no policy updates.
+  - [x] The committed report is labeled non-confirmatory and omits prompts, observations, raw output, candidate references, and private ledger content.
+
+#### ALD-086 — Project-status drift enforcement
+- **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-080, ALD-081, ALD-082, ALD-083, ALD-084, ALD-085
+- **Spec refs:** `SPECIFICATION.md` [§1.5 Relationship to Companion Documents](SPECIFICATION.md#15-relationship-to-companion-documents)
+- **Scope:** Fail the consolidated check when package versions, backlog totals, completion-plan state, README status, or manuscript engineering status disagree.
+- **Acceptance criteria:**
+  - [x] The checker derives acceptance totals from backlog checkboxes rather than accepting a manually supplied number.
+  - [x] Root package/lock versions and the public README/manuscript engineering snapshot must match exactly.
+  - [x] Both local and hosted consolidated checks run the drift checker before build and tests.
+
 ## 13. Experiment Readiness Gate Mapping
 
 This table maps every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 to the readiness gate (and underlying backlog items) that must be `Done` before the experiment can be executed. **A passing gate means the software capability exists and conforms to spec — it is not a claim about the experiment's scientific outcome.** Running the experiment, analyzing data, and drawing conclusions remain research-execution activities in `EXPERIMENT-NOTEBOOK.md`, outside this backlog's scope.
@@ -1184,3 +1248,9 @@ These resolve details the source documents name but do not fix. Each is implemen
 | ALD-078 | CI pipeline and consolidated test suite | EPIC-15 |
 | ALD-079 | Architecture/API/operations documentation set | EPIC-15 |
 | ALD-080 | Release process and publication-checklist mapping | EPIC-15 |
+| ALD-081 | Dependency-integrity enforcement | EPIC-16 |
+| ALD-082 | Reproducible E03 design simulation and seed manifest | EPIC-16 |
+| ALD-083 | Canonical E03 registration compiler | EPIC-16 |
+| ALD-084 | Fail-closed research preflight | EPIC-16 |
+| ALD-085 | Real open-weight frozen-model qualification | EPIC-16 |
+| ALD-086 | Project-status drift enforcement | EPIC-16 |

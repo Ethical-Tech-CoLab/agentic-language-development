@@ -23,6 +23,12 @@ const explicitCoverage = {
   'ALD-074': ['scripts/check-readiness-gates.mjs'],
   'ALD-076': ['scripts/check-readiness-gates.mjs'],
   'ALD-080': ['scripts/check-readiness-gates.mjs'],
+  'ALD-081': ['.github/workflows/book-integrity.yml'],
+  'ALD-082': ['packages/analysis/__tests__/e03-design.test.ts'],
+  'ALD-083': ['packages/analysis/__tests__/e03-registration.test.ts'],
+  'ALD-084': ['packages/ops/__tests__/research-preflight.test.ts'],
+  'ALD-085': ['packages/learners/__tests__/frozen-qualification.test.ts'],
+  'ALD-086': ['scripts/check-project-status.mjs'],
 };
 
 async function walk(directory) {
