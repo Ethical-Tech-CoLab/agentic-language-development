@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Read-only evidence and operator controls for Agentic Language Development runs.">
+    <title>ALD Research Console</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Agentic Language Development</p>
+        <h1>Research Console</h1>
+      </div>
+      <form id="connection" class="connection" autocomplete="off">
+        <label>API base <input id="api-base" value="/nursery" aria-label="Nursery API base"></label>
+        <label>Role
+          <select id="role">
+            <option value="researcher-viewer">Viewer</option>
+            <option value="researcher-operator">Operator</option>
+          </select>
+        </label>
+        <label>Token <input id="token" type="password" value="dev-researcher-viewer" aria-label="Service token"></label>
+        <button type="submit">Connect</button>
+      </form>
+    </header>
+
+    <main>
+      <section class="run-strip" aria-label="Run selection and state">
+        <label>Run <select id="run-select"><option>Connect to load runs</option></select></label>
+        <div id="run-state" class="status-grid" aria-live="polite"></div>
+        <button id="refresh" type="button">Refresh</button>
+      </section>
+
+      <section class="signal-grid" aria-label="Evidence status">
+        <article><h2>Verification</h2><div id="verification" class="metric">—</div></article>
+        <article><h2>Checkpoints</h2><div id="checkpoints" class="metric">—</div></article>
+        <article><h2>Anchors</h2><div id="anchors" class="metric">—</div></article>
+        <article><h2>Replay</h2><div id="replay" class="metric">—</div></article>
+      </section>
+
+      <section class="workspace">
+        <article class="panel transcript-panel">
+          <div class="panel-heading"><h2>Public transcript</h2><span>delivered artifacts only</span></div>
+          <div id="transcript" class="event-list empty">No run selected.</div>
+        </article>
+
+        <div class="baby-grid" aria-label="Separated Baby perspectives">
+          <article class="panel baby baby-a">
+            <div class="panel-heading"><h2>Baby A</h2><span>read-only audit perspective</span></div>
+            <div id="baby-a-ledger" class="event-list empty">No audit entries.</div>
+          </article>
+          <article class="panel baby baby-b">
+            <div class="panel-heading"><h2>Baby B</h2><span>read-only audit perspective</span></div>
+            <div id="baby-b-ledger" class="event-list empty">No audit entries.</div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading"><h2>Telemetry</h2><span>authoritative request records</span></div>
+          <div id="telemetry" class="event-list empty">No telemetry records.</div>
+        </article>
+      </section>
+
+      <section class="operator-panel" aria-labelledby="operator-title">
+        <div><p class="eyebrow">Audited controls</p><h2 id="operator-title">Run intervention</h2></div>
+        <label>Reason code <input id="reason" value="operator-console"></label>
+        <div class="button-row">
+          <button data-action="pause" type="button">Pause</button>
+          <button data-action="resume" type="button">Resume</button>
+          <button data-action="abort" class="danger" type="button">Abort</button>
+        </div>
+        <p id="operator-note">Switch to an operator credential to enable audited controls.</p>
+      </section>
+
+      <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    </main>
+    <script src="./app.js" defer></script>
+  </body>
+</html>

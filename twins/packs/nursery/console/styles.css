@@ -1,0 +1,78 @@
+:root {
+  color-scheme: dark;
+  --ink: #e9f3f5;
+  --muted: #94a9ae;
+  --surface: #101a1e;
+  --surface-raised: #17252a;
+  --line: #294149;
+  --cyan: #44d7d0;
+  --amber: #ffbd66;
+  --red: #ff766f;
+  --ok: #78dfa3;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: #081115;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 20rem; background: radial-gradient(circle at 70% -20%, #17333a 0, #081115 34rem); }
+button, input, select { font: inherit; }
+button, select, input { min-height: 2.5rem; border: 1px solid var(--line); border-radius: .35rem; }
+button { padding: .5rem .8rem; color: #071114; background: var(--cyan); font-weight: 750; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .42; }
+button.danger { color: #210707; background: var(--red); }
+input, select { padding: .45rem .6rem; color: var(--ink); background: #0a1418; }
+label { display: grid; gap: .3rem; color: var(--muted); font-size: .875rem; }
+
+.topbar { display: flex; justify-content: space-between; align-items: end; gap: 2rem; padding: 1.3rem max(1rem, 3vw); border-bottom: 1px solid var(--line); background: rgb(8 17 21 / 88%); }
+h1, h2, p { margin: 0; }
+h1 { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(1.5rem, 3vw, 2.4rem); letter-spacing: -.04em; }
+h2 { font-size: 1rem; }
+.eyebrow { margin-bottom: .25rem; color: var(--cyan); font: 700 .75rem/1.2 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.connection { display: flex; align-items: end; gap: .65rem; }
+
+main { display: grid; gap: 1rem; width: min(100%, 100rem); margin: 0 auto; padding: 1rem max(1rem, 3vw) 3rem; }
+.run-strip, .operator-panel { display: flex; align-items: end; gap: 1rem; padding: .9rem; border: 1px solid var(--line); background: var(--surface); }
+.run-strip label { min-width: 13rem; }
+.status-grid { display: flex; flex: 1; flex-wrap: wrap; gap: .5rem 1.2rem; }
+.status-grid div { min-width: 8rem; }
+.status-grid small { display: block; color: var(--muted); }
+.status-grid strong { font-family: ui-monospace, monospace; font-size: .875rem; }
+
+.signal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
+.signal-grid article { min-height: 6.5rem; padding: .9rem; border-top: 2px solid var(--cyan); background: var(--surface-raised); }
+.signal-grid h2 { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+.metric { margin-top: 1rem; font: 700 1.05rem/1.4 ui-monospace, monospace; overflow-wrap: anywhere; }
+.metric.pass { color: var(--ok); }
+.metric.fail { color: var(--red); }
+
+.workspace { display: grid; grid-template-columns: 1.1fr 1.9fr 1fr; gap: .7rem; align-items: start; }
+.panel { min-height: 24rem; border: 1px solid var(--line); background: var(--surface); }
+.panel-heading { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem .9rem; border-bottom: 1px solid var(--line); }
+.panel-heading span { color: var(--muted); font-size: .75rem; }
+.baby-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.baby { min-width: 0; }
+.baby-a { border-top: 3px solid var(--cyan); }
+.baby-b { border-top: 3px solid var(--amber); }
+.event-list { max-height: 35rem; overflow: auto; padding: .7rem; }
+.event-list.empty { color: var(--muted); font-style: italic; }
+.event { padding: .65rem 0; border-bottom: 1px solid var(--line); font: .78rem/1.45 ui-monospace, monospace; overflow-wrap: anywhere; }
+.event:last-child { border-bottom: 0; }
+.event time, .event .tag { color: var(--muted); }
+
+.operator-panel { align-items: center; border-left: 3px solid var(--amber); }
+.operator-panel > div:first-child { margin-right: auto; }
+.button-row { display: flex; gap: .5rem; }
+#operator-note { max-width: 24rem; color: var(--muted); font-size: .8rem; }
+.notice { min-height: 1.5rem; color: var(--amber); }
+
+@media (max-width: 70rem) {
+  .topbar, .connection, .run-strip, .operator-panel { align-items: stretch; flex-direction: column; }
+  .signal-grid { grid-template-columns: repeat(2, 1fr); }
+  .workspace { grid-template-columns: 1fr; }
+  .panel { min-height: 15rem; }
+}
+@media (max-width: 42rem) {
+  .signal-grid, .baby-grid { grid-template-columns: 1fr; }
+  .button-row { flex-wrap: wrap; }
+}

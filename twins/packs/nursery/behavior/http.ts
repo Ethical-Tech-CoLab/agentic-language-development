@@ -585,6 +585,16 @@ export interface TelemetryRequestRecord {
  */
 export interface TelemetrySinkLike {
   record(record: TelemetryRequestRecord): unknown;
+  query?(query: { runId?: string; limit?: number }): unknown[];
+}
+
+/** Read-only telemetry slice used by the Research Console. */
+export function readTelemetry(
+  context: BehaviorPackContext,
+  runId: string,
+): unknown[] {
+  const sink = telemetrySinkFrom(context);
+  return sink?.query?.({ runId, limit: 200 }) ?? [];
 }
 
 /** Route pattern reported for a request no route matched. */

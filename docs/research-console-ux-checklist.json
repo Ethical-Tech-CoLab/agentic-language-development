@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "specification": "SPECIFICATION.md §16.2-§16.3",
+  "reviewedAssetHash": "sha256:42c298f29264cdd99516bc47103e63e22fa37189be94d16c7303dea93d741f57",
+  "reusedComponents": [
+    { "concept": "Delegation seat", "mapping": "Separate Baby A and Baby B panels", "result": "pass" },
+    { "concept": "Table / convener", "mapping": "Nursery run-state strip and operator controls", "result": "pass" },
+    { "concept": "Operator view", "mapping": "Viewer/operator credential selector", "result": "pass" },
+    { "concept": "Delegation perspective", "mapping": "Role-separated observation and audit-ledger panels", "result": "pass" },
+    { "concept": "Round and tick", "mapping": "Current run turn", "result": "pass" },
+    { "concept": "Transcript", "mapping": "Append-only public transcript panel", "result": "pass" },
+    { "concept": "Tactic detection", "mapping": "Audit and rejection evidence", "result": "pass" },
+    { "concept": "Recorded run and debrief", "mapping": "Read-only replay and verification results", "result": "pass" }
+  ],
+  "prohibitions": [
+    { "name": "caucus rooms", "result": "pass" },
+    { "name": "coalition rooms", "result": "pass" },
+    { "name": "direct Baby-to-Baby links", "result": "pass" },
+    { "name": "human relay into an observation feed", "result": "pass" },
+    { "name": "verification or replay override", "result": "pass" },
+    { "name": "Mode R claims on Mode P evidence", "result": "pass" }
+  ],
+  "importsDiplomacyGameLogic": false,
+  "clientSideBabyRoutes": false,
+  "blocksConsoleReleaseOnFailure": true
+}

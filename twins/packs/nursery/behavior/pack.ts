@@ -48,6 +48,7 @@ import {
   createRouter,
   failure,
   InvalidRequestError,
+  readTelemetry,
   requireString,
   success,
   type RouteDefinition,
@@ -61,6 +62,10 @@ export const NURSERY_ROUTE_PATTERNS = [
   '/runs/:id/ledgers',
   '/runs/:id/audit',
   '/runs/:id/checkpoints',
+  '/runs/:id/anchors',
+  '/runs/:id/telemetry',
+  '/runs/:id/replay',
+  '/runs/:id/observations',
   '/runs/:id/pause',
   '/runs/:id/resume',
   '/runs/:id/abort',
@@ -383,6 +388,53 @@ const routes: RouteDefinition[] = [
     },
   },
   {
+    method: 'GET',
+    pattern: '/runs/:id/anchors',
+    roles: ['researcher-viewer'],
+    handler: ({ params, context }) => {
+      const { runtime } = internalsFrom(context);
+      return success({ anchors: runtime.anchorReceipts(params['id'] ?? '') });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: '/runs/:id/telemetry',
+    roles: ['researcher-viewer'],
+    handler: ({ params, context }) =>
+      success({ telemetry: readTelemetry(context, params['id'] ?? '') }),
+  },
+  {
+    method: 'GET',
+    pattern: '/runs/:id/replay',
+    roles: ['researcher-viewer'],
+    handler: ({ params, context }) => {
+      const { runtime } = internalsFrom(context);
+      return success({
+        replayDigest: runtime.replayDigest(params['id'] ?? ''),
+        scenario: runtime.scenarioReplayCheck(params['id'] ?? ''),
+        readOnly: true,
+        overrideAllowed: false,
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: '/runs/:id/observations',
+    roles: ['researcher-operator'],
+    handler: async ({ params, actorId, context }) => {
+      const { runtime } = internalsFrom(context);
+      const runId = params['id'] ?? '';
+      const observations = runtime.observationHistory(runId);
+      await runtime
+        .recordHumanView(runId, {
+          actorId,
+          reasonCode: 'read-private-observations',
+        })
+        .catch(() => undefined);
+      return success({ observations });
+    },
+  },
+  {
     method: 'POST',
     pattern: '/runs/:id/pause',
     roles: ['researcher-operator'],
@@ -686,6 +738,7 @@ export default class NurseryPack implements BehaviorPack {
       'evidence-routes',
       'verification-routes',
       'session-snapshot',
+      'research-console',
       'prototype-mode',
     ];
   }

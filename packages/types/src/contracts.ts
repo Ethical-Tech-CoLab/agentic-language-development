@@ -46,6 +46,7 @@ import type {
   DeliveredChannelArtifact,
   ExperimentRecord,
   LearnerTrackId,
+  RegistrationClass,
   LedgerDraftEnvelope,
   LedgerEvent,
   LedgerEventDraft,
@@ -830,6 +831,8 @@ export interface RunSummary {
   state: RunState;
   turn: number;
   configurationHash: Sha256Hash;
+  preRegistrationHash?: Sha256Hash;
+  registrationClass?: RegistrationClass;
 }
 
 export interface TurnResult {

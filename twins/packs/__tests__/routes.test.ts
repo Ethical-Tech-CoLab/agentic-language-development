@@ -172,6 +172,7 @@ describe('DTSF twin pack manifests', () => {
         'evidence-routes',
         'verification-routes',
         'session-snapshot',
+        'research-console',
         'prototype-mode',
       ],
     },
@@ -232,6 +233,14 @@ const NURSERY_CASES: RouteCase[] = [
   { method: 'GET', path: '/runs/:id/ledgers', roles: ['researcher-viewer'] },
   { method: 'GET', path: '/runs/:id/audit', roles: ['researcher-viewer'] },
   { method: 'GET', path: '/runs/:id/checkpoints', roles: ['researcher-viewer'] },
+  { method: 'GET', path: '/runs/:id/anchors', roles: ['researcher-viewer'] },
+  { method: 'GET', path: '/runs/:id/telemetry', roles: ['researcher-viewer'] },
+  { method: 'GET', path: '/runs/:id/replay', roles: ['researcher-viewer'] },
+  {
+    method: 'GET',
+    path: '/runs/:id/observations',
+    roles: ['researcher-operator'],
+  },
   { method: 'POST', path: '/runs/:id/pause', roles: ['researcher-operator'] },
   { method: 'POST', path: '/runs/:id/resume', roles: ['researcher-operator'] },
   { method: 'POST', path: '/runs/:id/abort', roles: ['researcher-operator'] },
@@ -468,6 +477,70 @@ describe('Response and error envelope (SPEC §12.3)', () => {
     const res = await createRunViaRoute(nursery, config);
     expect(res.response.status).toBe(400);
     expect(res.response.body).toMatchObject({ error: { code: 'INVALID_REQUEST' } });
+  });
+});
+
+describe('Research Console authoritative routes (ALD-063/066)', () => {
+  it('keeps private observations operator-only and replay results read-only', async () => {
+    const nursery = await createNurseryHarness();
+    const runId = nextRunId();
+    await createRunViaRoute(
+      nursery,
+      noLearningRunConfig({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'research-console-routes',
+        maxTurnsPerRun: 1,
+        evaluationTurns: 1,
+      }),
+    );
+    await getNurseryRuntime()?.step(runId);
+
+    const viewerObservation = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/observations`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    expect(viewerObservation.response.status).toBe(403);
+
+    const operatorObservation = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/observations`,
+        headers: authHeaders('researcher-operator'),
+      }),
+      new Map(),
+    );
+    expect(operatorObservation.response.body).toMatchObject({
+      ok: true,
+      observations: {
+        'baby-a': [expect.objectContaining({ recipient: 'baby-a' })],
+        'baby-b': [expect.objectContaining({ recipient: 'baby-b' })],
+      },
+    });
+
+    const replay = await nursery.pack.handleRequest(
+      request({
+        method: 'GET',
+        path: `/runs/${runId}/replay`,
+        headers: authHeaders('researcher-viewer'),
+      }),
+      new Map(),
+    );
+    expect(replay.response.body).toMatchObject({
+      ok: true,
+      scenario: { ok: true, turnsChecked: 1 },
+      readOnly: true,
+      overrideAllowed: false,
+    });
+    expect(
+      NURSERY_CASES.some(
+        ({ method, path }) => method === 'POST' && path.includes('replay'),
+      ),
+    ).toBe(false);
   });
 });
 

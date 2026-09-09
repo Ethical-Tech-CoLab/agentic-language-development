@@ -1871,6 +1871,41 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     });
   }
 
+  /** Researcher-only reconstruction of each Baby's private observations. */
+  observationHistory(runId: string): Record<BabyRole, Observation[]> {
+    const run = this.#requireRun(runId);
+    const result: Record<BabyRole, Observation[]> = {
+      'baby-a': [],
+      'baby-b': [],
+    };
+    const episodeCounts: Record<ScenarioSplit, number> = {
+      train: 0,
+      'held-out': 0,
+      evaluation: 0,
+    };
+    const instances = new Map<string, ScenarioInstance>();
+    for (const record of this.#turnRecords(run)) {
+      const split: ScenarioSplit =
+        record.phase === 'evaluating' ? 'evaluation' : 'train';
+      let instance = instances.get(record.scenarioRef);
+      if (instance === undefined) {
+        instance = run.engine.generate(
+          episodeCounts[split],
+          split,
+          record.roles,
+        );
+        episodeCounts[split] += 1;
+        instances.set(instance.scenarioRef, instance);
+      }
+      for (const role of BABY_ROLES) {
+        result[role].push(
+          run.engine.observationFor(instance, runId, record.turn, role),
+        );
+      }
+    }
+    return result;
+  }
+
   // -------------------------------------------------------------------------
   // Queries (SPEC §12.5, §12.6)
   // -------------------------------------------------------------------------
@@ -2039,6 +2074,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   checkpoints(runId: string): CheckpointManifest[] {
     return this.#requireRun(runId).writer.readCheckpoints(runId);
+  }
+
+  anchorReceipts(runId: string): AnchorReceipt[] {
+    return this.#requireRun(runId).writer.readAnchorReceipts(runId);
   }
 
   experimentRecords(runId: string): ExperimentRecord[] {
@@ -3689,6 +3728,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       state: run.lifecycle.state,
       turn: run.turn,
       configurationHash: run.configurationHash,
+      preRegistrationHash: run.config.preRegistrationHash,
+      registrationClass: run.config.registrationClass ?? 'qualification',
     };
   }
 }

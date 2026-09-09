@@ -13,4 +13,5 @@ capabilities:
   - "evidence-routes"
   - "verification-routes"
   - "session-snapshot"
+  - "research-console"
   - "prototype-mode"
