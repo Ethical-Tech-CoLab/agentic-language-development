@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.67",
+  "version": "0.1.68",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -38,8 +38,8 @@
     "audit:data-claims:live": "tsx scripts/build-data-claim-manifest.ts --live-evidence",
     "benchmark:audit-cost": "tsx scripts/run-audit-cost-benchmark.ts --write",
     "audit:audit-cost": "tsx scripts/run-audit-cost-benchmark.ts",
-    "check": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run audit:sources && pnpm run audit:protocol-cards && pnpm run audit:scenario-design && pnpm run audit:statistics && pnpm run audit:causal-leakage && pnpm run audit:seed-resource && pnpm run audit:campaign-readiness && pnpm run audit:data-claims && pnpm run audit:audit-cost && pnpm run test:integrity-auditor && pnpm run build && pnpm test && pnpm run scan:secrets && pnpm run audit:dependencies",
-    "check:ci": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run audit:sources && pnpm run audit:protocol-cards && pnpm run audit:scenario-design && pnpm run audit:statistics && pnpm run audit:causal-leakage && pnpm run audit:seed-resource && pnpm run audit:campaign-readiness && pnpm run audit:data-claims && pnpm run audit:audit-cost && pnpm run test:integrity-auditor && pnpm run build && pnpm run test:ci && pnpm run scan:secrets",
+    "check": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm run audit:sources && pnpm run audit:protocol-cards && pnpm run audit:scenario-design && pnpm run audit:statistics && pnpm run audit:causal-leakage && pnpm run audit:seed-resource && pnpm run audit:campaign-readiness && pnpm run audit:data-claims && pnpm run audit:audit-cost && pnpm run test:integrity-auditor && pnpm test && pnpm run scan:secrets && pnpm run audit:dependencies",
+    "check:ci": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm run audit:sources && pnpm run audit:protocol-cards && pnpm run audit:scenario-design && pnpm run audit:statistics && pnpm run audit:causal-leakage && pnpm run audit:seed-resource && pnpm run audit:campaign-readiness && pnpm run audit:data-claims && pnpm run audit:audit-cost && pnpm run test:integrity-auditor && pnpm run test:ci && pnpm run scan:secrets",
     "lint:contracts": "node scripts/lint-learner-contracts.mjs",
     "lint:crypto-boundary": "node scripts/lint-crypto-boundary.mjs",
     "lint:research-console": "node scripts/check-research-console.mjs",
