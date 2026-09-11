@@ -1,0 +1,462 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "protocolSha256": "a4ec69ccb7db021cde477f7b64324104777a847c65029d5f365b0374b7f00d55",
+  "candidate": {
+    "commit": "62e3ae102685d8a91882bfc19d4e45f892a5d027",
+    "version": "0.1.73"
+  },
+  "sourceHashes": {
+    "packages/redteam/src/side-channel/carrier-features.ts": "c798b9d411ffac487ea3c1aa5fe0ee3ca0df07ee73ee16c603e659597dd7c3fa",
+    "packages/redteam/__tests__/side-channel.test.ts": "11ab8cec73735589a151cc9d677ecade4e2f54c2fba1a91b84b97737fc576f7b",
+    "packages/gateway/src/conformance-vectors.ts": "8a4a09ae797d044d66b440f97e80f932fdaa05d10b1e9983c88ca1bf7a23f1f7",
+    "packages/gateway/__tests__/carriers.test.ts": "8735c2d88ef560f9204e9c37b4c3fad9209b8c04eb2471a3d63ee5eb196e4db0",
+    "deploy/mode-r/verify-isolation.mjs": "4110984e3a6e6b054c65b5434eca204b28ce777d616d72db3323717dc30cf03e",
+    "scripts/run-mode-r-smoke.mjs": "512f531756f56a3ada96ce40b07ce5273b7fb37f8c34b807cd255456e76cc61b"
+  },
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "focusedTests": 152,
+    "testFiles": 143,
+    "tests": 1803,
+    "rustTests": 3,
+    "secretFilesScanned": 673,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 190.56,
+    "consolidatedMaximumResidentSetKiB": 1010032,
+    "modeRWallSeconds": 101.19,
+    "modeRMaximumResidentSetKiB": 52864,
+    "trackedFilesManifestSha256": "2d461a8ab301ee13686ed726bb3770c9e992e1b684a0416091ea5ece9341e5e7",
+    "detachedWorktree": true,
+    "worktreeCleanAfterValidation": true,
+    "frozenInstallExitCode": 0,
+    "focusedExitCode": 0,
+    "consolidatedExitCode": 0,
+    "modeRExitCode": 0
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-b09-b12-62e3ae1-exact",
+    "gitTracked": false,
+    "installLogSha256": "552482edef8cc5f552f7e20aca89f47ef665c60ab943f964ee4d29744a04f29d",
+    "focusedLogSha256": "f3cd275b4b806e6e883535c12dda4111746562b2bcb88b506f08cc2b48c6b6b4",
+    "checkLogSha256": "0aabf65ad149ded503e86db32dcfcbb7dbb774ca6c5022564c9914059f3cc088",
+    "modeRLogSha256": "da5a5b9eeb51c8a7c830be29d68a41d148fab9a17f156c292240e59debe0995b"
+  },
+  "structuralGateway": {
+    "version": 1,
+    "deploymentMode": "research-grade",
+    "carriers": [
+      "generative-bitmap",
+      "generative-canvas",
+      "generative-tone"
+    ],
+    "features": [
+      "compression",
+      "container",
+      "dimension",
+      "metadata",
+      "raw-media",
+      "sample-rate"
+    ],
+    "positiveControls": [
+      {
+        "carrier": "generative-bitmap",
+        "accepted": true,
+        "delivered": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "accepted": true,
+        "delivered": true
+      },
+      {
+        "carrier": "generative-tone",
+        "accepted": true,
+        "delivered": true
+      }
+    ],
+    "attacks": [
+      {
+        "carrier": "generative-bitmap",
+        "feature": "dimension",
+        "vectorName": "rejects a 255-bit matrix",
+        "expectedReason": "bitmap-size-invalid",
+        "actualReason": "bitmap-size-invalid",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "dimension",
+        "vectorName": "rejects a 257-bit matrix",
+        "expectedReason": "bitmap-size-invalid",
+        "actualReason": "bitmap-size-invalid",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "dimension",
+        "vectorName": "rejects an explicit bitmap width side feature",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "dimension",
+        "vectorName": "rejects an explicit bitmap height side feature",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "metadata",
+        "vectorName": "rejects a color field beside the bitmap",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "metadata",
+        "vectorName": "rejects a caption nested inside the bitmap",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "metadata",
+        "vectorName": "rejects a numeric grid override nested inside the bitmap",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "compression",
+        "vectorName": "rejects a bitmap compression side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-bitmap",
+        "feature": "container",
+        "vectorName": "rejects a bitmap container side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "dimension",
+        "vectorName": "rejects nine strokes against a cap of eight",
+        "expectedReason": "too-many-strokes",
+        "actualReason": "too-many-strokes",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "dimension",
+        "vectorName": "rejects a stroke past the right edge of the grid",
+        "expectedReason": "stroke-out-of-range",
+        "actualReason": "stroke-out-of-range",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "dimension",
+        "vectorName": "rejects an explicit canvas width side feature",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "dimension",
+        "vectorName": "rejects an explicit canvas height side feature",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "metadata",
+        "vectorName": "rejects a per-stroke color field",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "metadata",
+        "vectorName": "rejects a per-stroke semantic tag",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "metadata",
+        "vectorName": "rejects a per-stroke numeric extra field",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "compression",
+        "vectorName": "rejects a canvas compression side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-canvas",
+        "feature": "container",
+        "vectorName": "rejects a canvas container side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "dimension",
+        "vectorName": "rejects nine tones against a cap of eight",
+        "expectedReason": "too-many-tones",
+        "actualReason": "too-many-tones",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "dimension",
+        "vectorName": "rejects a ninth pitch bin",
+        "expectedReason": "tone-out-of-range",
+        "actualReason": "tone-out-of-range",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "dimension",
+        "vectorName": "rejects a fifth duration bin",
+        "expectedReason": "tone-out-of-range",
+        "actualReason": "tone-out-of-range",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "metadata",
+        "vectorName": "rejects a note name beside the quantized bins",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "metadata",
+        "vectorName": "rejects a numeric tempo field beside the sequence",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "metadata",
+        "vectorName": "rejects a per-tone numeric extra field",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "raw-media",
+        "vectorName": "rejects a base64 audio payload smuggled beside the sequence",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "sample-rate",
+        "vectorName": "rejects a tone sample-rate side feature",
+        "expectedReason": "unexpected-artifact-field",
+        "actualReason": "unexpected-artifact-field",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "compression",
+        "vectorName": "rejects a tone compression side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      },
+      {
+        "carrier": "generative-tone",
+        "feature": "container",
+        "vectorName": "rejects a tone container side feature",
+        "expectedReason": "free-text-present",
+        "actualReason": "free-text-present",
+        "rejected": true,
+        "noDelivery": true,
+        "exactlyOneEvidenceEvent": true,
+        "rawArtifactAbsentFromEvidence": true,
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "evidenceReady": false,
+    "boundary": "structural-gateway-qualification-only"
+  },
+  "referenceModeRTopology": {
+    "mode": "research-grade",
+    "directNetworkRoutes": "refused",
+    "filesystem": "denied",
+    "clipboard": "denied",
+    "childProcess": "denied",
+    "worker": "denied",
+    "environmentKeys": 0,
+    "timingNormalization": "normalized",
+    "activeSideChannelCategories": 12,
+    "transportSamples": 6,
+    "timingWithinTolerance": true,
+    "sizeWithinTolerance": true,
+    "errorShapeWithinTolerance": true,
+    "survivorResponsive": true,
+    "trainingTracks": [
+      "scratch-rl",
+      "self-supervised",
+      "hybrid"
+    ],
+    "allTrainingPoliciesChanged": true,
+    "counterpartStateRead": false
+  },
+  "preservedFailure": {
+    "candidateVersion": "0.1.73",
+    "exactCandidateValidationPassed": true,
+    "receiptGenerationExitCode": 1,
+    "cause": "The root qualification runner imported @ald/redteam without declaring the workspace dependency.",
+    "correction": "The v0.1.74 root manifest declares @ald/redteam explicitly; the frozen dependency graph is unchanged apart from the workspace link."
+  },
+  "blockerDisposition": {
+    "blockers": [
+      "B09",
+      "B12"
+    ],
+    "status": "open",
+    "completed": "28 generated-carrier structural attacks, three accepted/delivered controls, exact clean validation, and measured current two-container Mode R timing/envelope/error/host controls",
+    "remains": "prospective learned-form evidence, powered negative bounds, and rerun on the final selected registered study topology"
+  },
+  "boundary": "This qualifies structural generated-carrier rejection through the real Gateway and timing, fixed-envelope, error-shape, host, and training-isolation controls on the current two-container Mode R reference topology. It is not a final selected-study-topology bound, a powered negative leakage result, a pilot, or an empirical E01/E13 finding."
+}

@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.73 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.74 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -716,9 +716,12 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    and shuffled controls is still needed to estimate causal communication effects.
 4. The E01 timing/envelope detectors and E13 forbidden-side-feature detectors must be
    exercised in the actual selected topology before their negative claims are eligible.
-   A reusable Gateway audit now rejects 28 dimension, metadata, raw-media,
+   An exact reusable Gateway audit rejects 28 dimension, metadata, raw-media,
    sample-rate, compression, and container attacks across the three generated
-   carriers, but its report intentionally remains ineligible as study evidence.
+   carriers. The same candidate's current two-container Mode R reference path passed
+   six timing/envelope/error samples, host-denial and crash-survival checks, and three
+   isolated updating tracks. Neither is the final registered topology or a powered
+   negative bound, so both reports remain ineligible as study findings.
 5. Causal-ledger comparator implementations and registered practical effect margins
    now have exact synthetically qualified validation-only selection and prospective
    scoring code, but production integration and prospective execution remain required;

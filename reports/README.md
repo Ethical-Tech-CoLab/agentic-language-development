@@ -40,6 +40,10 @@ The carrier-perception protocol and receipt bind a clean v0.1.71 candidate, thre
 handcrafted carrier distances, held-out nearest-prototype fixtures, and six rejection
 paths. Its perfect synthetic controls do not establish learner generalization or
 production-topology leakage bounds, so B09 and E13 remain open.
+The carrier-side-feature qualification binds 28 structural attacks and three
+accepted controls to v0.1.73, alongside six transport samples and the full current
+two-container Mode R reference path. It is not the final selected study topology or
+a powered leakage bound, so B09/B12 remain open.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

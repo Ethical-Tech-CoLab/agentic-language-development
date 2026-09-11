@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "62e3ae102685d8a91882bfc19d4e45f892a5d027",
+    "version": "0.1.73"
+  },
+  "sourceHashes": {
+    "packages/redteam/src/side-channel/carrier-features.ts": "c798b9d411ffac487ea3c1aa5fe0ee3ca0df07ee73ee16c603e659597dd7c3fa",
+    "packages/redteam/__tests__/side-channel.test.ts": "11ab8cec73735589a151cc9d677ecade4e2f54c2fba1a91b84b97737fc576f7b",
+    "packages/gateway/src/conformance-vectors.ts": "8a4a09ae797d044d66b440f97e80f932fdaa05d10b1e9983c88ca1bf7a23f1f7",
+    "packages/gateway/__tests__/carriers.test.ts": "8735c2d88ef560f9204e9c37b4c3fad9209b8c04eb2471a3d63ee5eb196e4db0",
+    "deploy/mode-r/verify-isolation.mjs": "4110984e3a6e6b054c65b5434eca204b28ce777d616d72db3323717dc30cf03e",
+    "scripts/run-mode-r-smoke.mjs": "512f531756f56a3ada96ce40b07ce5273b7fb37f8c34b807cd255456e76cc61b"
+  },
+  "expected": {
+    "carriers": 3,
+    "positiveControls": 3,
+    "attacks": 28,
+    "features": [
+      "compression",
+      "container",
+      "dimension",
+      "metadata",
+      "raw-media",
+      "sample-rate"
+    ],
+    "activeModeRCategories": 12,
+    "modeRTransportSamples": 6,
+    "trainingTracks": [
+      "scratch-rl",
+      "self-supervised",
+      "hybrid"
+    ]
+  },
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "focusedTests": 152,
+    "testFiles": 143,
+    "tests": 1803,
+    "rustTests": 3,
+    "secretFilesScanned": 673,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 190.56,
+    "consolidatedMaximumResidentSetKiB": 1010032,
+    "modeRWallSeconds": 101.19,
+    "modeRMaximumResidentSetKiB": 52864,
+    "trackedFilesManifestSha256": "2d461a8ab301ee13686ed726bb3770c9e992e1b684a0416091ea5ece9341e5e7"
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-b09-b12-62e3ae1-exact",
+    "gitTracked": false,
+    "installLogSha256": "552482edef8cc5f552f7e20aca89f47ef665c60ab943f964ee4d29744a04f29d",
+    "focusedLogSha256": "f3cd275b4b806e6e883535c12dda4111746562b2bcb88b506f08cc2b48c6b6b4",
+    "checkLogSha256": "0aabf65ad149ded503e86db32dcfcbb7dbb774ca6c5022564c9914059f3cc088",
+    "modeRLogSha256": "da5a5b9eeb51c8a7c830be29d68a41d148fab9a17f156c292240e59debe0995b"
+  },
+  "modeRSummary": {
+    "mode": "research-grade",
+    "directNetworkRoutes": "refused",
+    "filesystem": "denied",
+    "clipboard": "denied",
+    "childProcess": "denied",
+    "worker": "denied",
+    "environmentKeys": 0,
+    "timingNormalization": "normalized",
+    "activeSideChannelCategories": 12,
+    "transportSamples": 6,
+    "timingWithinTolerance": true,
+    "sizeWithinTolerance": true,
+    "errorShapeWithinTolerance": true,
+    "survivorResponsive": true,
+    "trainingTracks": [
+      "scratch-rl",
+      "self-supervised",
+      "hybrid"
+    ],
+    "allTrainingPoliciesChanged": true,
+    "counterpartStateRead": false
+  },
+  "boundary": "This qualifies structural generated-carrier rejection through the real Gateway and timing, fixed-envelope, error-shape, host, and training-isolation controls on the current two-container Mode R reference topology. It is not a final selected-study-topology bound, a powered negative leakage result, a pilot, or an empirical E01/E13 finding."
+}
