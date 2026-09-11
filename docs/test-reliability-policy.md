@@ -5,10 +5,11 @@ workflow. The required checks are the `consolidated-suite` job and the real
 Docker `mode-r` job; repository branch protection must require both job names.
 The first job runs a blocking high/critical dependency audit, all lints,
 readiness and acceptance-coverage checks, the TypeScript build, all Vitest
-tests, and the secret scanner. Its retained artifacts include the complete npm
+tests, and the secret scanner. Its retained artifacts include the complete pnpm
 audit JSON alongside the JUnit and runtime reports. The project explicitly
-approves only the pinned `better-sqlite3` and `esbuild` install scripts; new or
-upgraded lifecycle scripts require review before installation. The Mode R job
+approves only the pinned `better-sqlite3`, `esbuild`, and source-pinned
+`read-as-book` lifecycle builds; new or upgraded lifecycle scripts require
+review before installation. The Mode R job
 runs the separate-container isolation and training suite. The 20 randomized
 SIGKILL crash points in `packages/evidence/__tests__/crash-safety.test.ts` are
 therefore part of every proposed-change gate.

@@ -1,16 +1,18 @@
-FROM node:24.13.0-alpine
+FROM node:24.20.0-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json tsconfig.json tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsconfig.base.json ./
 COPY contracts ./contracts
 COPY packages ./packages
 COPY twins ./twins
 COPY deploy/mode-r ./deploy/mode-r
 
-RUN npm ci \
-  && npm run build \
-  && npm prune --omit=dev
+RUN corepack enable \
+  && corepack prepare pnpm@12.3.4 --activate \
+  && pnpm install --frozen-lockfile \
+  && pnpm run build \
+  && pnpm prune --prod
 
 USER node
 

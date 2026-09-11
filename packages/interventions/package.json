@@ -19,6 +19,6 @@
     "@ald/hashing": "*",
     "@ald/analysis": "*",
     "@ald/learners": "*",
-    "zod": "^4.4.3"
+    "zod": "4.4.3"
   }
 }

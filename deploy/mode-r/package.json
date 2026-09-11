@@ -1,0 +1,11 @@
+{
+  "name": "@ald/mode-r-verifier",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ald/isolation": "workspace:*",
+    "@ald/learners": "workspace:*",
+    "@ald/redteam": "workspace:*",
+    "@ald/types": "workspace:*"
+  }
+}

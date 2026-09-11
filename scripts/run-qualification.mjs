@@ -16,7 +16,7 @@
  * and is not a qualification in EXPERIMENT-NOTEBOOK.md's sense. See
  * `QUALIFICATION_LABEL` in the generated report.
  *
- * REQUIRES `npm run build` FIRST: this script imports `@ald/orchestrator`
+ * REQUIRES `pnpm run build` FIRST: this script imports `@ald/orchestrator`
  * (and its dependencies) from their built `dist/` output — it is a plain
  * Node ESM script, not run through `tsx`/`ts-node`.
  */
@@ -33,7 +33,7 @@ runtime (BACKLOG ALD-072): E03 controls-and-oracle and/or the E11 from-scratch
 RL naming game, against the real evidence store, checkpoint service, and
 independent verifier (Prototype Mode, no Base anchor submitted).
 
-REQUIRES \`npm run build\` FIRST — this script imports @ald/orchestrator and
+REQUIRES \`pnpm run build\` FIRST — this script imports @ald/orchestrator and
 its dependencies from their built dist/ output, not from TypeScript source.
 
 Options:
@@ -56,7 +56,7 @@ runSetId defaults to <YYYYMMDD-HHmm>-<short git sha>.
 
 Example — the standard 5-seed E03 + 3-seed E11 qualification run:
 
-  npm run build
+  pnpm run build
   node scripts/run-qualification.mjs
 
 The report lands in reports/qualification/<runSetId>/ (REPORT.md,
@@ -154,7 +154,7 @@ try {
   orchestrator = await import('@ald/orchestrator');
 } catch (error) {
   console.error(
-    'Failed to load @ald/orchestrator — run `npm run build` first ' +
+    'Failed to load @ald/orchestrator — run `pnpm run build` first ' +
       '(this script requires the built dist/ output, not TypeScript source).',
   );
   console.error(error instanceof Error ? error.message : String(error));

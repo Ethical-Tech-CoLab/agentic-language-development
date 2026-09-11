@@ -1,13 +1,9 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.39",
+  "version": "0.1.40",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "twins/packs/*"
-  ],
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",
@@ -15,46 +11,51 @@
     "test:ci": "vitest run --reporter=default --reporter=junit --outputFile.junit=artifacts/vitest-junit.xml",
     "test:mode-r": "node scripts/run-mode-r-smoke.mjs",
     "test:watch": "vitest",
-    "design:e03": "npm run build && node scripts/run-e03-design-simulation.mjs",
-    "registration:e03": "npm run build && node scripts/build-e03-registration.mjs",
-    "preflight:research": "npm run build && node scripts/check-research-preflight.mjs",
-    "qualify:frozen-model": "npm run build && node scripts/run-frozen-model-qualification.mjs",
+    "design:e03": "pnpm run build && node scripts/run-e03-design-simulation.mjs",
+    "registration:e03": "pnpm run build && node scripts/build-e03-registration.mjs",
+    "preflight:research": "pnpm run build && node scripts/check-research-preflight.mjs",
+    "qualify:frozen-model": "pnpm run build && node scripts/run-frozen-model-qualification.mjs",
     "lint": "eslint packages twins",
     "book:research": "node scripts/build-research-book.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
-    "audit:dependencies": "npm audit --audit-level=high",
-    "check": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:project-status && npm run lint:api-docs && npm run build && npm test && npm run scan:secrets && npm run audit:dependencies",
-    "check:ci": "npm run lint && npm run lint:contracts && npm run lint:crypto-boundary && npm run lint:research-console && npm run lint:readiness && npm run lint:acceptance-coverage && npm run lint:project-status && npm run lint:api-docs && npm run build && npm run test:ci && npm run scan:secrets",
+    "audit:dependencies": "pnpm audit --audit-level=high",
+    "check": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm test && pnpm run scan:secrets && pnpm run audit:dependencies",
+    "check:ci": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm run test:ci && pnpm run scan:secrets",
     "lint:contracts": "node scripts/lint-learner-contracts.mjs",
     "lint:crypto-boundary": "node scripts/lint-crypto-boundary.mjs",
     "lint:research-console": "node scripts/check-research-console.mjs",
     "lint:readiness": "node scripts/check-readiness-gates.mjs",
     "lint:acceptance-coverage": "node scripts/check-acceptance-coverage.mjs",
     "lint:project-status": "node scripts/check-project-status.mjs",
+    "lint:native-builds": "node scripts/check-native-builds.mjs",
     "lint:api-docs": "node scripts/check-api-docs.mjs"
   },
   "devDependencies": {
-    "@napi-rs/canvas": "^1.0.8",
-    "@types/node": "^20.11.0",
-    "esbuild": "^0.28.2",
-    "eslint": "^9.0.0",
-    "marked": "^18.0.11",
-    "pdfjs-dist": "^6.2.108",
-    "sharp": "^0.35.4",
-    "tsx": "^4.21.0",
-    "typescript": "^5.4.0",
-    "typescript-eslint": "^8.0.0",
-    "vitest": "^4.1.11",
-    "yaml": "^2.8.1"
+    "@ald/analysis": "workspace:*",
+    "@ald/hashing": "workspace:*",
+    "@ald/learners": "workspace:*",
+    "@ald/lifecycle": "workspace:*",
+    "@ald/ops": "workspace:*",
+    "@ald/orchestrator": "workspace:*",
+    "@ald/types": "workspace:*",
+    "@napi-rs/canvas": "1.0.8",
+    "@types/node": "20.19.43",
+    "esbuild": "0.28.2",
+    "eslint": "9.39.5",
+    "marked": "18.0.11",
+    "pdfjs-dist": "6.2.108",
+    "sharp": "0.35.4",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.67.0",
+    "vitest": "4.1.11",
+    "yaml": "2.9.0"
   },
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=24.20.0 <25",
+    "pnpm": "12.3.4"
   },
   "dependencies": {
     "read-as-book": "https://codeload.github.com/Ethical-Tech-CoLab/read-as-book/tar.gz/d1d1ec6193867c13637636fc03e538c27d95261c"
-  },
-  "allowScripts": {
-    "better-sqlite3@12.11.1": true,
-    "esbuild@0.28.2": true
   }
 }

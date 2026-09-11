@@ -1,0 +1,11 @@
+packages:
+  - packages/*
+  - twins/packs/*
+  - deploy/mode-r
+
+linkWorkspacePackages: true
+
+allowBuilds:
+  better-sqlite3@12.11.1: true
+  esbuild@0.28.2: true
+  read-as-book@https://codeload.github.com/Ethical-Tech-CoLab/read-as-book/tar.gz/d1d1ec6193867c13637636fc03e538c27d95261c: true

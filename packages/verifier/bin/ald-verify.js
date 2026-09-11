@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * `ald-verify` entry point (BACKLOG ALD-015). Run `npm run build` in the
+ * `ald-verify` entry point (BACKLOG ALD-015). Run `pnpm run build` in the
  * repository root, or `tsc --build packages/verifier`, before invoking it.
  */
 import { runCli } from '../dist/cli.js';

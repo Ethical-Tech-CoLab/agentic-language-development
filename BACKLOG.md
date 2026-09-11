@@ -30,14 +30,14 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 2. Planning Assumptions
 
-- **Runtime and language:** Node.js with TypeScript, consistent with the DTSF ecosystem this project builds on. Package management is npm, using npm workspaces for a monorepo layout (no Yarn/pnpm).
+- **Runtime and language:** Node.js with TypeScript, consistent with the DTSF ecosystem this project builds on. Package management uses pnpm workspaces with a frozen lockfile.
 - **Evidence store:** SQLite in WAL (write-ahead log) mode is the authoritative local evidence store, per `LEDGER-INTEGRITY-DESIGN.md` [§18. Recommended Initial Decision](LEDGER-INTEGRITY-DESIGN.md#18-recommended-initial-decision). No external database is introduced.
 - **Anchoring chain:** Base Sepolia (testnet) is the first and default anchoring target. Mainnet anchoring is a separate, later, explicitly opt-in capability — never the default.
 - **Model default:** `scratch-rl` is the primary scientific baseline. A local open-weight `frozen-llm` is the orchestration-validation default; `self-supervised` is the initial reward-free comparison. `no-learning` and `hybrid` are explicit controls/variants.
 - **Isolation:** Research-Grade Mode (Mode R) runs learner processes in separate containers/processes with no shared mutable state beyond the Gateway and ledger, per `SPECIFICATION.md` [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r).
 - **On-chain privacy:** no private, raw-observation, or model-internal data is ever placed in an on-chain anchoring payload — only checkpoint root hashes and minimal metadata, per `SPECIFICATION.md` [§13.6 Privacy Controls](SPECIFICATION.md#136-privacy-controls) and `LEDGER-INTEGRITY-DESIGN.md` [§12. Privacy](LEDGER-INTEGRITY-DESIGN.md#12-privacy).
 - **No invented dates or staffing:** this backlog contains no calendar dates, durations, or headcount figures. Milestones are ordinal (`M0`…`M6`); the execution plan uses ordinal iterations (`Iteration 1`…`Iteration 4`, "Iteration 5+"). Sequencing is expressed purely through dependencies.
-- **Repository today:** an npm-workspaces TypeScript monorepo with the packages listed in README.md; each item's acceptance criteria assume only what earlier, lower-numbered ALD items established.
+- **Repository today:** a pnpm-workspaces TypeScript monorepo with the packages listed in README.md; each item's acceptance criteria assume only what earlier, lower-numbered ALD items established.
 - **Diplomacy-table reuse:** the repository's existing UX components (e.g., from a prior Diplomacy-style project) may be reused only within the boundaries `SPECIFICATION.md` [§16.2](SPECIFICATION.md#162-diplomacy-table-reuse-boundaries) defines; this is treated as a constraint, not an invitation to reuse everything available.
 
 ## 3. Priority Definitions
@@ -240,13 +240,13 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 **Goal:** stand up the monorepo, shared types, configuration convention, and twin pack skeletons so every later epic has a place to put code. **Depends on:** none. **Acceptance gate:** the monorepo installs and builds with zero source packages beyond skeletons, and a skeleton twin pack responds on its unprefixed route.
 
-#### ALD-001 — npm workspaces monorepo bootstrap
+#### ALD-001 — pnpm workspaces monorepo bootstrap
 - **Priority:** P0 · **Size:** M · **Class:** MVP · **Depends on:** none
 - **Spec refs:** `SPECIFICATION.md` [§4.1 Components](SPECIFICATION.md#41-components)
-- **Scope:** Initialize root `package.json` with `workspaces` for `packages/*` and `twins/*`; set up shared TypeScript config, lint/format config, and a root build script (`tsc --build` across project references).
+- **Scope:** Initialize a root pnpm workspace for `packages/*` and `twins/packs/*`; set up shared TypeScript config, lint/format config, and a root build script (`tsc --build` across project references).
 - **Acceptance criteria:**
-  - [x] `npm install` at the repo root succeeds with zero workspace packages beyond the initial skeletons.
-  - [x] `npm run build` (project references) compiles with zero errors.
+  - [x] `pnpm install --frozen-lockfile` at the repo root succeeds.
+  - [x] `pnpm run build` (project references) compiles with zero errors.
   - [x] A new package can be added under `packages/*` and is automatically picked up by the workspace without editing the root `package.json`.
 
 #### ALD-002 — Shared `@ald/types` schema package
@@ -1025,7 +1025,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§17.2 Test Strategy](SPECIFICATION.md#172-test-strategy)
 - **Scope:** Make high/critical dependency advisories a blocking local and hosted check while retaining a machine-readable audit artifact for review.
 - **Acceptance criteria:**
-  - [x] A clean lockfile install followed by `npm audit --audit-level=high` exits zero.
+  - [x] A clean frozen-lockfile install followed by `pnpm audit --audit-level=high` exits zero.
   - [x] Hosted consolidated CI retains the audit JSON even when another check fails.
   - [x] Required native dependency install scripts are explicitly allowlisted by exact package version.
 
@@ -1133,7 +1133,7 @@ Every top-level `SPECIFICATION.md` section maps to at least one backlog item. Se
 
 These are working decisions this backlog encodes. Where a decision is not yet made in the source documents, it is marked accordingly rather than invented.
 
-- **Runtime/language:** Node.js + TypeScript, npm workspaces monorepo (ALD-001). No calendar dates or staffing levels are assumed anywhere in this backlog; all sequencing is dependency-based.
+- **Runtime/language:** Node.js + TypeScript, pnpm workspaces monorepo (ALD-001). No calendar dates or staffing levels are assumed anywhere in this backlog; all sequencing is dependency-based.
 - **Evidence store:** SQLite in WAL mode is the sole authoritative local store (ALD-005), per `LEDGER-INTEGRITY-DESIGN.md` [§18. Recommended Initial Decision](LEDGER-INTEGRITY-DESIGN.md#18-recommended-initial-decision). No external database is introduced by this backlog.
 - **Anchoring:** Base Sepolia is the default and only unconditional anchoring target (ALD-020); mainnet anchoring exists only as an explicit, separately-configured opt-in (ALD-022), never a default.
 - **Model default:** `scratch-rl` (ALD-045) is the primary scientific baseline; the local open-weight `frozen-llm` adapter (ALD-044) is the orchestration-validation default. `no-learning` (ALD-042), `self-supervised` (ALD-046), and `hybrid` (ALD-047) are explicit selections.
@@ -1168,7 +1168,7 @@ These resolve details the source documents name but do not fix. Each is implemen
 
 | ID | Title | Epic |
 |---|---|---|
-| ALD-001 | npm workspaces monorepo bootstrap | EPIC-01 |
+| ALD-001 | pnpm workspaces monorepo bootstrap | EPIC-01 |
 | ALD-002 | Shared `@ald/types` schema package | EPIC-01 |
 | ALD-003 | Environment, configuration, and secrets convention | EPIC-01 |
 | ALD-004 | DTSF twin pack scaffolding (baby-a, baby-b, nursery) | EPIC-01 |

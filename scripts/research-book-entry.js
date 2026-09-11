@@ -1,7 +1,7 @@
 import {
   loadBookManifest,
   openBookViewer,
-} from '../node_modules/read-as-book/src/index.ts';
+} from 'read-as-book';
 
 const button = document.querySelector('#open-research-book');
 const status = document.querySelector('#book-status');

@@ -4,8 +4,8 @@
 
 - Linux or macOS with Docker Engine/Colima running;
 - Docker Compose v2 available as `docker compose`;
-- Node.js 22.13 or newer; and
-- a clean checkout with dependencies installed by `npm ci`.
+- Homebrew-managed Node.js 24.20 and pnpm 12.3.4; and
+- a clean checkout with dependencies installed by `pnpm install --frozen-lockfile`.
 
 No Base key, RPC URL, or secret is needed for this isolation qualification.
 The Compose networks are internal and the run performs no anchoring.
@@ -15,7 +15,7 @@ The Compose networks are internal and the run performs no anchoring.
 From the repository root, run:
 
 ```sh
-npm run test:mode-r
+pnpm run test:mode-r
 ```
 
 The command builds the hardened learner image, starts Baby A and Baby B on

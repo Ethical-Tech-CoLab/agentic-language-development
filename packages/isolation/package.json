@@ -19,7 +19,7 @@
     "@ald/hashing": "*",
     "@ald/learners": "*",
     "@ald/scenario": "*",
-    "zod": "^4.4.3"
+    "zod": "4.4.3"
   },
   "bin": {
     "ald-learner-host": "./bin/ald-learner-host.js"

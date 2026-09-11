@@ -15,7 +15,7 @@ contract.
 
 1. Require the `consolidated-suite` and `mode-r` CI jobs to pass on the exact
    release commit. Do not retry a failure into green.
-2. Confirm `npm run check` and `npm run test:mode-r` locally when the release
+2. Confirm `pnpm run check` and `pnpm run test:mode-r` locally when the release
    changes runtime, isolation, evidence, or deployment behavior.
 3. Review `BACKLOG.md`, the publication checklist mapping, open deviations,
    invalid/aborted run indexes, and data/model release restrictions.

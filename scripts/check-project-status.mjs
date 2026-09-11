@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -10,20 +10,25 @@ function requireText(text, expected, surface) {
   }
 }
 
-const [pkg, lock, backlog, readme, research, plan] = await Promise.all([
+const [pkg, backlog, readme, research, plan] = await Promise.all([
   readJson('package.json'),
-  readJson('package-lock.json'),
   readFile('BACKLOG.md', 'utf8'),
   readFile('README.md', 'utf8'),
   readFile('RESEARCH.md', 'utf8'),
   readFile('plans/completion-plan.md', 'utf8'),
 ]);
 
-const lockRootVersion = lock.packages?.['']?.version;
-if (pkg.version !== lock.version || pkg.version !== lockRootVersion) {
-  throw new Error(
-    `root version drift: package=${pkg.version}, lock=${lock.version}, lock-root=${lockRootVersion}`,
-  );
+if (pkg.engines?.pnpm !== '12.3.4') {
+  throw new Error(`unexpected pnpm version policy: ${String(pkg.engines?.pnpm)}`);
+}
+await access('pnpm-lock.yaml');
+try {
+  await access('package-lock.json');
+  throw new Error('package-lock.json is forbidden; pnpm-lock.yaml is canonical');
+} catch (error) {
+  if (error instanceof Error && error.message.includes('forbidden')) {
+    throw error;
+  }
 }
 
 const criteria = [...backlog.matchAll(/^  - \[(x| )\]/gmu)];

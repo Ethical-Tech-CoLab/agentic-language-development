@@ -18,6 +18,6 @@
     "@ald/types": "*",
     "@ald/hashing": "*",
     "@ald/analysis": "*",
-    "zod": "^4.4.3"
+    "zod": "4.4.3"
   }
 }

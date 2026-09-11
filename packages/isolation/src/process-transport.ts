@@ -9,10 +9,11 @@
  *   `--allow-fs-write` at all: the host cannot spawn a process, start a
  *   worker, load a native addon, open an inspector, or write a single file.
  * - `--allow-fs-read` naming *only* the module graph the host needs: this
- *   package's `bin`/`dist`, the workspace packages' `dist` directories and
- *   their `package.json` manifests, and the root `node_modules`. Node's
- *   permission model resolves real paths, so the `node_modules/@ald/*`
- *   symlinks grant nothing beyond those `dist` directories. The evidence
+ *   package's `bin`/`dist`, the workspace packages' `dist` directories,
+ *   `package.json` manifests, pnpm package-local dependency links, and the
+ *   root `node_modules`. The dependency links are required for ESM package
+ *   resolution under pnpm; their targets remain the installed module graph.
+ *   The evidence
  *   database, the key store, the scenario bundles, `contracts/`, and the
  *   repository sources are all outside the list — see the fs-denial test,
  *   which hands the host the evidence path as a decoy and asserts `denied`.
@@ -89,6 +90,10 @@ export function defaultReadAllowList(hostEntry = defaultHostEntry()): string[] {
     const manifest = join(packagesDir, name, 'package.json');
     if (existsSync(manifest)) {
       allow.add(manifest);
+    }
+    const dependencies = join(packagesDir, name, 'node_modules');
+    if (existsSync(dependencies)) {
+      allow.add(dependencies);
     }
   }
   return [...allow].sort();

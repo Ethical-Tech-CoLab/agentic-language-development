@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@ald/types": "*",
-    "canonicalize": "^4.0.0"
+    "canonicalize": "4.0.0"
   }
 }

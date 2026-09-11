@@ -21,10 +21,10 @@
     "@ald/hashing": "*",
     "@ald/orchestrator": "*",
     "@ald/types": "*",
-    "better-sqlite3": "^12.4.1",
-    "zod": "^4.4.3"
+    "better-sqlite3": "12.11.1",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^9.6.0"
+    "@types/better-sqlite3": "9.6.0"
   }
 }

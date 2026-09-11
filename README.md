@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.39 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.40 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -129,7 +129,7 @@ implemented and tested:
   scaffolds; the committed observation-text and quarantine-bypass corpus; and
   an active twelve-category side-channel red-team suite shared by Mode P and Mode R.
   These are tested foundations, not a completed production Mode R deployment or
-  a scientific result. `npm run test:mode-r` builds the locked-down learner image,
+  a scientific result. `pnpm run test:mode-r` builds the locked-down learner image,
   denies Baby-to-Baby routes on separate internal networks, checks host capability
   denial and normalized timing, then kills one learner and verifies the other survives.
 - `@ald/crypto-research`: an E40 research-only, three-role instrumentation harness
@@ -202,7 +202,7 @@ generated PDF as a download.
 Regenerate the book after changing the manuscript:
 
 ```powershell
-npm run book:research
+pnpm run book:research
 ```
 
 The page rasterizer requires Node.js 22.13 or newer; generated book assets do not
@@ -217,11 +217,11 @@ The notebook is ready for pre-registration. No experiment results are claimed ye
 ## Running the Platform Locally
 
 ```bash
-npm ci
-npm run check
+pnpm install --frozen-lockfile
+pnpm run check
 ```
 
-`npm run check` runs every source/contract/boundary/readiness/status lint, builds
+`pnpm run check` runs every source/contract/boundary/readiness/status lint, builds
 every workspace, runs the complete test suite, scans for committed secrets, and
 blocks on high/critical dependency advisories.
 
@@ -229,9 +229,9 @@ Reproduce the E03 design inputs, compile the default 75-primary/8-reserve
 registration, and run the fail-closed preflight with:
 
 ```bash
-npm run design:e03
-npm run registration:e03 -- --out evidence/preregistration/e03-v1-draft.json
-npm run preflight:research -- \
+pnpm run design:e03
+pnpm run registration:e03 --out evidence/preregistration/e03-v1-draft.json
+pnpm run preflight:research \
   --registration evidence/preregistration/e03-v1-draft.json \
   --binding /absolute/path/external-registration-and-anchor-binding.json
 ```
@@ -242,7 +242,7 @@ matching pre-run anchor are real and supplied in the binding file.
 Run the Prototype Mode qualification harness and verify a bundle independently:
 
 ```bash
-npm run build && node scripts/run-qualification.mjs
+pnpm run build && node scripts/run-qualification.mjs
 ```
 
 ```bash

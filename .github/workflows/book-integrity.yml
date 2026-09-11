@@ -16,24 +16,26 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22.13.0
-          cache: npm
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@49d03f1bf5d455a413dfbdf99e6718054a4cd975
+
+      - name: Install Node.js and pnpm with Homebrew
+        run: |
+          brew install node@24 pnpm
+          echo "$(brew --prefix node@24)/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Audit dependency graph
         run: |
           mkdir -p artifacts
-          npm audit --audit-level=high --json > artifacts/npm-audit.json
+          pnpm audit --audit-level=high --json > artifacts/pnpm-audit.json
 
       - name: Run consolidated suite with timing
         run: |
           mkdir -p artifacts
-          /usr/bin/time -v npm run check:ci 2> artifacts/consolidated-runtime.txt
+          /usr/bin/time -v pnpm run check:ci 2> artifacts/consolidated-runtime.txt
 
       - name: Upload test and runtime evidence
         if: always()
@@ -50,19 +52,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22.13.0
-          cache: npm
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@49d03f1bf5d455a413dfbdf99e6718054a4cd975
+
+      - name: Install Node.js and pnpm with Homebrew
+        run: |
+          brew install node@24 pnpm
+          echo "$(brew --prefix node@24)/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run real-container Mode R suite with timing
         run: |
           mkdir -p artifacts
-          /usr/bin/time -v npm run test:mode-r 2> artifacts/mode-r-runtime.txt
+          /usr/bin/time -v pnpm run test:mode-r 2> artifacts/mode-r-runtime.txt
 
       - name: Upload Mode R runtime evidence
         if: always()

@@ -42,7 +42,7 @@ rate is not a behavioral result and must not be cited as one.
 Regenerate it against a loopback server with:
 
 ```sh
-npm run qualify:frozen-model -- \
+pnpm run qualify:frozen-model \
   --endpoint http://127.0.0.1:18080 \
   --model ../Qwen3-4B-Q4_K_M.gguf \
   --weights /absolute/path/Qwen3-4B-Q4_K_M.gguf \
@@ -67,7 +67,7 @@ itself a research artifact worth committing.
 ## Running a qualification pass
 
 ```sh
-npm run build
+pnpm run build
 node scripts/run-qualification.mjs
 ```
 

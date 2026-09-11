@@ -25,7 +25,7 @@ stored directly in environment files committed to this repository.
 - Store private keys in files outside the repository and provide only their paths.
 - Do not commit `.env` files. The repository ignores `.env` and `.env.*`.
 - Use a dedicated, low-balance anchor wallet.
-- Run `npm run scan:secrets` before committing.
+- Run `pnpm run scan:secrets` before committing.
 - Research-grade mode fails fast unless `ALD_KEY_DIR` is explicitly configured.
 - Mainnet anchoring is double opt-in: the anchor publisher must be constructed with `allowMainnet: true` and `ALD_ALLOW_MAINNET_ANCHORING=true` must be set; the default anchors to Base Sepolia only.
 - Per-run Ed25519 signer seeds live under `<ALD_KEY_DIR>/<runId>/signers.json` (mode 0600) and never enter the evidence store or a bundle.
@@ -35,7 +35,7 @@ stored directly in environment files committed to this repository.
 Prototype defaults require no environment variables:
 
 ```powershell
-npm run build
+pnpm run build
 ```
 
 Research-grade mode requires an explicit isolated key directory:
@@ -43,5 +43,5 @@ Research-grade mode requires an explicit isolated key directory:
 ```powershell
 $env:ALD_DEPLOYMENT_MODE = 'research-grade'
 $env:ALD_KEY_DIR = 'C:\ald-secrets\keys'
-npm run build
+pnpm run build
 ```
