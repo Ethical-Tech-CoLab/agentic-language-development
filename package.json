@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.43",
+  "version": "0.1.44",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -20,8 +20,8 @@
     "build:conformance-matrix": "node scripts/build-conformance-matrix.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "audit:dependencies": "pnpm audit --audit-level=high",
-    "check": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm test && pnpm run scan:secrets && pnpm run audit:dependencies",
-    "check:ci": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run build && pnpm run test:ci && pnpm run scan:secrets",
+    "check": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run test:integrity-auditor && pnpm run build && pnpm test && pnpm run scan:secrets && pnpm run audit:dependencies",
+    "check:ci": "pnpm run lint && pnpm run lint:contracts && pnpm run lint:crypto-boundary && pnpm run lint:research-console && pnpm run lint:readiness && pnpm run lint:acceptance-coverage && pnpm run lint:conformance-matrix && pnpm run lint:project-status && pnpm run lint:native-builds && pnpm run lint:api-docs && pnpm run test:integrity-auditor && pnpm run build && pnpm run test:ci && pnpm run scan:secrets",
     "lint:contracts": "node scripts/lint-learner-contracts.mjs",
     "lint:crypto-boundary": "node scripts/lint-crypto-boundary.mjs",
     "lint:research-console": "node scripts/check-research-console.mjs",
@@ -30,7 +30,9 @@
     "lint:conformance-matrix": "node scripts/build-conformance-matrix.mjs --check",
     "lint:project-status": "node scripts/check-project-status.mjs",
     "lint:native-builds": "node scripts/check-native-builds.mjs",
-    "lint:api-docs": "node scripts/check-api-docs.mjs"
+    "lint:api-docs": "node scripts/check-api-docs.mjs",
+    "test:integrity-auditor": "CARGO_TARGET_DIR=.artifacts/cargo-target cargo test --locked --manifest-path tools/integrity-auditor/Cargo.toml && CARGO_TARGET_DIR=.artifacts/cargo-target cargo clippy --locked --manifest-path tools/integrity-auditor/Cargo.toml -- -D warnings",
+    "challenge:integrity": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && tsx scripts/run-integrity-challenge.ts"
   },
   "devDependencies": {
     "@ald/analysis": "workspace:*",

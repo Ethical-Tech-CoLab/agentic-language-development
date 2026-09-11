@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.43 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.44 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -111,6 +111,10 @@ implemented and tested:
   proof files, the Base anchor publisher (fake chain and viem transports; no funded
   wallet is configured here), and the standalone `ald-verify` CLI that re-derives
   every hash, signature, root, proof, binding, and anchor from a bundle alone.
+  A separate read-only Rust auditor independently rebuilds canonical event hashes,
+  signatures, Merkle prefixes, checkpoint chains, receipt bindings, and attachment
+  hashes; `pnpm run challenge:integrity` compares both implementations against a
+  fresh real export and deliberate mutations.
 - `@ald/lifecycle`, `@ald/scenario`, `@ald/gateway`, `@ald/learners`,
   `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine; deterministic
   scenarios, hygiene, and a fail-closed run-registration quarantine gate; fixed-token, glyph, bitmap, canvas,

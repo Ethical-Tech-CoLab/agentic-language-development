@@ -572,7 +572,7 @@ describe('ALD-060: final snapshot on shutdown (SPEC §14.4 SIGINT/SIGTERM)', () 
     const exitCode = await new Promise<number | null>((resolve, reject) => {
       const child = spawn(
         process.execPath,
-        [join(process.cwd(), 'node_modules', 'tsx', 'dist', 'cli.mjs'), fixture, directory],
+        ['--import', 'tsx', fixture, directory],
         { stdio: ['ignore', 'pipe', 'pipe', 'ipc'] },
       );
       let signalSent = false;

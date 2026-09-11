@@ -230,3 +230,17 @@ evaluations — live under `analysis/`:
 - The latest `ExperimentRecord.analysisAttachmentRefs` lists the hashes of all
   attachments currently in the bundle. Earlier append-only record versions may
   list only the attachments that existed when that version was written.
+
+## 11. Independent integrity cross-check
+
+`tools/integrity-auditor` is a read-only Rust implementation of the core byte-level
+checks. It does not import the TypeScript hashing, Merkle, evidence, or verifier
+packages. It independently checks canonical JSON bytes, event chains, Ed25519
+signatures, RFC 6962 roots at every checkpoint, checkpoint hashes and signatures,
+configuration and lineage bindings, local anchor-receipt bindings, unanchored tails,
+and analysis-attachment byte hashes. It does not query a public chain or interpret
+scientific content, so it supplements rather than replaces `ald-verify`.
+
+Run `pnpm run challenge:integrity` to create a fresh exporter-produced fixture and
+require the production verifier and Rust auditor to agree on the unchanged export
+and on deliberate event, attachment, lineage, chain, receipt, and tail mutations.
