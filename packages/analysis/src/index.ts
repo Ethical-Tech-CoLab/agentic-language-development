@@ -32,6 +32,11 @@ export {
   type AnalysisErrorCode,
 } from './errors.js';
 export {
+  carrierCapacity,
+  type CarrierCapacity,
+  type CarrierCapacityInput,
+} from './carrier-capacity.js';
+export {
   binomialLogPmf,
   logBeta,
   logBinomialCoefficient,

@@ -68,6 +68,7 @@ import {
 import { scanForHumanLanguage } from '@ald/scenario';
 
 import { loadLearnerContract, type TrackLearnerContract } from './contracts.js';
+import { CARRIER_EMIT_KIND } from './carrier-support.js';
 import { validateLearnerDraft } from './drafts.js';
 import { LearnerConformanceError } from './errors.js';
 import {
@@ -142,6 +143,10 @@ export interface ConformanceOptions {
   valuesPerAttribute?: number;
   candidateCount?: number;
   symbolInventorySize?: number;
+  /** Explicit §9.2 carrier condition; defaults to `fixed-token`. */
+  carrierMode?: RunConfig['carrierMode'];
+  /** Canvas grammar bound recorded in the run configuration. */
+  maxStrokes?: number;
   messageLength?: number;
   roleReversalPeriod?: number;
   learningSignal?: RunConfig['learningSignal'];
@@ -362,9 +367,20 @@ export function buildConformanceRunConfig(
     learningSignal,
     communicationCondition: 'normal',
     interactionMode: 'cooperative-signaling',
-    carrierMode: 'fixed-token',
+    carrierMode: options.carrierMode ?? 'fixed-token',
     symbolInventorySize: resolved.symbolInventorySize,
     maxSymbolsPerMessage: resolved.messageLength,
+    ...(options.maxStrokes === undefined
+      ? {}
+      : { maxStrokes: options.maxStrokes }),
+    ...(options.carrierMode === 'fixed-glyph'
+      ? {
+          glyphBundleHash: hashCanonical(HASH_DOMAINS.glyphBundle, {
+            source: 'learner-conformance',
+            size: resolved.symbolInventorySize,
+          }),
+        }
+      : {}),
     affectMode: 'none',
     affectWindowSchedule: 'none',
     observationEncoding: 'opaque-numeric',
@@ -842,7 +858,7 @@ export async function runLearnerAdapterConformance(
       turn: episode.turn,
       role: 'sender',
       responseBudgetMs: config.turnResponseBudgetMs,
-      availableActions: ['emit_symbols'],
+      availableActions: [CARRIER_EMIT_KIND[config.carrierMode]],
     });
     proposals += 1;
     const senderProposal = assertToolOnlyProposal(
@@ -858,9 +874,9 @@ export async function runLearnerAdapterConformance(
       validateLearnerDraft(senderProposal.privateLedgerDraft);
     }
     assertIntentionDraft(senderProposal, `episode ${index} sender act()`);
-    if (senderProposal.proposal.kind !== 'emit_symbols') {
+    if (senderProposal.proposal.kind !== CARRIER_EMIT_KIND[config.carrierMode]) {
       throw new LearnerConformanceError(
-        `episode ${index}: a sender must emit symbols, got ${senderProposal.proposal.kind}`,
+        `episode ${index}: carrier ${config.carrierMode} requires ${CARRIER_EMIT_KIND[config.carrierMode]}, got ${senderProposal.proposal.kind}`,
       );
     }
 

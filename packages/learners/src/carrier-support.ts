@@ -16,17 +16,18 @@
  *   `generative-tone`) declare no inventory at all (§9.2 gives them a
  *   grammar, not a vocabulary). Each Baby therefore **invents** its own form
  *   inventory at `init` from its private seed: `formCount` distinct valid
- *   artifacts, drawn once and never shared. A message is exactly one
- *   invented form. The Gateway sees only artifacts and never learns that an
- *   inventory exists; the receiving Baby recognises a delivered form only by
- *   an exact `markHash` match against its *own* inventory, and any other
- *   artifact is a novel form it has never produced.
+ *   artifacts. A message is exactly one form. When an E13-style condition
+ *   explicitly enables learning, a novel delivered form is staged during
+ *   `receive` and committed into the fixed-capacity bank only by
+ *   `updatePolicy`; a deterministic parent-linked variant can occupy the next
+ *   slot. The Gateway sees only artifacts and never learns that a bank exists.
  *
  * That asymmetry is the point of E13: with a generative carrier the two
  * Babies start with disjoint private form inventories and no shared id space,
- * so a convention can only arise if one Baby's forms become recognisable to
- * the other through use. Nothing here makes that happen or measures whether
- * it did — `markHash` reuse is what ALD-032's analysis counts.
+ * so a convention can only arise if one Baby acquires, imitates, modifies,
+ * and reuses its partner's forms through experience. `markHash` chronology is
+ * what ALD-032's analysis counts; this module supplies the learnable action
+ * surface without assigning any meaning to a form.
  *
  * ### Why the bounds are restated here
  *
@@ -42,6 +43,7 @@
  */
 import {
   HASH_DOMAINS,
+  AgentActionProposalSchema,
   type AgentActionProposal,
   type LearnerInitContext,
   type LearnerVisibleRunConfig,
@@ -49,6 +51,7 @@ import {
   type TurnBudget,
 } from '@ald/types';
 import { SeededPrng, hashCanonical, hashCarrierMark } from '@ald/hashing';
+import { z } from 'zod';
 
 import { LearnerConfigurationError, LearnerStateError } from './errors.js';
 import type { ResolvedGameShape } from './game.js';
@@ -110,6 +113,59 @@ export interface CarrierSupportOptions {
    * across carrier conditions").
    */
   inventedFormCount?: number;
+  /**
+   * Stage novel partner forms and commit them into the fixed-capacity form
+   * bank during `updatePolicy`. Disabled unless an E13-style run selects it.
+   */
+  acquirePartnerForms?: boolean;
+  /**
+   * Reserve a second slot for a deterministic variant of each acquired form.
+   * This makes modification executable without changing the model's action
+   * dimensionality. Requires `acquirePartnerForms`.
+   */
+  modifyAcquiredForms?: boolean;
+}
+
+export const CARRIER_LEARNING_STATE_VERSION = 1 as const;
+
+export const CarrierFormSlotSchema = z
+  .object({
+    slot: z.number().int().nonnegative(),
+    formId: z.string().min(1),
+    markHash: z.string().regex(/^sha256:[0-9a-f]{64}$/u),
+    artifact: z.record(z.string(), z.unknown()),
+    origin: z.enum(['initialized', 'acquired', 'modified']),
+    introducedTurn: z.number().int().nonnegative(),
+    parentMarkHash: z.string().regex(/^sha256:[0-9a-f]{64}$/u).optional(),
+  })
+  .strict();
+
+export const CarrierLearningStateSchema = z
+  .object({
+    version: z.literal(CARRIER_LEARNING_STATE_VERSION),
+    carrier: z.enum([
+      'fixed-token',
+      'fixed-glyph',
+      'generative-bitmap',
+      'generative-canvas',
+      'generative-tone',
+    ]),
+    capacity: z.number().int().positive(),
+    nextReplacementSlot: z.number().int().nonnegative(),
+    slots: z.array(CarrierFormSlotSchema),
+  })
+  .strict();
+
+export type CarrierLearningState = z.infer<typeof CarrierLearningStateSchema>;
+export type CarrierFormSlot = z.infer<typeof CarrierFormSlotSchema>;
+
+export interface CarrierFormChange {
+  turn: number;
+  kind: 'acquired' | 'modified';
+  slot: number;
+  formId: string;
+  markHash: string;
+  parentMarkHash?: string;
 }
 
 /** One mark of a delivered artifact, as the receiving Baby sees it. */
@@ -124,6 +180,10 @@ export interface DeliveredMark {
   formId: string;
   /** SPEC §9.2 content address of this single mark. */
   markHash: string;
+  /** How the current fixed-capacity slot entered this Baby's form bank. */
+  origin?: CarrierFormSlot['origin'];
+  /** Present for a locally modified form, linking it to the observed parent. */
+  parentMarkHash?: string;
 }
 
 export interface DeliveredForms {
@@ -142,7 +202,7 @@ export interface CarrierAdapterSupport {
   readonly formCount: number;
   /** Marks per message: `messageLength` for symbolic carriers, `1` otherwise. */
   readonly marksPerMessage: number;
-  /** Domain-separated hash of the whole form inventory (SPEC §14.3 replay). */
+  /** Domain-separated hash of the current fixed-capacity form bank. */
   readonly formInventoryHash: string;
   /** Opaque label for one of this Baby's forms. */
   formId(index: number): string;
@@ -154,6 +214,16 @@ export interface CarrierAdapterSupport {
   markHashOf(artifact: unknown): string;
   /** Resolve a delivered artifact against this Baby's own inventory. */
   parseDelivery(artifact: unknown): DeliveredForms;
+  /** Parse and stage a novel partner form; no learned state changes yet. */
+  observeDelivery(artifact: unknown, turn: number): DeliveredForms;
+  /** Commit staged forms only when the adapter's training update executes. */
+  commitObservedForms(turns: readonly number[]): CarrierFormChange[];
+  /** Resolve previously parsed marks after a staged acquisition is committed. */
+  resolveMarks(marks: readonly DeliveredMark[]): DeliveredMark[];
+  /** Canonical fixed-capacity state included in trainable policy checkpoints. */
+  exportLearningState(): CarrierLearningState;
+  /** Exact restore for recovery and derived-run initialization. */
+  restoreLearningState(value: unknown): void;
 }
 
 /** SPEC §9.1 default fixed-token inventory, restated (see the module header). */
@@ -228,6 +298,48 @@ function drawTones(prng: SeededPrng): CarrierArtifact {
     durationBin: 1 + prng.nextInt(TONE_DURATION_BINS),
   }));
   return { tones: { tones } };
+}
+
+function cloneArtifact(artifact: CarrierArtifact): CarrierArtifact {
+  return structuredClone(artifact);
+}
+
+/** One deterministic, bounded edit that always changes a valid generative form. */
+function modifyArtifact(
+  carrier: CarrierMode,
+  artifact: CarrierArtifact,
+  seed: string,
+  turn: number,
+  attempt: number,
+): CarrierArtifact {
+  const prng = new SeededPrng(seed).derive(
+    `carrier/${carrier}/modify/${String(turn)}/${String(attempt)}/${hashCarrierMark(carrier, artifact)}`,
+  );
+  if (carrier === 'generative-bitmap' && 'bitmap' in artifact) {
+    const bits = [...artifact.bitmap.bits];
+    const index = prng.nextInt(bits.length);
+    bits[index] = bits[index] === 1 ? 0 : 1;
+    return { bitmap: { bits } };
+  }
+  if (carrier === 'generative-canvas' && 'strokes' in artifact) {
+    const strokes = artifact.strokes.map((stroke) => ({ ...stroke }));
+    const index = prng.nextInt(strokes.length);
+    const stroke = at(strokes, index);
+    stroke.startX = (stroke.startX + 1 + prng.nextInt(CANVAS_GRID_MAX)) %
+      (CANVAS_GRID_MAX + 1);
+    return { strokes };
+  }
+  if (carrier === 'generative-tone' && 'tones' in artifact) {
+    const tones = artifact.tones.tones.map((tone) => ({ ...tone }));
+    const index = prng.nextInt(tones.length);
+    const tone = at(tones, index);
+    tone.pitchBin = (tone.pitchBin + 1 + prng.nextInt(TONE_PITCH_BINS - 1)) %
+      TONE_PITCH_BINS;
+    return { tones: { tones } };
+  }
+  throw new LearnerConfigurationError(
+    `${carrier} artifact cannot be modified by the generative learner`,
+  );
 }
 
 /**
@@ -315,12 +427,20 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
   readonly symbolic: boolean;
   readonly formCount: number;
   readonly marksPerMessage: number;
-  readonly formInventoryHash: string;
 
   private readonly ids: string[];
   private readonly artifacts: CarrierArtifact[];
   private readonly markHashes: string[];
   private readonly indexByMarkHash: Map<string, number>;
+  private readonly origins: CarrierFormSlot['origin'][];
+  private readonly introducedTurns: number[];
+  private readonly parentMarkHashes: Array<string | undefined>;
+  private readonly pendingObserved = new Map<number, CarrierArtifact[]>();
+  private readonly seed: string;
+  private readonly maxStrokes: number;
+  private readonly acquirePartnerForms: boolean;
+  private readonly modifyAcquiredForms: boolean;
+  private nextReplacementSlot = 0;
 
   constructor(
     readonly carrier: CarrierMode,
@@ -330,6 +450,15 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
   ) {
     this.emitKind = CARRIER_EMIT_KIND[carrier];
     this.symbolic = carrier === 'fixed-token' || carrier === 'fixed-glyph';
+    this.seed = context.seed;
+    this.maxStrokes = maxStrokesFor(context.config);
+    this.acquirePartnerForms = options.acquirePartnerForms ?? false;
+    this.modifyAcquiredForms = options.modifyAcquiredForms ?? false;
+    if (this.modifyAcquiredForms && !this.acquirePartnerForms) {
+      throw new LearnerConfigurationError(
+        'modifyAcquiredForms requires acquirePartnerForms',
+      );
+    }
 
     if (this.symbolic) {
       // `fixed-token` uses the inventory the runtime declared, verbatim, so
@@ -384,8 +513,14 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
     this.indexByMarkHash = new Map(
       this.markHashes.map((markHash, index) => [markHash, index]),
     );
-    this.formInventoryHash = hashCanonical(CARRIER_FORM_INVENTORY_DOMAIN, {
-      carrier,
+    this.origins = this.artifacts.map(() => 'initialized');
+    this.introducedTurns = this.artifacts.map(() => 0);
+    this.parentMarkHashes = this.artifacts.map(() => undefined);
+  }
+
+  get formInventoryHash(): string {
+    return hashCanonical(CARRIER_FORM_INVENTORY_DOMAIN, {
+      carrier: this.carrier,
       formCount: this.formCount,
       marksPerMessage: this.marksPerMessage,
       markHashes: [...this.markHashes],
@@ -423,6 +558,8 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
     const artifactMarkHash = this.markHashOf(artifact);
     if (!this.symbolic) {
       const formIndex = this.indexByMarkHash.get(artifactMarkHash) ?? null;
+      const parentMarkHash =
+        formIndex === null ? undefined : this.parentMarkHashes[formIndex];
       return {
         marks: [
           {
@@ -432,6 +569,14 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
                 ? formLabel(artifactMarkHash)
                 : at(this.ids, formIndex),
             markHash: artifactMarkHash,
+            ...(formIndex === null
+              ? {}
+              : {
+                  origin: at(this.origins, formIndex),
+                  ...(parentMarkHash === undefined
+                    ? {}
+                    : { parentMarkHash }),
+                }),
           },
         ],
         artifactMarkHash,
@@ -448,6 +593,240 @@ class CarrierAdapterSupportImpl implements CarrierAdapterSupport {
         markHash: hashCarrierMark(this.carrier, this.markArtifact(mark)),
       })),
       artifactMarkHash,
+    };
+  }
+
+  observeDelivery(artifact: unknown, turn: number): DeliveredForms {
+    if (!Number.isInteger(turn) || turn < 0) {
+      throw new LearnerStateError('delivery turn must be a non-negative integer');
+    }
+    const delivered = this.parseDelivery(artifact);
+    if (
+      this.symbolic ||
+      !this.acquirePartnerForms ||
+      delivered.marks[0]?.formIndex !== null
+    ) {
+      return delivered;
+    }
+    const markHash = delivered.artifactMarkHash;
+    const alreadyStaged = [...this.pendingObserved.values()].some((forms) =>
+      forms.some(
+        (candidate) => hashCarrierMark(this.carrier, candidate) === markHash,
+      ),
+    );
+    if (!alreadyStaged) {
+      const forms = this.pendingObserved.get(turn) ?? [];
+      forms.push(cloneArtifact(artifact as CarrierArtifact));
+      this.pendingObserved.set(turn, forms);
+    }
+    return delivered;
+  }
+
+  commitObservedForms(turns: readonly number[]): CarrierFormChange[] {
+    if (this.symbolic || !this.acquirePartnerForms) return [];
+    const changes: CarrierFormChange[] = [];
+    const orderedTurns = [...new Set(turns)].sort((left, right) => left - right);
+    for (const turn of orderedTurns) {
+      const artifacts = this.pendingObserved.get(turn) ?? [];
+      for (const artifact of artifacts) {
+        const parentMarkHash = hashCarrierMark(this.carrier, artifact);
+        if (!this.indexByMarkHash.has(parentMarkHash)) {
+          changes.push(this.replaceNextSlot(artifact, 'acquired', turn));
+        }
+        if (this.modifyAcquiredForms) {
+          let variant: CarrierArtifact | undefined;
+          for (
+            let attempt = 0;
+            attempt < DISTINCT_FORM_ATTEMPTS && variant === undefined;
+            attempt += 1
+          ) {
+            const candidate = modifyArtifact(
+              this.carrier,
+              artifact,
+              this.seed,
+              turn,
+              attempt,
+            );
+            if (
+              !this.indexByMarkHash.has(
+                hashCarrierMark(this.carrier, candidate),
+              )
+            ) {
+              variant = candidate;
+            }
+          }
+          if (variant === undefined) {
+            throw new LearnerStateError(
+              `Could not derive a distinct ${this.carrier} variant`,
+            );
+          }
+          changes.push(
+            this.replaceNextSlot(variant, 'modified', turn, parentMarkHash),
+          );
+        }
+      }
+      this.pendingObserved.delete(turn);
+    }
+    return changes;
+  }
+
+  resolveMarks(marks: readonly DeliveredMark[]): DeliveredMark[] {
+    return marks.map((mark) => {
+      const formIndex = this.indexByMarkHash.get(mark.markHash) ?? null;
+      if (formIndex === null) return { ...mark, formIndex };
+      const parentMarkHash = this.parentMarkHashes[formIndex];
+      return {
+        formIndex,
+        formId: at(this.ids, formIndex),
+        markHash: mark.markHash,
+        origin: at(this.origins, formIndex),
+        ...(parentMarkHash === undefined ? {} : { parentMarkHash }),
+      };
+    });
+  }
+
+  exportLearningState(): CarrierLearningState {
+    return {
+      version: CARRIER_LEARNING_STATE_VERSION,
+      carrier: this.carrier,
+      capacity: this.formCount,
+      nextReplacementSlot: this.nextReplacementSlot,
+      slots: this.artifacts.map((artifact, slot) => {
+        const parentMarkHash = this.parentMarkHashes[slot];
+        return {
+          slot,
+          formId: at(this.ids, slot),
+          markHash: at(this.markHashes, slot),
+          artifact: cloneArtifact(artifact) as Record<string, unknown>,
+          origin: at(this.origins, slot),
+          introducedTurn: at(this.introducedTurns, slot),
+          ...(parentMarkHash === undefined ? {} : { parentMarkHash }),
+        };
+      }),
+    };
+  }
+
+  restoreLearningState(value: unknown): void {
+    const restoredState = CarrierLearningStateSchema.parse(value);
+    if (
+      restoredState.carrier !== this.carrier ||
+      restoredState.capacity !== this.formCount
+    ) {
+      throw new LearnerConfigurationError(
+        'carrier learning state does not match this run configuration',
+      );
+    }
+    if (
+      restoredState.slots.length !== this.formCount ||
+      restoredState.nextReplacementSlot >= this.formCount
+    ) {
+      throw new LearnerConfigurationError(
+        'carrier learning state does not fill its declared capacity',
+      );
+    }
+
+    const seen = new Set<string>();
+    const restored = restoredState.slots.map((slot, index) => {
+      if (slot.slot !== index) {
+        throw new LearnerConfigurationError(
+          'carrier learning state slots must be complete and ordered',
+        );
+      }
+      const proposal = AgentActionProposalSchema.parse({
+        kind: this.emitKind,
+        publicArtifact: slot.artifact,
+      });
+      const artifact = proposal.publicArtifact;
+      if (
+        this.carrier === 'generative-canvas' &&
+        'strokes' in artifact &&
+        artifact.strokes.length > this.maxStrokes
+      ) {
+        throw new LearnerConfigurationError(
+          'carrier learning state exceeds this run maxStrokes',
+        );
+      }
+      const markHash = hashCarrierMark(this.carrier, artifact);
+      const rawMarkHash = hashCarrierMark(this.carrier, slot.artifact);
+      const expectedId = this.symbolic
+        ? at(this.ids, index)
+        : formLabel(markHash);
+      if (
+        rawMarkHash !== markHash ||
+        slot.markHash !== markHash ||
+        slot.formId !== expectedId ||
+        seen.has(markHash)
+      ) {
+        throw new LearnerConfigurationError(
+          'carrier learning state contains inconsistent or duplicate forms',
+        );
+      }
+      if (
+        (slot.origin === 'modified') !==
+        (slot.parentMarkHash !== undefined)
+      ) {
+        throw new LearnerConfigurationError(
+          'only modified forms must carry a parentMarkHash',
+        );
+      }
+      if (
+        this.symbolic &&
+        (slot.origin !== 'initialized' ||
+          slot.introducedTurn !== 0 ||
+          markHash !== at(this.markHashes, index) ||
+          restoredState.nextReplacementSlot !== 0)
+      ) {
+        throw new LearnerConfigurationError(
+          'symbolic carrier learning state must preserve its declared inventory',
+        );
+      }
+      seen.add(markHash);
+      return { slot, artifact: cloneArtifact(artifact) };
+    });
+
+    this.indexByMarkHash.clear();
+    for (const { slot, artifact } of restored) {
+      const index = slot.slot;
+      this.artifacts[index] = artifact;
+      this.ids[index] = slot.formId;
+      this.markHashes[index] = slot.markHash;
+      this.origins[index] = slot.origin;
+      this.introducedTurns[index] = slot.introducedTurn;
+      this.parentMarkHashes[index] = slot.parentMarkHash;
+      this.indexByMarkHash.set(slot.markHash, index);
+    }
+    this.nextReplacementSlot = restoredState.nextReplacementSlot;
+    this.pendingObserved.clear();
+  }
+
+  private replaceNextSlot(
+    artifact: CarrierArtifact,
+    origin: 'acquired' | 'modified',
+    turn: number,
+    parentMarkHash?: string,
+  ): CarrierFormChange {
+    const slot = this.nextReplacementSlot;
+    const oldHash = at(this.markHashes, slot);
+    if (this.indexByMarkHash.get(oldHash) === slot) {
+      this.indexByMarkHash.delete(oldHash);
+    }
+    const markHash = hashCarrierMark(this.carrier, artifact);
+    const formId = formLabel(markHash);
+    this.artifacts[slot] = cloneArtifact(artifact);
+    this.ids[slot] = formId;
+    this.markHashes[slot] = markHash;
+    this.origins[slot] = origin;
+    this.introducedTurns[slot] = turn;
+    this.parentMarkHashes[slot] = parentMarkHash;
+    this.indexByMarkHash.set(markHash, slot);
+    this.nextReplacementSlot = (slot + 1) % this.formCount;
+    return {
+      turn,
+      kind: origin,
+      slot,
+      formId,
+      markHash,
+      ...(parentMarkHash === undefined ? {} : { parentMarkHash }),
     };
   }
 
@@ -560,7 +939,15 @@ export function termFields(
   if (support.carrier === 'fixed-token') {
     return { termRef: `symbol:${mark.formId}` };
   }
-  return { termRef: mark.markHash, formId: mark.formId, formHash: mark.markHash };
+  return {
+    termRef: mark.markHash,
+    formId: mark.formId,
+    formHash: mark.markHash,
+    ...(mark.origin === undefined ? {} : { formOrigin: mark.origin }),
+    ...(mark.parentMarkHash === undefined
+      ? {}
+      : { parentFormHash: mark.parentMarkHash }),
+  };
 }
 
 /**

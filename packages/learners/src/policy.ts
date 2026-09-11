@@ -18,6 +18,7 @@
  */
 import { z } from 'zod';
 
+import { CarrierLearningStateSchema } from './carrier-support.js';
 import { LearnerConfigurationError } from './errors.js';
 
 export const POLICY_DECIMALS = 12;
@@ -76,15 +77,15 @@ export const EpisodicRegistriesSchema = z.object({
 /**
  * Current exported-policy version.
  *
- * Version 2 adds `registries`. A version 1 checkpoint still loads: it simply
+ * Version 2 adds `registries`. Version 3 adds the fixed-capacity carrier form
+ * bank. A version 1 checkpoint still loads: it simply
  * carries no registries, and the adapter then starts with empty ones — the
  * pre-existing behavior, which is correct for a derived run and lossy only for
  * a recovery from a checkpoint written before this field existed.
  */
-export const EXPORTED_TABULAR_POLICY_VERSION = 2 as const;
+export const EXPORTED_TABULAR_POLICY_VERSION = 3 as const;
 
-export const ExportedTabularPolicySchema = z.object({
-  version: z.union([z.literal(1), z.literal(2)]),
+const TabularPolicyFields = {
   /** `[typeCode][symbolIndex]` sender logits. */
   thetaSender: z.array(z.array(z.number())).min(1),
   /** `[position][symbolIndex][typeCode]` receiver logits. */
@@ -92,9 +93,22 @@ export const ExportedTabularPolicySchema = z.object({
   /** Moving-average REINFORCE baseline. */
   baseline: z.number(),
   options: TabularPolicyOptionsSchema,
-  /** Absent in a version 1 checkpoint. */
-  registries: EpisodicRegistriesSchema.optional(),
-});
+} as const;
+
+export const ExportedTabularPolicySchema = z.union([
+  z.object({
+    version: z.union([z.literal(1), z.literal(2)]),
+    ...TabularPolicyFields,
+    /** Absent in a version 1 checkpoint. */
+    registries: EpisodicRegistriesSchema.optional(),
+  }),
+  z.object({
+    version: z.literal(EXPORTED_TABULAR_POLICY_VERSION),
+    ...TabularPolicyFields,
+    registries: EpisodicRegistriesSchema,
+    carrierState: CarrierLearningStateSchema,
+  }),
+]);
 
 export type TabularPolicyOptions = z.infer<typeof TabularPolicyOptionsSchema>;
 export type ExportedTabularPolicy = z.infer<typeof ExportedTabularPolicySchema>;

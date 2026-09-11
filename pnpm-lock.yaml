@@ -15,6 +15,9 @@ importers:
       '@ald/analysis':
         specifier: workspace:*
         version: link:packages/analysis
+      '@ald/gateway':
+        specifier: workspace:*
+        version: link:packages/gateway
       '@ald/hashing':
         specifier: workspace:*
         version: link:packages/hashing

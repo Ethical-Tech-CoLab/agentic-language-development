@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { CarrierLearningStateSchema } from './carrier-support.js';
 import { LearnerConfigurationError } from './errors.js';
 import { EpisodicRegistriesSchema } from './policy.js';
 import {
@@ -8,7 +9,7 @@ import {
   RECURRENT_RL_OBJECTIVE,
 } from './recurrent-model.js';
 
-export const RECURRENT_SCRATCH_POLICY_VERSION = 1 as const;
+export const RECURRENT_SCRATCH_POLICY_VERSION = 2 as const;
 
 export const RecurrentScratchPolicyOptionsSchema = z
   .object({
@@ -22,17 +23,26 @@ export const RecurrentScratchPolicyOptionsSchema = z
   })
   .strict();
 
-export const ExportedRecurrentScratchPolicySchema = z
-  .object({
-    version: z.literal(RECURRENT_SCRATCH_POLICY_VERSION),
+const RecurrentScratchPolicyFields = {
     track: z.literal('scratch-rl'),
     architecture: z.literal(RECURRENT_ARCHITECTURE),
     updateRule: z.literal(RECURRENT_RL_OBJECTIVE),
     options: RecurrentScratchPolicyOptionsSchema,
     model: ExportedRecurrentModelSchema,
     registries: EpisodicRegistriesSchema,
-  })
-  .strict();
+} as const;
+
+export const ExportedRecurrentScratchPolicySchema = z.union([
+  z.object({
+    version: z.literal(1),
+    ...RecurrentScratchPolicyFields,
+  }).strict(),
+  z.object({
+    version: z.literal(RECURRENT_SCRATCH_POLICY_VERSION),
+    ...RecurrentScratchPolicyFields,
+    carrierState: CarrierLearningStateSchema,
+  }).strict(),
+]);
 
 export type ExportedRecurrentScratchPolicy = z.infer<
   typeof ExportedRecurrentScratchPolicySchema

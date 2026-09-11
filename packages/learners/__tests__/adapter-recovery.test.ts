@@ -256,7 +256,7 @@ describe('re-initialization inside a run (SPEC §7.3)', () => {
     const parsed = parseExportedTabularPolicy(policy);
     const registries = parsed.registries as ExportedEpisodicRegistries;
 
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(registries.babyId).toBe('A');
     expect(registries.emitted.length).toBeGreaterThan(0);
     expect(registries.received.length).toBeGreaterThan(0);

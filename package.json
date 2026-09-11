@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.49",
+  "version": "0.1.50",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -16,6 +16,7 @@
     "registration:e03": "pnpm run build && node scripts/build-e03-registration.mjs",
     "preflight:research": "pnpm run build && node scripts/check-research-preflight.mjs",
     "qualify:frozen-model": "pnpm run build && node scripts/run-frozen-model-qualification.mjs",
+    "qualify:generative-carriers": "pnpm run build && node scripts/run-generative-carrier-qualification.mjs",
     "lint": "eslint packages twins",
     "book:research": "node scripts/build-research-book.mjs",
     "build:conformance-matrix": "node scripts/build-conformance-matrix.mjs",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@ald/analysis": "workspace:*",
+    "@ald/gateway": "workspace:*",
     "@ald/hashing": "workspace:*",
     "@ald/learners": "workspace:*",
     "@ald/lifecycle": "workspace:*",

@@ -477,11 +477,9 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       confidence *= at(distribution, index);
     }
     recurrent?.recordActions(turn, symbolIndices);
-    const marks = symbolIndices.map((index) => ({
-      formIndex: index,
-      formId: state.support.formId(index),
-      markHash: state.support.formMarkHash(index),
-    }));
+    const marks = state.support.parseDelivery(
+      state.support.artifactForForms(symbolIndices),
+    ).marks;
     const artifactRef = `proposal:${hashCanonical(
       HASH_DOMAINS.babyProposal,
       carrierProposal(state.support, symbolIndices),
@@ -614,7 +612,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     delivery: DeliveredChannelArtifact,
   ): Promise<LedgerDraftEnvelope> {
     const state = this.requireState();
-    const delivered = state.support.parseDelivery(delivery.publicArtifact);
+    const delivered = state.support.observeDelivery(
+      delivery.publicArtifact,
+      delivery.turn,
+    );
     const marks = delivered.marks;
     const unknownSymbol = marks.find((mark) => mark.formIndex === null);
     if (state.support.symbolic && unknownSymbol !== undefined) {
@@ -748,6 +749,8 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       );
     }
 
+    state.support.commitObservedForms(batch.turns);
+
     if (this.recurrentModel !== undefined) {
       const highestTurn = batch.turns.reduce(
         (highest, turn) => Math.max(highest, turn),
@@ -867,6 +870,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         registries: cloneRegistries(
           this.registryCheckpoint ?? this.snapshotRegistries(state),
         ),
+        carrierState: state.support.exportLearningState(),
       };
     }
     return {
@@ -880,6 +884,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       registries: cloneRegistries(
         this.registryCheckpoint ?? this.snapshotRegistries(state),
       ),
+      carrierState: state.support.exportLearningState(),
     };
   }
 
@@ -1251,6 +1256,9 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         );
       }
       this.recurrentModel.restore(policy.model);
+      if (policy.version === RECURRENT_SCRATCH_POLICY_VERSION) {
+        state.support.restoreLearningState(policy.carrierState);
+      }
       this.restoreRegistries(policy.registries);
       this.diagnostics = [];
       for (const [name, checkpointValue, runValue] of [
@@ -1316,6 +1324,9 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       table.map((logits) => [...logits]),
     );
     this.baseline = policy.baseline;
+    if (policy.version === EXPORTED_TABULAR_POLICY_VERSION) {
+      state.support.restoreLearningState(policy.carrierState);
+    }
     this.restoreRegistries(policy.registries);
   }
 
