@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.41 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.42 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -874,9 +874,11 @@ truth.
 
 ## 8. Evidence Integrity and Reproducibility
 
-> **Design status:** This section describes required evidence behavior. Hash-chain
-> writing, signatures, Merkle checkpoints, anchoring, and the independent verifier are
-> not yet complete; see Section 10.
+> **Implementation status:** Local hash-chain writing, domain-separated signatures,
+> ordered-Merkle checkpoints and proofs, anchor publisher transports, evidence export,
+> and the standalone verifier are implemented and covered by software tests. No funded
+> public-chain receipt exists for the current candidate, and the historical research
+> corpus remains unregistered and unanchored; see Section 10.
 
 ### 8.1 Append-Only Evidence
 
@@ -1017,7 +1019,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.41 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.42 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.

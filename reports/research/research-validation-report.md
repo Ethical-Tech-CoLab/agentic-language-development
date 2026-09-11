@@ -145,6 +145,8 @@ software infrastructure with bounded qualification evidence. Whether that become
 competitive empirical contribution depends on completing the registered studies and
 showing an insight beyond systems integration.
 
-The report remains in progress. Subsequent revisions will add the requirement-level
-conformance matrix, verified literature register, protocol cards, pilot cost model,
+The provisional [requirement-level conformance matrix](../../docs/requirement-conformance-matrix.md)
+now inventories every backlog criterion and normative MUST-bearing source line with
+concrete executable surfaces and required receipts. Subsequent revisions will add
+behavioral dispositions from V04–V11, the verified literature register, protocol cards, pilot cost model,
 run/data manifest, analyses, audit-cost comparison, claim map, and critical review.

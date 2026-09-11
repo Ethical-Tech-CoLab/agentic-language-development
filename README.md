@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.41 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.42 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -189,6 +189,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |
 | [Research validation report](reports/research/research-validation-report.md) | Living evidence-class, validation, experiment, and claim-readiness report |
 | [Source-lineage register](reports/research/source-lineage-register.md) | Requirement origins and later normative amendments without personal attribution |
+| [Requirement conformance matrix](docs/requirement-conformance-matrix.md) | Provisional mapping from every backlog criterion and normative MUST-bearing line to executable evidence |
 
 ## Research Book
 
