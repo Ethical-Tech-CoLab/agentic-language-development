@@ -33,6 +33,10 @@ The causal-prediction qualification receipt binds the exact E16 comparator candi
 all five eligible non-ledger predictors, disjoint validation selection, prospective
 commitments, seven negative controls, and the clean-check ordering failure that the
 next candidate corrected. It is synthetic software evidence, not an E16 result.
+The causal-prediction runtime qualification binds exact v0.1.75 production chronology,
+hashed predictor identity and eligibility, fail-closed creation/recovery, and per-turn
+score attachments. It remains software evidence and does not replace registration,
+eligible execution, aggregate inference, or independent review.
 The registration-readiness inventory applies an eleven-binding fail-closed packet
 contract to all 19 experiment cards. It deliberately emits zero packet hashes while
 190 exact experiment-specific bindings remain unresolved.

@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.75 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.76 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -729,8 +729,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    the selected baseline and native prediction; after the hash-bound turn record, it
    attaches the score. The hashed run configuration binds the selection commitment
    and native prediction-function version, freezes accepted evaluation deliveries as
-   the eligibility rule, and fails closed on restart. Eligible runs
-   still need to bind the exact validation corpus into external registration and
+   the eligibility rule, and fails closed on restart. Exact detached production
+   qualification passed; eligible runs still need to bind the exact validation corpus
+   into external registration and
    complete the registered aggregate analysis.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require

@@ -47,8 +47,8 @@ to relabel any existing fixture as a pilot.
   and native predictions after delivery but before receiver action, then binds scores
   to the hash-recorded action/outcome. The run configuration binds the selection
   commitment, native prediction-function version, and accepted-delivery eligibility,
-  and fails closed on restart.
-  Exact production qualification and eligible registered execution remain absent.
+  and fails closed on restart. Exact production qualification passed; eligible
+  registered execution and aggregate analysis remain absent.
 - E01 timing/envelope and E13 side-feature controls pass on the current exact
   two-container reference topology, but have not been measured on the final selected
   registered topology with the eventual learners, carriers, sample counts, and bounds.

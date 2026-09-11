@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "protocolSha256": "98b7c82b2e3887fca848be73e1c3bcc91fad8951fdbdb7a4a3e3eaf258e46f2f",
+  "candidate": {
+    "commit": "3c7f6a0e619fe5189f88d180fdb45b048fff4e58",
+    "version": "0.1.75"
+  },
+  "sourceHashes": {
+    "packages/orchestrator/src/nursery-runtime.ts": "bd5769fc59532fcc5430f294118d24e8ee398c71940ee1c8a04c362796504592",
+    "packages/orchestrator/__tests__/causal-prediction-evidence.test.ts": "66f6030399670dd5b8af4df846773ad177d857e1b0be3d8a0ebe98259e281f15",
+    "packages/types/src/schemas.ts": "eb893899f19cb7b38f3b523d9d55728f3e1e7ec70be00fa1e577685debaba85d",
+    "packages/types/src/schemas-integrity.ts": "8b40e924b3d31a9786bf52399f6e7438acb913a7bccea14d1d70a06ca732818a",
+    "packages/lifecycle/src/run-config.ts": "4c6dfc609b27be818a485edb12e33a29990d600cfe64a74a849d78c3cff883f3",
+    "packages/analysis/src/causal-prediction.ts": "80a1a8298feb4bbe302b7b1e9b81bf1b14e83327ae72967ce6a06b9fe5b830e2"
+  },
+  "qualifiedBehavior": {
+    "eligibleTurnRule": "accepted-evaluation-deliveries",
+    "committedEvaluationTurns": 3,
+    "scoredAttachments": 3,
+    "runConfigBindings": [
+      "selectionCommitmentHash",
+      "predictionFunctionVersion",
+      "eligibleTurns"
+    ],
+    "failClosedCases": [
+      "provider-without-plan",
+      "missing-provider-at-creation",
+      "missing-provider-at-recovery",
+      "prediction-function-version-mismatch",
+      "selection-commitment-mismatch",
+      "native-output-version-mismatch",
+      "plan-outside-e16"
+    ]
+  },
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "focusedTestFiles": 3,
+    "focusedTests": 10,
+    "testFiles": 144,
+    "tests": 1808,
+    "rustTests": 3,
+    "secretFilesScanned": 678,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 183.69,
+    "consolidatedMaximumResidentSetKiB": 917932,
+    "trackedFilesManifestSha256": "a7adeed9e2a9ebdb9b7e8058aba900b80e04ade6d2ee7567cf3f7c85d2347051",
+    "detachedWorktree": true,
+    "worktreeCleanAfterValidation": true,
+    "frozenInstallExitCode": 0,
+    "focusedExitCode": 0,
+    "consolidatedExitCode": 0
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-b10-3c7f6a0-exact",
+    "gitTracked": false,
+    "installLogSha256": "e4377524a2ed3c04593ca8eb0431de488107859dc1c62734c314581263973c58",
+    "focusedLogSha256": "9e45a8e4293bb7b47327f8b17d4f2e4469a714f75d1a17d381d40e666d731ff4",
+    "checkLogSha256": "3849d2f93c07676ea8f5022a9abc567fd3030ffb0981cf2019655241d18b2da2",
+    "cleanStatusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "blockerDisposition": {
+    "blocker": "B10",
+    "status": "open",
+    "completed": "exact production chronology, immutable provider-identity and eligibility binding, fail-closed creation/recovery, and source-bound per-turn scores",
+    "remains": "external registration of the exact validation corpus and eligible E16 configuration, prospective study execution, untouched aggregate scoring, and independent review"
+  },
+  "boundary": "This qualifies the production E16 prediction chronology, immutable provider-identity binding, fail-closed restart behavior, and source-bound per-turn score attachments on an exact software candidate. It is not a prospectively registered E16 execution, does not supply study outcomes or aggregate inference, and does not close B10."
+}
