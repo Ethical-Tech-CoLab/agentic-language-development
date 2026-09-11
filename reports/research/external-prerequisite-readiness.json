@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "classification": "external-prerequisite-readiness-ledger",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "decision": "blocked",
+  "satisfiedCount": 0,
+  "requiredCount": 6,
+  "items": [
+    {
+      "id": "O01",
+      "blockingFinding": "B01",
+      "status": "missing",
+      "satisfied": false,
+      "receipt": null,
+      "requiredEvidence": [
+        "dated authentic governance decision identifier",
+        "approved synthetic-data and human-review scope",
+        "responsible role assignments without personal identity in tracked artifacts",
+        "retention and deletion decision",
+        "human-coding review determination",
+        "approval authenticity verification"
+      ],
+      "nextAction": "An authorized governance role records and verifies the scoped decision."
+    },
+    {
+      "id": "O02",
+      "blockingFinding": "B02",
+      "status": "missing",
+      "satisfied": false,
+      "receipt": null,
+      "requiredEvidence": [
+        "Fort-mediated files-mode provisioning receipt",
+        "Base Sepolia chain ID 84532",
+        "public low-balance signer address",
+        "independent RPC provider reference without credentials",
+        "privacy-minimized transaction hash and confirmed block",
+        "independent receipt verification timestamp"
+      ],
+      "nextAction": "An authorized operator provisions the signer and RPC only through si fort and records public receipt metadata without secret material."
+    },
+    {
+      "id": "O03",
+      "blockingFinding": "B03",
+      "status": "missing",
+      "satisfied": false,
+      "receipt": null,
+      "requiredEvidence": [
+        "explicit bounded mainnet spending decision",
+        "approved maximum balance and fee envelope",
+        "custody and recovery roles",
+        "Base mainnet chain ID 8453",
+        "public signer address without private material",
+        "finality and incident-stop policy"
+      ],
+      "nextAction": "An authorized financial and custody role either approves the bounded policy or records that mainnet-dependent work remains prohibited."
+    },
+    {
+      "id": "O04",
+      "blockingFinding": "B04",
+      "status": "observed-unsatisfied",
+      "satisfied": false,
+      "receipt": {
+        "path": "reports/research/upstream-enforcement-observation.json",
+        "sha256": "09959e95653a936dfb056455be69e4654e8dbf1d476b50965d142e5cf6fb3938"
+      },
+      "requiredEvidence": [
+        "exact execution branch or immutable candidate present upstream",
+        "required consolidated-suite check",
+        "required mode-r check",
+        "protection or ruleset enforcement on the target branch",
+        "fresh passing hosted runs for the exact candidate",
+        "read-only recheck after enforcement"
+      ],
+      "nextAction": "An authorized repository administrator configures required checks; a later read-only audit verifies the exact protected candidate."
+    },
+    {
+      "id": "O05",
+      "blockingFinding": "B05",
+      "status": "missing",
+      "satisfied": false,
+      "receipt": null,
+      "requiredEvidence": [
+        "second-person reviewer role attestation",
+        "exact software commit",
+        "database, snapshot, and bundle checksums",
+        "per-run policy and prefix results",
+        "failure and quarantine disposition",
+        "start and completion timestamps"
+      ],
+      "nextAction": "A human other than the implementer follows the snapshot/restore runbook and records the complete result."
+    },
+    {
+      "id": "O06",
+      "blockingFinding": "B06",
+      "status": "missing",
+      "satisfied": false,
+      "receipt": null,
+      "requiredEvidence": [
+        "compiled canonical registration packet with zero unresolved fields",
+        "external registration identifier and timestamp",
+        "external registration URL",
+        "identical canonical pre-registration hash",
+        "confirmed pre-run public anchor with matching payload",
+        "independent chain receipt verification before outcome collection"
+      ],
+      "nextAction": "After D08 compiles an exact packet, an authorized role registers and anchors that unchanged packet before any eligible collection."
+    }
+  ],
+  "privacyBoundary": [
+    "Never record a private key, signer seed, RPC credential, token, or decrypted secret in this ledger or its tracked receipts.",
+    "Tracked artifacts use role labels rather than personal identity.",
+    "Credentials are materialized only through si fort from encrypted project environment material."
+  ],
+  "activationRule": "No experiment may use an item merely because a receipt path exists. The item must be authentically completed, independently checked where specified, changed to verified, and accepted by the campaign and experiment-specific preflight gates.",
+  "boundary": "This ledger is a closure checklist, not an approval, credential, registration, public-chain receipt, independent review, or authorization to collect outcomes."
+}

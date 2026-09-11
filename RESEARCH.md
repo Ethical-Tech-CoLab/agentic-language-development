@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.77 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.78 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1087,7 +1087,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.77 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.78 · 254/258 backlog acceptance criteria verified.
 
 As of September 11, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1144,6 +1144,12 @@ Not yet externally evidenced or empirically executed:
 - upstream required-check enforcement and independent-human restore validation;
 - external registration/governance approval; and
 - confirmatory experiments E00-E50 or any scientific results.
+
+The external-prerequisite ledger is blocked at 0/6. Its read-only upstream
+observation found no repository ruleset, did not demonstrate branch protection,
+found no upstream execution branch, and recorded a failed latest relevant
+default-branch workflow. These observations strengthen the O04 blocker; they do not
+constitute permission to change remote policy or execute a study.
 
 The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 111
 exported bundles across 16 collections by path and content hash. Thirty-six have

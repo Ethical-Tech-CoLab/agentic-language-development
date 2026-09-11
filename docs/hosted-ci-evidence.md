@@ -16,3 +16,11 @@ It is `action_required`, not failed: an upstream maintainer must approve the
 first workflow run from this fork. This receipt therefore proves hosted suite
 execution and ALD-011 crash safety, but does not claim that upstream branch
 protection or its required-check policy is active.
+
+A newer privacy-minimized read-only observation is recorded in
+`reports/research/upstream-enforcement-observation.json`. As of 2026-09-11 it
+found zero repository rulesets, no upstream execution branch, no demonstrated
+branch protection, and a failed latest relevant default-branch workflow. The local
+workflow still defines both required job IDs. O04 therefore remains open until an
+authorized administrator enforces both checks and a later observation confirms a
+passing exact candidate.

@@ -22,6 +22,14 @@ const campaign = JSON.parse(read('protocols/campaign-readiness-review.v1.json'))
   blockingFindings: unknown[];
   experiments: unknown[];
 };
+const external = JSON.parse(read('reports/research/external-prerequisite-readiness.json')) as {
+  decision: string;
+  satisfiedCount: number;
+  requiredCount: number;
+};
+const upstream = JSON.parse(read('reports/research/upstream-enforcement-observation.json')) as {
+  decision: string;
+};
 const sources = JSON.parse(read('reports/research/source-verification-register.json')) as {
   existingReferences: unknown[];
   updatedSearch: unknown[];
@@ -56,6 +64,14 @@ if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');
+if (
+  external.decision !== 'blocked' ||
+  external.satisfiedCount !== 0 ||
+  external.requiredCount !== 6 ||
+  upstream.decision !== 'not-demonstrated'
+) {
+  throw new Error('external prerequisite or upstream-enforcement status changed');
+}
 if (registration.totals['compiledPackets'] !== 0 || registration.totals['unresolvedBindings'] !== 190) {
   throw new Error('registration readiness counts changed');
 }
@@ -68,6 +84,7 @@ if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(
 exact(`v${packageJson.version} · 254/258 backlog acceptance criteria verified.`);
 exact(`resolves ${String(claims.totals['bundles'])} exported bundles across ${String(claims.totals['collections'])} collections`);
 exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits zero registration hashes`);
+exact(`external-prerequisite ledger is blocked at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
 exact('No empirical results are reported in this version.');
 
 const result = {
@@ -94,6 +111,9 @@ const result = {
     compiledRegistrationPackets: registration.totals['compiledPackets'],
     unresolvedRegistrationBindings: registration.totals['unresolvedBindings'],
     campaignBlockers: campaign.blockingFindings.length,
+    externalPrerequisitesSatisfied: external.satisfiedCount,
+    externalPrerequisitesRequired: external.requiredCount,
+    upstreamEnforcement: upstream.decision,
     independentHumanReview: campaign.independentHumanReview,
   },
   sourceState: {

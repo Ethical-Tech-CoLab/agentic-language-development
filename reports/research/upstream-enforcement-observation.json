@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "classification": "external-read-only-enforcement-observation",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11T23:27:33Z",
+  "localCandidate": {
+    "commit": "a8370bcfb1ef6ff2e49e3c8304a9a06b9708dec7",
+    "version": "0.1.77"
+  },
+  "remoteAlias": "origin",
+  "remoteUrlSha256": "987bf77a2257779036cc2a095d136fec418caabd0987bab5b70d0d4e76ab10f1",
+  "defaultBranch": {
+    "name": "main",
+    "headCommit": "feb68708333d2a1212bc7789480fa48e999ae643"
+  },
+  "executionBranch": {
+    "name": "feat/verifiable-core",
+    "presentOnRemote": false
+  },
+  "branchProtectionQuery": {
+    "httpStatus": 404,
+    "interpretation": "Required-check enforcement was not demonstrated by the branch-protection endpoint. A 404 alone is not treated as proof of absence."
+  },
+  "repositoryRulesetsQuery": {
+    "httpStatus": 200,
+    "rulesetCount": 0
+  },
+  "latestDefaultBranchWorkflow": {
+    "runId": 33811409612,
+    "workflowName": "Research book integrity",
+    "event": "push",
+    "headCommit": "feb68708333d2a1212bc7789480fa48e999ae643",
+    "createdAt": "2026-09-03T22:06:14Z",
+    "completedAt": "2026-09-03T22:07:36Z",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "name": "verify-book",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ]
+  },
+  "localWorkflow": {
+    "path": ".github/workflows/book-integrity.yml",
+    "sha256": "3b67d4f99ae50a9273631875238cfef83f918095de35cb15789ccc8c29bc098d",
+    "requiredJobIds": [
+      "consolidated-suite",
+      "mode-r"
+    ]
+  },
+  "decision": "not-demonstrated",
+  "closureRequired": "Publish the exact execution branch or immutable candidate, require the consolidated-suite and mode-r checks through upstream protection or rulesets, and retain a fresh passing hosted receipt for that commit.",
+  "boundary": "This read-only observation changes no upstream state and does not count as workflow approval or required-check enforcement."
+}

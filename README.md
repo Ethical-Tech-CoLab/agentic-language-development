@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.77 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.78 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -196,6 +196,11 @@ performed by a second human operator. External registration and governance appro
 remain mandatory before confirmatory collection. The retention job is implemented
 and covered against real exported bundles and evidence-store rows.
 
+The [external-prerequisite handoff](docs/external-prerequisite-handoff.md) and its
+machine-readable ledger make O01–O06 auditable without recording secrets or personal
+identity. The current ledger is blocked at 0/6; a fresh read-only upstream observation
+also confirms that required-check enforcement is not yet demonstrated.
+
 No experiment results are claimed.
 
 The complete rationale, literature review, experimental ideas, risks, and open
@@ -212,6 +217,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [BACKLOG.md](BACKLOG.md) | Milestones, critical path, epics, dependency-ordered stories, readiness gates, and requirement coverage |
 | [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
 | [CONFIGURATION.md](CONFIGURATION.md) | Runtime environment variables, key-store layout, and secret handling |
+| [docs/external-prerequisite-handoff.md](docs/external-prerequisite-handoff.md) | Exact privacy-safe evidence and activation checks for O01–O06 |
 | [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
 | [docs/cryptographic-separation-policy.md](docs/cryptographic-separation-policy.md) | Mandatory boundary between E40 research encodings and production hashing/signing/anchoring |
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |

@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.77 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.78 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -73,6 +73,10 @@ Report status: in progress
   `not-registration-ready`. Fourteen evidence-linked blockers include governance,
   anchors/registration, resources, pilot-selected N, final detector/comparator
   qualification, exact packets, independent review, and citation re-review.
+- The machine-checked external-prerequisite ledger is blocked at 0/6. A fresh
+  read-only upstream observation found no repository ruleset, no upstream execution
+  branch, no demonstrated branch protection, and a failed latest relevant
+  default-branch workflow; it therefore strengthens rather than closes O04.
 - The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
   in 16 collections. All are excluded from empirical estimates; 63 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
@@ -740,6 +744,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 7. The bounded full topology and recurrent models are qualified, but real chain
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
+8. The external-prerequisite handoff now defines privacy-safe closure evidence for
+   O01–O06 and rejects receipt-path-only readiness. Its current ledger has 0/6
+   satisfied, so no experiment activation follows from this documentation work.
 
 ## 21. Current scientific and publication conclusion
 
