@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "classification": "synthetic-software-qualification",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "protocolSha256": "9f4691d1b287ef44d62f330d3e1b62bd99e773454d209367e534420727bc412c",
+  "candidate": {
+    "commit": "541142da301b20b7323930ee9f2bc08e99bb1814",
+    "version": "0.1.68"
+  },
+  "sourceHashes": {
+    "packages/analysis/src/causal-prediction.ts": "80a1a8298feb4bbe302b7b1e9b81bf1b14e83327ae72967ce6a06b9fe5b830e2",
+    "packages/analysis/__tests__/causal-prediction.test.ts": "41123c6445bdba88d2b09c8333af4b88128ac5a0db6cfd97fb06d39dc52c0fe5",
+    "protocols/causal-ledger-and-leakage.v1.json": "39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"
+  },
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "consolidatedCommandBuildsBeforeExecutableAudits": true,
+    "focusedTests": 6,
+    "testFiles": 141,
+    "tests": 1777,
+    "rustTests": 3,
+    "secretFilesScanned": 657,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 152.62,
+    "consolidatedMaximumResidentSetKiB": 751356,
+    "trackedFilesManifestSha256": "5036b48684c156f1d3ec551eb6ebea75962594961ceb405dbf1d14a66d586d98",
+    "detachedWorktree": true,
+    "worktreeCleanAfterValidation": true,
+    "frozenInstallExitCode": 0,
+    "focusedExitCode": 0,
+    "consolidatedExitCode": 0
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-e16-541142d-exact",
+    "gitTracked": false,
+    "focusedLogSha256": "ea114ea3833bc3f65fe4bb750adb0864511337fc4ad439482b6814166ad42451",
+    "checkLogSha256": "69ecf80554b76ce03bb00b390c217463ecdee65ff90d78567f4f12377f43012a"
+  },
+  "fixture": {
+    "actionCount": 4,
+    "validationFitCases": 40,
+    "validationSelectionCases": 20,
+    "untouchedScoringCases": 12,
+    "plantedSelectableSignal": "publicTaskHistoryHash deterministically identifies the target action; other selectable information sets are constant or partial",
+    "nativePredictionRole": "oracle-like scoring positive control constructed from fixture labels; never an empirical native-ledger claim"
+  },
+  "comparatorValidation": {
+    "fitCases": 40,
+    "selectionCases": 20,
+    "candidateIds": [
+      "uniform",
+      "validation-majority",
+      "transcript-only",
+      "task-history",
+      "policy-state"
+    ],
+    "scores": [
+      {
+        "comparatorId": "uniform",
+        "modelHash": "sha256:439bc8126b757c9aa6a46b82cb17c4a0daf92e3306560abdbb77e1d2d093bf16",
+        "meanBrierScore": 0.75,
+        "selectionCases": 20
+      },
+      {
+        "comparatorId": "validation-majority",
+        "modelHash": "sha256:1b3d0831f1100e7f47fdf3304038d40f92f750e4db06a971ad62eb6a6247c857",
+        "meanBrierScore": 0.75,
+        "selectionCases": 20
+      },
+      {
+        "comparatorId": "transcript-only",
+        "modelHash": "sha256:e75016d1d3ece6a94b4961a4d0012e72c351e2411c83e46e291989a185d2dbb7",
+        "meanBrierScore": 0.5069444444444445,
+        "selectionCases": 20
+      },
+      {
+        "comparatorId": "task-history",
+        "modelHash": "sha256:1ae0e86742767ae7ba52b3a406641f7927c7feaf9bb89a52bbbdab21822be0ae",
+        "meanBrierScore": 0.061224489795918366,
+        "selectionCases": 20
+      },
+      {
+        "comparatorId": "policy-state",
+        "modelHash": "sha256:f3477e37026ba8a4d4838b9f3ec89dda14cd3d2998d8ac34fcd412026757fa49",
+        "meanBrierScore": 0.75,
+        "selectionCases": 20
+      }
+    ],
+    "selectedComparatorId": "task-history",
+    "lockedModelHash": "sha256:b622783488c1f3ba6c4664782515c490cf75caef27e40393bcb9248792323946",
+    "selectionCommitmentHash": "sha256:97467e4b01a66bee13a42758881a60905db258393e3bfaf85c74d24ad503b6ba"
+  },
+  "prospectiveScoring": {
+    "testCases": 12,
+    "predictionCommitmentHash": "sha256:96be2f82332c4f8994b265a012dfb3479bd9bb531d60072ebd3dffbdf61bcfab",
+    "testCaseCommitmentHash": "sha256:1efc5475e158d302b2b20490d1d0c35e5b6be950ca56c31448256d12f7952afd",
+    "chronology": "predictions-committed-before-test-outcomes",
+    "selectedBaselineBrier": 0.03324099722991691,
+    "injectedNativePositiveControlBrier": 0,
+    "injectedPositiveControlImprovement": 0.03324099722991691,
+    "oracleDiagnosticBrier": 0,
+    "oracleEligibleForSelection": false
+  },
+  "negativeControls": [
+    {
+      "id": "validation-fold-overlap",
+      "passed": true
+    },
+    {
+      "id": "test-outcome-in-prediction-input",
+      "passed": true
+    },
+    {
+      "id": "undeclared-information-field",
+      "passed": true
+    },
+    {
+      "id": "native-prediction-extra-field",
+      "passed": true
+    },
+    {
+      "id": "selection-commitment-tamper",
+      "passed": true
+    },
+    {
+      "id": "prediction-commitment-tamper",
+      "passed": true
+    },
+    {
+      "id": "invalid-probability-vector",
+      "passed": true
+    }
+  ],
+  "preservedFailure": {
+    "candidateVersion": "0.1.67",
+    "focusedTestsPassed": 6,
+    "consolidatedExitCode": 1,
+    "cause": "The consolidated command reached executable TypeScript audits before building workspace outputs in a clean checkout.",
+    "correction": "Candidate 0.1.68 moves the existing build gate ahead of executable audits in both local and CI chains."
+  },
+  "blockerDisposition": {
+    "blocker": "B10",
+    "status": "open",
+    "completed": "all five comparator implementations, disjoint validation selection, information-set enforcement, commitments, scoring, deterministic synthetic controls, exact clean validation",
+    "remains": "integration into production intervention-chain evidence and prospectively registered execution on eligible runs"
+  },
+  "boundary": "This qualifies deterministic comparator plumbing. It is not production-run evidence, a pilot, a confirmatory result, or proof that a prediction was historically formed without outcome knowledge. Production intervention-chain chronology remains required."
+}

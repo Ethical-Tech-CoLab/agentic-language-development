@@ -40,9 +40,9 @@ to relabel any existing fixture as a pilot.
 - E13 still needs perceptual generalization and positive controls for forbidden
   metadata, timing, envelope, dimension, sample-rate, compression, and container
   paths on the selected media.
-- E15/E16 have prospective causal definitions, but the complete validation-only
-  comparator selection and frozen prediction/scoring pipeline is not qualified for
-  all five non-ledger baselines.
+- E15/E16 now have an exact synthetically qualified validation-only comparator core
+  for all five non-ledger baselines, but production intervention-chain integration
+  and prospectively eligible execution are still absent.
 - E01 timing/envelope and E13 side-feature detectors have not been measured on the
   final selected topology.
 - Experiment cards do not yet bind every exact config, margin, analysis version,

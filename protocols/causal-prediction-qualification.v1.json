@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "classification": "synthetic-software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "541142da301b20b7323930ee9f2bc08e99bb1814",
+    "version": "0.1.68"
+  },
+  "sourceHashes": {
+    "packages/analysis/src/causal-prediction.ts": "80a1a8298feb4bbe302b7b1e9b81bf1b14e83327ae72967ce6a06b9fe5b830e2",
+    "packages/analysis/__tests__/causal-prediction.test.ts": "41123c6445bdba88d2b09c8333af4b88128ac5a0db6cfd97fb06d39dc52c0fe5",
+    "protocols/causal-ledger-and-leakage.v1.json": "39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"
+  },
+  "fixture": {
+    "actionCount": 4,
+    "validationFitCases": 40,
+    "validationSelectionCases": 20,
+    "untouchedScoringCases": 12,
+    "plantedSelectableSignal": "publicTaskHistoryHash deterministically identifies the target action; other selectable information sets are constant or partial",
+    "nativePredictionRole": "oracle-like scoring positive control constructed from fixture labels; never an empirical native-ledger claim"
+  },
+  "expected": {
+    "comparatorIds": [
+      "uniform",
+      "validation-majority",
+      "transcript-only",
+      "task-history",
+      "policy-state"
+    ],
+    "selectedComparatorId": "task-history",
+    "oracleEligibleForSelection": false,
+    "nativePositiveControlBrier": 0,
+    "oracleDiagnosticBrier": 0
+  },
+  "negativeControls": [
+    "validation-fold-overlap",
+    "test-outcome-in-prediction-input",
+    "undeclared-information-field",
+    "native-prediction-extra-field",
+    "selection-commitment-tamper",
+    "prediction-commitment-tamper",
+    "invalid-probability-vector"
+  ],
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "consolidatedCommandBuildsBeforeExecutableAudits": true,
+    "focusedTests": 6,
+    "testFiles": 141,
+    "tests": 1777,
+    "rustTests": 3,
+    "secretFilesScanned": 657,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 152.62,
+    "consolidatedMaximumResidentSetKiB": 751356,
+    "trackedFilesManifestSha256": "5036b48684c156f1d3ec551eb6ebea75962594961ceb405dbf1d14a66d586d98"
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-e16-541142d-exact",
+    "gitTracked": false,
+    "focusedLogSha256": "ea114ea3833bc3f65fe4bb750adb0864511337fc4ad439482b6814166ad42451",
+    "checkLogSha256": "69ecf80554b76ce03bb00b390c217463ecdee65ff90d78567f4f12377f43012a"
+  },
+  "boundary": "This qualifies deterministic comparator plumbing. It is not production-run evidence, a pilot, a confirmatory result, or proof that a prediction was historically formed without outcome knowledge. Production intervention-chain chronology remains required."
+}

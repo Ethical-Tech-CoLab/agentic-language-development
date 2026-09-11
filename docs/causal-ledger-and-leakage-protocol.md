@@ -37,8 +37,15 @@ uses a disjoint validation-selection fold, the winner is refit on all validation
 rows, and outcome-free test predictions are hash-committed before the scoring API
 accepts labels. Exact object-key checks reject undeclared information fields. The
 oracle is constructed only as a post-outcome detector-positive diagnostic and is not
-a member of the selectable comparator type. Exact-commit qualification and production
-evidence remain required before blocker B10 can close.
+a member of the selectable comparator type.
+
+Exact detached candidate `541142d` passed a frozen install, the 6-test focused suite,
+all 1,777 tests in 141 files, three Rust auditor tests and clippy, a 657-file secret
+scan, and the dependency audit. A deterministic 40-row fit, 20-row selection, and
+12-row scoring fixture exercised all five comparators, selected the planted
+task-history signal, and passed seven negative controls. The perfect native prediction
+was constructed from fixture labels and is therefore only an oracle-like scoring
+positive control. Production evidence remains required before blocker B10 can close.
 
 ## Leakage decision principle
 

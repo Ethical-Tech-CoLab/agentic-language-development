@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.68 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.69 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -55,6 +55,10 @@ Report status: in progress
   commitments, validation-only comparator selection, exact information sets, and
   detector-positive controls. E02 and E20 use powered one-sided negative bounds;
   intended carrier form is no longer mislabeled as a side channel.
+- Exact v0.1.68 synthetic qualification exercised all five eligible E16 non-ledger
+  predictors, disjoint validation selection, prospective commitments, seven negative
+  controls, and the oracle-selection prohibition. Production intervention-chain
+  integration remains open, so this is not an E16 result.
 - The v0.1.62 D06 candidate passed all 1,771 tests across 140 files, the Rust
   auditor tests and clippy, every consolidated static/design gate, a 641-file secret
   scan, and the high-severity dependency audit. The live base-R leakage-design replay
@@ -610,6 +614,17 @@ clearance is 0.9959, boundary Type I error is 0.05, and a 0.04-bit positive cont
 detected with probability above 0.99999999. A blinded pilot must verify the variance
 assumption or D07 must increase N. These are operating characteristics, not outcomes.
 
+The E16 comparator core is now exact-commit qualified separately. Five eligible
+predictors fit on 40 validation-fit cases, were compared on a disjoint 20-case
+validation-selection fold, and the planted task-history signal was selected and
+refit. Twelve outcome-free test inputs were prediction-committed before the scoring
+API accepted labels. Seven negative controls rejected fold overlap, outcome-bearing
+test input, undeclared information, extra native-prediction fields, selection and
+prediction tampering, and invalid probability vectors. The zero-Brier native
+prediction was deliberately built from fixture labels and is only a scoring positive
+control. This proves deterministic plumbing, not historical outcome blindness;
+production intervention-chain evidence is still required.
+
 ## 18. Disjoint allocation and resource feasibility
 
 The [seed and resource allocation](../../docs/seed-and-resource-allocation.md) freezes
@@ -695,9 +710,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 4. The E01 timing/envelope detectors and E13 forbidden-side-feature detectors must be
    exercised in the actual selected topology before their negative claims are eligible.
 5. Causal-ledger comparator implementations and registered practical effect margins
-   now have validation-only selection and prospective scoring code, but exact-commit
-   qualification, production integration, and prospective execution remain required;
-   this design does not supply outcomes.
+   now have exact synthetically qualified validation-only selection and prospective
+   scoring code, but production integration and prospective execution remain required;
+   this qualification does not supply outcomes.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.

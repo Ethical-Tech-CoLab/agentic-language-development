@@ -29,6 +29,10 @@ The audit-cost/utility protocol and receipt compare a declared ordinary-log prox
 actual signed streams, integrity structures, policy state, whole-input hashing, and
 two offline verifiers over five immutable qualification bundles. Public-chain latency
 and fee remain explicitly not measured, so A03 remains in progress.
+The causal-prediction qualification receipt binds the exact E16 comparator candidate,
+all five eligible non-ledger predictors, disjoint validation selection, prospective
+commitments, seven negative controls, and the clean-check ordering failure that the
+next candidate corrected. It is synthetic software evidence, not an E16 result.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator
