@@ -92,7 +92,10 @@ export {
   type FrozenModelRoleQualification,
 } from './frozen-qualification.js';
 export {
+  EXPORTED_RECURRENT_SELF_SUPERVISED_POLICY_VERSION,
+  ExportedSelfSupervisedPolicySchema,
   createSelfSupervisedAdapterFactory,
+  createRecurrentSelfSupervisedAdapterFactory,
   type SelfSupervisedAdapterOptions,
 } from './self-supervised.js';
 export { createHybridAdapterFactory, type HybridAdapterOptions } from './hybrid.js';
@@ -105,9 +108,32 @@ export {
 export {
   SUPPORTED_LEARNING_SIGNALS,
   TabularReinforceAdapter,
+  createRecurrentActorCriticAdapterFactory,
   createTabularReinforceAdapterFactory,
   type TabularReinforceOptions,
 } from './tabular-reinforce.js';
+export {
+  ExportedRecurrentScratchPolicySchema,
+  RECURRENT_SCRATCH_POLICY_VERSION,
+  RecurrentScratchPolicyOptionsSchema,
+  parseExportedRecurrentScratchPolicy,
+  type ExportedRecurrentScratchPolicy,
+} from './recurrent-scratch-policy.js';
+export {
+  ExportedRecurrentModelSchema,
+  RECURRENT_ARCHITECTURE,
+  RECURRENT_MODEL_VERSION,
+  RECURRENT_RL_OBJECTIVE,
+  RECURRENT_SELF_SUPERVISED_OBJECTIVE,
+  RecurrentCommunicationModel,
+  type ExportedRecurrentModel,
+  type RecurrentForwardResult,
+  type RecurrentGradientCheck,
+  type RecurrentModelOptions,
+  type RecurrentPredictiveMetrics,
+  type RecurrentUpdateMetrics,
+  type ResolvedRecurrentModelOptions,
+} from './recurrent-model.js';
 export {
   EXPORTED_TABULAR_POLICY_VERSION,
   EpisodicRegistriesSchema,

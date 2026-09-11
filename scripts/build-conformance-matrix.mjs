@@ -78,6 +78,7 @@ function commandFor(path) {
     'scripts/lint-crypto-boundary.mjs': 'pnpm run lint:crypto-boundary',
     'scripts/lint-learner-contracts.mjs': 'pnpm run lint:contracts',
     'scripts/run-mode-r-smoke.mjs': 'pnpm run test:mode-r',
+    'scripts/run-mode-r-study.mjs': 'pnpm run test:mode-r-study',
     'scripts/scan-secrets.mjs': 'pnpm run scan:secrets',
   };
   return commands[path] ?? `node ${path}`;
@@ -89,8 +90,8 @@ function assertionFor(path, evidenceIndex) {
     : [commandFor(path)];
   return {
     selectors: selectors.length > 0 ? selectors : ['whole-file executable check'],
-    requiredReceipt: path === 'scripts/run-mode-r-smoke.mjs'
-      ? 'pnpm run test:mode-r'
+    requiredReceipt: path === 'scripts/run-mode-r-smoke.mjs' || path === 'scripts/run-mode-r-study.mjs'
+      ? commandFor(path)
       : path.startsWith('.github/')
         ? 'hosted workflow receipt for the exact commit'
         : path.endsWith('.test.ts')

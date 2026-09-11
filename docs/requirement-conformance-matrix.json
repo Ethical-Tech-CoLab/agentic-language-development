@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.47"
+    "version": "0.1.48"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -659,6 +659,27 @@
         "never exports the private seed"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/learners/__tests__/predictive-model.test.ts"
+    },
+    "packages/learners/__tests__/recurrent-adapters.test.ts": {
+      "selectors": [
+        "runs the scratch GRU actor-critic through the complete adapter contract",
+        "restores a recurrent policy exactly and keeps its exported weights frozen in evaluation",
+        "keeps independently seeded Baby policies distinct",
+        "runs the reward-free GRU through the same adapter contract and capacity",
+        "restores and freezes the recurrent reward-free policy"
+      ],
+      "requiredReceipt": "pnpm exec vitest run packages/learners/__tests__/recurrent-adapters.test.ts"
+    },
+    "packages/learners/__tests__/recurrent-model.test.ts": {
+      "selectors": [
+        "locks the architecture, parameter count, memory budget, and independent initialization",
+        "matches a central-difference gradient on the predictive objective",
+        "performs a clipped PPO-style reward-to-parameter update",
+        "learns a toy reward-free feature-to-message mapping",
+        "round-trips optimizer/checkpoint state and freezes exports during evaluation",
+        "does not update without a recorded local action and reward"
+      ],
+      "requiredReceipt": "pnpm exec vitest run packages/learners/__tests__/recurrent-model.test.ts"
     },
     "packages/learners/__tests__/self-supervised.test.ts": {
       "selectors": [
@@ -1336,6 +1357,12 @@
         "pnpm run test:mode-r"
       ],
       "requiredReceipt": "pnpm run test:mode-r"
+    },
+    "scripts/run-mode-r-study.mjs": {
+      "selectors": [
+        "pnpm run test:mode-r-study"
+      ],
+      "requiredReceipt": "pnpm run test:mode-r-study"
     },
     "scripts/run-qualification.mjs": {
       "selectors": [
@@ -3005,8 +3032,11 @@
       "itemTitle": "From-scratch RL learner track",
       "disposition": "provisional-mapped",
       "assertionPaths": [
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/learners/__tests__/tabular-reinforce.test.ts"
+        "packages/learners/__tests__/tabular-reinforce.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -3017,8 +3047,11 @@
       "itemTitle": "From-scratch RL learner track",
       "disposition": "provisional-mapped",
       "assertionPaths": [
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/learners/__tests__/tabular-reinforce.test.ts"
+        "packages/learners/__tests__/tabular-reinforce.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -3029,8 +3062,11 @@
       "itemTitle": "From-scratch RL learner track",
       "disposition": "provisional-mapped",
       "assertionPaths": [
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/learners/__tests__/tabular-reinforce.test.ts"
+        "packages/learners/__tests__/tabular-reinforce.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -3042,8 +3078,11 @@
       "disposition": "provisional-mapped",
       "assertionPaths": [
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts"
+        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -3055,8 +3094,11 @@
       "disposition": "provisional-mapped",
       "assertionPaths": [
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts"
+        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -3068,8 +3110,11 @@
       "disposition": "provisional-mapped",
       "assertionPaths": [
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
-        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts"
+        "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4718,12 +4763,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4750,12 +4798,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4782,12 +4833,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4814,12 +4868,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4846,12 +4903,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4878,12 +4938,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4910,12 +4973,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4942,12 +5008,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -4974,12 +5043,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -5006,12 +5078,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -5038,12 +5113,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -5070,12 +5148,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {
@@ -5102,12 +5183,15 @@
         "packages/learners/__tests__/llm-client.test.ts",
         "packages/learners/__tests__/no-learning.test.ts",
         "packages/learners/__tests__/predictive-model.test.ts",
+        "packages/learners/__tests__/recurrent-adapters.test.ts",
+        "packages/learners/__tests__/recurrent-model.test.ts",
         "packages/learners/__tests__/self-supervised.test.ts",
         "packages/learners/__tests__/tabular-reinforce.test.ts",
         "packages/orchestrator/__tests__/frozen-provenance-evidence.test.ts",
         "packages/orchestrator/__tests__/self-supervised-evidence.test.ts",
         "packages/orchestrator/__tests__/semantic-leakage-evidence.test.ts",
-        "scripts/lint-learner-contracts.mjs"
+        "scripts/lint-learner-contracts.mjs",
+        "scripts/run-mode-r-study.mjs"
       ]
     },
     {

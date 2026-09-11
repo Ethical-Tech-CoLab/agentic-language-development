@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.47 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.48 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -118,9 +118,12 @@ implemented and tested:
 - `@ald/lifecycle`, `@ald/scenario`, `@ald/gateway`, `@ald/learners`,
   `@ald/orchestrator`, `@ald/analysis`: the SPEC §7 run state machine; deterministic
   scenarios, hygiene, and a fail-closed run-registration quarantine gate; fixed-token, glyph, bitmap, canvas,
-  tone, and six-display affect protocols; no-learning and scratch-RL runtime tracks;
-  frozen-LLM, self-supervised, and hybrid adapter conformance foundations; the
-  independently seeded scratch-RL policies and witness-committed initial hashes;
+  tone, and six-display affect protocols; no-learning and all four trainable/runtime
+  tracks; an explicitly selected 16-unit GRU actor-critic with PPO-style updates for
+  scratch RL; the same 4,049-parameter GRU core with reward-free predictive
+  cross-entropy for self-supervision; tabular/count models retained as named
+  qualification controls; frozen-LLM and hybrid adapter conformance foundations; the
+  independently seeded policies and witness-committed initial hashes;
   independently verified derived-run lineage against immutable parent exports;
   Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
   interpreter whose generated entries are separately signed and checkpointed; and

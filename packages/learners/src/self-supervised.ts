@@ -103,14 +103,22 @@ import {
 import { HypothesisRecordSchema } from './policy.js';
 import {
   ExportedPredictiveModelSchema,
+  ExportedRecurrentPredictiveModelSchema,
   PREDICTIVE_LOSS_DEFINITION,
   PREDICTIVE_PAIRING_RULE,
   PredictiveCountModel,
+  RecurrentPredictiveModel,
   at,
   compareStrings,
   lowestArgmax,
   mixWithUniform,
+  type PredictiveMessageModel,
 } from './predictive-model.js';
+import {
+  RECURRENT_ARCHITECTURE,
+  RECURRENT_SELF_SUPERVISED_OBJECTIVE,
+  type RecurrentModelOptions,
+} from './recurrent-model.js';
 
 /** The only learning signal this track can consume (SPEC §11.1). */
 export const SELF_SUPERVISED_LEARNING_SIGNAL = 'self-supervised' as const;
@@ -151,6 +159,13 @@ export interface SelfSupervisedAdapterOptions extends GameShapeOptions {
    * increment, and the mapping is documented in `applyCurriculumStage`.
    */
   learningRate?: number;
+  /** Explicit scientific backbone; omit for the count-model reference. */
+  backbone?: 'count-reference' | typeof RECURRENT_ARCHITECTURE;
+  /** Fixed GRU parameters shared with the recurrent scratch-RL baseline. */
+  recurrent?: Omit<
+    RecurrentModelOptions,
+    'typeCount' | 'symbolCount' | 'messageLength' | 'learningRate'
+  >;
 }
 
 export const SelfSupervisedPolicyOptionsSchema = z
@@ -193,8 +208,9 @@ export type SelfSupervisedRegistries = z.infer<
 >;
 
 export const EXPORTED_SELF_SUPERVISED_POLICY_VERSION = 1 as const;
+export const EXPORTED_RECURRENT_SELF_SUPERVISED_POLICY_VERSION = 2 as const;
 
-export const ExportedSelfSupervisedPolicySchema = z
+const ExportedCountSelfSupervisedPolicySchema = z
   .object({
     version: z.literal(EXPORTED_SELF_SUPERVISED_POLICY_VERSION),
     track: z.literal('self-supervised'),
@@ -208,6 +224,24 @@ export const ExportedSelfSupervisedPolicySchema = z
     registries: SelfSupervisedRegistriesSchema,
   })
   .strict();
+
+const ExportedRecurrentSelfSupervisedPolicySchema = z
+  .object({
+    version: z.literal(EXPORTED_RECURRENT_SELF_SUPERVISED_POLICY_VERSION),
+    track: z.literal('self-supervised'),
+    lossDefinition: z.literal(RECURRENT_SELF_SUPERVISED_OBJECTIVE),
+    pairingRule: z.literal(PREDICTIVE_PAIRING_RULE),
+    seedHash: z.string().regex(/^sha256:[0-9a-f]{64}$/u),
+    options: SelfSupervisedPolicyOptionsSchema,
+    model: ExportedRecurrentPredictiveModelSchema,
+    registries: SelfSupervisedRegistriesSchema,
+  })
+  .strict();
+
+export const ExportedSelfSupervisedPolicySchema = z.union([
+  ExportedCountSelfSupervisedPolicySchema,
+  ExportedRecurrentSelfSupervisedPolicySchema,
+]);
 
 export type ExportedSelfSupervisedPolicy = z.infer<
   typeof ExportedSelfSupervisedPolicySchema
@@ -297,7 +331,7 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
   readonly track = 'self-supervised' as const;
 
   private state: AdapterState | undefined;
-  private model: PredictiveCountModel | undefined;
+  private model: PredictiveMessageModel | undefined;
   private observation: ParsedObservation | undefined;
   private lastReceived: ReceivedMessage | undefined;
   private readonly pending = new Map<number, SelfSupervisedTurnMemory>();
@@ -352,7 +386,9 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
       explorationRate: this.options.explorationRate ?? 0.1,
       smoothing: this.options.smoothing ?? 1,
       priorNoise: this.options.priorNoise ?? 0.25,
-      learningRate: this.options.learningRate ?? 1,
+      learningRate:
+        this.options.learningRate ??
+        (this.options.backbone === RECURRENT_ARCHITECTURE ? 0.003 : 1),
       consolidating: false,
     });
 
@@ -375,15 +411,25 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
       seedHash: domainHash(HASH_DOMAINS.seed, context.seed),
     };
 
-    this.model = new PredictiveCountModel({
-      messageLength: shape.messageLength,
-      featureCount: shape.typeCount,
-      symbolCount: context.symbolInventory.length,
-      smoothing: options.smoothing,
-      priorNoise: options.priorNoise,
-      countIncrement: options.learningRate,
-      seed: context.seed,
-    });
+    this.model =
+      this.options.backbone === RECURRENT_ARCHITECTURE
+        ? new RecurrentPredictiveModel({
+            messageLength: shape.messageLength,
+            featureCount: shape.typeCount,
+            symbolCount: context.symbolInventory.length,
+            learningRate: options.learningRate,
+            seed: context.seed,
+            recurrent: this.options.recurrent,
+          })
+        : new PredictiveCountModel({
+            messageLength: shape.messageLength,
+            featureCount: shape.typeCount,
+            symbolCount: context.symbolInventory.length,
+            smoothing: options.smoothing,
+            priorNoise: options.priorNoise,
+            countIncrement: options.learningRate,
+            seed: context.seed,
+          });
 
     this.observation = undefined;
     this.lastReceived = undefined;
@@ -892,6 +938,21 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
   exportPolicy(): ExportedSelfSupervisedPolicy {
     const state = this.requireState();
     const model = this.requireModel();
+    const registries = cloneRegistries(
+      this.registryCheckpoint ?? this.snapshotRegistries(state),
+    );
+    if (model instanceof RecurrentPredictiveModel) {
+      return {
+        version: EXPORTED_RECURRENT_SELF_SUPERVISED_POLICY_VERSION,
+        track: 'self-supervised',
+        lossDefinition: RECURRENT_SELF_SUPERVISED_OBJECTIVE,
+        pairingRule: PREDICTIVE_PAIRING_RULE,
+        seedHash: state.seedHash,
+        options: { ...state.options },
+        model: model.export(),
+        registries,
+      };
+    }
     return {
       version: EXPORTED_SELF_SUPERVISED_POLICY_VERSION,
       track: 'self-supervised',
@@ -899,10 +960,8 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
       pairingRule: PREDICTIVE_PAIRING_RULE,
       seedHash: state.seedHash,
       options: { ...state.options },
-      model: model.export(),
-      registries: cloneRegistries(
-        this.registryCheckpoint ?? this.snapshotRegistries(state),
-      ),
+      model: ExportedPredictiveModelSchema.parse(model.export()),
+      registries,
     };
   }
 
@@ -1182,7 +1241,7 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
     return this.state;
   }
 
-  private requireModel(): PredictiveCountModel {
+  private requireModel(): PredictiveMessageModel {
     if (this.model === undefined) {
       throw new LearnerStateError('init() must be called before any other method');
     }
@@ -1215,7 +1274,7 @@ export class SelfSupervisedAdapter implements LearnerAdapter {
  * with an empty message (the §9.6 `disabled` control) carries no pair at all.
  */
 function foldPair(
-  model: PredictiveCountModel,
+  model: PredictiveMessageModel,
   record: SelfSupervisedUpdateRecord,
 ): void {
   if (record.messageSymbolIndices.length === 0) {
@@ -1300,4 +1359,14 @@ export function createSelfSupervisedAdapterFactory(
     track: 'self-supervised',
     create: () => new SelfSupervisedAdapter(options),
   };
+}
+
+/** Scientific E12 factory using the capacity-matched GRU backbone. */
+export function createRecurrentSelfSupervisedAdapterFactory(
+  options: Omit<SelfSupervisedAdapterOptions, 'backbone'> = {},
+): LearnerAdapterFactory {
+  return createSelfSupervisedAdapterFactory({
+    ...options,
+    backbone: RECURRENT_ARCHITECTURE,
+  });
 }

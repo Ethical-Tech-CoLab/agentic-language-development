@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+// Exact topology receipt for the recurrent ALD-045 and ALD-046 paths.
+
 const composeFile = 'deploy/mode-r/docker-compose.yml';
 const fortComposeFile = 'deploy/mode-r/docker-compose.fort.yml';
 const project = `ald-mode-r-study-${String(process.pid)}`;
@@ -115,6 +117,15 @@ try {
     }
     results.push(result);
   }
+  const recurrent = results
+    .filter((result) => result.recurrentPolicy !== undefined)
+    .map((result) => result.recurrentPolicy);
+  if (
+    recurrent.length !== 2 ||
+    recurrent[0].parameterCount !== recurrent[1].parameterCount
+  ) {
+    throw new Error('scratch-RL and self-supervised recurrent capacity differ');
+  }
   process.stdout.write(
     `${JSON.stringify({
       schemaVersion: 1,
@@ -124,6 +135,7 @@ try {
       softwareCommit: commit,
       outputDir,
       fortComposeBoundaryVerified: true,
+      recurrentCapacityMatched: true,
       runs: results,
       allSealedAndVerified: true,
     })}\n`,

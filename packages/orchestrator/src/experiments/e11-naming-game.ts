@@ -37,6 +37,7 @@ import {
   type WilsonInterval,
 } from '@ald/analysis';
 import { deriveSeedHex } from '@ald/hashing';
+import { RECURRENT_ARCHITECTURE } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
 import {
   CLAIM_BOUNDARY_STATEMENTS,
@@ -77,6 +78,8 @@ export interface RunE11NamingGameOptions {
   readonly runIdPrefix?: string;
   readonly seedLabel?: string;
   readonly softwareCommit: string;
+  /** Scientific default is the recurrent GRU; tabular remains a named control. */
+  readonly architecture?: 'tabular-reference' | typeof RECURRENT_ARCHITECTURE;
   readonly onProgress?: (event: E11ProgressEvent) => void;
 }
 
@@ -122,6 +125,7 @@ export interface E11Params {
   readonly learnerOptions: Required<E11LearnerOptions>;
   readonly symbolInventorySize: number;
   readonly windowSize: number;
+  readonly architecture: 'tabular-reference' | typeof RECURRENT_ARCHITECTURE;
 }
 
 export interface E11Result {
@@ -227,12 +231,17 @@ export async function runE11NamingGame(
   const windowSize = options.windowSize ?? 100;
   const symbolInventorySize = options.symbolInventorySize ?? 32;
   const learnerOptions: Required<E11LearnerOptions> = {
-    learningRate: options.learnerOptions?.learningRate ?? 1,
-    temperature: options.learnerOptions?.temperature ?? 0.5,
+    learningRate:
+      options.learnerOptions?.learningRate ??
+      (options.architecture === 'tabular-reference' ? 1 : 0.003),
+    temperature:
+      options.learnerOptions?.temperature ??
+      (options.architecture === 'tabular-reference' ? 0.5 : 1),
     messageLength: options.learnerOptions?.messageLength ?? 1,
   };
   const runIdPrefix = options.runIdPrefix ?? 'e11';
   const seedLabel = options.seedLabel ?? 'ald-e11-v1';
+  const architecture = options.architecture ?? RECURRENT_ARCHITECTURE;
 
   const runs: E11RunSummary[] = [];
   const evaluationMeans: number[] = [];
@@ -248,12 +257,18 @@ export async function runE11NamingGame(
       deploymentMode: 'prototype',
       babyA: {
         track: 'scratch-rl',
-        modelRef: 'tabular-reinforce-v1',
+        modelRef:
+          architecture === 'tabular-reference'
+            ? 'tabular-reinforce-v1'
+            : RECURRENT_ARCHITECTURE,
         trainingIsolation: 'independent',
       },
       babyB: {
         track: 'scratch-rl',
-        modelRef: 'tabular-reinforce-v1',
+        modelRef:
+          architecture === 'tabular-reference'
+            ? 'tabular-reinforce-v1'
+            : RECURRENT_ARCHITECTURE,
         trainingIsolation: 'independent',
       },
       learningSignal: 'extrinsic-task',
@@ -371,6 +386,7 @@ export async function runE11NamingGame(
       learnerOptions,
       symbolInventorySize,
       windowSize,
+      architecture,
     },
     runs,
     aggregate: {

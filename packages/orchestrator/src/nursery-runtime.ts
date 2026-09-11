@@ -149,6 +149,7 @@ import {
   registerGeneratorConfig,
 } from '@ald/scenario';
 import {
+  RECURRENT_ARCHITECTURE,
   createLearnerAdapterFactory,
   loadLearnerContract,
   promptBundleHash,
@@ -3143,9 +3144,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         return this.#options.adapterFactoryFor(config, role).create();
       }
       const track = role === 'baby-a' ? config.babyA.track : config.babyB.track;
+      const modelRef =
+        role === 'baby-a' ? config.babyA.modelRef : config.babyB.modelRef;
+      const options = this.#learnerOptions(role);
       return createLearnerAdapterFactory(
         track,
-        this.#learnerOptions(role),
+        modelRef === RECURRENT_ARCHITECTURE
+          ? { ...options, backbone: RECURRENT_ARCHITECTURE }
+          : options,
       ).create();
     };
     return { 'baby-a': build('baby-a'), 'baby-b': build('baby-b') };

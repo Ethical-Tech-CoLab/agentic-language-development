@@ -1,9 +1,8 @@
 /**
  * `runE11NamingGame` (BACKLOG ALD-072; EXPERIMENT-NOTEBOOK.md E11).
  *
- * One seed, 300 training turns, 40 evaluation turns: enough for the tabular
- * REINFORCE track to move off a uniform policy without the multi-minute
- * budget of the full E11 conformance run in `scratch-rl-run.test.ts`.
+ * One seed, 300 training turns, 40 evaluation turns through the scientific
+ * GRU/PPO default. This is model/runtime qualification, not an E11 result.
  */
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -29,7 +28,7 @@ describe('runE11NamingGame (ALD-072)', () => {
 
   it('produces per-run RL metrics, freezes the policy in evaluation, and writes a report', async () => {
     root = await mkdtemp(join(tmpdir(), 'ald-e11-'));
-    const learnerOptions = { learningRate: 1, temperature: 0.5 };
+    const learnerOptions = { learningRate: 0.003, temperature: 1 };
     const { runtime, close } = createProductionRuntime({
       databasePath: join(root, 'evidence.sqlite'),
       bundleRoot: join(root, 'bundles'),
@@ -51,6 +50,7 @@ describe('runE11NamingGame (ALD-072)', () => {
     close();
 
     expect(result.runs).toHaveLength(1);
+    expect(result.params.architecture).toBe('gru-actor-critic-v1');
     const run = result.runs[0];
     expect(run).toBeDefined();
     if (run === undefined) {
@@ -84,5 +84,5 @@ describe('runE11NamingGame (ALD-072)', () => {
     const reportText = await readFile(join(outDir, 'REPORT.md'), 'utf8');
     expect(reportText).toContain(run.runId);
     expect(reportText).toContain('What this shows / does not show');
-  }, 60_000);
+  });
 });

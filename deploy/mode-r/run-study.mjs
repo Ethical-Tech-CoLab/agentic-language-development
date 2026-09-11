@@ -4,12 +4,15 @@ import { join } from 'node:path';
 
 import { BaseAnchorPublisher, FakeChainTransport } from '@ald/anchor';
 import { createIsolatedAdapterFactory } from '@ald/isolation';
+import { RECURRENT_ARCHITECTURE } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
 import {
   FORT_SIGNER_SEEDS_FILE_ENV,
   createProductionRuntime,
   signerProviderFromFortEnvironment,
 } from '@ald/orchestrator';
+
+// Live Mode R qualification for the recurrent ALD-045 and ALD-046 paths.
 
 const track = process.argv[2] ?? 'no-learning';
 const allowedTracks = new Set([
@@ -62,6 +65,7 @@ const publisher = new BaseAnchorPublisher({
 });
 
 const factories = [];
+const recurrentTrack = track === 'scratch-rl' || track === 'self-supervised';
 production = createProductionRuntime({
   databasePath: join(outputRoot, `${runId}.sqlite`),
   bundleRoot: join(outputRoot, 'bundles'),
@@ -88,6 +92,22 @@ production = createProductionRuntime({
       },
       timing: 'normalized',
       deadlineMs: 2_000,
+      ...(recurrentTrack
+        ? {
+            learnerOptions: {
+              backbone: RECURRENT_ARCHITECTURE,
+              learningRate: 0.003,
+              temperature: 1,
+              recurrent: {
+                hiddenSize: 16,
+                ppoClip: 0.2,
+                ppoEpochs: 4,
+                valueLossCoefficient: 0.5,
+                maxGradientNorm: 1,
+              },
+            },
+          }
+        : {}),
     });
     factories.push(factory);
     return factory;
@@ -108,12 +128,12 @@ try {
     deploymentMode: 'research-grade',
     babyA: {
       track,
-      modelRef: `qualification-${track}`,
+      modelRef: recurrentTrack ? RECURRENT_ARCHITECTURE : `qualification-${track}`,
       trainingIsolation: 'independent',
     },
     babyB: {
       track,
-      modelRef: `qualification-${track}`,
+      modelRef: recurrentTrack ? RECURRENT_ARCHITECTURE : `qualification-${track}`,
       trainingIsolation: 'independent',
     },
     learningSignal,
@@ -149,6 +169,45 @@ try {
     await readFile(join(bundleDir, 'run-manifest.json'), 'utf8'),
   );
   assert.equal(manifest.deploymentMode, 'research-grade');
+  let recurrentPolicy;
+  if (recurrentTrack) {
+    const initialPolicies = await Promise.all(
+      ['baby-a', 'baby-b'].map((role) =>
+        readFile(join(bundleDir, 'policies', `${role}-policy-initial.json`), 'utf8')
+          .then(JSON.parse),
+      ),
+    );
+    const latestPolicies = await Promise.all(
+      ['baby-a', 'baby-b'].map((role) =>
+        readFile(join(bundleDir, 'policies', `${role}-latest.json`), 'utf8')
+          .then(JSON.parse),
+      ),
+    );
+    const recurrentModel = (policy) =>
+      policy.track === 'self-supervised' ? policy.model.model : policy.model;
+    const initialModels = initialPolicies.map(recurrentModel);
+    const latestModels = latestPolicies.map(recurrentModel);
+    assert.equal(initialModels[0]?.architecture, RECURRENT_ARCHITECTURE);
+    assert.equal(initialModels[1]?.architecture, RECURRENT_ARCHITECTURE);
+    assert.notDeepEqual(initialModels[0]?.parameters, initialModels[1]?.parameters);
+    assert.equal(initialModels[0]?.parameterCount, initialModels[1]?.parameterCount);
+    assert.ok(latestModels.every((model) => model.updateCount > 0));
+    const policyHashes = ['babyA', 'babyB'].map((ledgerName) =>
+      production.runtime
+        .ledgers(runId)[ledgerName]
+        .filter((event) => event.eventType === 'policy.checkpointed')
+        .map((event) => event.content.policyHash),
+    );
+    assert.ok(policyHashes.every((hashes) => hashes.at(-1) === hashes.at(-2)));
+    recurrentPolicy = {
+      architecture: RECURRENT_ARCHITECTURE,
+      parameterCount: initialModels[0].parameterCount,
+      hiddenSize: initialModels[0].options.hiddenSize,
+      independentInitialParameters: true,
+      bothPoliciesUpdated: true,
+      evaluationPolicyHashesConstant: true,
+    };
+  }
 
   const result = {
     schemaVersion: 1,
@@ -171,6 +230,7 @@ try {
     checkpointCount: checkpoints.length,
     anchorReceiptCount: receipts.length,
     verifierExitCode: verification.exitCode,
+    ...(recurrentPolicy === undefined ? {} : { recurrentPolicy }),
     containerIds: Object.fromEntries(
       ['baby-a', 'baby-b'].map((role) => [
         role,

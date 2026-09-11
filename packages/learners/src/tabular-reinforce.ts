@@ -109,6 +109,16 @@ import {
   type ExportedTabularPolicy,
   type TabularPolicyOptions,
 } from './policy.js';
+import {
+  RECURRENT_ARCHITECTURE,
+  RecurrentCommunicationModel,
+  type RecurrentModelOptions,
+} from './recurrent-model.js';
+import {
+  RECURRENT_SCRATCH_POLICY_VERSION,
+  parseExportedRecurrentScratchPolicy,
+  type ExportedRecurrentScratchPolicy,
+} from './recurrent-scratch-policy.js';
 
 /** Learning signals this adapter can consume (SPEC §11.1, `learningSignal`). */
 export const SUPPORTED_LEARNING_SIGNALS = [
@@ -135,6 +145,13 @@ export interface TabularReinforceOptions
    * reward is never read.
    */
   intrinsicMode?: 'prediction-progress';
+  /** Explicit scientific backbone; omit for the tabular qualification control. */
+  backbone?: 'tabular-reference' | typeof RECURRENT_ARCHITECTURE;
+  /** Fixed GRU/PPO parameters recorded in recurrent checkpoints. */
+  recurrent?: Omit<
+    RecurrentModelOptions,
+    'typeCount' | 'symbolCount' | 'messageLength' | 'learningRate'
+  >;
 }
 
 type RewardMode = 'extrinsic-task' | 'intrinsic-prediction-progress';
@@ -229,6 +246,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   private state: AdapterState | undefined;
   private thetaSender: number[][] = [];
   private thetaReceiver: number[][][] = [];
+  private recurrentModel: RecurrentCommunicationModel | undefined;
   private baseline = 0;
   private observation: ParsedObservation | undefined;
   private lastReceived: ReceivedMessage | undefined;
@@ -273,7 +291,9 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       valuesPerAttribute: shape.valuesPerAttribute,
       attributeCount: shape.attributeCount,
       messageLength: shape.messageLength,
-      learningRate: this.options.learningRate ?? 0.3,
+      learningRate:
+        this.options.learningRate ??
+        (this.options.backbone === RECURRENT_ARCHITECTURE ? 0.003 : 0.3),
       baselineDecay: this.options.baselineDecay ?? 0.9,
       temperature: this.options.temperature ?? 1,
       ...(this.options.intrinsicMode === undefined
@@ -323,6 +343,16 @@ export class TabularReinforceAdapter implements LearnerAdapter {
           Array.from({ length: shape.typeCount }, draw),
         ),
     );
+    this.recurrentModel =
+      this.options.backbone === RECURRENT_ARCHITECTURE
+        ? new RecurrentCommunicationModel(context.seed, {
+            typeCount: shape.typeCount,
+            symbolCount,
+            messageLength: this.state.support.marksPerMessage,
+            learningRate: resolved.learningRate,
+            ...this.options.recurrent,
+          })
+        : undefined;
     this.baseline = 0;
     this.observation = undefined;
     this.lastReceived = undefined;
@@ -425,10 +455,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       );
     }
     const typeCode = at(observation.typeCodes, observation.targetIndex);
-    const probs = softmax(
-      row(this.thetaSender, typeCode),
-      state.options.temperature,
-    );
+    const recurrent = this.recurrentModel;
+    const distributions =
+      recurrent === undefined
+        ? [softmax(row(this.thetaSender, typeCode), state.options.temperature)]
+        : recurrent.sender(turn, typeCode, state.options.temperature)
+            .distributions;
+    const probs = at(distributions, 0);
 
     const symbolIndices: number[] = [];
     let confidence = 1;
@@ -437,10 +470,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       position < state.support.marksPerMessage;
       position += 1
     ) {
-      const index = state.actionStream.sampleIndex(probs);
+      const distribution =
+        recurrent === undefined ? probs : at(distributions, position);
+      const index = state.actionStream.sampleIndex(distribution);
       symbolIndices.push(index);
-      confidence *= at(probs, index);
+      confidence *= at(distribution, index);
     }
+    recurrent?.recordActions(turn, symbolIndices);
     const marks = symbolIndices.map((index) => ({
       formIndex: index,
       formId: state.support.formId(index),
@@ -530,11 +566,24 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     const candidateTypeCodes = this.receiverCandidateTypeCodes(
       candidateRefs.length,
     );
-    const probs = softmax(
-      this.candidateScores(received.symbolIndices, candidateTypeCodes),
-      state.options.temperature,
-    );
+    const recurrent = this.recurrentModel;
+    const probs =
+      recurrent === undefined
+        ? softmax(
+            this.candidateScores(received.symbolIndices, candidateTypeCodes),
+            state.options.temperature,
+          )
+        : at(
+            recurrent.receiver(
+              turn,
+              received.symbolIndices,
+              candidateTypeCodes,
+              state.options.temperature,
+            ).distributions,
+            0,
+          );
     const actionIndex = state.actionStream.sampleIndex(probs);
+    recurrent?.recordActions(turn, [actionIndex]);
     // The hypothesis events of this turn are evidenced by the delivered
     // channel event where there was one, and by this Baby's own proposal
     // otherwise (§8.2: no channel event, no channel reference).
@@ -664,6 +713,12 @@ export class TabularReinforceAdapter implements LearnerAdapter {
           ? (outcome.reward ?? successBit)
           : this.predictionProgressReward(state, memory, successBit);
     }
+    if (
+      this.recurrentModel !== undefined &&
+      !(memory.role === 'receiver' && memory.symbolIndices.length === 0)
+    ) {
+      this.recurrentModel.recordReward(outcome.turn, memory.reward);
+    }
 
     await this.recordHypotheses(state, memory, successBit);
   }
@@ -691,6 +746,23 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         batch.learningSignal,
         [state.rewardMode],
       );
+    }
+
+    if (this.recurrentModel !== undefined) {
+      const highestTurn = batch.turns.reduce(
+        (highest, turn) => Math.max(highest, turn),
+        0,
+      );
+      this.recurrentModel.updateReinforcement(batch.turns);
+      for (const turn of batch.turns) this.pending.delete(turn);
+      this.registryCheckpoint = this.snapshotRegistries(state);
+      const policy = this.exportPolicy();
+      const policyHash = hashCanonical(HASH_DOMAINS.policyCheckpoint, policy);
+      return {
+        policyCheckpointRef: `policy:${policyHash}`,
+        policyHash,
+        turn: highestTurn,
+      };
     }
 
     const learningRate = state.options.learningRate;
@@ -772,8 +844,31 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    * the checkpoint semantics of SPEC §7.3 and, in the runtime, at most one
    * turn's worth (`NurseryRuntime` calls `updatePolicy` every training turn).
    */
-  exportPolicy(): ExportedTabularPolicy {
+  exportPolicy(): ExportedTabularPolicy | ExportedRecurrentScratchPolicy {
     const state = this.requireState();
+    if (this.recurrentModel !== undefined) {
+      return {
+        version: RECURRENT_SCRATCH_POLICY_VERSION,
+        track: 'scratch-rl',
+        architecture: RECURRENT_ARCHITECTURE,
+        updateRule: this.recurrentModel.export().rlObjective,
+        options: {
+          valuesPerAttribute: state.options.valuesPerAttribute,
+          attributeCount: state.options.attributeCount,
+          messageLength: state.options.messageLength,
+          temperature: state.options.temperature,
+          learningRate: state.options.learningRate,
+          baselineDecay: state.options.baselineDecay,
+          ...(state.options.intrinsicMode === undefined
+            ? {}
+            : { intrinsicMode: state.options.intrinsicMode }),
+        },
+        model: this.recurrentModel.export(),
+        registries: cloneRegistries(
+          this.registryCheckpoint ?? this.snapshotRegistries(state),
+        ),
+      };
+    }
     return {
       version: EXPORTED_TABULAR_POLICY_VERSION,
       thetaSender: roundMatrix(this.thetaSender, POLICY_DECIMALS),
@@ -791,6 +886,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   /** Self-declared, hash-bound inputs for the independent §6.5 battery. */
   describeProvenance(): LearnerProvenance {
     const state = this.requireState();
+    const recurrent = this.recurrentModel;
+    const componentName =
+      recurrent === undefined
+        ? 'tabular-communication-policy'
+        : RECURRENT_ARCHITECTURE;
     return {
       track: 'scratch-rl',
       modelRef:
@@ -802,7 +902,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       weightUpdatePath: 'private-buffers-only',
       components: [
         {
-          name: 'tabular-communication-policy',
+          name: componentName,
           kind: 'communication-policy',
           provenance:
             state.context.initialPolicy === undefined
@@ -990,6 +1090,18 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   private associationRow(symbolIndex: number, positions: number[]): number[] {
     const state = this.requireState();
     const used = positions.length > 0 ? positions : [0];
+    if (this.recurrentModel !== undefined) {
+      const symbols = Array.from(
+        { length: Math.max(...used) + 1 },
+        () => symbolIndex,
+      );
+      return this.recurrentModel
+        .predictCandidates(
+          symbols,
+          Array.from({ length: state.shape.typeCount }, (_, index) => index),
+        )
+        .map((probability) => Math.log(Math.max(1e-12, probability)));
+    }
     const association = new Array<number>(state.shape.typeCount).fill(0);
     for (const position of used) {
       const logits = row(this.receiverTable(position), symbolIndex);
@@ -1004,6 +1116,11 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     symbolIndices: readonly number[],
     candidateTypeCodes: readonly number[],
   ): number[] {
+    if (this.recurrentModel !== undefined) {
+      return this.recurrentModel
+        .predictCandidates(symbolIndices, candidateTypeCodes)
+        .map((probability) => Math.log(Math.max(1e-12, probability)));
+    }
     return candidateTypeCodes.map((typeCode) => {
       let score = 0;
       symbolIndices.forEach((symbolIndex, position) => {
@@ -1099,6 +1216,62 @@ export class TabularReinforceAdapter implements LearnerAdapter {
    */
   private loadPolicy(value: unknown): void {
     const state = this.requireState();
+    if (this.recurrentModel !== undefined) {
+      const policy = parseExportedRecurrentScratchPolicy(value);
+      const mismatches: string[] = [];
+      for (const [name, checkpointValue, runValue] of [
+        [
+          'attributeCount',
+          policy.options.attributeCount,
+          state.shape.attributeCount,
+        ],
+        [
+          'valuesPerAttribute',
+          policy.options.valuesPerAttribute,
+          state.shape.valuesPerAttribute,
+        ],
+        [
+          'messageLength',
+          policy.options.messageLength,
+          state.support.marksPerMessage,
+        ],
+        [
+          'symbolCount',
+          policy.model.options.symbolCount,
+          state.support.formCount,
+        ],
+      ] as const) {
+        if (checkpointValue !== runValue) {
+          mismatches.push(`${name} ${checkpointValue} != ${runValue}`);
+        }
+      }
+      if (mismatches.length > 0) {
+        throw new LearnerConfigurationError(
+          `initialPolicy shape does not match this run configuration: ${mismatches.join(', ')}`,
+        );
+      }
+      this.recurrentModel.restore(policy.model);
+      this.restoreRegistries(policy.registries);
+      this.diagnostics = [];
+      for (const [name, checkpointValue, runValue] of [
+        [
+          'learningRate',
+          policy.options.learningRate,
+          state.options.learningRate,
+        ],
+        ['temperature', policy.options.temperature, state.options.temperature],
+        [
+          'baselineDecay',
+          policy.options.baselineDecay,
+          state.options.baselineDecay,
+        ],
+      ] as const) {
+        if (checkpointValue !== runValue) {
+          this.diagnostics.push(`${name} ${checkpointValue} != ${runValue}`);
+        }
+      }
+      return;
+    }
     const policy = parseExportedTabularPolicy(value);
     const shape = tabularPolicyShape(policy);
     const mismatches: string[] = [];
@@ -1350,4 +1523,14 @@ export function createTabularReinforceAdapterFactory(
     track: 'scratch-rl',
     create: () => new TabularReinforceAdapter(options),
   };
+}
+
+/** Scientific E11 factory: fixed GRU actor-critic with PPO-style updates. */
+export function createRecurrentActorCriticAdapterFactory(
+  options: Omit<TabularReinforceOptions, 'backbone'> = {},
+): LearnerAdapterFactory {
+  return createTabularReinforceAdapterFactory({
+    ...options,
+    backbone: RECURRENT_ARCHITECTURE,
+  });
 }

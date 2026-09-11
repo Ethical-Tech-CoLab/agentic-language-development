@@ -61,6 +61,13 @@ import { z } from 'zod';
 import { LearnerConfigurationError, LearnerStateError } from './errors.js';
 import { roundAll, roundTo } from './game.js';
 import { POLICY_DECIMALS } from './policy.js';
+import {
+  ExportedRecurrentModelSchema,
+  RECURRENT_ARCHITECTURE,
+  RECURRENT_SELF_SUPERVISED_OBJECTIVE,
+  RecurrentCommunicationModel,
+  type RecurrentModelOptions,
+} from './recurrent-model.js';
 
 /**
  * The pre-registered E12 loss, recorded in `exportPolicy().lossDefinition`.
@@ -152,6 +159,33 @@ export interface PredictiveModelInit extends PredictiveModelOptions {
    * `priorNoise > 0`; the seed itself is never exported.
    */
   seed?: string;
+}
+
+export interface PredictiveMessageModel {
+  readonly messageLength: number;
+  readonly featureCount: number;
+  readonly symbolCount: number;
+  readonly pairs: number;
+  readonly countIncrement: number;
+  setCountIncrement(value: number): void;
+  observe(featureCode: number, symbolIndices: readonly number[]): void;
+  symbolProbabilities(position: number, featureCode: number): number[];
+  messageLogProbability(
+    featureCode: number,
+    symbolIndices: readonly number[],
+  ): number;
+  candidatePosterior(
+    candidateFeatureCodes: readonly number[],
+    symbolIndices: readonly number[],
+  ): number[];
+  featurePosterior(symbolIndices: readonly number[]): number[];
+  featurePosteriorForSymbol(
+    symbolIndex: number,
+    positions: readonly number[],
+  ): number[];
+  export(): ExportedPredictiveModel | ExportedRecurrentPredictiveModel;
+  hash(): Sha256Hash;
+  restore(value: unknown): void;
 }
 
 /**
@@ -430,6 +464,206 @@ export class PredictiveCountModel {
       );
     }
     return symbolIndex;
+  }
+}
+
+export const ExportedRecurrentPredictiveModelSchema = z
+  .object({
+    version: z.literal(1),
+    component: z.literal('predictive-message-model'),
+    kind: z.literal(RECURRENT_ARCHITECTURE),
+    lossDefinition: z.literal(RECURRENT_SELF_SUPERVISED_OBJECTIVE),
+    pairingRule: z.literal(PREDICTIVE_PAIRING_RULE),
+    options: z
+      .object({
+        messageLength: z.number().int().positive(),
+        featureCount: z.number().int().positive(),
+        symbolCount: z.number().int().positive(),
+        learningRate: z.number().positive(),
+      })
+      .strict(),
+    model: ExportedRecurrentModelSchema,
+    pairs: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export type ExportedRecurrentPredictiveModel = z.infer<
+  typeof ExportedRecurrentPredictiveModelSchema
+>;
+
+export interface RecurrentPredictiveModelInit {
+  messageLength: number;
+  featureCount: number;
+  symbolCount: number;
+  learningRate: number;
+  seed: string;
+  recurrent?: Omit<
+    RecurrentModelOptions,
+    'typeCount' | 'symbolCount' | 'messageLength' | 'learningRate'
+  >;
+}
+
+/** Matched GRU backbone with a reward-free partner-message objective. */
+export class RecurrentPredictiveModel implements PredictiveMessageModel {
+  private readonly core: RecurrentCommunicationModel;
+  private folded = 0;
+
+  constructor(private readonly options: RecurrentPredictiveModelInit) {
+    if (!(options.learningRate > 0)) {
+      throw new LearnerConfigurationError('learningRate must be positive');
+    }
+    this.core = new RecurrentCommunicationModel(options.seed, {
+      typeCount: options.featureCount,
+      symbolCount: options.symbolCount,
+      messageLength: options.messageLength,
+      learningRate: options.learningRate,
+      ...options.recurrent,
+    });
+  }
+
+  get messageLength(): number {
+    return this.options.messageLength;
+  }
+
+  get featureCount(): number {
+    return this.options.featureCount;
+  }
+
+  get symbolCount(): number {
+    return this.options.symbolCount;
+  }
+
+  get pairs(): number {
+    return this.folded;
+  }
+
+  get countIncrement(): number {
+    return this.options.learningRate;
+  }
+
+  setCountIncrement(value: number): void {
+    if (!(value > 0)) {
+      throw new LearnerConfigurationError('learningRate must be positive');
+    }
+    this.options.learningRate = value;
+    this.core.setLearningRate(value);
+  }
+
+  observe(featureCode: number, symbolIndices: readonly number[]): void {
+    if (symbolIndices.length === 0) return;
+    this.core.updatePredictive([
+      { featureCode, messageSymbolIndices: symbolIndices },
+    ]);
+    this.folded += 1;
+  }
+
+  symbolProbabilities(position: number, featureCode: number): number[] {
+    const distributions = this.core.predictSymbols(featureCode);
+    return at(distributions, position);
+  }
+
+  messageLogProbability(
+    featureCode: number,
+    symbolIndices: readonly number[],
+  ): number {
+    let total = 0;
+    const scored = Math.min(symbolIndices.length, this.messageLength);
+    for (let position = 0; position < scored; position += 1) {
+      total += Math.log(
+        Math.max(
+          1e-12,
+          at(
+            this.symbolProbabilities(position, featureCode),
+            at(symbolIndices, position),
+          ),
+        ),
+      );
+    }
+    return total;
+  }
+
+  candidatePosterior(
+    candidateFeatureCodes: readonly number[],
+    symbolIndices: readonly number[],
+  ): number[] {
+    if (candidateFeatureCodes.length === 0) {
+      throw new LearnerStateError('candidateFeatureCodes must not be empty');
+    }
+    return normalizeLogs(
+      candidateFeatureCodes.map((featureCode) =>
+        this.messageLogProbability(featureCode, symbolIndices),
+      ),
+    );
+  }
+
+  featurePosterior(symbolIndices: readonly number[]): number[] {
+    return this.candidatePosterior(
+      Array.from({ length: this.featureCount }, (_, index) => index),
+      symbolIndices,
+    );
+  }
+
+  featurePosteriorForSymbol(
+    symbolIndex: number,
+    positions: readonly number[],
+  ): number[] {
+    const used = positions.length > 0 ? positions : [0];
+    return normalizeLogs(
+      Array.from({ length: this.featureCount }, (_, featureCode) =>
+        used.reduce(
+          (total, position) =>
+            total +
+            Math.log(
+              Math.max(
+                1e-12,
+                at(this.symbolProbabilities(position, featureCode), symbolIndex),
+              ),
+            ),
+          0,
+        ),
+      ),
+    );
+  }
+
+  export(): ExportedRecurrentPredictiveModel {
+    return {
+      version: 1,
+      component: 'predictive-message-model',
+      kind: RECURRENT_ARCHITECTURE,
+      lossDefinition: RECURRENT_SELF_SUPERVISED_OBJECTIVE,
+      pairingRule: PREDICTIVE_PAIRING_RULE,
+      options: {
+        messageLength: this.messageLength,
+        featureCount: this.featureCount,
+        symbolCount: this.symbolCount,
+        learningRate: this.options.learningRate,
+      },
+      model: this.core.export(),
+      pairs: this.folded,
+    };
+  }
+
+  hash(): Sha256Hash {
+    return hashCanonical(HASH_DOMAINS.policyCheckpoint, this.export());
+  }
+
+  restore(value: unknown): void {
+    const recorded = ExportedRecurrentPredictiveModelSchema.parse(value);
+    const mismatches = [
+      ['messageLength', recorded.options.messageLength, this.messageLength],
+      ['featureCount', recorded.options.featureCount, this.featureCount],
+      ['symbolCount', recorded.options.symbolCount, this.symbolCount],
+    ].flatMap(([name, left, right]) =>
+      left === right ? [] : [`${String(name)} ${String(left)} != ${String(right)}`],
+    );
+    if (mismatches.length > 0) {
+      throw new LearnerConfigurationError(
+        `recurrent predictive checkpoint shape does not match this run: ${mismatches.join(', ')}`,
+      );
+    }
+    this.options.learningRate = recorded.options.learningRate;
+    this.core.restore(recorded.model);
+    this.folded = recorded.pairs;
   }
 }
 
