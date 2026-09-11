@@ -45,9 +45,9 @@ to relabel any existing fixture as a pilot.
   and prospectively eligible execution are still absent.
 - E01 timing/envelope and E13 side-feature detectors have not been measured on the
   final selected topology.
-- Experiment cards do not yet bind every exact config, margin, analysis version,
-  model asset, selected seed prefix, host, exclusion, and stopping parameter into a
-  canonical registration packet.
+- A fail-closed canonical packet compiler now rejects missing, extra, empty, and
+  placeholder operational fields. The 19-card inventory still has 190 unresolved
+  exact bindings and therefore compiles zero registration packets.
 - Upstream required-check enforcement, public-study mainnet authority, and
   load-bearing citation re-review remain external evidence gaps.
 

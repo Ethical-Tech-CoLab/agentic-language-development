@@ -1,0 +1,1101 @@
+{
+  "schemaVersion": 1,
+  "classification": "registration-readiness-inventory",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "compilerVersion": 1,
+  "sourceCardsSha256": "acc4a6f5903220b73f98775da7b4f33ef19e6620fcb87e0a256b37ec42cc9aae",
+  "requiredBindings": [
+    "protocolCard",
+    "runConfigurations",
+    "practicalMargins",
+    "analysisVersions",
+    "modelAssets",
+    "selectedSeedPrefix",
+    "executionHost",
+    "scenarioBundle",
+    "exclusionRules",
+    "stoppingRules",
+    "evidenceAndAnchorPolicy"
+  ],
+  "totals": {
+    "experiments": 19,
+    "registrationReady": 0,
+    "resolvedBindings": 19,
+    "unresolvedBindings": 190,
+    "compiledPackets": 0
+  },
+  "packets": [
+    {
+      "experimentId": "E00",
+      "registrationClass": "qualification",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:7a3cfa721707f6c817f3214100b8a7342f32af11414bccef438979634d4ff8e0",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E01",
+      "registrationClass": "qualification",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:99049406e32d0a59f0de5271b40d1e540ad203e13a5dde0afff8d200f2ac8d13",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E02",
+      "registrationClass": "qualification",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:90a93d7a2d0de2f4c6581d0e2899d76af194737e866a8cff2e7e0c47b821ab12",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E03",
+      "registrationClass": "qualification",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:c0f6c9d5528d423d7a4fe5e04ae9fd90bbc2f39ce14a93176673e72c89c17e3a",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E10",
+      "registrationClass": "secondary-benchmark",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:4e9bee62b2dcc223d1a4bc17b2061344783ad460361c46b6b3f067e0476bd108",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E11",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:bab1cc0609ac2992a27c5abb31567b9bb7fee01e626fc450e40e7c8a70abebd6",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E12",
+      "registrationClass": "secondary-benchmark",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:2645a286f7614be1ed4ea554a951f49a095201d66e7f5d31fd13d5b34a51ba17",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E13",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:442e9906c77cffaa4afb346498032670ca1dc7efbdedcf7cf93a90fa3bb1eab9",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E14",
+      "registrationClass": "secondary",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:38abb1b04ee1b122aa0954c8b4bb21a32878c119b17c870baee4088afce199c0",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E15",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:a4275aab0fad0d3941c0dba50fa48674d07f6d0b9464ba474b05d98ad36bd097",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E16",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:5e2efd3d6bca0e7bdbbc76a9b35bd79e2ff0ebbefeba3a8d5c3aa57e12e8ecb8",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E20",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:99a2b28e0c49f6c357a205d8bfb78eae3d029d0727cc4ef93859c031db41c42c",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E21",
+      "registrationClass": "secondary-benchmark",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:a653c1d02f34c1e2a8b8bfdf1d1417329e6b46e88fb320552e7088874f8c4ed7",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E22",
+      "registrationClass": "secondary",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:5303c037893a4718d0a0a33a1aa5e967a8c0620e72ccf0b19b33e2adeeacdd94",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E30",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:0be363764452e6e2ab4f80e62fe87bf47fb03e540d99528ec304b689c30a8bca",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E31",
+      "registrationClass": "secondary",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:0cf8dbca2494404b7e4da1d147b632366b264bcdffe0f9ced4acafe6e5d4b5d8",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E32",
+      "registrationClass": "confirmatory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:a802506d61ac09b809e95d910baf1c42df4b389dfddbe96716eee34e3a421c10",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E40",
+      "registrationClass": "exploratory",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:6d50e7cebb5a3bd7ed40f05aa3e563e150b99cfab5ef8cf313fde94d0abd2905",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    },
+    {
+      "experimentId": "E50",
+      "registrationClass": "replication",
+      "registrationReady": false,
+      "resolvedBindings": [
+        {
+          "key": "protocolCard",
+          "sha256": "sha256:909d6d6565aa8fe6a22c5ed3221a5957529de37fe7d99348b7359be43a3525ba",
+          "source": "protocols/research-protocol-cards.v1.json"
+        }
+      ],
+      "unresolvedBindings": [
+        {
+          "key": "runConfigurations",
+          "reason": "No final experiment-specific runConfigurations artifact is bound."
+        },
+        {
+          "key": "practicalMargins",
+          "reason": "No final experiment-specific practicalMargins artifact is bound."
+        },
+        {
+          "key": "analysisVersions",
+          "reason": "No final experiment-specific analysisVersions artifact is bound."
+        },
+        {
+          "key": "modelAssets",
+          "reason": "No final experiment-specific modelAssets artifact is bound."
+        },
+        {
+          "key": "selectedSeedPrefix",
+          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+        },
+        {
+          "key": "executionHost",
+          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+        },
+        {
+          "key": "scenarioBundle",
+          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+        },
+        {
+          "key": "exclusionRules",
+          "reason": "No final experiment-specific exclusionRules artifact is bound."
+        },
+        {
+          "key": "stoppingRules",
+          "reason": "No final experiment-specific stoppingRules artifact is bound."
+        },
+        {
+          "key": "evidenceAndAnchorPolicy",
+          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+        }
+      ],
+      "compileAttempt": "blocked-before-compiler",
+      "preRegistrationHash": null
+    }
+  ],
+  "externalStepsNotRepresentedAsBindings": [
+    "authentic governance approval",
+    "external registration receipt for the compiled packet hash",
+    "independently verified matching pre-run public anchor",
+    "independent methods review"
+  ],
+  "boundary": "This inventory is deliberately incomplete. It is not a registration, an anchor, governance approval, or permission to collect outcomes."
+}

@@ -33,6 +33,9 @@ The causal-prediction qualification receipt binds the exact E16 comparator candi
 all five eligible non-ledger predictors, disjoint validation selection, prospective
 commitments, seven negative controls, and the clean-check ordering failure that the
 next candidate corrected. It is synthetic software evidence, not an E16 result.
+The registration-readiness inventory applies an eleven-binding fail-closed packet
+contract to all 19 experiment cards. It deliberately emits zero packet hashes while
+190 exact experiment-specific bindings remain unresolved.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

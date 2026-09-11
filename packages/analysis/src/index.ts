@@ -191,6 +191,16 @@ export {
   type ProspectivePredictionCommitment,
   type ScoredPredictionCase,
 } from './causal-prediction.js';
+export {
+  REGISTRATION_BINDING_KEYS,
+  REGISTRATION_PACKET_COMPILER_VERSION,
+  compileRegistrationPacket,
+  type CompileRegistrationPacketInput,
+  type CompiledRegistrationPacket,
+  type RegistrationBinding,
+  type RegistrationBindingKey,
+  type RegistrationPacketArtifact,
+} from './registration-packet.js';
 
 // ---------------------------------------------------------------------------
 // Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;
