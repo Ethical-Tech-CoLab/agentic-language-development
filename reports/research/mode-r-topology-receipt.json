@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-topology-qualification",
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "candidate": {
+    "commit": "97a33bec8966343afff3eebd2be331434b2872ad",
+    "version": "0.1.46",
+    "worktree": "detached-exact-commit",
+    "worktreeCleanAfterInstall": true,
+    "worktreeCleanAfterExecution": true
+  },
+  "environment": {
+    "node": "24.20.0-homebrew",
+    "pnpm": "12.3.4-homebrew",
+    "containerBase": "node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf",
+    "platform": "linux-amd64"
+  },
+  "execution": {
+    "command": "pnpm run test:mode-r-study",
+    "exitCode": 0,
+    "wallSeconds": 525.17,
+    "hostProcessMaximumResidentSetKiB": 55424,
+    "fortComposeBoundaryVerified": true,
+    "runCount": 4,
+    "allSealedAndProductionVerified": true,
+    "totalPrimaryEvents": 295,
+    "totalCheckpoints": 49,
+    "totalLocalQualificationReceipts": 4
+  },
+  "runs": [
+    {
+      "runId": "mode-r-study-no-learning",
+      "track": "no-learning",
+      "trainingTurns": 4,
+      "evaluationTurns": 4,
+      "eventCounts": { "babyA": 21, "babyB": 21, "channel": 8, "turns": 8 },
+      "checkpointCount": 10,
+      "verifierExitCode": 0,
+      "distinctLearnerContainers": true,
+      "summarySha256": "3af8fce6bb95038f8dcf07ff8c73d50ca71a643f9f43d7bd9e03b2ab39de881c",
+      "manifestSha256": "513d789713cbc334b8ff0d4524a637a0d398539dc5079e467694a5dd21563185",
+      "verificationReportSha256": "4f1d9617a5dff019d1fb739f90e5ae6710b34c2e81fd8edbd94dca8af017d39a",
+      "independentAuditSha256": "c60eab26a44a2908767a2bdcd8e6ce285c95562f49916ee0650e0bc2e0616f40"
+    },
+    {
+      "runId": "mode-r-study-scratch-rl",
+      "track": "scratch-rl",
+      "trainingTurns": 4,
+      "evaluationTurns": 4,
+      "eventCounts": { "babyA": 32, "babyB": 32, "channel": 8, "turns": 8 },
+      "checkpointCount": 13,
+      "verifierExitCode": 0,
+      "distinctLearnerContainers": true,
+      "summarySha256": "fd1524efc6b60ddcfb565b79ea99d3124b86b48b2b2fa9a2f3e0c17b809d66ef",
+      "manifestSha256": "d380cd88dba2dad0e5183cdef30284120ddcf099c9343e3fdb3257b7c615b9e8",
+      "verificationReportSha256": "fb4af234e6d8fb882c93131b7b8be1ca11a3d4a3f9f6c13061a66077fda1cf04",
+      "independentAuditSha256": "7ba8970541304f5e62fd8d6d21bb652431f2b63696a85227e6783a1b62b57f9e"
+    },
+    {
+      "runId": "mode-r-study-self-supervised",
+      "track": "self-supervised",
+      "trainingTurns": 4,
+      "evaluationTurns": 4,
+      "eventCounts": { "babyA": 31, "babyB": 31, "channel": 8, "turns": 8 },
+      "checkpointCount": 13,
+      "verifierExitCode": 0,
+      "distinctLearnerContainers": true,
+      "summarySha256": "5387fcd7328034560dd4f634dbf675f5855ab7685820d15828adb93272f3bfdb",
+      "manifestSha256": "88b5c44d361ce0f1e1c700085167465fd445899219fc75bd645ddaf4c62d0102",
+      "verificationReportSha256": "eeee14ca812b723da85962d0553aa968a560f2f3c5f43c46b1d30f30ed781986",
+      "independentAuditSha256": "1c2a7ee2718cce7b0540d56a4cb62351b248505d43a1d003e6c52b75d45f4854"
+    },
+    {
+      "runId": "mode-r-study-hybrid",
+      "track": "hybrid",
+      "trainingTurns": 4,
+      "evaluationTurns": 4,
+      "eventCounts": { "babyA": 32, "babyB": 31, "channel": 8, "turns": 8 },
+      "checkpointCount": 13,
+      "verifierExitCode": 0,
+      "distinctLearnerContainers": true,
+      "summarySha256": "2e24391c8227f07c4486ff42f155fc80ac73cb7f9a42a5dba1fa6ca02954da8f",
+      "manifestSha256": "986118b75282a0c048bb77a1f2e67e6bee13163db2ab39f7d637e47c66929ab9",
+      "verificationReportSha256": "b5e5d2e757d204b539523ff4a53a8a849dbc3ba4f91d926f392425c32e0243b2",
+      "independentAuditSha256": "d7bc47dc5ac9b5559a421b5b6390d6cd0f64eb0cfeacb7329652e5727ce4d568"
+    }
+  ],
+  "independentAudit": {
+    "implementation": "rust-independent-integrity-auditor",
+    "bundleCount": 4,
+    "passCount": 4,
+    "eventCountIncludingInterventions": 299,
+    "checkpointCount": 49,
+    "allLocalReceiptBindingsPresent": true,
+    "summarySha256": "311e7edc2bcd84fb9682a04fd65b2e6369a738146524f44449d66fe39ee3f43b"
+  },
+  "containerImages": {
+    "babyA": "sha256:11b91a19cac598e23712ce234cd0f9d7ab585961c8eec4ae9123bcfff45d4451",
+    "babyB": "sha256:c9ff855e5e7b47c564a258557ebe1d468a9890caa48538a517c99775284a09c7",
+    "nurseryStudy": "sha256:68286cb108019eab0b12c02544dcba2cbc8db4ec85daf75f1c90a20ecddb5aa9"
+  },
+  "signerBoundary": {
+    "directSecretValuesRefused": true,
+    "regularNonSymlinkRestrictedFileRequired": true,
+    "exactRunAuthorizationRequired": true,
+    "nurseryOnlyMountVerified": true,
+    "learnerMountsAbsent": true,
+    "authorizedFortSessionInvoked": false,
+    "reasonNotInvoked": "no authorized Fort runtime session was available"
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-v06-97a33be-exact",
+    "gitTracked": false,
+    "installLogSha256": "eb9ffb8bf7952a98de8846e354b1619ba625d3bb19b32f46c9c52a0921715dd0",
+    "studyLogSha256": "42d563aa6b57a01f2d3916b540db3bdaed5314580b5a2ea6c510ecbe168e5903",
+    "trackedFilesManifestSha256": "9483222d10875c95c7c609b1a7bf25db3be1131a6c91ee507ee17bc93dbb092d",
+    "evidenceFilesManifestSha256": "8d23bc42a831a84db2e45472ebe8cb9ab42d9d02024148bf7a56eac7f81d3d77"
+  },
+  "limitations": [
+    "The study uses bounded qualification turns and reference learners, not registered experimental sample sizes.",
+    "The local fake-chain transport tests anchoring control flow and receipt binding but does not submit or confirm a public-chain transaction.",
+    "The persistent signer contract was checked with non-secret fixtures and Compose rendering; no authorized Fort session or real credential was accessed.",
+    "Host-process memory excludes full Docker daemon, image-build, and container resource consumption.",
+    "Software topology qualification does not establish any empirical research finding."
+  ]
+}

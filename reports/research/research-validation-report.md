@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest qualified component candidate: `745f9ab` / v0.1.44
+Latest qualified component candidate: `97a33be` / v0.1.46
 Report status: in progress  
 
 ## Executive Summary
@@ -14,6 +14,10 @@ Report status: in progress
 - An independent Rust implementation agrees with the production verifier on a fresh
   signed export and rejects six deliberate integrity attacks. A 114-test focused
   mutation/recovery run also passed on the exact implementation commit.
+- The exact v0.1.46 Mode R topology passed four bounded full-lifecycle runs through
+  distinct learner containers, the controller, Gateway, SQLite writer, checkpoint
+  service, local qualification anchor, exporter, production verifier, and independent
+  Rust auditor. This is software evidence, not a public-chain or research result.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -36,7 +40,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Fresh consolidated and Mode R checks pass on frozen candidate v0.1.42 |
+| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass at v0.1.46; the exact v0.1.46 full Mode R topology and independent bundle audit pass |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -105,7 +109,7 @@ their cause, and followed by clean passing executions.
 |---|---:|---|
 | Frozen-lockfile install | Pass | 25 workspace projects from a newly created pnpm `node_modules` in a detached exact-commit worktree; dependency installation, not scientific reproducibility |
 | Workflow syntax | Pass | `actionlint` 1.7.12 on the consolidated workflow |
-| Consolidated check | Pass | 134 test files, 1,735 tests, source/contract/boundary/readiness/status/API checks, build, secret scan, and dependency audit |
+| Consolidated check | Pass | 135 test files, 1,739 tests, source/contract/boundary/readiness/status/API checks, build, secret scan, and dependency audit |
 | Dependency audit | Pass | No known advisories at the configured high threshold; does not prove absence of vulnerabilities |
 | Mode R smoke | Pass | Two distinct containers, denied direct routes/filesystem/clipboard/process/worker access, normalized timing/size/error checks, 12 attack categories, kill-survival, and local updates for three reference tracks |
 
@@ -122,9 +126,9 @@ run. Because this report and receipt are later documentation, they are not part 
 the candidate that was exercised.
 
 These results establish bounded software behavior on one host and candidate. They do
-not yet satisfy the actual full-study topology, recurrent scientific learners,
-frozen-model reattestation, or a frozen same-commit qualification candidate that
-contains every later research mechanism.
+not yet satisfy the recurrent scientific learners, frozen-model reattestation,
+public-chain execution, or a frozen same-commit qualification candidate that contains
+every later research mechanism.
 
 ## 6. Independent integrity challenge
 
@@ -152,7 +156,38 @@ checkpoints were not rewritten. This uniform format drift is not evidence of lat
 tampering, but the old exports cannot be described as passing the current bundle
 contract. They remain useful as preserved legacy qualification material only.
 
-## 7. Critical gaps before empirical claims
+## 7. Full Mode R topology qualification
+
+The machine-readable [Mode R topology receipt](mode-r-topology-receipt.json) binds
+four bounded runs to exact commit
+`97a33bec8966343afff3eebd2be331434b2872ad`. A detached checkout remained clean
+after a frozen pnpm install and after execution. Each of `no-learning`,
+`scratch-rl`, `self-supervised`, and `hybrid` used distinct learner containers and
+completed four training plus four evaluation turns through the real controller,
+Gateway, SQLite Evidence Writer, checkpoint service, exporter, and production
+verifier. All four sealed, all verifier exit codes were zero, and the corpus contains
+295 primary events, 49 checkpoints, and four local qualification receipts.
+
+The independent Rust auditor separately accepted all four exports, rechecking 299
+events when intervention entries are included, every checkpoint, and each local
+receipt binding. The run consumed 525.17 seconds wall time and the observed host
+process peaked at 55,424 KiB; those memory figures exclude Docker daemon, image-build,
+and container consumption.
+
+The signer path now refuses direct secret-bearing environment values and plaintext
+key directories. Public-study signer material must enter as a mode-0600 regular,
+non-symlink file materialized by `si fort`, with exact run authorization. Compose
+rendering and tests verify that only the Nursery receives the file mount and that
+neither learner receives its path or contents. No authorized Fort runtime session
+was available, so the persistent path was checked with non-secret fixtures rather
+than real credentials.
+
+The anchor transport was an explicitly labeled local fake chain. Therefore this
+qualification demonstrates orchestration and evidence integrity only: it is not a
+public-chain transaction, prospective registration, pilot outcome, or empirical
+finding.
+
+## 8. Critical gaps before empirical claims
 
 1. The scratch learner is tabular rather than the recurrent baseline required for
    the principal scientific comparison; the reward-free learner is also tabular.
@@ -168,10 +203,11 @@ contract. They remain useful as preserved legacy qualification material only.
    detectable positive controls before a negative bound is meaningful.
 6. Ledger-prediction value must be compared with transcript-only, policy-state, random,
    majority, and oracle baselines without circular access to the target policy.
-7. The actual full study deployment, real chain receipts, external registration,
-   governance, independent restore, and independent replication records do not exist.
+7. The bounded full topology is qualified, but real chain receipts, external
+   registration, governance, independent restore, and independent replication
+   records do not exist.
 
-## 8. Current scientific and publication conclusion
+## 9. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
