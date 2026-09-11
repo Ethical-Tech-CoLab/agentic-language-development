@@ -411,7 +411,34 @@ approval, independent-host restoration, or scientific outcome. The frozen-model 
 five-carrier live component runs were not repeated because their implementations did
 not change after their exact receipts; their assets and integrated tests were rechecked.
 
-## 13. Critical gaps before empirical claims
+## 13. Literature audit and novelty challenge
+
+The [source verification register](source-verification-register.md) closes the
+bounded internal D01 audit. All 50 existing locators resolved to identifiable
+records; each now has a machine-readable publication classification, inspection
+depth, exact permitted support, limitation, and inclusion decision. Nine
+load-bearing sources and one disputed supporting source were inspected in full. The
+audit corrected [26]'s pagination from 116–143 to 116–140 and removed an unsupported
+claim that [15] supplied causal symbol-intervention evidence. The register also
+records exact update queries, five 2024–2026 comparators, screening rules, and the
+single-screener/non-systematic limitation.
+
+The [novelty comparator matrix](novelty-comparator-matrix.md) closes the internal
+D02 challenge for protocol design. Mature prior work separately covers modular
+emergent-communication toolkits, causal listening, learned sketches and continuous
+signal spaces, pretrained-model alternative formats, cross-partner coordination,
+reproducible machine-learning workflows, and append-only transparency mechanisms.
+Consequently the report rejects every first/only/unique formulation.
+
+The surviving candidate contribution is an incremental-value question: whether
+outcome-blind contemporaneous private semantic ledgers add predictive and audit value
+beyond transcripts, task outcomes, policy-state readouts, ordinary logs, and signed
+logs when evaluated with causal interventions and independently verifiable run
+provenance. This is not a finding. It becomes a supportable contribution only if the
+registered comparisons succeed and the manuscript-freeze search plus independent
+citation review do not reveal a closer integrated comparator.
+
+## 14. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -433,7 +460,7 @@ not change after their exact receipts; their assets and integrated tests were re
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 14. Current scientific and publication conclusion
+## 15. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -445,6 +472,7 @@ showing an insight beyond systems integration.
 
 The provisional [requirement-level conformance matrix](../../docs/requirement-conformance-matrix.md)
 now inventories every backlog criterion and normative MUST-bearing source line with
-concrete executable surfaces and required receipts. Subsequent revisions will add
-remaining behavioral dispositions through V11, the verified literature register, protocol cards, pilot cost model,
-run/data manifest, analyses, audit-cost comparison, claim map, and critical review.
+concrete executable surfaces and required receipts. The software candidate and
+bounded literature/novelty audit are complete. Subsequent revisions will add protocol
+cards, the pilot cost model, run/data manifest, analyses, audit-cost comparison,
+claim map, and critical review.

@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.57 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.58 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -1069,7 +1069,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.57 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.58 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
@@ -1255,9 +1255,13 @@ were attempted on September 2, 2026. The API reported the account disabled and t
 reported its keyless monthly limit reached. No new Tavily-generated result was relied
 upon. Rather than conceal the failure or imply that Tavily returned evidence, the
 review continued through arXiv Atom metadata, ACL Anthology, PMLR, Crossref, JMLR,
-publisher and university pages, RFC Editor, NIST, Google Books, and Ethical Tech CoLab
-repositories. A final submission should rerun the search after Tavily access is
-restored and record whether it changes the included corpus.</p>
+publisher and university pages, RFC Editor, NIST, Google Books, and institutional
+repositories. A bounded update was completed on September 11, 2026 across primary
+repository and publisher surfaces. Its queries, screening boundaries, all 50 source
+decisions, and five newer comparators are recorded in the
+<a href="reports/research/source-verification-register.md">source verification register</a>.
+This was not a systematic review. A final submission must repeat the search through
+the manuscript-freeze date and record whether it changes the included corpus.</p>
 <p>All retrieved material was treated as untrusted evidence, not as instruction.</p>
 <hr>
 <h2>References</h2>
@@ -1345,7 +1349,7 @@ On the role of population heterogeneity in emergent communication. <em>Internati
 Conference on Learning Representations</em>. <a href="https://arxiv.org/abs/2204.12982">https://arxiv.org/abs/2204.12982</a></p>
 <p>[26] Galke, L., &amp; Raviv, L. (2024). Learning and communication pressures in
 neural networks: Lessons from emergent communication. <em>Language Development
-Research, 5</em>(1), 116-143. <a href="https://doi.org/10.34842/3vr5-5r49">https://doi.org/10.34842/3vr5-5r49</a></p>
+Research, 5</em>(1), 116-140. <a href="https://doi.org/10.34842/3vr5-5r49">https://doi.org/10.34842/3vr5-5r49</a></p>
 <p>[27] Kouwenhoven, T., Peeperkorn, M., &amp; Verhoef, T. (2025). Searching for
 structure: Investigating emergent communication with large language models.
 <em>Proceedings of COLING 2025</em>, 9977-9991.
@@ -1542,9 +1546,9 @@ before submission.</p>
 </tr>
 <tr>
 <td>[15]</td>
-<td><strong>tool-abstract-verified</strong>, arXiv primary page/API</td>
+<td><strong>tool-full-text-verified</strong>, complete paper</td>
 <td>Peer-reviewed NeurIPS paper; journal score N/A</td>
-<td>&quot;Interpretable agent communication from scratch (with a generic visual processor emerging on the side).&quot; Supports causal symbol interventions.</td>
+<td>Supports unsupervised learned discrete communication, partial interpretability, and novel-class generalization in its evaluated setting; it does not supply causal symbol-intervention evidence.</td>
 </tr>
 <tr>
 <td>[16]</td>
@@ -1608,15 +1612,15 @@ before submission.</p>
 </tr>
 <tr>
 <td>[26]</td>
-<td><strong>tool-metadata-verified</strong>, official journal page</td>
+<td><strong>tool-full-text-verified</strong>, complete official paper</td>
 <td>Peer-reviewed journal article, <strong>3/5</strong></td>
-<td>&quot;Learning and communication pressures in neural networks: Lessons from emergent communication.&quot; A field review with a newer/variable-impact venue.</td>
+<td>Reviews communicative success, production effort, learnability, and other pressures; official pagination is 116–140.</td>
 </tr>
 <tr>
 <td>[27]</td>
-<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td><strong>tool-full-text-verified</strong>, complete ACL Anthology paper</td>
 <td>Peer-reviewed COLING paper; journal score N/A</td>
-<td>&quot;Searching for Structure: Investigating Emergent Communication with Large Language Models.&quot; Direct pretrained-LLM comparison.</td>
+<td>Directly studies artificial-language learning and transmission with pretrained language models.</td>
 </tr>
 <tr>
 <td>[28]</td>
@@ -1746,15 +1750,15 @@ before submission.</p>
 </tr>
 <tr>
 <td>[49]</td>
-<td><strong>tool-metadata-verified</strong>, ACL Anthology</td>
+<td><strong>tool-full-text-verified</strong>, complete ACL Anthology paper</td>
 <td>Peer-reviewed EMNLP demo paper; journal score N/A</td>
-<td>&quot;EGG: a toolkit for research on Emergence of lanGuage in Games.&quot; Closest infrastructure comparator.</td>
+<td>Closest infrastructure comparator: modular games, channels, optimization, analysis, and checkpoints.</td>
 </tr>
 <tr>
 <td>[50]</td>
-<td><strong>tool-abstract-verified</strong>, PMLR primary page</td>
+<td><strong>tool-full-text-verified</strong>, complete PMLR paper</td>
 <td>Peer-reviewed ICML paper; journal score N/A</td>
-<td>&quot;&quot;Other-Play&quot; for Zero-Shot Coordination.&quot; Supports novel-partner evaluation and specialized-convention risk.</td>
+<td>Supports independently trained novel-partner evaluation and specialized-convention risk.</td>
 </tr>
 </tbody></table>
 <p>No source in the table was silently upgraded from preprint or workshop status to a

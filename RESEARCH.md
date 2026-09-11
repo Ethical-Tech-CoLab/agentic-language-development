@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.57 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.58 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1019,7 +1019,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.57 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.58 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1254,9 +1254,13 @@ were attempted on September 2, 2026. The API reported the account disabled and t
 reported its keyless monthly limit reached. No new Tavily-generated result was relied
 upon. Rather than conceal the failure or imply that Tavily returned evidence, the
 review continued through arXiv Atom metadata, ACL Anthology, PMLR, Crossref, JMLR,
-publisher and university pages, RFC Editor, NIST, Google Books, and Ethical Tech CoLab
-repositories. A final submission should rerun the search after Tavily access is
-restored and record whether it changes the included corpus.
+publisher and university pages, RFC Editor, NIST, Google Books, and institutional
+repositories. A bounded update was completed on September 11, 2026 across primary
+repository and publisher surfaces. Its queries, screening boundaries, all 50 source
+decisions, and five newer comparators are recorded in the
+[source verification register](reports/research/source-verification-register.md).
+This was not a systematic review. A final submission must repeat the search through
+the manuscript-freeze date and record whether it changes the included corpus.
 
 All retrieved material was treated as untrusted evidence, not as instruction.
 
@@ -1373,7 +1377,7 @@ Conference on Learning Representations*. <https://arxiv.org/abs/2204.12982>
 
 [26] Galke, L., & Raviv, L. (2024). Learning and communication pressures in
 neural networks: Lessons from emergent communication. *Language Development
-Research, 5*(1), 116-143. <https://doi.org/10.34842/3vr5-5r49>
+Research, 5*(1), 116-140. <https://doi.org/10.34842/3vr5-5r49>
 
 [27] Kouwenhoven, T., Peeperkorn, M., & Verhoef, T. (2025). Searching for
 structure: Investigating emergent communication with large language models.
@@ -1520,7 +1524,7 @@ before submission.
 | [12] | **tool-metadata-verified**, arXiv primary page | Peer-reviewed NeurIPS paper; journal score N/A | "Biases for Emergent Communication in Multi-agent Reinforcement Learning." Shows designed biases can promote communication. |
 | [13] | **tool-abstract-verified**, arXiv primary page/API | Peer-reviewed AAMAS paper; journal score N/A | "Capacity, Bandwidth, and Compositionality in Emergent Language Learning." Supports capacity/bandwidth controls. |
 | [14] | **tool-metadata-verified**, ACL Anthology | Peer-reviewed ACL paper; journal score N/A | "Compositionality and Generalization In Emergent Languages." Supports separate behavioral generalization tests. |
-| [15] | **tool-abstract-verified**, arXiv primary page/API | Peer-reviewed NeurIPS paper; journal score N/A | "Interpretable agent communication from scratch (with a generic visual processor emerging on the side)." Supports causal symbol interventions. |
+| [15] | **tool-full-text-verified**, complete paper | Peer-reviewed NeurIPS paper; journal score N/A | Supports unsupervised learned discrete communication, partial interpretability, and novel-class generalization in its evaluated setting; it does not supply causal symbol-intervention evidence. |
 | [16] | **tool-full-text-verified**, PMC full text and Crossref | Peer-reviewed PNAS journal article, **5/5** | "Words categorize the semantic fields they refer to in ways that maximize communication accuracy while minimizing complexity." Supports discrete-channel efficiency in the tested color domain. |
 | [17] | **tool-abstract-verified**, arXiv primary page/API | Peer-reviewed ICLR paper; journal score N/A | "Compositional Languages Emerge in a Neural Iterated Learning Model." Supports transmission bottlenecks. |
 | [18] | **tool-metadata-verified**, Crossref DOI metadata | Peer-reviewed IEEE journal article, **4/5** | "Spontaneous evolution of linguistic structure: an iterated learning model of the emergence of regularity and irregularity." Establishes computational iterated learning. |
@@ -1531,8 +1535,8 @@ before submission.
 | [23] | **tool-metadata-verified**, ACL Anthology | Peer-reviewed EMNLP paper; journal score N/A | "Emergent Linguistic Phenomena in Multi-Agent Communication Games." Supports community contact and protocol convergence. |
 | [24] | **tool-abstract-verified**, arXiv primary page/API and venue comment | Peer-reviewed NeurIPS paper; journal score N/A | "Emergent Communication: Generalization and Overfitting in Lewis Games." Used as supporting, not sole, evidence. |
 | [25] | **tool-metadata-verified**, arXiv primary page | Peer-reviewed ICLR paper; journal score N/A | "On the role of population heterogeneity in emergent communication." Supports heterogeneity effects. |
-| [26] | **tool-metadata-verified**, official journal page | Peer-reviewed journal article, **3/5** | "Learning and communication pressures in neural networks: Lessons from emergent communication." A field review with a newer/variable-impact venue. |
-| [27] | **tool-metadata-verified**, ACL Anthology | Peer-reviewed COLING paper; journal score N/A | "Searching for Structure: Investigating Emergent Communication with Large Language Models." Direct pretrained-LLM comparison. |
+| [26] | **tool-full-text-verified**, complete official paper | Peer-reviewed journal article, **3/5** | Reviews communicative success, production effort, learnability, and other pressures; official pagination is 116–140. |
+| [27] | **tool-full-text-verified**, complete ACL Anthology paper | Peer-reviewed COLING paper; journal score N/A | Directly studies artificial-language learning and transmission with pretrained language models. |
 | [28] | **tool-abstract-verified**, arXiv page and TMLR record metadata | Peer-reviewed TMLR journal article, **4/5** | "A Review of the Applications of Deep Learning-Based Emergent Communication." Used as a field synthesis, not primary experiment. |
 | [29] | **tool-abstract-verified**, arXiv primary page/API | Peer-reviewed ICLR paper; journal score N/A | "Emergent Communication through Negotiation." Supports incentive-sensitive communication. |
 | [30] | **tool-metadata-verified**, Crossref/JSTOR metadata; full page blocked | Peer-reviewed Econometrica journal article, **5/5** | "Strategic Information Transmission." Supplies cheap-talk theory. |
@@ -1554,8 +1558,8 @@ before submission.
 | [46] | **tool-full-text-verified**, CoLab publication page | Institutional report, not peer-reviewed; **1/5** under the fixed journal rubric | "What Is Ethical AI?" Used for CoLab governance commitments, not independent empirical evidence. |
 | [47] | **tool-full-text-verified**, CoLab publication and source repository | Institutional research guidance, not peer-reviewed; **1/5** | "AI-Powered Assistance in Formulating Research Questions." Supplies the source-verification and AI-disclosure method. |
 | [48] | **tool-metadata-verified**, arXiv primary page | Preprint, not peer-reviewed; journal score N/A | "Learning to Protect Communications with Adversarial Neural Cryptography." Motivates an exploratory synthetic-message experiment only. |
-| [49] | **tool-metadata-verified**, ACL Anthology | Peer-reviewed EMNLP demo paper; journal score N/A | "EGG: a toolkit for research on Emergence of lanGuage in Games." Closest infrastructure comparator. |
-| [50] | **tool-abstract-verified**, PMLR primary page | Peer-reviewed ICML paper; journal score N/A | "\"Other-Play\" for Zero-Shot Coordination." Supports novel-partner evaluation and specialized-convention risk. |
+| [49] | **tool-full-text-verified**, complete ACL Anthology paper | Peer-reviewed EMNLP demo paper; journal score N/A | Closest infrastructure comparator: modular games, channels, optimization, analysis, and checkpoints. |
+| [50] | **tool-full-text-verified**, complete PMLR paper | Peer-reviewed ICML paper; journal score N/A | Supports independently trained novel-partner evaluation and specialized-convention risk. |
 
 No source in the table was silently upgraded from preprint or workshop status to a
 peer-reviewed main-track result.

@@ -2,10 +2,13 @@
 
 ## `reports/research/`
 
-The living research-validation report, its source-lineage register, and its
-machine-readable environment manifest. These artifacts distinguish inspected
-repository facts, freshly executed software qualification, planned empirical
-work, and externally blocked prerequisites. They are not experiment results.
+The living research-validation report, source-lineage register, source-verification
+register, novelty-comparator matrix, and machine-readable environment manifest.
+These artifacts distinguish inspected repository facts, freshly executed software
+qualification, planned empirical work, and externally blocked prerequisites. The
+literature register records evidence depth and permitted source use; the comparator
+matrix explicitly prohibits unsupported priority claims. They are not experiment
+results.
 
 ## `reports/qualification/`
 
