@@ -1,0 +1,9 @@
+services:
+  nursery-study:
+    environment:
+      ALD_RUN_SIGNER_SEEDS_JSON_FILE: /run/secrets/ald-run-signer-seeds.json
+    volumes:
+      - type: bind
+        source: ${ALD_RUN_SIGNER_SEEDS_JSON_FILE:?run through si fort in files mode}
+        target: /run/secrets/ald-run-signer-seeds.json
+        read_only: true

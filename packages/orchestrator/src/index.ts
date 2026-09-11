@@ -85,4 +85,10 @@ export {
 
 export * from './experiments/index.js';
 export * from './production.js';
+export {
+  FORT_SIGNER_SEEDS_FILE_ENV,
+  FORBIDDEN_SIGNER_SEEDS_VALUE_ENV,
+  signerProviderFromFortEnvironment,
+  signerProviderFromFortFile,
+} from './fort-signers.js';
 export * from './registry.js';

@@ -10,20 +10,41 @@ describe('loadRuntimeEnvironment', () => {
       deploymentMode: 'prototype',
       evidenceDir: './evidence',
       databasePath: './evidence/ald.sqlite',
-      keyDir: './evidence/keys',
+      signerSeedsFile: undefined,
       logLevel: 'info',
       baseNetwork: 'base-sepolia',
-      baseRpcUrl: undefined,
+      baseRpcUrlFile: undefined,
       anchorKeyFile: undefined,
     });
   });
 
-  it('fails fast when research-grade key isolation is not configured', () => {
+  it('fails fast when research-grade Fort signer material is not configured', () => {
     expect(() =>
       loadRuntimeEnvironment({
         ALD_DEPLOYMENT_MODE: 'research-grade',
       }),
-    ).toThrow('ALD_KEY_DIR is required in research-grade mode');
+    ).toThrow(
+      'ALD_RUN_SIGNER_SEEDS_JSON_FILE is required in research-grade mode',
+    );
+  });
+
+  it('accepts only Fort file paths for secret-bearing values', () => {
+    expect(
+      loadRuntimeEnvironment({
+        ALD_DEPLOYMENT_MODE: 'research-grade',
+        ALD_RUN_SIGNER_SEEDS_JSON_FILE: '/run/secrets/signers',
+        ALD_BASE_RPC_URL_FILE: '/run/secrets/rpc-url',
+        ALD_ANCHOR_KEY_FILE: '/run/secrets/anchor-key',
+      }),
+    ).toMatchObject({
+      signerSeedsFile: '/run/secrets/signers',
+      baseRpcUrlFile: '/run/secrets/rpc-url',
+      anchorKeyFile: '/run/secrets/anchor-key',
+    });
+
+    expect(() =>
+      loadRuntimeEnvironment({ ALD_RUN_SIGNER_SEEDS_JSON: 'secret' }),
+    ).toThrow(/direct secret value/u);
   });
 
   it('rejects invalid integer values', () => {

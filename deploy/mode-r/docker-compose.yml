@@ -49,6 +49,26 @@ services:
     pids_limit: 64
     networks: [baby-a-only, baby-b-only]
 
+  nursery-study:
+    build:
+      context: ../..
+      dockerfile: deploy/mode-r/Dockerfile
+    entrypoint: ["/usr/local/bin/node", "/app/deploy/mode-r/run-study.mjs"]
+    user: "${ALD_MODE_R_NURSERY_UID:-1000}:${ALD_MODE_R_NURSERY_GID:-1000}"
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=16m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    environment:
+      ALD_SOFTWARE_COMMIT: ${ALD_SOFTWARE_COMMIT:-unknown}
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_EVIDENCE_DIR:-/tmp/ald-mode-r-evidence}
+        target: /evidence
+    networks: [baby-a-only, baby-b-only]
+
 networks:
   baby-a-only:
     internal: true

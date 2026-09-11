@@ -280,8 +280,8 @@ export interface NurseryRuntimeOptions {
   ) => CheckpointService;
   /**
    * Per-run signer registry (LEDGER §11). Defaults to freshly generated
-   * in-memory keys; production passes `FileKeyStore.provisionRun` /
-   * `FileKeyStore.loadRun` so a restart can sign again with the same keys.
+   * in-memory keys; public studies inject a provider backed by Fort's
+   * short-lived file materialization so a restart reuses authorized keys.
    */
   signerProvider?: (runId: string) => SignerRegistry;
   scenarioFactory?: (config: RunConfig) => ScenarioEngine;

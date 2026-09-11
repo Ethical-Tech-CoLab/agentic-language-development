@@ -72,12 +72,21 @@ importers:
 
   deploy/mode-r:
     dependencies:
+      '@ald/anchor':
+        specifier: workspace:*
+        version: link:../../packages/anchor
       '@ald/isolation':
         specifier: workspace:*
         version: link:../../packages/isolation
       '@ald/learners':
         specifier: workspace:*
         version: link:../../packages/learners
+      '@ald/lifecycle':
+        specifier: workspace:*
+        version: link:../../packages/lifecycle
+      '@ald/orchestrator':
+        specifier: workspace:*
+        version: link:../../packages/orchestrator
       '@ald/redteam':
         specifier: workspace:*
         version: link:../../packages/redteam

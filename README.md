@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.45 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.46 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -136,6 +136,12 @@ implemented and tested:
   a scientific result. `pnpm run test:mode-r` builds the locked-down learner image,
   denies Baby-to-Baby routes on separate internal networks, checks host capability
   denial and normalized timing, then kills one learner and verifies the other survives.
+  `pnpm run test:mode-r-study` additionally drives every learner track through the
+  actual controller, Gateway, SQLite writer, checkpoint, local qualification anchor,
+  exporter, and verifier. Its explicit fake-chain receipt remains software evidence,
+  not a public-chain transaction or research result. Persistent study signers are
+  accepted only from `si fort` files-mode materialization mounted into the Nursery;
+  neither learner receives that mount or its path.
 - `@ald/crypto-research`: an E40 research-only, three-role instrumentation harness
   that records hash-chained ephemeral scheme changes and Eve recovery attempts over
   synthetic messages. A repository lint boundary prevents it from entering the

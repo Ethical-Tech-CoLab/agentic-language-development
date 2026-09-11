@@ -8,7 +8,7 @@
 - a clean checkout with dependencies installed by `pnpm install --frozen-lockfile`.
 
 No Base key, RPC URL, or secret is needed for this isolation qualification.
-The Compose networks are internal and the run performs no anchoring.
+The Compose networks are internal and the smoke run performs no anchoring.
 
 ## One-command qualification
 
@@ -24,6 +24,35 @@ the twelve side-channel attacks, kills Baby A and proves Baby B survives, then
 recreates both hosts for `scratch-rl`, `self-supervised`, and `hybrid` and
 proves each update changes only its local policy. It removes its project,
 volumes, and containers on exit. Any failed assertion exits non-zero.
+
+## Full-lifecycle topology qualification
+
+Run all four learner tracks through the actual controller, Gateway, SQLite writer,
+checkpoint, local qualification anchor, exporter, and verifier:
+
+```sh
+pnpm run test:mode-r-study
+```
+
+This is a software/topology qualification only. Its receipt states
+`researchFinding: false` and `publicChainTransaction: false`; the local fake-chain
+receipt is not evidence of public anchoring.
+
+To exercise the persistent signer boundary, first store the version-1 signer
+envelope in the matching encrypted `safe` environment, then let Fort materialize
+it for only the Nursery service:
+
+```sh
+si fort run --repo agentic-language-development --env dev \
+  --keys ALD_RUN_SIGNER_SEEDS_JSON --mode files -- \
+  pnpm run test:mode-r-study
+```
+
+The envelope's `runs` map must contain `mode-r-study-no-learning`,
+`mode-r-study-scratch-rl`, `mode-r-study-self-supervised`, and
+`mode-r-study-hybrid`; each value must contain the exact six signer domains as
+64-character lowercase hexadecimal seeds. Do not create a plaintext envelope
+outside Fort. Neither learner receives the file, its path, or its contents.
 
 ## Inspect a standing deployment
 

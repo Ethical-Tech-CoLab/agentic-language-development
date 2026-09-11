@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@ald/anchor": "workspace:*",
     "@ald/isolation": "workspace:*",
     "@ald/learners": "workspace:*",
+    "@ald/lifecycle": "workspace:*",
+    "@ald/orchestrator": "workspace:*",
     "@ald/redteam": "workspace:*",
     "@ald/types": "workspace:*"
   }

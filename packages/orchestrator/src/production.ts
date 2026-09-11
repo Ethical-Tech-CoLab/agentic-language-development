@@ -5,30 +5,30 @@
  * (`@ald/checkpoint`), the real independent `@ald/verifier`, and, per
  * SPECIFICATION.md §5.1/§7.2/§13.4, `anchorPolicy: 'skip'`.
  *
- * This environment carries no funded Base Sepolia wallet, so skipping the
- * anchor is a declared, audited governance decision (SPEC §7.2's
- * `governance-decision` intervention, `ANCHORING_SKIPPED_DEVIATION`), never a
- * silent omission. Every run this runtime produces is therefore permanently
- * `invalid` by construction (SPEC §7.2) and carries the Prototype Mode claim
- * boundary of §5.1/§5.4 (`CLAIM_BOUNDARY_STATEMENTS.prototype`). A real
- * `AnchorPublisher` — fund a wallet, set `ALD_BASE_RPC_URL` /
- * `ALD_ANCHOR_KEY_FILE`, wire it through `anchorPublisher` — would flip this
- * option to `'required'`.
+ * The default is an explicitly unanchored Prototype Mode qualification path.
+ * A caller running Research-Grade Mode must inject an `anchorPublisher` and
+ * use `anchorPolicy: 'required'`; local topology qualification may use the
+ * production publisher with a clearly identified fake transport, while a
+ * public study must use the authorized chain path.
  *
  * This construction deliberately mirrors
  * `twins/packs/nursery/behavior/pack.ts`'s `init(context)`, which wires the
- * identical three services for its DTSF routes; the one addition here is a
- * `keyDir`-backed `FileKeyStore` signer provider, so a qualification run's
- * per-run keys survive a process restart (LEDGER-INTEGRITY-DESIGN.md §11).
+ * identical three services for its DTSF routes. Persistent study signers enter
+ * only through the injected `signerProvider`; the production constructor does
+ * not read or create plaintext key directories.
  */
 import type {
+  AnchorPublisher,
+  BabyRole,
   CheckpointService,
   Clock,
+  LearnerAdapterFactory,
+  RunConfig,
   SignerRegistry,
   VerificationReport,
 } from '@ald/types';
 import { join } from 'node:path';
-import { FileKeyStore, InMemorySignerRegistry } from '@ald/hashing';
+import { InMemorySignerRegistry } from '@ald/hashing';
 import {
   openEvidenceDatabase,
   type EvidenceDatabase,
@@ -51,11 +51,10 @@ export interface ProductionRuntimeOptions {
   bundleRoot: string;
   softwareCommit: string;
   /**
-   * Directory of per-run signer seeds (LEDGER §11). Omit to generate
-   * in-memory keys that do not survive a restart — fine for a short-lived
-   * qualification run, not for a run meant to be resumed later.
+   * Persistent per-run signer boundary. Public studies inject a provider
+   * materialized through Fort. Omit only for short-lived qualification runs.
    */
-  keyDir?: string;
+  signerProvider?: (runId: string) => SignerRegistry;
   clock?: Clock;
   /**
    * Passed straight through to `verifyBundle`. Default `true`: this runtime
@@ -65,6 +64,13 @@ export interface ProductionRuntimeOptions {
    */
   allowUnanchored?: boolean;
   learnerOptions?: NurseryRuntimeOptions['learnerOptions'];
+  /** Builds the role-specific adapter, including real container transports. */
+  adapterFactoryFor?: (
+    config: RunConfig,
+    role: BabyRole,
+  ) => LearnerAdapterFactory;
+  anchorPublisher?: AnchorPublisher;
+  anchorPolicy?: 'required' | 'skip';
   scenarioFactory?: NurseryRuntimeOptions['scenarioFactory'];
   /**
    * Approved scenario-bundle registry. Defaults to a persistent registry
@@ -100,7 +106,6 @@ export function createProductionRuntime(
     now: () => new Date().toISOString(),
   };
   const allowUnanchored = options.allowUnanchored ?? true;
-  const keyDir = options.keyDir;
   const scenarioBundleRegistry =
     options.scenarioBundleRegistry ??
     new ScenarioBundleRegistry({
@@ -113,11 +118,7 @@ export function createProductionRuntime(
 
   const signerProvider = (runId: string): SignerRegistry => {
     pendingRunId = runId;
-    if (keyDir === undefined) {
-      return InMemorySignerRegistry.generate(runId);
-    }
-    const store = new FileKeyStore(keyDir);
-    return store.hasRun(runId) ? store.loadRun(runId) : store.provisionRun(runId);
+    return options.signerProvider?.(runId) ?? InMemorySignerRegistry.generate(runId);
   };
 
   const checkpointFactory = (
@@ -169,10 +170,16 @@ export function createProductionRuntime(
     checkpointFactory,
     signerProvider,
     clock,
-    anchorPolicy: 'skip',
+    anchorPolicy: options.anchorPolicy ?? 'skip',
     verifier,
     proofWriter,
     scenarioBundleRegistry,
+    ...(options.adapterFactoryFor === undefined
+      ? {}
+      : { adapterFactoryFor: options.adapterFactoryFor }),
+    ...(options.anchorPublisher === undefined
+      ? {}
+      : { anchorPublisher: options.anchorPublisher }),
     ...(options.learnerOptions === undefined
       ? {}
       : { learnerOptions: options.learnerOptions }),

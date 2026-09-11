@@ -7,10 +7,10 @@ export interface RuntimeEnvironment {
   deploymentMode: DeploymentMode;
   evidenceDir: string;
   databasePath: string;
-  keyDir: string;
+  signerSeedsFile?: string;
   logLevel: LogLevel;
   baseNetwork: 'base-sepolia' | 'base-mainnet';
-  baseRpcUrl?: string;
+  baseRpcUrlFile?: string;
   anchorKeyFile?: string;
 }
 
@@ -59,6 +59,17 @@ function requireValue(source: EnvironmentSource, name: string): string {
 export function loadRuntimeEnvironment(
   source: EnvironmentSource = process.env,
 ): RuntimeEnvironment {
+  for (const forbidden of [
+    'ALD_RUN_SIGNER_SEEDS_JSON',
+    'ALD_BASE_RPC_URL',
+    'ALD_ANCHOR_KEY',
+  ]) {
+    if (source[forbidden] !== undefined) {
+      throw new Error(
+        `${forbidden} is a direct secret value; use si fort --mode files`,
+      );
+    }
+  }
   const deploymentMode = parseEnum(
     source,
     'ALD_DEPLOYMENT_MODE',
@@ -66,10 +77,10 @@ export function loadRuntimeEnvironment(
     'prototype',
   );
   const evidenceDir = source.ALD_EVIDENCE_DIR ?? './evidence';
-  const keyDir =
+  const signerSeedsFile =
     deploymentMode === 'research-grade'
-      ? requireValue(source, 'ALD_KEY_DIR')
-      : (source.ALD_KEY_DIR ?? `${evidenceDir}/keys`);
+      ? requireValue(source, 'ALD_RUN_SIGNER_SEEDS_JSON_FILE')
+      : source.ALD_RUN_SIGNER_SEEDS_JSON_FILE;
 
   return {
     dtsfPort: parseInteger(source, 'DTSF_PORT', 8080),
@@ -77,7 +88,7 @@ export function loadRuntimeEnvironment(
     deploymentMode,
     evidenceDir,
     databasePath: source.ALD_DATABASE_PATH ?? `${evidenceDir}/ald.sqlite`,
-    keyDir,
+    signerSeedsFile,
     logLevel: parseEnum(
       source,
       'ALD_LOG_LEVEL',
@@ -90,7 +101,7 @@ export function loadRuntimeEnvironment(
       ['base-sepolia', 'base-mainnet'] as const,
       'base-sepolia',
     ),
-    baseRpcUrl: source.ALD_BASE_RPC_URL || undefined,
+    baseRpcUrlFile: source.ALD_BASE_RPC_URL_FILE || undefined,
     anchorKeyFile: source.ALD_ANCHOR_KEY_FILE || undefined,
   };
 }

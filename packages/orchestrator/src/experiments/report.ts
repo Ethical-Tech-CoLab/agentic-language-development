@@ -219,9 +219,8 @@ function renderE11Section(e11: E11Result): string {
       'developer seed counts, not the SPECIFICATION.md §15.3 floor) — and ' +
       'therefore no E00-E03 qualification in EXPERIMENT-NOTEBOOK.md\'s sense.',
     '',
-    '**Next steps:** fund a Base Sepolia wallet and set `ALD_BASE_RPC_URL` ' +
-      'and `ALD_ANCHOR_KEY_FILE`, register the protocol on OSF, then run in ' +
-      'Mode R.',
+    '**Next steps:** authorize a Base Sepolia wallet and RPC credential through ' +
+      '`si fort` file materialization, register the protocol, then run in Mode R.',
   ];
   return lines.join('\n');
 }

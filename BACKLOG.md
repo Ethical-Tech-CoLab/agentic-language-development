@@ -1161,7 +1161,10 @@ These resolve details the source documents name but do not fix. Each is implemen
 - **Adapter failures.** SPEC §14.5: one retry, then forfeit the turn (null action, turn record written), append a `safety-trigger` intervention, and pause. `evaluating` has no `pause` row in §7.2, so a trigger there records `pause-not-available` and continues (spec gap flagged).
 - **Run configuration.** Optional `evaluationTurns` (runtime default 200) fixes the evaluation-phase budget; `symbolInventorySize`/`maxSymbolsPerMessage` are valid only for `fixed-token` and `maxStrokes` only for `generative-canvas`.
 - **Learner contracts.** Files carry a `<!-- contract: <track> version: <n> -->` header exempt from the banned-pattern lint; `promptBundleHash` is the canonical hash of `{ track: text }`.
-- **Key store.** Per-run seeds under `<ALD_KEY_DIR>/<runId>/signers.json` (0600/0700); runId grammar `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`.
+- **Signer boundary.** Public-study per-run seeds are encrypted in `safe` and
+  materialized only through `si fort` files mode. The Nursery accepts a mode-0600
+  regular file with an exact run-id map and never mounts it into either learner;
+  runId grammar remains `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`.
 - **Twin routes (Mode P).** Roles arrive as `x-ald-role` + `x-ald-service-token`; default dev tokens `dev-<role>` exist only for prototype mode. `POST /reset` returns 501 until the runtime exposes adapter re-initialization. `GET /runs` is added as a read-only convenience implied by the session routes.
 
 ## 16. Appendix: ID Index

@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.45"
+    "version": "0.1.46"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -222,7 +222,8 @@
     "packages/config/__tests__/environment.test.ts": {
       "selectors": [
         "loads behavior-safe prototype defaults",
-        "fails fast when research-grade key isolation is not configured",
+        "fails fast when research-grade Fort signer material is not configured",
+        "accepts only Fort file paths for secret-bearing values",
         "rejects invalid integer values"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/config/__tests__/environment.test.ts"
