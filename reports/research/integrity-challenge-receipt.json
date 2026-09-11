@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "745f9ab774abd3b4c52b668548060e2d82a8837c",
+    "version": "0.1.44",
+    "worktree": "detached-exact-commit",
+    "worktreeCleanAfterExecution": true
+  },
+  "implementations": [
+    "typescript-production-verifier",
+    "rust-independent-integrity-auditor"
+  ],
+  "freshExportChallenge": {
+    "command": "pnpm run challenge:integrity",
+    "exitCode": 0,
+    "eventCount": 50,
+    "checkpointCount": 4,
+    "caseCount": 7,
+    "unchangedExportAcceptedByBoth": true,
+    "mutationsRejectedByBoth": [
+      "event-content",
+      "attachment-bytes",
+      "lineage-injection",
+      "wrong-chain",
+      "false-receipt",
+      "unanchored-tail"
+    ],
+    "wallSeconds": 11.35,
+    "maximumResidentSetKiB": 257332
+  },
+  "focusedMutationAndRecoverySuite": {
+    "prerequisite": "pnpm run build",
+    "testFileCount": 10,
+    "testCount": 114,
+    "randomizedCrashKillTrialCount": 20,
+    "exitCode": 0,
+    "wallSeconds": 15.87,
+    "maximumResidentSetKiB": 426616
+  },
+  "historicalCompatibilityAudit": {
+    "classification": "legacy-qualification-only",
+    "bundleCount": 33,
+    "eventCount": 79263,
+    "checkpointCount": 1156,
+    "currentProductionVerifierPassCount": 0,
+    "independentAuditorPassCount": 0,
+    "uniformIssue": "legacy run manifests omit the currently required intervention treeName",
+    "artifactsRewritten": false,
+    "tamperingInferred": false
+  },
+  "preservedFailure": {
+    "stage": "first detached focused invocation",
+    "exitCode": 1,
+    "cause": "the focused command omitted pnpm run build, so the crash child could not resolve generated package entry points",
+    "resolution": "the declared detached command now builds before invoking the focused suite"
+  },
+  "rawEvidence": {
+    "exactCandidateDirectory": "evidence/validation/20260911-v05-745f9ab",
+    "historicalAuditDirectory": "evidence/validation/20260911-v05-integrity",
+    "gitTracked": false,
+    "exactCandidateArtifactHashesFileSha256": "80f1831403ac4bd3cfdfa70095bf1a72cb616d795cd38950d2d70f0857936043",
+    "exactCandidateArtifacts": {
+      "install.txt": "117c8dcf445607f98e9f682e85964b3d5422d484bc666508f2ff96753b8ef388",
+      "mutation-recovery-tests.txt": "429b7d0daa2706bab55cf311cc8b18ac10b02c5f3a7c3674677e92bc7aa22a34",
+      "mutation-recovery-tests-with-build.txt": "295babea396e96d68806edbe94d0820272a85eb28b8249c8b033490b2cd1a797",
+      "crosscheck.json": "211e58fcd0c55f1265e158ad54a7952f91868cf618f62096308a452d721f542b",
+      "crosscheck.txt": "9378a4fe3c18027e3f5ba90a9c22ae549e07438673a110faee22d112226369db",
+      "tracked-files.sha256": "92635c2885be36cf8c67b642aed3dbb48ab01901c316562c12441bf3957af34b"
+    },
+    "historicalSummarySha256": "b15b1438f66c928d2fb2973a38462bc8f6c0edfbbf95c7c8fb3dc9a8ea9baa55",
+    "historicalProductionSummarySha256": "43fdf043bb61b318a8bf66e2bcda8d24163d10d4bf9fa1ca5f27f6eca497b311"
+  },
+  "limitations": [
+    "The independent auditor checks local receipt bindings but does not query a public chain.",
+    "A fixture receipt is not evidence that any public transaction occurred.",
+    "Software integrity qualification does not validate scientific interpretation or establish an empirical finding.",
+    "The historical compatibility result applies the current format contract to preserved older exports."
+  ]
+}

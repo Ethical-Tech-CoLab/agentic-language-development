@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Repository candidate: `ca7a188` / v0.1.42
+Latest qualified component candidate: `745f9ab` / v0.1.44
 Report status: in progress  
 
 ## Executive Summary
@@ -11,6 +11,9 @@ Report status: in progress
   Homebrew/pnpm environment passed 1,735 tests in 134 files, the secret scan, the
   high-severity dependency audit, workflow lint, and the real-container Mode R
   smoke suite after two package-layout defects were reproduced and fixed.
+- An independent Rust implementation agrees with the production verifier on a fresh
+  signed export and rejects six deliberate integrity attacks. A 114-test focused
+  mutation/recovery run also passed on the exact implementation commit.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -119,11 +122,37 @@ run. Because this report and receipt are later documentation, they are not part 
 the candidate that was exercised.
 
 These results establish bounded software behavior on one host and candidate. They do
-not yet satisfy the planned requirement-level conformance audit, complete mutation
-matrix, actual full-study topology, recurrent scientific learners, frozen-model
-reattestation, or a frozen same-commit qualification candidate.
+not yet satisfy the actual full-study topology, recurrent scientific learners,
+frozen-model reattestation, or a frozen same-commit qualification candidate that
+contains every later research mechanism.
 
-## 6. Critical gaps before empirical claims
+## 6. Independent integrity challenge
+
+The [integrity challenge receipt](integrity-challenge-receipt.json) binds a second
+qualification stage to exact commit `745f9ab774abd3b4c52b668548060e2d82a8837c`.
+Its production TypeScript verifier and separately implemented Rust auditor both
+accepted a fresh exporter-produced bundle containing 50 events, four checkpoints,
+a confirmed local fixture receipt, and a bound analysis attachment. Both rejected
+each of six mutations: changed event content, changed attachment bytes, injected
+lineage, network/chain disagreement, false receipt calldata, and a validly signed
+unanchored event tail.
+
+A focused ten-file suite passed 114 tests, including the full verifier mutation
+matrix, attachment and cross-binding attacks, 20 randomized kill/recovery trials,
+fork preservation, and terminal recovery. The first detached focused invocation
+failed before testing because it omitted the documented build prerequisite and its
+child process could not resolve generated package entry points. The preserved
+failure led to an explicit build-before-test command; it is not counted as a flaky
+test or hidden by the passing rerun.
+
+Revalidating the 33 retained historical qualification exports produced a negative
+compatibility result: both current verifiers reject all 33 because their old run
+manifests omit the now-required `intervention` tree name. The 79,263 events and 1,156
+checkpoints were not rewritten. This uniform format drift is not evidence of later
+tampering, but the old exports cannot be described as passing the current bundle
+contract. They remain useful as preserved legacy qualification material only.
+
+## 7. Critical gaps before empirical claims
 
 1. The scratch learner is tabular rather than the recurrent baseline required for
    the principal scientific comparison; the reward-free learner is also tabular.
@@ -142,7 +171,7 @@ reattestation, or a frozen same-commit qualification candidate.
 7. The actual full study deployment, real chain receipts, external registration,
    governance, independent restore, and independent replication records do not exist.
 
-## 7. Current scientific and publication conclusion
+## 8. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
