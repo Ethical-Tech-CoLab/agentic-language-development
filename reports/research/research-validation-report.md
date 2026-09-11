@@ -40,6 +40,9 @@ Report status: in progress
   control replay, and 11 independent Rust bundle audits on one immutable commit. A
   nested document-renderer build stage retains two known high-severity dev-toolchain
   advisories, so no hardened supply-chain claim is made.
+- The bounded source audit and novelty challenge are complete, and all 19 experiments
+  now have frozen question/estimand/outcome-class cards. H2 tests a causal receiver
+  effect; H4 separately tests held-out ledger prediction beyond non-ledger baselines.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -438,7 +441,33 @@ provenance. This is not a finding. It becomes a supportable contribution only if
 registered comparisons succeed and the manuscript-freeze search plus independent
 citation review do not reveal a closer integrated comparator.
 
-## 14. Critical gaps before empirical claims
+## 14. Frozen research questions and estimands
+
+The [research protocol cards](../../docs/research-protocol-cards.md) freeze one
+machine-checkable card for every E00–E50 experiment. Each card identifies its
+independent unit, exposure, comparator, primary outcome, estimand, evidence class,
+secondary outcomes, exploratory outcomes, dependencies, and the later design package
+that must fill its remaining operational parameters. The notebook still reports all
+experiments as not started.
+
+The design removes a prior H2/H4 overlap. H2 is the causal within-case change in
+receiver probability assigned to the ledger-predicted action under a
+ledger-consistent substitution versus a shuffled valid message, holding receiver
+observation and policy state fixed. H4 is the held-out improvement in a proper
+prediction score over the strongest validation-selected eligible non-ledger baseline.
+The same agreement statistic cannot satisfy both.
+
+The confirmatory family has nine members: H1, H2, H3, H4, H5, H6a, H6b, H7, and H8.
+One preregistered p-value is formed per member and Holm correction is applied globally
+at family-wise alpha 0.05. Multi-component directional hypotheses use the maximum
+component p-value and require every direction and practical threshold. E00–E03 and
+experiment-specific integrity checks are validity gates rather than alpha-bearing
+hypotheses; missing or failed gates produce `not-tested`.
+
+This closes D03 at the question/estimand level. It does not complete D04–D08, choose
+all statistical thresholds, supply power, authorize collection, or create a result.
+
+## 15. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -460,7 +489,7 @@ citation review do not reveal a closer integrated comparator.
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 15. Current scientific and publication conclusion
+## 16. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -473,6 +502,7 @@ showing an insight beyond systems integration.
 The provisional [requirement-level conformance matrix](../../docs/requirement-conformance-matrix.md)
 now inventories every backlog criterion and normative MUST-bearing source line with
 concrete executable surfaces and required receipts. The software candidate and
-bounded literature/novelty audit are complete. Subsequent revisions will add protocol
-cards, the pilot cost model, run/data manifest, analyses, audit-cost comparison,
-claim map, and critical review.
+bounded literature/novelty audit and question/estimand cards are complete. Subsequent
+revisions will add locked scenario splits, statistical validation, leakage protocols,
+the pilot cost model, run/data manifest, analyses, audit-cost comparison, claim map,
+and critical review.

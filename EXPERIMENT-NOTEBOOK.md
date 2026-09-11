@@ -680,7 +680,8 @@ compositional reuse.
 hypotheses predict those effects.
 
 **Hypothesis:** Substituting, masking, or reordering a form changes receiver behavior
-in the direction predicted by the corresponding ledger.
+in the direction predicted by the corresponding ledger, and pre-outcome ledger
+predictions add held-out predictive value beyond non-ledger comparators.
 
 ### Procedure
 
@@ -691,6 +692,11 @@ in the direction predicted by the corresponding ledger.
 - [ ] Reorder multi-part messages.
 - [ ] Replay identical observations with counterfactual messages.
 - [ ] Compare native ledger predictions with human audit interpretations.
+- [ ] Fit transcript-only, task-history, policy-state, random, and majority prediction
+      baselines without access to private ledger content.
+- [ ] Select the strongest eligible baseline using validation data only, then compare
+      its preregistered proper prediction score with the frozen ledger predictor on
+      untouched intervention cases.
 - [ ] Record positive signaling and positive listening separately.
 - [ ] For the primary H2 contrast, compare ledger-consistent substitutions with
       shuffled-control messages in scratch-RL/extrinsic/fixed-token runs using a
@@ -702,7 +708,8 @@ in the direction predicted by the corresponding ledger.
 
 - normal messages outperform constant and shuffled controls;
 - receiver actions change under message intervention;
-- ledger predictions exceed the pre-registered chance baseline;
+- pre-outcome ledger predictions improve the registered proper score beyond the
+  validation-selected non-ledger baseline by the registered practical threshold;
 - external audit interpretations are labeled separately from agent-native state.
 
 ### Results
@@ -714,6 +721,7 @@ in the direction predicted by the corresponding ledger.
 | Positive listening | — | — | — | `TBD` |
 | Intervention effect size | — | — | — | `TBD` |
 | Native ledger agreement | — | — | — | `TBD` |
+| Ledger proper-score increment | — | — | — | `TBD` |
 | Human audit-ledger agreement | — | — | — | `TBD` |
 
 - [ ] Causal listening demonstrated

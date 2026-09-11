@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.58 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.59 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,

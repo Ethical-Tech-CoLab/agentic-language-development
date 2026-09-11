@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.58 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.59 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -324,8 +324,8 @@ pre-registrations. The following hypotheses define the current direction:</p>
 </tr>
 <tr>
 <td>H4</td>
-<td>Ledger-predicted intervention directions will exceed a pre-registered chance baseline.</td>
-<td>Ledger agreement is at chance or fails out-of-sample.</td>
+<td>On untouched intervention cases, pre-outcome ledger predictions will improve a pre-registered proper prediction score beyond the strongest eligible transcript-only, task-history, policy-state, random, and majority baseline.</td>
+<td>The ledger fails to exceed the strongest eligible non-ledger baseline by the registered practical threshold.</td>
 </tr>
 <tr>
 <td>H5</td>
@@ -849,7 +849,7 @@ criteria are satisfied.</p>
 <ol>
 <li>held-out task success relative to E03 controls;</li>
 <li>positive listening under message intervention;</li>
-<li>ledger-predicted intervention agreement;</li>
+<li>ledger incremental predictive value on untouched interventions;</li>
 <li>held-out compositional generalization.</li>
 </ol>
 <p><strong>Secondary outcomes</strong></p>
@@ -873,7 +873,11 @@ observations.</p>
 distributions to change while the receiver observation is held fixed.</p>
 <p><strong>Ledger agreement:</strong> the direction of an observed intervention effect matches the
 direction predicted from the learner&#39;s ledger before intervention outcomes are
-revealed.</p>
+revealed. This is a descriptive calibration measure, not H4&#39;s confirmatory estimand.</p>
+<p><strong>Ledger incremental value:</strong> held-out improvement in a pre-registered proper
+prediction score over the strongest eligible transcript-only, task-history,
+policy-state, random, and majority baseline. Predictions are committed before the
+intervention outcome is generated.</p>
 <p><strong>Compositional generalization:</strong> reusable subparts support above-control success on
 pre-registered unseen combinations with learning disabled.</p>
 <p><strong>Leakage:</strong> information about hidden referent or task state is recoverable from a
@@ -886,11 +890,15 @@ equal-weight eight-partner-training degradation.</p>
 <ul>
 <li>Alpha is <code>0.05</code> for each experiment&#39;s primary family.</li>
 <li>Holm-Bonferroni correction is applied across primary metrics within an experiment.</li>
-<li>The confirmatory study family is restricted to H1-H8, including H6a and H6b.
-Hierarchical gatekeeping tests qualification first, then core emergence, then later
-affect/transfer/negotiation hypotheses; a blocked family is reported descriptively.
-Exploratory analyses use false-discovery-rate reporting and remain labeled
-exploratory.</li>
+<li>The confirmatory study family contains nine members: H1, H2, H3, H4, H5, H6a,
+H6b, H7, and H8. One pre-registered p-value is formed per member and Holm correction
+is applied globally at family-wise alpha 0.05. Multi-component directional members
+use the maximum component p-value and require every registered direction and
+practical threshold.</li>
+<li>E00-E03 and experiment-specific checks are validity gates, not sources of reusable
+alpha. A failed or missing gate produces <code>not-tested</code>, not a favorable or
+unfavorable p-value. Exploratory analyses use false-discovery-rate reporting and
+remain labeled exploratory.</li>
 <li>Effect sizes and confidence or credible intervals are reported with every
 significance test.</li>
 <li>Binary task outcomes are modeled at the run/seed level, with episodes treated as
@@ -1069,7 +1077,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.58 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.59 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
@@ -1190,6 +1198,8 @@ database search with inclusion/exclusion criteria and dual-review screening.</p>
 <li>Ledger integrity: <a href="LEDGER-INTEGRITY-DESIGN.md">LEDGER-INTEGRITY-DESIGN.md</a></li>
 <li>Experiment protocols and results notebook:
 <a href="EXPERIMENT-NOTEBOOK.md">EXPERIMENT-NOTEBOOK.md</a></li>
+<li>Frozen question, estimand, and outcome-class cards:
+<a href="docs/research-protocol-cards.md">docs/research-protocol-cards.md</a></li>
 <li>Engineering plan: <a href="BACKLOG.md">BACKLOG.md</a></li>
 </ul>
 <h3>14.3 Data</h3>

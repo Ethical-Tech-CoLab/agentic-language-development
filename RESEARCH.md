@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.58 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.59 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -230,7 +230,7 @@ pre-registrations. The following hypotheses define the current direction:
 | H1 | Normal communication will outperform disabled, constant, random, and shuffled controls on held-out tasks. | Control performance equals or exceeds normal communication after correction. |
 | H2 | In E16's scratch-RL, extrinsic-reward, fixed-token condition, a ledger-consistent substitution will increase the probability of the ledger-predicted receiver action relative to shuffled-control messages. | The hierarchical substitution-versus-shuffle contrast is zero or negative. |
 | H3 | At equal model capacity, training episodes, and update/compute budget, the planned 32-symbol/4-token condition will produce higher held-out compositional generalization than the 128-symbol/8-token condition. | The planned contrast is zero or favors the higher-bandwidth condition. |
-| H4 | Ledger-predicted intervention directions will exceed a pre-registered chance baseline. | Ledger agreement is at chance or fails out-of-sample. |
+| H4 | On untouched intervention cases, pre-outcome ledger predictions will improve a pre-registered proper prediction score beyond the strongest eligible transcript-only, task-history, policy-state, random, and majority baseline. | The ledger fails to exceed the strongest eligible non-ledger baseline by the registered practical threshold. |
 | H5 | A blank bounded carrier will support repeated forms, but will converge more slowly than a fixed symbol inventory. | No stable forms emerge, or blank-carrier convergence is not slower. |
 | H6a | The declared six-display affect condition will reduce median turns to successful repair relative to no affect. | Repair time is equal or longer under affect. |
 | H6b | Under fixed windows and cardinality, permutation-calibrated excess conditional mutual information between affect and referent will remain below the pre-registered 0.02-bit practical-leakage bound. | The seed-bootstrap upper-bound test cannot rule out excess leakage of 0.02 bits or more. |
@@ -757,7 +757,7 @@ criteria are satisfied.
 
 1. held-out task success relative to E03 controls;
 2. positive listening under message intervention;
-3. ledger-predicted intervention agreement;
+3. ledger incremental predictive value on untouched interventions;
 4. held-out compositional generalization.
 
 **Secondary outcomes**
@@ -785,7 +785,12 @@ distributions to change while the receiver observation is held fixed.
 
 **Ledger agreement:** the direction of an observed intervention effect matches the
 direction predicted from the learner's ledger before intervention outcomes are
-revealed.
+revealed. This is a descriptive calibration measure, not H4's confirmatory estimand.
+
+**Ledger incremental value:** held-out improvement in a pre-registered proper
+prediction score over the strongest eligible transcript-only, task-history,
+policy-state, random, and majority baseline. Predictions are committed before the
+intervention outcome is generated.
 
 **Compositional generalization:** reusable subparts support above-control success on
 pre-registered unseen combinations with learning disabled.
@@ -803,11 +808,15 @@ The final analysis plan will be frozen before confirmatory runs.
 
 - Alpha is `0.05` for each experiment's primary family.
 - Holm-Bonferroni correction is applied across primary metrics within an experiment.
-- The confirmatory study family is restricted to H1-H8, including H6a and H6b.
-  Hierarchical gatekeeping tests qualification first, then core emergence, then later
-  affect/transfer/negotiation hypotheses; a blocked family is reported descriptively.
-  Exploratory analyses use false-discovery-rate reporting and remain labeled
-  exploratory.
+- The confirmatory study family contains nine members: H1, H2, H3, H4, H5, H6a,
+  H6b, H7, and H8. One pre-registered p-value is formed per member and Holm correction
+  is applied globally at family-wise alpha 0.05. Multi-component directional members
+  use the maximum component p-value and require every registered direction and
+  practical threshold.
+- E00-E03 and experiment-specific checks are validity gates, not sources of reusable
+  alpha. A failed or missing gate produces `not-tested`, not a favorable or
+  unfavorable p-value. Exploratory analyses use false-discovery-rate reporting and
+  remain labeled exploratory.
 - Effect sizes and confidence or credible intervals are reported with every
   significance test.
 - Binary task outcomes are modeled at the run/seed level, with episodes treated as
@@ -1019,7 +1028,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.58 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.59 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1163,6 +1172,8 @@ Every empirical paper revision will identify the exact Git commit used.
 - Ledger integrity: [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md)
 - Experiment protocols and results notebook:
   [EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md)
+- Frozen question, estimand, and outcome-class cards:
+  [docs/research-protocol-cards.md](docs/research-protocol-cards.md)
 - Engineering plan: [BACKLOG.md](BACKLOG.md)
 
 ### 14.3 Data
