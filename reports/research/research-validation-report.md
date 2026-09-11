@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.70 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.71 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -84,7 +84,9 @@ Report status: in progress
   for confirmatory inference by construction.
 - The current host can support software validation and bounded CPU pilots and now
   retains the verified 4B model asset, but has no qualified accelerator and cannot
-  hold two inference processes concurrently. The perceptual carrier generalization,
+  hold two inference processes concurrently. A handcrafted carrier-distance and
+  nearest-prototype diagnostic now covers bitmap, canvas, and tone representations,
+  but learned perceptual carrier generalization,
   confirmatory, and replication paths require further implementation, measured
   pilot costs, and authentic external approvals.
 - The defensible publication position today is a protocol and software-readiness
@@ -700,8 +702,9 @@ claim independent review. No experiment is registration-ready, and the fail-clos
 machine audit rejects any ready flag while the recorded campaign decision is negative.
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
-   variants, but perceptual similarity, learned transformation, held-out form
-   generalization, and useful sign invention remain unimplemented or untested.
+   variants. Handcrafted carrier-specific distances and held-out nearest-prototype
+   scoring are implemented, but this does not establish learned transformation,
+   learned perceptual generalization, or useful sign invention.
 2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
    to be produced before D08 can freeze registration-ready configurations.
    The fail-closed packet inventory currently resolves 19 protocol-card bindings but

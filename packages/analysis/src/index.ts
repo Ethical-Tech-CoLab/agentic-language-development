@@ -201,6 +201,18 @@ export {
   type RegistrationBindingKey,
   type RegistrationPacketArtifact,
 } from './registration-packet.js';
+export {
+  CARRIER_PERCEPTION_ANALYSIS_VERSION,
+  carrierPerceptualDistance,
+  evaluatePerceptualGeneralization,
+  type BitmapMark,
+  type CanvasMark,
+  type CanvasStroke,
+  type LabeledPerceptualMark,
+  type PerceptualGeneralizationResult,
+  type PerceptualMark,
+  type ToneMark,
+} from './carrier-perception.js';
 
 // ---------------------------------------------------------------------------
 // Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;

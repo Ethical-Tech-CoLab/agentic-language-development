@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.70 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.71 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -123,6 +123,10 @@ implemented and tested:
   scratch RL; the same 4,049-parameter GRU core with reward-free predictive
   cross-entropy for self-supervision; tabular/count models retained as named
   qualification controls; frozen-LLM and hybrid adapter conformance foundations; the
+  carrier analysis module provides grammar-valid bitmap, translation-tolerant canvas,
+  and graded tone distances plus deterministic held-out nearest-prototype scoring,
+  explicitly bounded to a handcrafted-distance diagnostic rather than learned
+  perceptual generalization; the
   independently seeded policies and witness-committed initial hashes;
   independently verified derived-run lineage against immutable parent exports;
   Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
