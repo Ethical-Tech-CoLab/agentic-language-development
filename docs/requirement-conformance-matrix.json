@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.51"
+    "version": "0.1.52"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -569,9 +569,11 @@
     },
     "packages/learners/__tests__/frozen-qualification.test.ts": {
       "selectors": [
-        "exercises both roles and emits only bounded provenance and counts",
+        "measures both roles, isolation, reset, tool use, and freeze semantics",
         "requires enough episodes for both roles to send and receive",
-        "rejects incomplete inference-runtime provenance"
+        "rejects incomplete inference-runtime provenance",
+        "rejects a shared client or endpoint",
+        "rejects a mismatched clean-process replay"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/learners/__tests__/frozen-qualification.test.ts"
     },

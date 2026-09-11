@@ -82,6 +82,10 @@ export {
   type FetchLikeResponse,
   type OpenAiCompatibleLocalClientOptions,
 } from './llm-server-client.js';
+export {
+  probeLlamaServer,
+  type LlamaServerAttestation,
+} from './llama-server-probe.js';
 export { ScriptedModelClient } from './llm-scripted-client.js';
 export {
   FROZEN_MODEL_QUALIFICATION_LABEL,
@@ -90,6 +94,9 @@ export {
   type FrozenModelQualificationOptions,
   type FrozenModelQualificationReport,
   type FrozenModelRoleQualification,
+  type FrozenModelLaunchConfiguration,
+  type FrozenModelResetEvidence,
+  type FrozenModelRuntimeDescription,
 } from './frozen-qualification.js';
 export {
   EXPORTED_RECURRENT_SELF_SUPERVISED_POLICY_VERSION,

@@ -127,6 +127,8 @@ export interface OpenAiCompatibleLocalClientOptions {
   quantization?: string;
   /** Context window; default `8192`. */
   contextLength?: number;
+  /** Disable model-internal reasoning tokens in compatible chat templates. */
+  disableThinking?: boolean;
   /** Injected `fetch`; defaults to the global one. */
   fetchImpl?: FetchLike;
 }
@@ -180,6 +182,7 @@ export class OpenAiCompatibleLocalClient implements LocalModelClient {
   private constructor(
     private readonly endpoint: string,
     private readonly description: LocalModelDescription,
+    private readonly disableThinking: boolean,
     fetchImpl: FetchLike,
   ) {
     this.fetchImpl = fetchImpl;
@@ -231,6 +234,7 @@ export class OpenAiCompatibleLocalClient implements LocalModelClient {
         contextLength: options.contextLength ?? 8_192,
         toolCallingMode: 'json-schema-grammar',
       },
+      options.disableThinking ?? true,
       fetchImpl,
     );
   }
@@ -274,6 +278,9 @@ export class OpenAiCompatibleLocalClient implements LocalModelClient {
       max_tokens: request.maxOutputTokens,
       temperature: request.temperature,
       seed: request.samplingSeed,
+      ...(this.disableThinking
+        ? { chat_template_kwargs: { enable_thinking: false } }
+        : {}),
       stream: false,
     };
 
