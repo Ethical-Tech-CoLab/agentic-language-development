@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "experimentStatus": {
+    "E11": "not-started",
+    "E12": "not-started"
+  },
+  "candidate": {
+    "commit": "6871f8df8780eb3b54bb5d18d766e9164831ccfd",
+    "tree": "166ac408fc36a3686047ead31793ed61152740f4",
+    "version": "0.1.48",
+    "detachedWorktree": "/tmp/ald-v07-6871f8d.S3HM5T",
+    "cleanBeforeAndAfter": true
+  },
+  "model": {
+    "architecture": "gru-actor-critic-v1",
+    "hiddenSize": 16,
+    "parameterCountPerLearner": 4049,
+    "modelStateBytes": 97688,
+    "initialization": "independently-seeded-xavier-uniform",
+    "optimizer": {
+      "name": "adam-v1",
+      "learningRate": 0.003,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "epsilon": 1e-8
+    },
+    "scratchObjective": "ppo-clipped:one-step-truncated-gru+value-mse:v1",
+    "selfSupervisedObjective": "predictive-cross-entropy:partner-message|candidate-features:gru-v1",
+    "ppoEpochs": 4,
+    "ppoClip": 0.2,
+    "valueLossCoefficient": 0.5,
+    "maxGradientNorm": 1,
+    "checkpointIncludes": [
+      "parameters",
+      "adam-first-moment",
+      "adam-second-moment",
+      "adam-step",
+      "sender-hidden",
+      "receiver-hidden",
+      "update-count"
+    ]
+  },
+  "numericalQualification": {
+    "gradientCheck": {
+      "method": "central-difference-largest-predictive-gradient-component",
+      "parameterIndex": 241,
+      "analytic": -0.5988547691518042,
+      "numerical": -0.5988547691571089,
+      "relativeError": 4.428991706243575e-12,
+      "epsilon": 0.00001
+    },
+    "toyRewardFreeMapping": {
+      "initialMeanTargetProbability": 0.3127519461465938,
+      "finalMeanTargetProbability": 0.5041792783354453,
+      "improvement": 0.1914273321888515,
+      "classification": "regression-qualification-only"
+    },
+    "independentInitialParameters": true,
+    "independentOptimizerMutationCheck": true
+  },
+  "exactCommands": [
+    {
+      "command": "PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm install --frozen-lockfile",
+      "exitCode": 0,
+      "resolvedPackages": 218
+    },
+    {
+      "command": "PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run check",
+      "exitCode": 0,
+      "testFiles": 137,
+      "tests": 1750,
+      "secretScanFiles": 605,
+      "dependencyAudit": "no-known-vulnerabilities"
+    },
+    {
+      "command": "ALD_MODE_R_EVIDENCE_DIR=.../20260911-v07-6871f8d-exact COMPOSE_PROGRESS=plain PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run test:mode-r-study",
+      "exitCode": 0
+    },
+    {
+      "command": "CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml; ald-integrity-auditor <each-run-bundle>",
+      "exitCode": 0,
+      "bundleCount": 4,
+      "passCount": 4
+    }
+  ],
+  "modeR": {
+    "deploymentMode": "research-grade",
+    "anchorTransport": "local-qualification-fake-chain",
+    "publicChainTransaction": false,
+    "fortComposeBoundaryVerified": true,
+    "authorizedFortSessionInvoked": false,
+    "recurrentCapacityMatched": true,
+    "allSealedAndProductionVerified": true,
+    "runs": [
+      {
+        "runId": "mode-r-study-no-learning",
+        "track": "no-learning",
+        "eventCountIncludingInterventions": 59,
+        "checkpointCount": 10,
+        "summarySha256": "844ed327aaa3f9c48f3c96d89274084446bc263a3b503f0241c0df9c894eed24",
+        "manifestSha256": "2993b20b7f1cc8750e3c493b756e759e70a45909019e5c8b4feba8b668ae6f4b",
+        "verificationReportSha256": "e9bf946ded0e152824635293da58dbf106530b7ca1dbbe38ea8d2063780f7286"
+      },
+      {
+        "runId": "mode-r-study-scratch-rl",
+        "track": "scratch-rl",
+        "eventCountIncludingInterventions": 77,
+        "checkpointCount": 13,
+        "parameterCount": 4049,
+        "independentInitialParameters": true,
+        "bothPoliciesUpdated": true,
+        "evaluationPolicyHashesConstant": true,
+        "summarySha256": "b4b50fba2a7c3dab493345679d31a7f11946b011eabfc563cd328e3ffe17ebe0",
+        "manifestSha256": "4e1361ac03997312cebbcd6983055ffa3f943f8e6343d2c986fd58c350bc2da8",
+        "verificationReportSha256": "4b4c3efc00b6e48e85dc141a7d7273b4e1ab4985cc06b838591ab30942f03708"
+      },
+      {
+        "runId": "mode-r-study-self-supervised",
+        "track": "self-supervised",
+        "eventCountIncludingInterventions": 81,
+        "checkpointCount": 13,
+        "parameterCount": 4049,
+        "independentInitialParameters": true,
+        "bothPoliciesUpdated": true,
+        "evaluationPolicyHashesConstant": true,
+        "summarySha256": "73c4708a43e48dac8755a80813270ec083370111754a20c5af90325fa912e291",
+        "manifestSha256": "5efacbbb12fb99ed1d262b3314e81ead4c5554d49f81b68ccc1010b3e30f38a8",
+        "verificationReportSha256": "254cf19c7494460485d190ca6298ae165f1b2536b00d3705b84071115da64bb4"
+      },
+      {
+        "runId": "mode-r-study-hybrid",
+        "track": "hybrid",
+        "eventCountIncludingInterventions": 80,
+        "checkpointCount": 13,
+        "summarySha256": "fff023c15b54d3f950f0642050547971baa4560f809c9f104a4cf7339c88b5be",
+        "manifestSha256": "900a2c423042c7afada9704c1a1c9cea205d31146fd9cfe3ff7f6e42eb5b32f3",
+        "verificationReportSha256": "e58ed450e947a50c81448f56431e5c92055665de82d8295d5088014ea63b4fff"
+      }
+    ],
+    "independentAudit": {
+      "implementation": "ald-integrity-auditor-rust-v1",
+      "bundleCount": 4,
+      "passCount": 4,
+      "eventCountIncludingInterventions": 297,
+      "checkpointCount": 49,
+      "allLocalReceiptBindingsPresent": true
+    }
+  },
+  "containerImagesAtFinalInspection": {
+    "babyA": "sha256:e7d46bb51764fa53337a0a96b520bd4c6b5d42f41e8eb0e41c3b07abb90f81d7",
+    "babyB": "sha256:1d4b1b93d853ed2e38561dd383a233f721c4700159e4fefe1521fc10af0fb8fd",
+    "nurseryStudy": "sha256:50c75ceface05ddfe927c209decaa947ddcc4331c6372194b31aebcc8fc6790e"
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-v07-6871f8d-exact",
+    "gitTracked": false,
+    "fileCount": 2335,
+    "bytes": 6001123,
+    "relativePathContentManifestSha256": "105b0fdd046a8f6175daaa3bd45cf43768af51a54af153281f6a995e3eeeb7b4"
+  },
+  "failureHistory": [
+    {
+      "stage": "dirty-tree-post-documentation-check",
+      "result": "failed",
+      "testsPassed": 1749,
+      "testsFailed": 1,
+      "cause": "the 300-turn recurrent E11 integration test retained a legacy 60-second per-test override and exceeded it under full-suite contention",
+      "resolution": "removed the legacy override so the unchanged test inherits the repository's 180-second integration-test budget",
+      "countedAsPass": false
+    }
+  ],
+  "dependencyBuildObservation": {
+    "projectPnpmAudit": "no-known-vulnerabilities",
+    "nestedThirdPartyPrepare": "the commit-pinned document-renderer source ran its own npm install during the container build and printed two high-severity build-dependency advisories",
+    "interpretation": "the nested warning is not erased by the project audit and remains a dependency-build concern for V11"
+  },
+  "limitations": [
+    "This is bounded software qualification, not E11 or E12 data.",
+    "One-step truncated recurrence is not full sequence PPO.",
+    "Equal parameter count does not establish equal optimization difficulty or compute cost.",
+    "The local fake-chain transport did not submit or confirm a public-chain transaction.",
+    "No authorized Fort session, authentic external registration, independent human restore, or independent replication occurred."
+  ]
+}
