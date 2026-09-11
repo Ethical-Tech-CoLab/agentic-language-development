@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.40 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.41 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -187,6 +187,8 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
 | [docs/cryptographic-separation-policy.md](docs/cryptographic-separation-policy.md) | Mandatory boundary between E40 research encodings and production hashing/signing/anchoring |
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |
+| [Research validation report](reports/research/research-validation-report.md) | Living evidence-class, validation, experiment, and claim-readiness report |
+| [Source-lineage register](reports/research/source-lineage-register.md) | Requirement origins and later normative amendments without personal attribution |
 
 ## Research Book
 

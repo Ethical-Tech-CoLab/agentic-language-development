@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUtc": "2026-09-11T14:27:34Z",
+  "classification": "software-validation-environment",
+  "researchFinding": false,
+  "repository": {
+    "path": "$WORKSPACE_ROOT/agentic-language-development",
+    "branch": "feat/verifiable-core",
+    "commit": "355391f2a5f87342c1c8f85e3314d6900c913349",
+    "version": "0.1.40",
+    "worktreeAtCapture": "clean"
+  },
+  "host": {
+    "operatingSystem": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.8.0-138-generic",
+    "architecture": "x86_64",
+    "virtualization": "KVM with AMD-V",
+    "logicalCpuCount": 6,
+    "cpuModel": "AMD EPYC 9684X 96-Core Processor",
+    "totalMemoryBytes": 8086106112,
+    "availableMemoryBytesAtCapture": 4806598656,
+    "swapBytes": 0,
+    "filesystemBytes": 310911414272,
+    "filesystemAvailableBytesAtCapture": 198498086912
+  },
+  "homebrew": {
+    "version": "6.0.22",
+    "prefix": "/home/linuxbrew/.linuxbrew",
+    "bootstrapSource": "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh",
+    "installedForThisPlan": [
+      "node@24 24.20.0",
+      "pnpm 12.3.4",
+      "actionlint 1.7.12"
+    ],
+    "transitiveFormulaeRelevantToValidation": [
+      "shellcheck 0.11.0"
+    ]
+  },
+  "tools": {
+    "node": {
+      "version": "24.20.0",
+      "path": "/home/linuxbrew/.linuxbrew/opt/node@24/bin/node",
+      "sha256": "40a2a04407a77e13f11234c2a9da99ced6c4df4c62a37905ae55a304b7f28a8c"
+    },
+    "pnpm": {
+      "version": "12.3.4",
+      "path": "/home/linuxbrew/.linuxbrew/bin/pnpm",
+      "sha256": "b92a3c66b170e34e6123ca9119a8a12bfd1d3fb21143b3d80418832bd6f10e9c"
+    },
+    "actionlint": {
+      "version": "1.7.12",
+      "path": "/home/linuxbrew/.linuxbrew/bin/actionlint",
+      "sha256": "c3716d9e9532c591a07a522002d679c8939a026cb86d2d0f9e26c6f001259400"
+    },
+    "rustc": {
+      "version": "1.94.0",
+      "installation": "pre-existing; not installed during this plan",
+      "sha256": "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10"
+    },
+    "cargo": {
+      "version": "1.94.0",
+      "installation": "pre-existing; not installed during this plan"
+    },
+    "git": {
+      "version": "2.43.0",
+      "installation": "pre-existing; not installed during this plan"
+    },
+    "docker": {
+      "clientVersion": "29.7.2",
+      "serverVersion": "29.7.2",
+      "apiVersion": "1.55",
+      "composeVersion": "2.29.7",
+      "installation": "pre-existing; not installed during this plan",
+      "clientSha256": "a429e235ef670ea83357a5c8c7451f0a69d485a6fee49f9032fd938a0ab4969d"
+    }
+  },
+  "containerQualification": {
+    "baseImage": "node:24.20.0-alpine",
+    "baseImageManifestDigest": "sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf",
+    "digestSource": "Docker build resolution during the 2026-09-11 Mode R qualification",
+    "modeRResult": "pass",
+    "activeSideChannelCategories": 12,
+    "trainableTracksExercised": [
+      "scratch-rl",
+      "self-supervised",
+      "hybrid"
+    ]
+  },
+  "localResearchAssets": {
+    "modelAssetScanRoot": "$WORKSPACE_ROOT",
+    "modelAssetScanMaximumDepth": 4,
+    "recognizedExtensions": [
+      ".gguf",
+      ".safetensors",
+      ".onnx"
+    ],
+    "recognizedModelFilesFound": 0,
+    "qualificationEvidenceFileCount": 28776,
+    "qualificationEvidenceBytes": 280373166,
+    "historicalQualificationRunCount": 33,
+    "historicalQualificationDatabaseSha256": "2f349a0b417fb74432b7b12bd6b7c92db4e89941d547a381e1007af006b40185"
+  },
+  "limitations": [
+    "Available memory and filesystem capacity are point-in-time observations.",
+    "No accelerator was identified or qualified in this inventory.",
+    "The historical frozen-model weights and inference executable are not present under the bounded model-asset scan root, so that run cannot yet be independently repeated from local assets.",
+    "No credential, signer, RPC endpoint, or secret value was read or recorded.",
+    "This manifest describes software validation and does not establish any empirical research result."
+  ]
+}

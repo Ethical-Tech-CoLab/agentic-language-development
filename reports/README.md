@@ -1,5 +1,12 @@
 # Reports
 
+## `reports/research/`
+
+The living research-validation report, its source-lineage register, and its
+machine-readable environment manifest. These artifacts distinguish inspected
+repository facts, freshly executed software qualification, planned empirical
+work, and externally blocked prerequisites. They are not experiment results.
+
 ## `reports/qualification/`
 
 Output of `scripts/run-qualification.mjs` (BACKLOG ALD-072): one directory
