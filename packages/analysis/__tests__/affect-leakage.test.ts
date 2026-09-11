@@ -95,10 +95,10 @@ function input(overrides: Partial<AffectLeakageInput> = {}): AffectLeakageInput 
 }
 
 describe('ALD-033: evaluateAffectLeakage on a no-leak condition', () => {
-  it('clears the pre-registered 0.02-bit bound and reports no suspected leakage', () => {
+  it('estimates below the 0.02-bit bound but refuses an E20 decision with only five seeds', () => {
     const result = evaluateAffectLeakage(input());
-    expect(result.decision).toBe('below-bound');
-    expect(result.suspectedLeakage).toBe(false);
+    expect(result.decision).toBe('insufficient-seeds');
+    expect(result.suspectedLeakage).toBe(true);
     expect(result.excessCmiUpperBoundBits).toBeLessThan(
       E20_EXCESS_CMI_BOUND_BITS,
     );
@@ -122,6 +122,21 @@ describe('ALD-033: evaluateAffectLeakage on a no-leak condition', () => {
     expect(result.meetsE20WindowCount).toBe(true);
     expect(E20_PERMUTATIONS).toBe(1_000);
   });
+
+  it('permits the primary decision only at the registered 75-seed scale', () => {
+    const result = evaluateAffectLeakage(
+      input({
+        perSeed: perSeed(noLeakWindows, E20_MINIMUM_SEEDS, 'full-scale-clean'),
+        permutations: 20,
+        bootstrapIterations: 500,
+      }),
+    );
+    expect(result.meetsE20SeedCount).toBe(true);
+    expect(result.meetsE20WindowCount).toBe(true);
+    expect(result.decision).toBe('below-bound');
+    expect(result.suspectedLeakage).toBe(false);
+    expect(result.bootstrapSensitivity.iterations).toBe(500);
+  }, 30_000);
 });
 
 describe('ALD-033: evaluateAffectLeakage on a planted leak', () => {
@@ -129,7 +144,7 @@ describe('ALD-033: evaluateAffectLeakage on a planted leak', () => {
     const result = evaluateAffectLeakage(
       input({ perSeed: perSeed(plantedLeakWindows, SEED_COUNT, 'leak') }),
     );
-    expect(result.decision).toBe('not-below-bound');
+    expect(result.decision).toBe('insufficient-seeds');
     expect(result.suspectedLeakage).toBe(true);
     expect(result.excessCmiUpperBoundBits).toBeGreaterThan(1);
     expect(result.seedsAboveBound).toBe(SEED_COUNT);
@@ -192,7 +207,7 @@ describe('ALD-033: eligibility and reproducibility', () => {
       true,
       false,
     ]);
-    expect(result.decision).toBe('below-bound');
+    expect(result.decision).toBe('insufficient-seeds');
   });
 
   it('is exactly reproducible from its seed and sensitive to it', () => {
@@ -201,8 +216,8 @@ describe('ALD-033: eligibility and reproducibility', () => {
     expect(canonicalJson(again)).toBe(canonicalJson(first));
     const other = evaluateAffectLeakage(input({ seed: 'analysis-seed-other' }));
     expect(canonicalJson(other)).not.toBe(canonicalJson(first));
-    // A different analysis seed must not flip a no-leak condition's decision.
-    expect(other.decision).toBe('below-bound');
+    // A different analysis seed must not make an underpowered input eligible.
+    expect(other.decision).toBe('insufficient-seeds');
   });
 
   it('produces a canonicalizable attachment payload with only finite numbers', () => {

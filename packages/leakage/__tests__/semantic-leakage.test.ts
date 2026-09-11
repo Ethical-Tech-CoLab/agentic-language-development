@@ -10,7 +10,10 @@ const HASH = `sha256:${'1'.repeat(64)}` as Sha256Hash;
 const PRE_REGISTRATION = {
   seed: 'semantic-leakage-test-v1',
   confidence: 0.95,
-  permutations: 40,
+  permutations: 20,
+  maximumAccuracyAdvantage: 0.1,
+  minimumTestRows: 200,
+  positiveControlMinimumAdvantage: 0.2,
 } as const;
 
 function provenance(
@@ -37,8 +40,8 @@ function provenance(
   };
 }
 
-function rows(leaked: boolean): SemanticFeatureRow[] {
-  return Array.from({ length: 64 }, (_, index) => {
+function rows(leaked: boolean, count = 800): SemanticFeatureRow[] {
+  return Array.from({ length: count }, (_, index) => {
     const label = index % 4;
     return {
       label: `english-class-${String(label)}`,
@@ -65,6 +68,9 @@ describe('semantic-leakage battery (ALD-057)', () => {
         observedAccuracy: 0.25,
         shuffledControl: { confidence: 0.95, lower: 0.25, upper: 0.25 },
         withinShuffledInterval: true,
+        majorityBaselineAccuracy: 0.25,
+        negativeBoundDecision: 'below-bound',
+        positiveControl: { observedAccuracy: 1, detected: true },
       });
       expect(result.visionLanguageEncoderAudit.passed).toBe(true);
       expect(result.classification).toBe('strict-ungrounded-eligible');
@@ -82,6 +88,19 @@ describe('semantic-leakage battery (ALD-057)', () => {
     expect(result.linearProbe?.withinShuffledInterval).toBe(false);
     expect(result.classification).toBe('strict-ungrounded-blocked');
     expect(result.claimEligible).toBe(false);
+  });
+
+  it('blocks an underpowered negative bound even when the point estimate is at chance', () => {
+    const result = evaluateSemanticLeakage({
+      provenance: provenance('scratch-rl'),
+      frozenFeatures: rows(false, 64),
+      preRegistration: PRE_REGISTRATION,
+    });
+    expect(result.linearProbe?.withinShuffledInterval).toBe(true);
+    expect(result.linearProbe?.negativeBoundDecision).toBe(
+      'insufficient-test-rows',
+    );
+    expect(result.classification).toBe('strict-ungrounded-blocked');
   });
 
   it('automatically weakens a hybrid with text-aligned frozen features', () => {

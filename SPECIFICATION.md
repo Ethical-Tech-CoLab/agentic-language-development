@@ -897,7 +897,7 @@ interface RunConfig {
   protocolGitCommit: string;
   preRegistrationHash: string;
   randomSeed: string;
-  carrierLeakageProbePlan?: { recognizableGlyph: { enabled: boolean; maximumRecognizableRate: number }; unintendedFeature: { enabled: boolean; maximumMutualInformationBits: number; minimumObservations: number } };
+  carrierLeakageProbePlan?: { recognizableGlyph: { enabled: boolean; maximumRecognizableRate: number }; intendedCarrierFeatureUse: { enabled: boolean; minimumObservations: number } };
 }
 ```
 

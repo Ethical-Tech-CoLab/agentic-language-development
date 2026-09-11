@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.61"
+    "version": "0.1.62"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -21,8 +21,9 @@
     },
     "packages/analysis/__tests__/affect-leakage.test.ts": {
       "selectors": [
-        "clears the pre-registered 0.02-bit bound and reports no suspected leakage",
+        "estimates below the 0.02-bit bound but refuses an E20 decision with only five seeds",
         "records the estimator, the bound, and the E20 scale flags honestly",
+        "permits the primary decision only at the registered 75-seed scale",
         "fails the bound and reports suspected leakage rather than dropping it",
         "lists a single leaky seed even when the aggregate bound would pass",
         "reports insufficient windows instead of deciding on too little data",
@@ -38,8 +39,8 @@
     "packages/analysis/__tests__/carrier-leakage.test.ts": {
       "selectors": [
         "reports versioned mark metrics and passes both registered probes",
-        "fails planted recognizable/form-feature leakage, blocks only the claim, and preserves artifacts",
-        "reports inconclusive when a registered probe lacks enough evidence",
+        "blocks recognizable prior glyphs while reporting intended carrier feature use without treating it as leakage",
+        "reports an under-sized form-use diagnostic without converting it into a leakage failure",
         "extracts immutable structural features for all five carrier conditions",
         "rejects a mark hash that does not bind the supplied artifact"
       ],
@@ -495,6 +496,7 @@
     "packages/leakage/__tests__/semantic-leakage.test.ts": {
       "selectors": [
         "blocks an above-control English-label linear probe",
+        "blocks an underpowered negative bound even when the point estimate is at chance",
         "automatically weakens a hybrid with text-aligned frozen features",
         "classifies exempt and control tracks without ungrounded claims",
         "rejects any confidence rule other than the pre-registered 95%"

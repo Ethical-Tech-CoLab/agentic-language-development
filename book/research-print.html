@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.61 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.62 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -340,7 +340,7 @@ pre-registrations. The following hypotheses define the current direction:</p>
 <tr>
 <td>H6b</td>
 <td>Under fixed windows and cardinality, permutation-calibrated excess conditional mutual information between affect and referent will remain below the pre-registered 0.02-bit practical-leakage bound.</td>
-<td>The seed-bootstrap upper-bound test cannot rule out excess leakage of 0.02 bits or more.</td>
+<td>The seed-level one-sided Student-t upper-bound test cannot rule out excess leakage of 0.02 bits or more.</td>
 </tr>
 <tr>
 <td>H7</td>
@@ -950,6 +950,17 @@ upper-bound tests, not failure to reject a difference. Each pre-registration mus
 state the smallest effect of interest, the equivalence margin, and power to rule out
 that margin. The worked E03 design in Appendix D uses a +/-0.05 success-rate margin;
 H6b uses a 0.02-bit conditional-mutual-information bound.</p>
+<p>The outcome-blind causal-ledger and leakage rules are frozen in
+<a href="protocols/causal-ledger-and-leakage.v1.json"><code>protocols/causal-ledger-and-leakage.v1.json</code></a>.
+For E02, at least 200 untouched test rows are required and the one-sided 95%
+Wilson upper bound on linear-probe accuracy advantage over the held-out majority
+baseline must be at most 0.10. The identical probe and split must detect an injected
+one-hot target feature with a lower advantage bound of at least 0.20. For E20, 75
+eligible seeds and 1,000 windows per seed are required before a decision; the primary
+bound is seed-level Student-t and the percentile bootstrap is sensitivity-only.
+Allowed and forbidden information sets and detector-positive controls are explicit
+for E01, E02, E13, and E20. Intended normalized carrier form is communication, not a
+side channel.</p>
 <p>Run exclusions are limited to pre-specified integrity or protocol failures. Each
 condition receives a fixed ordered list of primary and reserve seeds before outcomes
 are observed. An invalid primary seed may be replaced only by the next reserve seed;
@@ -1102,7 +1113,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.61 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.62 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>

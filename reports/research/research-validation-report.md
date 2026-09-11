@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest integrated software candidate: `b2b119c` / v0.1.56
+Latest tracked research-design candidate: v0.1.62 (D06 consolidated gate passed)
 Report status: in progress  
 
 ## Executive Summary
@@ -47,10 +47,18 @@ Report status: in progress
   four-type compositional test partition. A real leakage defect that exposed test
   types as training distractors was corrected, and model comparisons now declare
   matched budgets plus causal-versus-descriptive interpretation boundaries.
-- Independent base-R validation now agrees with 18 production numerical values and
+- Independent base-R validation now agrees with 28 production numerical values and
   quantifies interval coverage, TOST boundary error, clustering, invalid runs, the
   complete E03 numeric gate, and nine-member Holm sensitivity. It exposed and removed
   an uncalibrated E03 tail-count rejection before registration.
+- The causal-ledger and leakage protocol now freezes prospective prediction
+  commitments, validation-only comparator selection, exact information sets, and
+  detector-positive controls. E02 and E20 use powered one-sided negative bounds;
+  intended carrier form is no longer mislabeled as a side channel.
+- The v0.1.62 D06 candidate passed all 1,771 tests across 140 files, the Rust
+  auditor tests and clippy, every consolidated static/design gate, a 641-file secret
+  scan, and the high-severity dependency audit. The live base-R leakage-design replay
+  was byte-identical to the frozen receipt.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -543,7 +551,37 @@ lower Monte Carlo power bound reaches 0.90. Full methods and limitations are in 
 This closes D05's method validation. It does not substitute design simulations for
 observed evidence and does not finalize D07's hypothesis-specific allocation.
 
-## 17. Critical gaps before empirical claims
+## 17. Prospective causal-ledger and leakage validation
+
+The versioned [causal-ledger and leakage protocol](../../docs/causal-ledger-and-leakage-protocol.md)
+separates H2's paired behavioral intervention effect from H4's held-out incremental
+prediction value. Training ends and policies freeze before the ordered probe schedule,
+prediction-function version, native predictions, selected comparator, and comparator
+predictions are committed and checkpointed. Comparator selection uses validation data
+only. Test outcomes are then generated once. Uniform, validation-majority,
+transcript-only, task-history, and policy-state information sets are explicit; the
+oracle is detector-positive and forbidden from selection.
+
+The same protocol enumerates allowed and forbidden information for E01, E02, E13,
+and E20. It corrects two method defects before collection. First, an observed probe
+accuracy inside a shuffled-label interval is only a calibration diagnostic: E02 now
+requires at least 200 untouched test rows, a one-sided 95% Wilson upper advantage
+bound no greater than 0.10, and successful detection of an injected target feature.
+Second, structural variation in a permitted carrier is the message itself. Its
+referent mutual information is now a form-use/bandwidth diagnostic rather than a
+leakage failure; metadata, timing, envelopes, undeclared media properties, and
+recognizable priors remain prohibited.
+
+E20 now refuses a study-level decision below 75 eligible seeds and uses a seed-level
+Student-t upper bound as its primary 0.02-bit gate. The under-covering percentile
+bootstrap remains visible as sensitivity. Independent base-R calculations show E02
+chance clearance 0.9157 and boundary false clearance 0.0426 at 200 test rows. Under
+E20's explicit normal seed-statistic and SD <= 0.04-bit design assumption, zero-excess
+clearance is 0.9959, boundary Type I error is 0.05, and a 0.04-bit positive control is
+detected with probability above 0.99999999. A blinded pilot must verify the variance
+assumption or D07 must increase N. These are operating characteristics, not outcomes.
+
+## 18. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -553,10 +591,10 @@ observed evidence and does not finalize D07's hypothesis-specific allocation.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
-4. Leakage measurements need explicit allowed and forbidden information sets plus
-   detectable positive controls before a negative bound is meaningful.
-5. Ledger-prediction value must be compared with transcript-only, policy-state, random,
-   majority, and oracle baselines without circular access to the target policy.
+4. The E01 timing/envelope detectors and E13 forbidden-side-feature detectors must be
+   exercised in the actual selected topology before their negative claims are eligible.
+5. Causal-ledger comparator implementations and registered practical effect margins
+   must be qualified and then executed prospectively; this design does not supply outcomes.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.
@@ -564,7 +602,7 @@ observed evidence and does not finalize D07's hypothesis-specific allocation.
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 18. Current scientific and publication conclusion
+## 19. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -578,7 +616,7 @@ The provisional [requirement-level conformance matrix](../../docs/requirement-co
 now inventories every backlog criterion and normative MUST-bearing source line with
 concrete executable surfaces and required receipts. The software candidate and
 bounded literature/novelty audit, question/estimand cards, and numeric split/model
-comparison design and independent statistical validation are complete. Subsequent
-revisions will add leakage protocols,
+comparison design, independent statistical validation, and prospective causal-ledger
+and leakage protocol are complete. Subsequent revisions will add
 the pilot cost model, run/data manifest, analyses, audit-cost comparison, claim map,
 and critical review.

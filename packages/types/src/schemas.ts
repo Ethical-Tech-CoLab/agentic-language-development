@@ -71,10 +71,9 @@ export const CarrierLeakageProbePlanSchema = z
         maximumRecognizableRate: z.number().min(0).max(1),
       })
       .strict(),
-    unintendedFeature: z
+    intendedCarrierFeatureUse: z
       .object({
         enabled: z.boolean(),
-        maximumMutualInformationBits: z.number().nonnegative(),
         minimumObservations: positiveInteger,
       })
       .strict(),

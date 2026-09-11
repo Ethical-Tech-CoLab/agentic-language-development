@@ -1,10 +1,13 @@
 /** Deterministic semantic-leakage qualification (SPEC §6.5, ALD-057). */
-import { quantileSorted } from '@ald/analysis';
+import { quantileSorted, wilsonInterval, type WilsonInterval } from '@ald/analysis';
 import { SeededPrng } from '@ald/hashing';
 import type { LearnerProvenance, LearnerTrackId } from '@ald/types';
 
-export const SEMANTIC_LEAKAGE_ANALYSIS_VERSION = 'semantic-leakage-v1';
+export const SEMANTIC_LEAKAGE_ANALYSIS_VERSION = 'semantic-leakage-v2';
 export const SEMANTIC_LEAKAGE_CONFIDENCE = 0.95;
+export const SEMANTIC_LEAKAGE_MAXIMUM_ADVANTAGE = 0.1;
+export const SEMANTIC_LEAKAGE_MINIMUM_TEST_ROWS = 200;
+export const SEMANTIC_LEAKAGE_POSITIVE_CONTROL_ADVANTAGE = 0.2;
 
 export interface SemanticFeatureRow {
   readonly features: readonly number[];
@@ -16,6 +19,9 @@ export interface SemanticLeakagePreRegistration {
   readonly seed: string;
   readonly confidence: 0.95;
   readonly permutations: number;
+  readonly maximumAccuracyAdvantage: number;
+  readonly minimumTestRows: number;
+  readonly positiveControlMinimumAdvantage: number;
 }
 
 export interface SemanticLeakageInput {
@@ -33,6 +39,22 @@ export interface LinearProbeResult {
     readonly permutations: number;
   };
   readonly withinShuffledInterval: boolean;
+  readonly majorityBaselineAccuracy: number;
+  readonly accuracyAdvantage: number;
+  /** A two-sided 90% Wilson interval is a one-sided 95% upper/lower bound. */
+  readonly observedOneSided95: WilsonInterval;
+  readonly advantageUpperBound: number;
+  readonly maximumAccuracyAdvantage: number;
+  readonly negativeBoundDecision:
+    | 'below-bound'
+    | 'not-below-bound'
+    | 'insufficient-test-rows';
+  readonly positiveControl: {
+    readonly observedAccuracy: number;
+    readonly advantageLowerBound: number;
+    readonly minimumAdvantage: number;
+    readonly detected: boolean;
+  };
   readonly trainRows: number;
   readonly testRows: number;
   readonly classes: number;
@@ -81,6 +103,26 @@ function assertInput(input: SemanticLeakageInput): void {
     input.preRegistration.permutations < 20
   ) {
     throw new Error('semantic-leakage permutations must be an integer of at least 20');
+  }
+  if (
+    !Number.isFinite(input.preRegistration.maximumAccuracyAdvantage) ||
+    input.preRegistration.maximumAccuracyAdvantage <= 0 ||
+    input.preRegistration.maximumAccuracyAdvantage >= 1
+  ) {
+    throw new Error('maximumAccuracyAdvantage must be within (0, 1)');
+  }
+  if (
+    !Number.isInteger(input.preRegistration.minimumTestRows) ||
+    input.preRegistration.minimumTestRows < 1
+  ) {
+    throw new Error('minimumTestRows must be a positive integer');
+  }
+  if (
+    !Number.isFinite(input.preRegistration.positiveControlMinimumAdvantage) ||
+    input.preRegistration.positiveControlMinimumAdvantage <= 0 ||
+    input.preRegistration.positiveControlMinimumAdvantage >= 1
+  ) {
+    throw new Error('positiveControlMinimumAdvantage must be within (0, 1)');
   }
   if (input.frozenFeatures.length < 8) {
     throw new Error('semantic-leakage probe requires at least 8 feature rows');
@@ -215,6 +257,18 @@ function evaluateLinearProbe(input: SemanticLeakageInput): LinearProbeResult {
     labels,
     split.test,
   );
+  const testClassCounts = new Array<number>(names.length).fill(0);
+  for (const index of split.test) {
+    const label = labels[index] as number;
+    testClassCounts[label] = (testClassCounts[label] as number) + 1;
+  }
+  const majorityBaselineAccuracy = Math.max(...testClassCounts) / split.test.length;
+  const observedSuccesses = Math.round(observed * split.test.length);
+  const observedOneSided95 = wilsonInterval(
+    observedSuccesses,
+    split.test.length,
+    0.9,
+  );
   const prng = new SeededPrng(`${input.preRegistration.seed}/label-shuffled`);
   const shuffledAccuracies: number[] = [];
   const trainLabels = split.train.map((index) => labels[index] ?? -1);
@@ -237,6 +291,35 @@ function evaluateLinearProbe(input: SemanticLeakageInput): LinearProbeResult {
   const alpha = (1 - SEMANTIC_LEAKAGE_CONFIDENCE) / 2;
   const lower = quantileSorted(shuffledAccuracies, alpha);
   const upper = quantileSorted(shuffledAccuracies, 1 - alpha);
+  const positiveRows = input.frozenFeatures.map((row) => ({
+    ...row,
+    features: [
+      ...row.features,
+      ...names.map((name) => (name === row.label ? 1 : 0)),
+    ],
+  }));
+  const positiveAccuracy = accuracy(
+    trainLinearProbe(positiveRows, labels, split.train, names.length),
+    positiveRows,
+    labels,
+    split.test,
+  );
+  const positiveInterval = wilsonInterval(
+    Math.round(positiveAccuracy * split.test.length),
+    split.test.length,
+    0.9,
+  );
+  const advantageUpperBound =
+    observedOneSided95.upper - majorityBaselineAccuracy;
+  const negativeBoundDecision =
+    split.test.length < input.preRegistration.minimumTestRows
+      ? 'insufficient-test-rows'
+      : advantageUpperBound <=
+          input.preRegistration.maximumAccuracyAdvantage
+        ? 'below-bound'
+        : 'not-below-bound';
+  const positiveAdvantageLowerBound =
+    positiveInterval.lower - majorityBaselineAccuracy;
   return {
     observedAccuracy: observed,
     shuffledControl: {
@@ -246,6 +329,22 @@ function evaluateLinearProbe(input: SemanticLeakageInput): LinearProbeResult {
       permutations: input.preRegistration.permutations,
     },
     withinShuffledInterval: observed >= lower && observed <= upper,
+    majorityBaselineAccuracy,
+    accuracyAdvantage: observed - majorityBaselineAccuracy,
+    observedOneSided95,
+    advantageUpperBound,
+    maximumAccuracyAdvantage:
+      input.preRegistration.maximumAccuracyAdvantage,
+    negativeBoundDecision,
+    positiveControl: {
+      observedAccuracy: positiveAccuracy,
+      advantageLowerBound: positiveAdvantageLowerBound,
+      minimumAdvantage:
+        input.preRegistration.positiveControlMinimumAdvantage,
+      detected:
+        positiveAdvantageLowerBound >=
+        input.preRegistration.positiveControlMinimumAdvantage,
+    },
     trainRows: split.train.length,
     testRows: split.test.length,
     classes: names.length,
@@ -282,7 +381,12 @@ export function evaluateSemanticLeakage(
     linearProbe = evaluateLinearProbe(input);
     if (!encoderPassed && provenance.track === 'hybrid') {
       classification = 'weakened-text-aligned-features';
-    } else if (tokenizerPassed && encoderPassed && linearProbe.withinShuffledInterval) {
+    } else if (
+      tokenizerPassed &&
+      encoderPassed &&
+      linearProbe.negativeBoundDecision === 'below-bound' &&
+      linearProbe.positiveControl.detected
+    ) {
       classification = 'strict-ungrounded-eligible';
     } else {
       classification = 'strict-ungrounded-blocked';

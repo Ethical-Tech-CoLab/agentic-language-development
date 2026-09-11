@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-09-11",
+  "status": "D06-frozen; outcome-blind design protocol",
+  "evidenceBoundary": "This protocol defines chronology, information sets, positive controls, and negative-bound decisions. It contains no study outcomes.",
+  "causalLedger": {
+    "experiments": ["E15", "E16"],
+    "freezeSequence": [
+      "finish training and freeze both receiver policies",
+      "derive native-ledger predictions from training-only ledger events",
+      "select the comparator on validation data only",
+      "commit the ordered probe schedule, prediction-function version, native predictions, comparator identity, and comparator predictions to the intervention chain",
+      "checkpoint the commitment before the first held-out outcome",
+      "apply paired held-out interventions with identical receiver observation and pre-intervention policy state",
+      "score the committed predictions against untouched outcomes"
+    ],
+    "h2": {
+      "estimand": "Seed-level mean change in receiver target-action probability under ledger-consistent versus shuffled valid messages on paired held-out cases.",
+      "primaryContrast": "ledger-consistent substitution minus shuffled valid substitution",
+      "independentUnit": "training seed/run",
+      "withinUnitClustering": "probe cases are repeated measures and must not be analyzed as independent seeds",
+      "requiredMatch": [
+        "receiver policy bytes and hash",
+        "receiver private observation",
+        "candidate set and order",
+        "pre-intervention recurrent state",
+        "turn and scenario slot",
+        "message grammar, length, and delivery envelope"
+      ]
+    },
+    "h4": {
+      "estimand": "Seed-level difference in held-out multiclass Brier score between the frozen native-ledger predictor and the validation-selected non-ledger comparator.",
+      "properScore": "multiclass Brier score; lower is better",
+      "selection": "Choose exactly one non-oracle comparator using validation Brier score, lock its identity and fitted parameters, then evaluate once on test cases.",
+      "nativeBoundary": "Only contemporaneous learner-native ledger state may support the native-ledger prediction. Post-run generated summaries and human interpretations are separate descriptive evidence."
+    },
+    "comparators": [
+      {
+        "id": "uniform",
+        "allowed": ["current action-set cardinality"],
+        "forbidden": ["outcomes", "messages", "observations", "policy state", "native ledger"],
+        "role": "chance reference"
+      },
+      {
+        "id": "validation-majority",
+        "allowed": ["validation target-action labels", "current action-set cardinality"],
+        "forbidden": ["test labels", "test outcomes", "native ledger", "private policy state"],
+        "role": "marginal-frequency comparator"
+      },
+      {
+        "id": "transcript-only",
+        "allowed": ["public channel history strictly before the prediction cutoff", "validation labels for fitting"],
+        "forbidden": ["native ledger", "private observations", "private memory", "policy weights", "test outcomes"],
+        "role": "public-history comparator"
+      },
+      {
+        "id": "task-history",
+        "allowed": ["public scenario observations and outcomes strictly before the prediction cutoff", "validation labels for fitting"],
+        "forbidden": ["native ledger", "private learner state", "test outcomes"],
+        "role": "ordinary behavioral-history comparator"
+      },
+      {
+        "id": "policy-state",
+        "allowed": ["frozen receiver policy export", "current permitted receiver observation", "current delivered message", "validation labels for fitting"],
+        "forbidden": ["native ledger", "test outcomes", "post-cutoff state"],
+        "role": "policy-readout comparator"
+      },
+      {
+        "id": "oracle-diagnostic",
+        "allowed": ["target action"],
+        "forbidden": [],
+        "role": "detector-positive diagnostic only; prohibited from selection and confirmatory inference"
+      }
+    ]
+  },
+  "leakage": {
+    "commonRule": "A negative claim requires a pre-registered practical bound, an uncertainty bound with adequate design sensitivity, and a detector-positive fixture evaluated through the same analysis path. Non-significance and point estimates alone never clear leakage.",
+    "E01": {
+      "target": "prohibited delivery to either learner",
+      "allowed": ["Gateway-normalized typed observation", "Gateway-normalized channel artifact", "declared post-outcome learning signal"],
+      "forbidden": [
+        "peer stdout or stderr",
+        "peer exit status and error text",
+        "response latency and scheduling jitter",
+        "payload or envelope size outside the fixed grammar",
+        "peer filesystem, process, network, IPC, cache, environment, or tool state",
+        "writer, signer, anchor, controller, or host state"
+      ],
+      "negativeDecision": "Zero prohibited payloads delivered over the complete pre-registered attack set, with every attempted attack evidence-bound; scope is the tested topology and threat model only.",
+      "positiveControls": "One deterministic fixture per forbidden path must be detectable at the learner boundary before the corresponding negative attack result is eligible."
+    },
+    "E02": {
+      "target": "four-way human semantic target label",
+      "allowed": [
+        "declared numeric sensory payload",
+        "receiver candidate set and declared order",
+        "configured carrier payload"
+      ],
+      "forbidden": [
+        "human-readable labels, captions, filenames, paths, or OCR text",
+        "target answer or semantic identifier",
+        "target-coded object order, reference, timestamp, latency, dimensions, or envelope size",
+        "text tokenizer or text-aligned encoder in a strict ungrounded track"
+      ],
+      "split": "Stratified 75/25 train/test split frozen by the registered analysis seed; at least 200 untouched test rows.",
+      "estimator": "linear softmax probe on frozen features",
+      "baseline": "majority accuracy on the untouched test rows",
+      "negativeDecision": "One-sided 95% Wilson upper confidence bound for held-out accuracy minus held-out majority accuracy is at most 0.10.",
+      "positiveControl": "Append an offline one-hot target feature, rerun the identical learner and split, and require its one-sided 95% lower advantage bound to be at least 0.20.",
+      "diagnosticOnly": "The label-shuffled interval checks calibration but cannot establish absence of leakage."
+    },
+    "E13": {
+      "target": "forbidden carrier side information, not the intended carrier form",
+      "allowed": [
+        "normalized token, glyph, bitmap, stroke, or tone payload within its frozen grammar",
+        "structural carrier features such as ink, strokes, pitch, duration, and reusable form identity"
+      ],
+      "forbidden": [
+        "variable envelope length beyond the frozen grammar",
+        "filenames, MIME variation, captions, paths, timestamps, or latency",
+        "undeclared dimensions, sample rate, compression, or container artifacts",
+        "human-recognizable prior glyph semantics in a strict blank-carrier claim"
+      ],
+      "decisionRule": "Recognizable prior glyphs and explicit forbidden-side-feature probes may block the strict blank-carrier claim. Mutual information between normalized carrier form and referent is intended communication and is reported only as a bandwidth/form-use diagnostic.",
+      "positiveControls": "Inject a known prior glyph and independently encode the target in each tested metadata, timing, envelope, dimension, and container field; each applicable detector must identify its fixture before a negative result is eligible."
+    },
+    "E20": {
+      "target": "four-way referent/task identity beyond the declared binary success/failure context",
+      "allowed": ["one allowlisted display in a fixed post-outcome window", "the declared binary outcome context"],
+      "forbidden": [
+        "referent, target action, task identity, or private observation beyond the declared outcome context",
+        "pre-outcome display delivery",
+        "variable timing, sequence length, envelope size, display combinations, or reply opportunity"
+      ],
+      "estimator": "Per seed, Miller-Madow conditional mutual information between display and referent stratified by binary outcome, minus the mean of 1,000 within-outcome permutations.",
+      "negativeDecision": "With at least 75 eligible seeds and 1,000 windows per seed, the seed-level one-sided 95% Student-t upper bound on mean excess CMI must be below 0.02 bits.",
+      "sensitivity": "Report the percentile seed-bootstrap upper bound, but do not use it as the primary gate.",
+      "positiveControls": "A referent-coded display fixture must fail the bound and exceed its within-outcome permutation null; a timing/envelope detector fixture is required before those side channels can be cleared."
+    }
+  },
+  "operatingCharacteristics": {
+    "runtime": "Homebrew R 4.6.1",
+    "dependencies": "base R only",
+    "script": "scripts/validate-leakage-design.R",
+    "scriptSha256": "0c4aa50eb883670db2afec88c769e4210d9c31138aba38794cb2abc1a92505d5",
+    "receipt": "reports/research/leakage-design-validation.tsv",
+    "receiptSha256": "632f90104c0921378e1911b7683e6aa3a7f8e5d1b1744fe7d242779bf80460a3",
+    "acceptance": {
+      "minimumClearanceProbability": 0.90,
+      "maximumBoundaryTypeI": 0.05,
+      "minimumPositiveControlDetection": 0.90
+    },
+    "E20Assumption": "The E20 calculation is exact for a normally distributed seed-level excess-CMI statistic with SD at most 0.04 bits. A blinded pilot must estimate this SD before registration; a larger upper uncertainty bound invalidates N=75 and requires D07 to increase the seed count before outcomes are unblinded."
+  }
+}

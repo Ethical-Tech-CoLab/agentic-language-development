@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.61 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.62 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -233,7 +233,7 @@ pre-registrations. The following hypotheses define the current direction:
 | H4 | On untouched intervention cases, pre-outcome ledger predictions will improve a pre-registered proper prediction score beyond the strongest eligible transcript-only, task-history, policy-state, random, and majority baseline. | The ledger fails to exceed the strongest eligible non-ledger baseline by the registered practical threshold. |
 | H5 | A blank bounded carrier will support repeated forms, but will converge more slowly than a fixed symbol inventory. | No stable forms emerge, or blank-carrier convergence is not slower. |
 | H6a | The declared six-display affect condition will reduce median turns to successful repair relative to no affect. | Repair time is equal or longer under affect. |
-| H6b | Under fixed windows and cardinality, permutation-calibrated excess conditional mutual information between affect and referent will remain below the pre-registered 0.02-bit practical-leakage bound. | The seed-bootstrap upper-bound test cannot rule out excess leakage of 0.02 bits or more. |
+| H6b | Under fixed windows and cardinality, permutation-calibrated excess conditional mutual information between affect and referent will remain below the pre-registered 0.02-bit practical-leakage bound. | The seed-level one-sided Student-t upper-bound test cannot rule out excess leakage of 0.02 bits or more. |
 | H7 | Fixed dyads will show greater partner-replacement degradation than learners trained with pre-registered partner variation. | Degradation for fixed dyads is no greater than degradation after partner-varied training. |
 | H8 | Partially conflicting utility will reduce message informativeness and increase strategic ambiguity relative to aligned utility. | Informativeness and ambiguity do not change in the predicted direction. |
 
@@ -873,6 +873,18 @@ state the smallest effect of interest, the equivalence margin, and power to rule
 that margin. The worked E03 design in Appendix D uses a +/-0.05 success-rate margin;
 H6b uses a 0.02-bit conditional-mutual-information bound.
 
+The outcome-blind causal-ledger and leakage rules are frozen in
+[`protocols/causal-ledger-and-leakage.v1.json`](protocols/causal-ledger-and-leakage.v1.json).
+For E02, at least 200 untouched test rows are required and the one-sided 95%
+Wilson upper bound on linear-probe accuracy advantage over the held-out majority
+baseline must be at most 0.10. The identical probe and split must detect an injected
+one-hot target feature with a lower advantage bound of at least 0.20. For E20, 75
+eligible seeds and 1,000 windows per seed are required before a decision; the primary
+bound is seed-level Student-t and the percentile bootstrap is sensitivity-only.
+Allowed and forbidden information sets and detector-positive controls are explicit
+for E01, E02, E13, and E20. Intended normalized carrier form is communication, not a
+side channel.
+
 Run exclusions are limited to pre-specified integrity or protocol failures. Each
 condition receives a fixed ordered list of primary and reserve seeds before outcomes
 are observed. An invalid primary seed may be replaced only by the next reserve seed;
@@ -1056,7 +1068,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.61 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.62 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.

@@ -11,14 +11,17 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createProductionRuntime, type NurseryRuntimeImpl } from '../src/index.js';
 
 const RUN_ID = 'semantic-leakage-evidence';
-const FROZEN_FEATURES = Array.from({ length: 64 }, (_, index) => ({
+const FROZEN_FEATURES = Array.from({ length: 800 }, (_, index) => ({
   label: `english-class-${String(index % 4)}`,
   features: [0, 0, 0, 0],
 }));
 const PRE_REGISTRATION = {
   seed: 'semantic-leakage-evidence-v1',
   confidence: 0.95,
-  permutations: 40,
+  permutations: 20,
+  maximumAccuracyAdvantage: 0.1,
+  minimumTestRows: 200,
+  positiveControlMinimumAdvantage: 0.2,
 } as const;
 
 describe('semantic-leakage evidence integration (ALD-057)', () => {
@@ -101,13 +104,13 @@ describe('semantic-leakage evidence integration (ALD-057)', () => {
         expect.objectContaining({
           path: 'analysis/semantic-leakage/baby-a.json',
           kind: 'semantic-leakage-battery',
-          analysisVersion: 'semantic-leakage-v1',
+          analysisVersion: 'semantic-leakage-v2',
           boundBy: expect.objectContaining({ stream: 'intervention' }),
         }),
         expect.objectContaining({
           path: 'analysis/semantic-leakage/baby-b.json',
           kind: 'semantic-leakage-battery',
-          analysisVersion: 'semantic-leakage-v1',
+          analysisVersion: 'semantic-leakage-v2',
           boundBy: expect.objectContaining({ stream: 'intervention' }),
         }),
       ]),
@@ -119,7 +122,7 @@ describe('semantic-leakage evidence integration (ALD-057)', () => {
       ),
     ) as Record<string, unknown>;
     expect(report).toMatchObject({
-      analysisVersion: 'semantic-leakage-v1',
+      analysisVersion: 'semantic-leakage-v2',
       track: 'scratch-rl',
       classification: 'strict-ungrounded-eligible',
       claimEligible: true,

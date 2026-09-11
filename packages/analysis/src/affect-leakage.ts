@@ -16,8 +16,8 @@
  * > Miller-Madow bias-corrected discrete estimator and within-outcome
  * > permutation null. For each seed, subtract the mean of 1,000 within-outcome
  * > permutations from the observed Miller-Madow estimate; test whether the
- * > seed-bootstrap one-sided 95% upper bound on this excess CMI is below 0.02
- * > bits.
+ * > seed-level one-sided 95% Student-t upper bound on this excess CMI is below
+ * > 0.02 bits. Retain the percentile seed bootstrap as sensitivity analysis.
  *
  * {@link evaluateAffectLeakage} implements exactly that and returns a
  * canonical object ready to be written as a bundle attachment of kind
@@ -50,9 +50,10 @@ import {
   stratifiedJointCounts,
   type StratifiedObservation,
 } from './information.js';
+import { studentTQuantile } from './special.js';
 
 /** Version stamped on the attachment; bump on any estimator change. */
-export const AFFECT_LEAKAGE_ANALYSIS_VERSION = 'affect-leakage-v1';
+export const AFFECT_LEAKAGE_ANALYSIS_VERSION = 'affect-leakage-v2';
 
 /** The estimator E20 registers, named in the output for reproducibility. */
 export const AFFECT_LEAKAGE_ESTIMATOR =
@@ -133,6 +134,7 @@ export interface AffectLeakageSeedResult {
 export type AffectLeakageDecision =
   | 'below-bound'
   | 'not-below-bound'
+  | 'insufficient-seeds'
   | 'insufficient-windows';
 
 export interface AffectLeakageResult {
@@ -155,6 +157,12 @@ export interface AffectLeakageResult {
   meanExcessCmiBits: number;
   /** One-sided `1 − α` upper bound on the mean excess, in bits. */
   excessCmiUpperBoundBits: number;
+  /** Percentile seed-bootstrap sensitivity estimate; never the primary gate. */
+  bootstrapSensitivity: {
+    estimate: number;
+    upperBoundBits: number;
+    iterations: number;
+  };
   decision: AffectLeakageDecision;
   /**
    * SPEC §9.3 rule 7: set whenever the pre-registered rule did not clear the
@@ -332,6 +340,8 @@ export function evaluateAffectLeakage(
 
   let meanExcess = 0;
   let upperBound = 0;
+  let bootstrapEstimate = 0;
+  let bootstrapUpperBound = 0;
   let decision: AffectLeakageDecision = 'insufficient-windows';
   if (excesses.length > 0) {
     const bootstrap = seedBootstrapUpperBound(excesses, {
@@ -339,9 +349,29 @@ export function evaluateAffectLeakage(
       iterations: bootstrapIterations,
       level: 1 - alpha,
     });
-    meanExcess = round(bootstrap.estimate);
-    upperBound = round(bootstrap.upperBound);
-    decision = upperBound < bound ? 'below-bound' : 'not-below-bound';
+    bootstrapEstimate = round(bootstrap.estimate);
+    bootstrapUpperBound = round(bootstrap.upperBound);
+    meanExcess = bootstrapEstimate;
+    if (excesses.length >= 2) {
+      const squared = excesses.reduce(
+        (sum, value) => sum + (value - meanExcess) ** 2,
+        0,
+      );
+      const standardDeviation = Math.sqrt(squared / (excesses.length - 1));
+      upperBound = round(
+        meanExcess +
+          studentTQuantile(1 - alpha, excesses.length - 1) *
+            (standardDeviation / Math.sqrt(excesses.length)),
+      );
+    } else {
+      upperBound = meanExcess;
+    }
+    decision =
+      eligible.length < E20_MINIMUM_SEEDS
+        ? 'insufficient-seeds'
+        : upperBound < bound
+          ? 'below-bound'
+          : 'not-below-bound';
   }
 
   return {
@@ -362,6 +392,11 @@ export function evaluateAffectLeakage(
     perSeed,
     meanExcessCmiBits: meanExcess,
     excessCmiUpperBoundBits: upperBound,
+    bootstrapSensitivity: {
+      estimate: bootstrapEstimate,
+      upperBoundBits: bootstrapUpperBound,
+      iterations: bootstrapIterations,
+    },
     decision,
     suspectedLeakage: decision !== 'below-bound',
     seedsAboveBound: perSeed.filter((result) => result.excessAboveBound).length,

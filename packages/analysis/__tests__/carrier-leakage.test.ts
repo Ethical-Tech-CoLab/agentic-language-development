@@ -32,9 +32,8 @@ function baseInput(
     observations,
     probePlan: {
       recognizableGlyph: { enabled: true, maximumRecognizableRate: 0 },
-      unintendedFeature: {
+      intendedCarrierFeatureUse: {
         enabled: true,
-        maximumMutualInformationBits: 0.01,
         minimumObservations: 4,
       },
     },
@@ -60,14 +59,14 @@ describe('alternate-carrier leakage evaluator (ALD-032)', () => {
     expect(result.reuseRate).toBe(0.5);
     expect(result.markMetrics).toHaveLength(2);
     expect(result.recognizableGlyphProbe.decision).toBe('pass');
-    expect(result.unintendedFeatureProbe).toMatchObject({
-      decision: 'pass',
-      metric: 0,
+    expect(result.intendedCarrierFeatureUseDiagnostic).toMatchObject({
+      status: 'estimated',
+      mutualInformationBits: 0,
     });
     expect(result.claimBoundary.ungroundedLanguageClaim).toBe('eligible');
   });
 
-  it('fails planted recognizable/form-feature leakage, blocks only the claim, and preserves artifacts', () => {
+  it('blocks recognizable prior glyphs while reporting intended carrier feature use without treating it as leakage', () => {
     const narrow = {
       strokes: [{ startX: 0, startY: 0, endX: 15, endY: 0, width: 1 as const }],
     };
@@ -95,7 +94,10 @@ describe('alternate-carrier leakage evaluator (ALD-032)', () => {
 
     expect(JSON.stringify(observations)).toBe(before);
     expect(result.recognizableGlyphProbe.decision).toBe('fail');
-    expect(result.unintendedFeatureProbe.decision).toBe('fail');
+    expect(result.intendedCarrierFeatureUseDiagnostic).toMatchObject({
+      status: 'estimated',
+      mutualInformationBits: 0.918295834054,
+    });
     expect(result.decision).toBe('fail');
     expect(result.claimBoundary).toEqual({
       ungroundedLanguageClaim: 'blocked',
@@ -104,14 +106,16 @@ describe('alternate-carrier leakage evaluator (ALD-032)', () => {
     });
   });
 
-  it('reports inconclusive when a registered probe lacks enough evidence', () => {
+  it('reports an under-sized form-use diagnostic without converting it into a leakage failure', () => {
     const result = evaluateCarrierLeakage(
       baseInput([observation('fixed-glyph', glyphA, 0)]),
     );
 
-    expect(result.unintendedFeatureProbe.decision).toBe('inconclusive');
-    expect(result.decision).toBe('inconclusive');
-    expect(result.claimBoundary.ungroundedLanguageClaim).toBe('blocked');
+    expect(result.intendedCarrierFeatureUseDiagnostic.status).toBe(
+      'insufficient-observations',
+    );
+    expect(result.decision).toBe('pass');
+    expect(result.claimBoundary.ungroundedLanguageClaim).toBe('eligible');
   });
 
   it('extracts immutable structural features for all five carrier conditions', () => {
@@ -135,7 +139,7 @@ describe('alternate-carrier leakage evaluator (ALD-032)', () => {
       ),
     ];
     const input = baseInput(observations);
-    input.probePlan.unintendedFeature.minimumObservations = 5;
+    input.probePlan.intendedCarrierFeatureUse.minimumObservations = 5;
     const result = evaluateCarrierLeakage(input);
 
     expect(result.markMetrics.map((metric) => metric.carrier).sort()).toEqual([

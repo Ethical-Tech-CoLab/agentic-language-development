@@ -16,7 +16,7 @@ import { hashCarrierMark } from '@ald/hashing';
 
 import { AnalysisError } from './errors.js';
 
-export const CARRIER_LEAKAGE_ANALYSIS_VERSION = 'carrier-leakage-v1';
+export const CARRIER_LEAKAGE_ANALYSIS_VERSION = 'carrier-leakage-v2';
 
 export type CarrierLeakageProbeDecision = 'pass' | 'fail' | 'inconclusive';
 export type RecognizableGlyphOutcome =
@@ -46,7 +46,7 @@ export interface CarrierMarkLeakageMetric {
   markHash: Sha256Hash;
   observations: number;
   referentTypeCodes: number[];
-  unintendedFeatureSignature: string;
+  structuralFeatureSignature: string;
   recognizableGlyphOutcome: RecognizableGlyphOutcome | 'not-applicable';
 }
 
@@ -59,6 +59,14 @@ export interface CarrierLeakageProbeResult {
   reason: string;
 }
 
+export interface CarrierFeatureUseDiagnostic {
+  status: 'estimated' | 'disabled' | 'insufficient-observations';
+  observations: number;
+  assessedMarks: number;
+  mutualInformationBits: number;
+  reason: string;
+}
+
 export interface CarrierLeakageResult {
   analysisVersion: typeof CARRIER_LEAKAGE_ANALYSIS_VERSION;
   observations: number;
@@ -66,7 +74,7 @@ export interface CarrierLeakageResult {
   reuseRate: number;
   markMetrics: CarrierMarkLeakageMetric[];
   recognizableGlyphProbe: CarrierLeakageProbeResult;
-  unintendedFeatureProbe: CarrierLeakageProbeResult;
+  intendedCarrierFeatureUseDiagnostic: CarrierFeatureUseDiagnostic;
   decision: CarrierLeakageProbeDecision;
   artifactHashesVerified: true;
   claimBoundary: {
@@ -178,20 +186,11 @@ export function evaluateCarrierLeakage(
     input.probePlan.recognizableGlyph.maximumRecognizableRate,
     'recognizableGlyph.maximumRecognizableRate',
   );
-  const featurePlan = input.probePlan.unintendedFeature;
-  if (
-    !Number.isFinite(featurePlan.maximumMutualInformationBits) ||
-    featurePlan.maximumMutualInformationBits < 0
-  ) {
-    throw new AnalysisError(
-      'domain',
-      'unintendedFeature.maximumMutualInformationBits must be non-negative',
-    );
-  }
+  const featurePlan = input.probePlan.intendedCarrierFeatureUse;
   if (!Number.isInteger(featurePlan.minimumObservations) || featurePlan.minimumObservations < 1) {
     throw new AnalysisError(
       'domain',
-      'unintendedFeature.minimumObservations must be a positive integer',
+      'intendedCarrierFeatureUse.minimumObservations must be a positive integer',
     );
   }
 
@@ -222,7 +221,7 @@ export function evaluateCarrierLeakage(
         markHash: observation.markHash,
         observations: 1,
         referentTypeCodes: [observation.referentTypeCode],
-        unintendedFeatureSignature: feature,
+        structuralFeatureSignature: feature,
         recognizableGlyphOutcome:
           observation.carrier === 'fixed-glyph'
             ? (input.recognizableGlyphOutcomes[observation.markHash] ?? 'unscored')
@@ -271,32 +270,25 @@ export function evaluateCarrierLeakage(
   };
 
   const featureMi = mutualInformationBits(featureObservations);
-  const featureDecision: CarrierLeakageProbeDecision =
-    !featurePlan.enabled || input.observations.length < featurePlan.minimumObservations
-      ? 'inconclusive'
-      : featureMi > featurePlan.maximumMutualInformationBits
-        ? 'fail'
-        : 'pass';
-  const unintendedFeatureProbe: CarrierLeakageProbeResult = {
-    decision: featureDecision,
+  const featureStatus: CarrierFeatureUseDiagnostic['status'] = !featurePlan.enabled
+    ? 'disabled'
+    : input.observations.length < featurePlan.minimumObservations
+      ? 'insufficient-observations'
+      : 'estimated';
+  const intendedCarrierFeatureUseDiagnostic: CarrierFeatureUseDiagnostic = {
+    status: featureStatus,
     observations: input.observations.length,
     assessedMarks: markMetrics.length,
-    metric: featureMi,
-    bound: featurePlan.maximumMutualInformationBits,
+    mutualInformationBits: featureMi,
     reason:
-      featureDecision === 'inconclusive'
-        ? 'probe disabled or fewer than the pre-registered minimum observations were supplied'
-        : featureDecision === 'fail'
-          ? 'feature/referent mutual information exceeds the pre-registered bound'
-          : 'feature/referent mutual information is within the pre-registered bound',
+      featureStatus === 'disabled'
+        ? 'diagnostic disabled by the pre-registered plan'
+        : featureStatus === 'insufficient-observations'
+          ? 'fewer than the pre-registered minimum observations were supplied'
+          : 'reports intended carrier form/referent association; it is not a side-channel test',
   };
 
-  const decisions = [glyphDecision, featureDecision];
-  const decision: CarrierLeakageProbeDecision = decisions.includes('fail')
-    ? 'fail'
-    : decisions.includes('inconclusive')
-      ? 'inconclusive'
-      : 'pass';
+  const decision = glyphDecision;
   const eligible = decision === 'pass';
   return {
     analysisVersion: CARRIER_LEAKAGE_ANALYSIS_VERSION,
@@ -305,7 +297,7 @@ export function evaluateCarrierLeakage(
     reuseRate: round(1 - markMetrics.length / input.observations.length),
     markMetrics,
     recognizableGlyphProbe,
-    unintendedFeatureProbe,
+    intendedCarrierFeatureUseDiagnostic,
     decision,
     artifactHashesVerified: true,
     claimBoundary: {

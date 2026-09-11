@@ -9,7 +9,10 @@ design note freeze the numeric compositional split, leak checks, matched budgets
 causal-versus-descriptive interpretation boundaries. The statistical-validation
 receipt is independently generated with base R and covers numerical reference values,
 coverage, boundary error, clustering, complete E03 power, global-Holm sensitivity,
-and invalid-run behavior.
+and invalid-run behavior. The causal-ledger/leakage protocol freezes prospective
+prediction chronology, comparator information sets, allowed/forbidden fields,
+detector-positive controls, and powered E02/E20 negative bounds; its base-R receipt
+contains outcome-blind operating characteristics rather than experiment results.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

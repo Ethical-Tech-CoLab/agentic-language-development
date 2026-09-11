@@ -1,0 +1,7 @@
+experiment	case	metric	value	n	assumption
+E02	chance-clearance	probability-clear-bound	0.915718827342391	200	true accuracy 0.25
+E02	margin-boundary-type-i	probability-clear-bound	0.0426162740447329	200	true accuracy 0.35
+E02	positive-control-detection	probability-detect	1	200	deterministic injected target-label feature; true accuracy 1
+E20	zero-excess-clearance	probability-clear-bound	0.995918272171127	75	normal seed excess CMI; mean 0 bits; SD 0.04 bits
+E20	margin-boundary-type-i	probability-clear-bound	0.05	75	normal seed excess CMI; mean 0.02 bits; SD 0.04 bits
+E20	positive-control-detection	probability-not-clear	0.999999998541466	75	normal seed excess CMI; mean 0.04 bits; SD 0.04 bits

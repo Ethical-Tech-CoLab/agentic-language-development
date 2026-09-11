@@ -771,12 +771,15 @@ but can leak referent information unless strictly constrained.
       after stratifying by binary success/failure outcome, using a Miller-Madow
       bias-corrected discrete estimator and within-outcome permutation null.
 - [ ] For each seed, subtract the mean of 1,000 within-outcome permutations from the
-      observed Miller-Madow estimate; test whether the seed-bootstrap one-sided 95%
-      upper bound on this excess CMI is below 0.02 bits.
+      observed Miller-Madow estimate; test whether the seed-level Student-t one-sided
+      95% upper bound on this excess CMI is below 0.02 bits. Report the percentile
+      seed-bootstrap upper bound as sensitivity analysis only.
 - [ ] Before registration, simulate the complete estimator at the registered
       windows-per-seed count and require at least 90% probability that the null-case
       upper bound falls below 0.02 bits; otherwise increase windows or seeds without
       widening the bound.
+- [ ] Use a blinded pilot to verify that seed-level excess-CMI standard deviation is
+      at most 0.04 bits; otherwise increase the seed count before unblinding outcomes.
 - [ ] Red-team the affect channel as a covert alphabet.
 
 ### Results

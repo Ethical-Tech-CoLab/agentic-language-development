@@ -44,9 +44,8 @@ describe('carrier leakage evidence integration (ALD-032)', () => {
         evaluationTurns: 1,
         carrierLeakageProbePlan: {
           recognizableGlyph: { enabled: true, maximumRecognizableRate: 0 },
-          unintendedFeature: {
+          intendedCarrierFeatureUse: {
             enabled: true,
-            maximumMutualInformationBits: 0.01,
             minimumObservations: 4,
           },
         },
@@ -66,9 +65,8 @@ describe('carrier leakage evidence integration (ALD-032)', () => {
       ],
       probePlan: {
         recognizableGlyph: { enabled: true, maximumRecognizableRate: 0 },
-        unintendedFeature: {
+        intendedCarrierFeatureUse: {
           enabled: true,
-          maximumMutualInformationBits: 0.01,
           minimumObservations: 4,
         },
       },
@@ -85,9 +83,9 @@ describe('carrier leakage evidence integration (ALD-032)', () => {
           ...input,
           probePlan: {
             ...input.probePlan,
-            unintendedFeature: {
-              ...input.probePlan.unintendedFeature,
-              maximumMutualInformationBits: 0.02,
+            intendedCarrierFeatureUse: {
+              ...input.probePlan.intendedCarrierFeatureUse,
+              minimumObservations: 5,
             },
           },
         },
@@ -120,7 +118,7 @@ describe('carrier leakage evidence integration (ALD-032)', () => {
       expect.objectContaining({
         path: 'analysis/carrier-leakage/report.json',
         kind: 'carrier-leakage',
-        analysisVersion: 'carrier-leakage-v1',
+        analysisVersion: 'carrier-leakage-v2',
         boundBy: expect.objectContaining({ stream: 'intervention' }),
       }),
     ]);
@@ -129,7 +127,7 @@ describe('carrier leakage evidence integration (ALD-032)', () => {
       await readFile(join(bundleDir, 'analysis', 'carrier-leakage', 'report.json'), 'utf8'),
     ) as Record<string, unknown>;
     expect(report).toMatchObject({
-      analysisVersion: 'carrier-leakage-v1',
+      analysisVersion: 'carrier-leakage-v2',
       observations: 4,
       uniqueMarks: 2,
       decision: 'fail',
