@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.50 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.51 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1019,7 +1019,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.50 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.51 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.

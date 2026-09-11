@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "experimentStatus": {
+    "E13": "not-started"
+  },
+  "candidate": {
+    "commit": "886dd53eddc5b4b42f89305ffd0e778f5a348c4a",
+    "tree": "63def594ee288b8b0b62dc25f34c5946c943c084",
+    "version": "0.1.50",
+    "detachedWorktree": "/tmp/ald-v08-exact-886dd53",
+    "cleanBeforeAndAfter": true
+  },
+  "mechanism": {
+    "version": "generative-carrier-learning-v1",
+    "carriers": [
+      "generative-bitmap",
+      "generative-canvas",
+      "generative-tone"
+    ],
+    "bankCapacity": 8,
+    "capacityInvariant": "fixed-slot-count-before-and-after-acquisition",
+    "acquisition": "exact-gateway-delivered-artifact-staged-at-receive-and-committed-at-training-update",
+    "modification": {
+      "generative-bitmap": "one-deterministically-selected-bit-flipped",
+      "generative-canvas": "one-deterministically-selected-stroke-start-x-moved-within-grid",
+      "generative-tone": "one-deterministically-selected-tone-pitch-moved-to-a-different-bin"
+    },
+    "chronologyFields": [
+      "origin",
+      "introducedTurn",
+      "parentMarkHash"
+    ],
+    "evaluationMutation": "staged-observations-excluded-from-export-and-never-committed-without-updatePolicy",
+    "checkpointVersions": {
+      "tabularScratch": 3,
+      "recurrentScratch": 2,
+      "carrierState": 1
+    },
+    "backwardPolicyLoading": true
+  },
+  "exactCommands": [
+    {
+      "command": "PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm install --frozen-lockfile",
+      "exitCode": 0,
+      "resolvedPackages": 218
+    },
+    {
+      "command": "PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run check",
+      "exitCode": 0,
+      "testFiles": 139,
+      "tests": 1760,
+      "rustTests": 2,
+      "rustClippyWarnings": 0,
+      "secretScanFiles": 611,
+      "dependencyAudit": "no-known-vulnerabilities"
+    },
+    {
+      "command": "PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run qualify:generative-carriers --out <ignored-report> --db <ignored-sqlite> --bundles <ignored-bundle-root>",
+      "exitCode": 0,
+      "carrierRuns": 5,
+      "gatewayAcceptedTurns": 260,
+      "productionVerifierPasses": 5
+    },
+    {
+      "command": "CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml; ald-integrity-auditor <each-run-bundle>",
+      "exitCode": 0,
+      "bundleCount": 5,
+      "passCount": 5,
+      "eventCountIncludingInterventions": 1828,
+      "checkpointCount": 171
+    }
+  ],
+  "productionQualification": {
+    "deploymentMode": "prototype",
+    "anchorPolicy": "skip-with-recorded-deviation",
+    "publicChainTransaction": false,
+    "trainingTurnsPerCarrier": 40,
+    "evaluationTurnsPerCarrier": 12,
+    "gatewayAcceptedTurns": 260,
+    "repeatedDeliveredArtifacts": 186,
+    "allFiveCarriersExecuted": true,
+    "allProductionBundlesVerified": true,
+    "allRustAuditsPassed": true,
+    "allEvaluationPoliciesFrozen": true,
+    "generativeInventoriesInitiallyDisjoint": true,
+    "generativeFinalBankPerRole": {
+      "acquired": 4,
+      "modified": 4
+    },
+    "laterEmissionsIncludedAcquiredAndModifiedFormsForEveryGenerativeRole": true,
+    "capacityAccounting": {
+      "effectiveMessageBitsAtEightForms": 3,
+      "bitmapPhysicalBits": 256,
+      "canvasPhysicalBitsAtEightStrokes": 140.679707343714,
+      "tonePhysicalBits": 40.045803689612,
+      "physicalAndEffectiveCapacityReportedSeparately": true
+    }
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-v08-886dd53-exact",
+    "gitTracked": false,
+    "fileCount": 15700,
+    "bytes": 27910867,
+    "relativePathContentManifestSha256": "46c57c9ce1f138e3f00d64e1d061b62d944442f6d139611051c763d45906d53a",
+    "qualificationReportSha256": "4a50a295e929f4ab398da2589186cacc665237daf44759f3615fbc65be78378b",
+    "checkLogSha256": "5b7bd68129ee8ad1ad54eda2a3261b72a856d562d5fa271d333cc2c624b29ec6",
+    "qualificationLogSha256": "ead0c699c951b995acc4a85e44ffb953f0049aa75c3b2a0ae36b426b74b6f996",
+    "rustAuditorLogSha256": "9d513af22c4591d4c6033041b3bcf9c2f631a5a34dc27b522fc9c9fd2057ceca",
+    "evidenceDatabaseSha256": "d2640703848c86aa30c56b9eee8317b99ef178cee86b70c54dbb1474c81c0eb0"
+  },
+  "failureHistory": [
+    {
+      "stage": "dirty-tree-runner-bootstrap",
+      "result": "failed",
+      "cause": "the root qualification runner imported the Gateway without declaring the root workspace dependency",
+      "resolution": "declared @ald/gateway as an exact workspace dependency and refreshed the frozen lockfile",
+      "countedAsPass": false
+    },
+    {
+      "stage": "dirty-tree-runner-invocation",
+      "result": "failed",
+      "cause": "an extra argument terminator was forwarded to node and parseArgs rejected the following options as positional arguments",
+      "resolution": "invoked the package script with its documented direct option form",
+      "countedAsPass": false
+    },
+    {
+      "stage": "dirty-tree-consolidated-check",
+      "result": "failed",
+      "cause": "new test surfaces made the generated requirement-conformance matrix stale",
+      "resolution": "regenerated both matrix representations",
+      "countedAsPass": false
+    },
+    {
+      "stage": "dirty-tree-consolidated-check",
+      "result": "failed",
+      "cause": "the commit-scoped version bump required synchronized README and manuscript snapshots",
+      "resolution": "updated both canonical status surfaces",
+      "countedAsPass": false
+    },
+    {
+      "stage": "dirty-tree-consolidated-check",
+      "result": "failed",
+      "testsPassed": 1759,
+      "testsFailed": 1,
+      "cause": "the required manuscript snapshot change invalidated the generated research-book source hash",
+      "resolution": "rebuilt the 47-page book from the updated manuscript",
+      "countedAsPass": false
+    }
+  ],
+  "limitations": [
+    "This is deterministic software qualification, not E13 data.",
+    "Acquisition recognizes exact carrier-qualified artifact hashes; perceptual similarity and held-out transformation generalization are not implemented or established.",
+    "The local modification rule is deterministic and bounded but is not itself learned.",
+    "Later emissions demonstrate action availability and reuse, not useful convention formation or a carrier effect.",
+    "Prototype runs were explicitly unanchored and have an invalid research disposition.",
+    "No authentic external registration, governance approval, public-chain receipt, independent human restore, or replication occurred."
+  ]
+}

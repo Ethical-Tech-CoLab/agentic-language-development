@@ -2,13 +2,13 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest qualified component candidate: `6871f8d` / v0.1.48
+Latest qualified component candidate: `886dd53` / v0.1.50
 Report status: in progress  
 
 ## Executive Summary
 
 - The project has a substantial and freshly exercised software foundation. The exact
-  v0.1.48 candidate passed 1,750 tests in 137 files, the secret scan, the
+  v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
   detached worktree after a frozen Homebrew pnpm install.
 - An independent Rust implementation agrees with the production verifier on a fresh
@@ -19,14 +19,21 @@ Report status: in progress
   4,049-parameter GRU models, updated both roles, and retained constant exported
   policy hashes throughout evaluation. The independent Rust auditor accepted all
   four bundles. This is software evidence, not a public-chain or research result.
+- The exact v0.1.50 carrier candidate executed all five E13 carrier conditions through
+  the production runtime. The three generative conditions began with disjoint private
+  banks, acquired and deterministically modified partner forms without expanding
+  model capacity, later emitted both origins, froze during evaluation, and passed
+  both production and separate Rust verification. This is mechanism qualification,
+  not E13 evidence.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
 - The current host can support software validation and bounded CPU pilots, but no
   accelerator or local model weights were found in the recorded scan. The
-  generative-carrier, confirmatory, and replication program still requires further
-  implementation, measured pilot costs, and authentic external approvals.
+  perceptual carrier generalization, confirmatory, or replication program is yet
+  qualified; those paths require further implementation, measured pilot costs, and
+  authentic external approvals.
 - The defensible publication position today is a protocol and software-readiness
   draft, not a completed empirical paper. This report will be extended only from
   verified artifacts; null, failed, invalid, and blocked outcomes remain visible.
@@ -41,7 +48,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass at v0.1.48; the exact v0.1.48 recurrent/full Mode R topology and independent bundle audit pass |
+| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass at v0.1.50; exact recurrent, full Mode R, generative-carrier, and independent bundle audits pass at their recorded candidates |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -112,6 +119,7 @@ their cause, and followed by clean passing executions.
 | Workflow syntax | Pass | `actionlint` 1.7.12 on the consolidated workflow |
 | Consolidated check | Pass | 135 test files, 1,739 tests, source/contract/boundary/readiness/status/API checks, build, secret scan, and dependency audit |
 | Recurrent candidate check | Pass | Exact v0.1.48 detached candidate: 137 test files, 1,750 tests, Rust tests/clippy, every consolidated gate, secret scan, and dependency audit |
+| Generative-carrier candidate check | Pass | Exact v0.1.50 detached candidate: 139 test files, 1,760 tests, Rust tests/clippy, every consolidated gate, secret scan, dependency audit, five production carrier runs, and five separate Rust bundle audits |
 | Dependency audit | Pass | No known advisories at the configured high threshold; does not prove absence of vulnerabilities |
 | Mode R smoke | Pass | Two distinct containers, denied direct routes/filesystem/clipboard/process/worker access, normalized timing/size/error checks, 12 attack categories, kill-survival, and local updates for three reference tracks |
 
@@ -127,10 +135,10 @@ raw logs and tracked-file manifest. The detached worktree remained clean after t
 run. Because this report and receipt are later documentation, they are not part of
 the candidate that was exercised.
 
-These results establish bounded software behavior on one host and candidate. The
-later V07 receipt qualifies the recurrent scientific learners, but frozen-model
-reattestation, public-chain execution, and a frozen same-commit candidate containing
-every later research mechanism remain open.
+These results establish bounded software behavior on one host and candidate. Later
+V07 and V08 receipts qualify the recurrent learners and generative-carrier learning
+mechanism, but frozen-model reattestation, public-chain execution, and a frozen
+same-commit candidate containing every later research mechanism remain open.
 
 ## 6. Independent integrity challenge
 
@@ -232,10 +240,56 @@ communication, convergence, causal listening, or equality of optimization diffic
 or compute. The locked model and limits are documented in the
 [recurrent baseline qualification](../../docs/recurrent-baseline-qualification.md).
 
-## 9. Critical gaps before empirical claims
+## 9. Generative-carrier learning qualification
 
-1. Generative carriers begin from fixed private inventories and do not yet establish
-   partner-form acquisition, modification, perceptual generalization, or invention.
+The [generative-carrier receipt](generative-carrier-learning-receipt.json)
+binds V08 to exact commit
+`886dd53eddc5b4b42f89305ffd0e778f5a348c4a` / v0.1.50. The mechanism
+retains a fixed learner action dimension while allowing training updates to
+replace bank slots with an exact Gateway-delivered partner artifact and a
+deterministic, parent-linked local variant. Novel observations are staged by
+`receive` but enter checkpointed state only through `updatePolicy`, so retry
+and evaluation observations do not mutate the exported policy. Scratch-policy
+checkpoint versions now serialize and strictly validate the carrier, ordered
+slots, complete artifacts, hashes, origins, introduction turns, parent links,
+and next replacement position while accepting prior policy versions.
+
+The exact candidate passed all 1,760 tests in 139 files and every consolidated
+gate from a clean detached worktree after a frozen install. Five production
+Prototype Mode runs—fixed token, fixed glyph, bitmap, canvas, and tone—each
+completed 40 training and 12 evaluation turns. All 260 turns were accepted by
+the selected real Gateway module. In each of the three generative conditions,
+the roles' initial eight-form banks had zero hashes in common; both final banks
+contained four acquired and four modified forms, and both roles later emitted
+forms of both origins. The runs contained 186 repeated delivered artifacts and
+held their exported policy hashes constant throughout evaluation.
+
+All five production verifier reports had exit code zero. The separate Rust
+auditor also accepted all five bundles, independently checking 1,828 events
+including interventions and 171 checkpoints with no reported issue. The
+27,910,867-byte raw evidence tree is ignored by Git and content-bound by a
+15,700-file manifest in the receipt.
+
+Capacity accounting reports the physical grammar separately from the fixed
+learner bank. At eight selectable forms, effective capacity is 3 bits per
+one-mark message in every condition. The bitmap grammar permits 256 physical
+bits; the eight-stroke canvas grammar has about 140.680 bits; and the up-to-eight
+tone grammar has about 40.046 bits. Those larger figures are not reported as
+model capacity.
+
+This qualification closes the executable acquisition, exact imitation,
+bounded modification, chronology, recovery, and capacity-accounting gap. It
+does not establish perceptual generalization, learned transformation rules,
+useful convention formation, or a carrier effect. The runs are unregistered,
+unanchored software qualifications with invalid research dispositions, and E13
+remains not started. The mechanism and its boundary are documented in
+[generative carrier learning](../../docs/generative-carrier-learning.md).
+
+## 10. Critical gaps before empirical claims
+
+1. Generative learners now acquire exact partner artifacts and expose bounded local
+   variants, but perceptual similarity, learned transformation, held-out form
+   generalization, and useful sign invention remain unimplemented or untested.
 2. The existing E03 sufficient-statistic simulator does not yet validate the complete
    gate under bounded episode generation, multiplicity, dependence, tails, invalid
    runs, and reserve use.
@@ -252,7 +306,7 @@ or compute. The locked model and limits are documented in the
    registration, governance, independent restore, and independent replication
    records do not exist.
 
-## 10. Current scientific and publication conclusion
+## 11. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
