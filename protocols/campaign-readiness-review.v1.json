@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-11",
+  "reviewClass": "internal-adversarial-methods-review",
+  "independentHumanReview": false,
+  "decision": "not-registration-ready",
+  "evidenceBoundary": "This is a fail-closed internal review. It is not governance approval, external registration, independent review, or permission to collect confirmatory outcomes.",
+  "blockingFindings": [
+    {"id":"B01","severity":"critical","owner":"O01","finding":"No authentic governance decision, responsible-role record, retention approval, or human-coding determination exists.","closure":"Dated authentic approval covering the synthetic study and any human review."},
+    {"id":"B02","severity":"critical","owner":"O02","finding":"No authorized funded Sepolia signer and independent RPC receipt exists, so E00 cannot execute as specified.","closure":"Fort-mediated signer/RPC provisioning and independently confirmed privacy-minimized transaction."},
+    {"id":"B03","severity":"major","owner":"O03","finding":"No mainnet spending, custody, or finality authority exists for public studies.","closure":"Explicit bounded authorization and managed or hardware-backed signer evidence before any applicable public run."},
+    {"id":"B04","severity":"major","owner":"O04","finding":"Local green workflows do not prove upstream required-check enforcement on the exact execution branch.","closure":"Fresh upstream branch-protection and required-check evidence."},
+    {"id":"B05","severity":"critical","owner":"O05","finding":"No independent human has completed the restore procedure.","closure":"Second-person restore record with checksums, policy/prefix checks, and role attestation."},
+    {"id":"B06","severity":"critical","owner":"O06","finding":"No confirmatory protocol has an authentic external registration and matching pre-run anchor.","closure":"External registration and independently verified identical canonical hash before collection."},
+    {"id":"B07","severity":"critical","owner":"D07+D08","finding":"Maximum pools project to 855.9 GiB and 375.7 single-core hours before frozen-model and public-chain overhead, exceeding the 25 GiB/72 CPU-hour local ceiling.","closure":"Blinded-pilot selected prefixes plus an approved measured execution/storage envelope; no external spend is currently authorized."},
+    {"id":"B08","severity":"critical","owner":"D08","finding":"No blinded pilot variance or feasibility result exists, so N=100 remains provisional and exact primary/reserve prefixes cannot be registered.","closure":"Prerequisite-qualified 20-slot blinded pilots and complete 30,000-repetition family simulations."},
+    {"id":"B09","severity":"major","owner":"V08+D08","finding":"E13 lacks qualified perceptual similarity/generalization and forbidden metadata/timing/container detectors for the selected generated media.","closure":"Executable positive controls and negative-bound qualification on the selected carriers."},
+    {"id":"B10","severity":"major","owner":"D06+D08","finding":"E15/E16 protocol definitions exist, but the five non-ledger predictor implementations and prospective selection/commit/scoring pipeline are not all qualified.","closure":"Validation-only selection, prospective commitments, untouched scoring, information-set enforcement, and detector-positive tests through production evidence."},
+    {"id":"B11","severity":"major","owner":"D08","finding":"Experiment cards do not yet bind every exact run configuration, practical margin, analysis version, model asset, selected seed prefix, execution host, and stopping/exclusion parameter.","closure":"One canonical registration packet per executable experiment with no unresolved operational field."},
+    {"id":"B12","severity":"major","owner":"D08","finding":"E01 timing/envelope and E13 side-feature detectors have not run on the final selected study topology.","closure":"Topology-specific detector-positive and negative measurements bound into verified evidence."},
+    {"id":"B13","severity":"critical","owner":"R03","finding":"The current review is internal; no independent methods/statistics or reproduction review exists.","closure":"Authentic external review record with disposition of every critical and major objection."},
+    {"id":"B14","severity":"major","owner":"W04+R03","finding":"The source audit is single-screener and human re-verification of load-bearing full-text claim mappings remains open.","closure":"Independent citation/claim audit with corrections and preserved review history."}
+  ],
+  "experiments": [
+    {"id":"E00","ready":false,"blockers":["B01","B02","B04","B05","B11"]},
+    {"id":"E01","ready":false,"blockers":["E00","B11","B12"]},
+    {"id":"E02","ready":false,"blockers":["E00","B11"]},
+    {"id":"E03","ready":false,"blockers":["E01","E02","B08","B11"]},
+    {"id":"E10","ready":false,"blockers":["E03","B07","B11"]},
+    {"id":"E11","ready":false,"blockers":["E03","B06","B07","B08","B11","B13"]},
+    {"id":"E12","ready":false,"blockers":["E11-infrastructure","B07","B11"]},
+    {"id":"E13","ready":false,"blockers":["E11-or-E12","B06","B07","B08","B09","B11","B13"]},
+    {"id":"E14","ready":false,"blockers":["E13","B07","B11"]},
+    {"id":"E15","ready":false,"blockers":["E14","B06","B07","B08","B10","B11","B13"]},
+    {"id":"E16","ready":false,"blockers":["E15","B06","B07","B08","B10","B11","B13"]},
+    {"id":"E20","ready":false,"blockers":["E16","B06","B07","B08","B11","B12","B13"]},
+    {"id":"E21","ready":false,"blockers":["E16","B07","B11"]},
+    {"id":"E22","ready":false,"blockers":["E16","B07","B11"]},
+    {"id":"E30","ready":false,"blockers":["E20","E21","E22","B06","B07","B08","B11","B13"]},
+    {"id":"E31","ready":false,"blockers":["E30","B07","B11"]},
+    {"id":"E32","ready":false,"blockers":["E31","B06","B07","B08","B11","B13"]},
+    {"id":"E40","ready":false,"blockers":["E32","B03","B07","B11","B13"]},
+    {"id":"E50","ready":false,"blockers":["E40","B03","B05","B06","B07","B11","B13","B14"]}
+  ],
+  "safeLocalNextActions": [
+    "build the complete historical data/claim inventory without treating qualification as study data",
+    "prepare anonymous report and registration-packet skeletons",
+    "implement and qualify missing detectors and causal comparator plumbing with synthetic fixtures",
+    "run bounded software qualification under the local ceiling",
+    "continue citation, claim, and manuscript criticism"
+  ],
+  "prohibitedUntilClosure": [
+    "confirmatory outcome collection",
+    "promotion of qualification fixtures to pilot or research results",
+    "external spending or mainnet transaction",
+    "claim of independent review, registration, replication, or publication readiness"
+  ]
+}

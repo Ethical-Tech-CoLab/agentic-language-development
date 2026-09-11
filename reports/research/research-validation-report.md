@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.63 (D07 consolidated gate passed)
+Latest tracked research-design candidate: v0.1.64 (D08 fail-closed review in progress)
 Report status: in progress  
 
 ## Executive Summary
@@ -63,6 +63,10 @@ Report status: in progress
   qualification, pilot, confirmatory, and replication domains and caps tuning at five
   development iterations. A fresh five-run benchmark supplies measured CPU, memory,
   time, byte, and file rates rather than an assumed cost model.
+- An internal adversarial readiness review covers every experiment and returns
+  `not-registration-ready`. Fourteen evidence-linked blockers include governance,
+  anchors/registration, resources, pilot-selected N, final detector/comparator
+  qualification, exact packets, independent review, and citation re-review.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -619,6 +623,11 @@ complete gate then passed all 1,771 tests across 140 files. This stabilizes the 
 without relaxing the real transport evaluator or its tolerances.
 
 ## 19. Critical gaps before empirical claims
+
+The internal [methods readiness review](methods-readiness-review.md) covers all 19
+experiment cards and identifies 14 blockers with explicit closure tests. It does not
+claim independent review. No experiment is registration-ready, and the fail-closed
+machine audit rejects any ready flag while the recorded campaign decision is negative.
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form

@@ -17,6 +17,10 @@ The seed/resource protocol and generated ledger separately commit disjoint stage
 namespaces, paired-seed derivation, tuning limits, allocation formulas, a fresh local
 resource benchmark, and the explicit finding that the maximum campaign pool exceeds
 the authorized zero-spend local ceiling.
+The campaign readiness review covers all 19 experiment cards and deliberately returns
+`not-registration-ready` while governance, external anchors/registration, selected
+sample sizes, resources, final detector/comparator qualifications, and independent
+review remain absent.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator
