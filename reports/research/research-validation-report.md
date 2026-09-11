@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Repository candidate: `355391f` / v0.1.40  
+Repository candidate: `ca7a188` / v0.1.42
 Report status: in progress  
 
 ## Executive Summary
@@ -33,7 +33,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Fresh consolidated and Mode R checks pass on v0.1.40 |
+| Software qualification | A bounded executable path or failure condition was exercised | Fresh consolidated and Mode R checks pass on frozen candidate v0.1.42 |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -100,16 +100,23 @@ their cause, and followed by clean passing executions.
 
 | Check | Result | Scope and limit |
 |---|---:|---|
-| Frozen-lockfile install | Pass | 25 workspace projects from a newly created pnpm `node_modules`; dependency installation, not scientific reproducibility |
+| Frozen-lockfile install | Pass | 25 workspace projects from a newly created pnpm `node_modules` in a detached exact-commit worktree; dependency installation, not scientific reproducibility |
 | Workflow syntax | Pass | `actionlint` 1.7.12 on the consolidated workflow |
 | Consolidated check | Pass | 134 test files, 1,735 tests, source/contract/boundary/readiness/status/API checks, build, secret scan, and dependency audit |
 | Dependency audit | Pass | No known advisories at the configured high threshold; does not prove absence of vulnerabilities |
 | Mode R smoke | Pass | Two distinct containers, denied direct routes/filesystem/clipboard/process/worker access, normalized timing/size/error checks, 12 attack categories, kill-survival, and local updates for three reference tracks |
 
-The consolidated pass consumed 128.86 seconds wall time and peaked at 726,492 KiB
-resident memory on the recorded host. The passing Mode R command consumed 93.35
-seconds wall time and peaked at 53,632 KiB in the host process; Docker build and
+The consolidated pass consumed 134.76 seconds wall time and peaked at 988,776 KiB
+resident memory on the recorded host. The passing Mode R command consumed 89.33
+seconds wall time and peaked at 56,448 KiB in the host process; Docker build and
 container resource use are not fully represented by that host-process maximum.
+
+The machine-readable [software-validation receipt](software-validation-receipt.json)
+binds these results to commit `ca7a188b1b4dabceece0172d300bd9b167bff042`,
+records command exit states and measurements, and publishes hashes for the ignored
+raw logs and tracked-file manifest. The detached worktree remained clean after the
+run. Because this report and receipt are later documentation, they are not part of
+the candidate that was exercised.
 
 These results establish bounded software behavior on one host and candidate. They do
 not yet satisfy the planned requirement-level conformance audit, complete mutation

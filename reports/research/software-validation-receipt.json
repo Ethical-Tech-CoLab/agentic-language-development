@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "ca7a188b1b4dabceece0172d300bd9b167bff042",
+    "version": "0.1.42",
+    "worktree": "detached-exact-commit",
+    "worktreeCleanAfterExecution": true
+  },
+  "environmentManifest": "environment-manifest.json",
+  "execution": {
+    "startedAtUtc": "2026-09-11T14:43:31Z",
+    "completedAtUtc": "2026-09-11T14:47:31Z",
+    "install": {
+      "command": "pnpm install --frozen-lockfile",
+      "exitCode": 0,
+      "workspaceProjectCount": 25,
+      "packageCount": 218
+    },
+    "consolidatedCheck": {
+      "command": "pnpm run check",
+      "exitCode": 0,
+      "testFileCount": 134,
+      "testCount": 1735,
+      "wallSeconds": 134.76,
+      "maximumResidentSetKiB": 988776,
+      "secretScanFileCount": 588,
+      "dependencyAuditKnownHighOrCriticalVulnerabilities": 0
+    },
+    "modeR": {
+      "command": "pnpm run test:mode-r",
+      "exitCode": 0,
+      "wallSeconds": 89.33,
+      "maximumHostProcessResidentSetKiB": 56448,
+      "containerCount": 2,
+      "activeSideChannelCategoryCount": 12,
+      "trainableTracks": [
+        "scratch-rl",
+        "self-supervised",
+        "hybrid"
+      ]
+    }
+  },
+  "rawEvidence": {
+    "repositoryRelativeDirectory": "evidence/validation/20260911-v04-ca7a188",
+    "gitTracked": false,
+    "artifactHashesFileSha256": "192ab0c556de4c1913e9de19d6bc67e56b0b4afbb843ec9234a02ba9d8b7a8b9",
+    "artifacts": {
+      "install.txt": "4b9e110632a673eda01bbed22f9b0b2613adde9464a73603b203bbc4cfa774f6",
+      "check.txt": "de726166653143f1a6edf0e8b64709217debb0d354b4ed8509cca6a68daff6d6",
+      "mode-r.txt": "4382a1bcc45a44de770a7dbb126340ea5fe583111539e4fd5ba82feb9be6fee9",
+      "tracked-files.sha256": "1c71b17324cb3943272e917bb10ac414ab6f681bef1f415a61f2ce68b6b7b1fe"
+    }
+  },
+  "limitations": [
+    "The receipt qualifies bounded software behavior on one host; it is not an empirical research result.",
+    "Docker child-container memory and CPU are not included in the host command maximum resident-set measurement.",
+    "Raw logs are intentionally ignored by Git and require the published hashes for integrity checking.",
+    "The receipt document was created after candidate execution and is not itself part of the exercised commit."
+  ]
+}
