@@ -38,6 +38,8 @@ export {
   createNurseryRuntime,
   senderForTurn,
   type NurseryRuntimeOptions,
+  type CausalPredictionProviderInput,
+  type CausalPredictionRuntimeProvider,
   type CarrierLeakageEvaluationRequest,
   type SemanticLeakageEvaluationRequest,
   type RunToCompletionOptions,

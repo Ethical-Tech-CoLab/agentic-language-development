@@ -492,6 +492,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     ...(overrides.registrationClass === undefined
       ? {}
       : { registrationClass: overrides.registrationClass }),
+    ...(overrides.causalPredictionPlan === undefined
+      ? {}
+      : { causalPredictionPlan: overrides.causalPredictionPlan }),
     ...(overrides.interventionPlan === undefined
       ? {}
       : { interventionPlan: overrides.interventionPlan }),

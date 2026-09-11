@@ -43,8 +43,12 @@ to relabel any existing fixture as a pilot.
   also pass through the real Gateway. It still needs prospective learned-form
   generalization and selected-production-topology negative bounds.
 - E15/E16 now have an exact synthetically qualified validation-only comparator core
-  for all five non-ledger baselines, but production intervention-chain integration
-  and prospectively eligible execution are still absent.
+  for all five non-ledger baselines. The production runtime commits per-turn baseline
+  and native predictions after delivery but before receiver action, then binds scores
+  to the hash-recorded action/outcome. The run configuration binds the selection
+  commitment, native prediction-function version, and accepted-delivery eligibility,
+  and fails closed on restart.
+  Exact production qualification and eligible registered execution remain absent.
 - E01 timing/envelope and E13 side-feature controls pass on the current exact
   two-container reference topology, but have not been measured on the final selected
   registered topology with the eventual learners, carriers, sample counts, and bounds.

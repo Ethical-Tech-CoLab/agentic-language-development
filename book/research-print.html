@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.74 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.75 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -1127,7 +1127,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.74 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.75 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
@@ -1144,7 +1144,13 @@ validation-fit fold, selects by Brier score on a disjoint validation-selection
 fold, refits and hash-locks the selected model, commits baseline and native-ledger
 predictions before accepting test outcomes, and keeps the oracle diagnostic
 ineligible for selection; exact synthetic qualification passed five comparator and
-seven negative-control paths, but production intervention-chain evidence is absent;</li>
+seven negative-control paths; the production runtime now invokes an injected
+outcome-blind native predictor after Gateway delivery and before receiver action,
+commits and checkpoints baseline/native predictions, derives the receiver choice
+from its hash-bound turn record, and binds per-turn post-outcome scores; the hashed
+run configuration commits the selection and prediction-function identities and
+accepted-evaluation-delivery eligibility, and recovery refuses an absent or
+mismatched provider;</li>
 <li>a general fail-closed registration-packet compiler requiring eleven exact binding
 classes; the current all-experiment inventory resolves only the 19 protocol cards,
 leaves 190 experiment-specific bindings open, and emits zero registration hashes;</li>
@@ -1160,7 +1166,7 @@ five learner tracks, DTSF twin routes, and the complete turn lifecycle;</li>
 observation red teams, including a reusable 28-case generated-carrier structural
 side-feature audit with accepted controls and fail-closed evidence readiness; the
 exact candidate also passed the current two-container Mode R timing, fixed-envelope,
-error-shape, host-denial, crash-survival, and three-track update checks;
+error-shape, host-denial, crash-survival, and three-track update checks; plus
 telemetry, retention, snapshot/restore, and failure policy;</li>
 <li>readiness gates for E00-E50, reproducible E03 design and seed artifacts, canonical
 E03 registration compilation, and a fail-closed confirmatory preflight;</li>

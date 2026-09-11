@@ -151,6 +151,15 @@ const learnerConfigSchema = z.object({
   trainingIsolation: z.enum(['independent', 'centralized']),
 });
 
+const causalPredictionPlanSchema = z
+  .object({
+    version: z.literal(1),
+    selectionCommitmentHash: hashString,
+    predictionFunctionVersion: nonEmptyString,
+    eligibleTurns: z.literal('accepted-evaluation-deliveries'),
+  })
+  .strict();
+
 export const RunConfigSchema = z
   .object({
     version: z.literal(1),
@@ -200,6 +209,8 @@ export const RunConfigSchema = z
     preRegistrationHash: hashString,
     randomSeed: nonEmptyString,
     experimentId: z.string().regex(/^E\d{2}$/u),
+    /** E16 comparator/native-predictor identities committed before run creation. */
+    causalPredictionPlan: causalPredictionPlanSchema.optional(),
     /** SPEC §15.1: absent means `qualification` (non-confirmatory). */
     registrationClass: RegistrationClassSchema.optional(),
     /** SPEC §15.2 / §18: pre-registered interventions (ALD-072). */
@@ -236,6 +247,14 @@ export const RunConfigSchema = z
         code: 'custom',
         path: ['communicationCondition'],
         message: 'The oracle communication condition is restricted to E03',
+      });
+    }
+
+    if (config.causalPredictionPlan !== undefined && config.experimentId !== 'E16') {
+      context.addIssue({
+        code: 'custom',
+        path: ['causalPredictionPlan'],
+        message: 'Causal prediction plans are restricted to E16',
       });
     }
 

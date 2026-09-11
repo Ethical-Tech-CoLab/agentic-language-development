@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.74 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.75 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1084,7 +1084,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.74 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.75 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1103,7 +1103,13 @@ Implemented:
   fold, refits and hash-locks the selected model, commits baseline and native-ledger
   predictions before accepting test outcomes, and keeps the oracle diagnostic
   ineligible for selection; exact synthetic qualification passed five comparator and
-  seven negative-control paths, but production intervention-chain evidence is absent;
+  seven negative-control paths; the production runtime now invokes an injected
+  outcome-blind native predictor after Gateway delivery and before receiver action,
+  commits and checkpoints baseline/native predictions, derives the receiver choice
+  from its hash-bound turn record, and binds per-turn post-outcome scores; the hashed
+  run configuration commits the selection and prediction-function identities and
+  accepted-evaluation-delivery eligibility, and recovery refuses an absent or
+  mismatched provider;
 - a general fail-closed registration-packet compiler requiring eleven exact binding
   classes; the current all-experiment inventory resolves only the 19 protocol cards,
   leaves 190 experiment-specific bindings open, and emits zero registration hashes;
@@ -1119,7 +1125,7 @@ Implemented:
   observation red teams, including a reusable 28-case generated-carrier structural
   side-feature audit with accepted controls and fail-closed evidence readiness; the
   exact candidate also passed the current two-container Mode R timing, fixed-envelope,
-  error-shape, host-denial, crash-survival, and three-track update checks;
+  error-shape, host-denial, crash-survival, and three-track update checks; plus
   telemetry, retention, snapshot/restore, and failure policy;
 - readiness gates for E00-E50, reproducible E03 design and seed artifacts, canonical
   E03 registration compilation, and a fail-closed confirmatory preflight;

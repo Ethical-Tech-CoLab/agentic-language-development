@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.74 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.75 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -132,7 +132,13 @@ implemented and tested:
   Nursery's end-to-end SPEC §8 turn cycle; a delayed, source-bound human audit
   interpreter whose generated entries are separately signed and checkpointed; and
   pre-registered analysis primitives, including immutable mark-level leakage
-  probes across all five carrier conditions with an evidence-preserving claim gate.
+  probes across all five carrier conditions with an evidence-preserving claim gate;
+  and an E16 runtime seam that commits validation-selected baseline and native-ledger
+  predictions after delivery but before receiver action, checkpoints that chronology,
+  then source-binds post-outcome scores as per-turn analysis attachments. The immutable
+  run configuration binds the comparator-selection commitment and native
+  prediction-function version, limits eligibility to accepted evaluation
+  deliveries, and includes fail-closed restart checks.
 - `@ald/isolation`, `@ald/ops`, `@ald/interventions`, `@ald/redteam`: fixed-frame
   process transport, a two-container Mode R network-isolation gate, and learner-host confinement; API telemetry, snapshot/restore,
   and failure supervision; configuration-driven, verifier-bound live causal probes

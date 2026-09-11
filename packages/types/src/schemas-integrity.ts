@@ -301,6 +301,8 @@ export const InterventionEventTypeSchema = z.enum([
   'runtime-attestation',
   /** The ledger-derived live-probe schedule frozen before evaluation begins. */
   'probe-schedule',
+  /** E16 baseline/native predictions committed after delivery and before receiver action. */
+  'prediction-commitment',
   /** An E14 bounded second attempt was scheduled after a failed episode. */
   'repair-turn',
   /** SPEC §15.2 live probe applied to one delivery (details carry the probe hash). */
@@ -382,6 +384,7 @@ export const BundleAttachmentSchema = z.object({
     'curriculum-transitions',
     'drift-evaluation',
     'replay-check',
+    'causal-prediction',
     'other',
   ]),
   analysisVersion: nonEmptyString,

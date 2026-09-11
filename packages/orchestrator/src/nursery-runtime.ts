@@ -116,10 +116,16 @@ import {
   validateChain,
 } from '@ald/hashing';
 import {
+  commitProspectivePredictions,
   CARRIER_LEAKAGE_ANALYSIS_VERSION,
   evaluateCarrierLeakage,
+  scoreCommittedPredictions,
   type CarrierLeakageInput,
   type CarrierLeakageResult,
+  type ComparatorSelection,
+  type NativeLedgerPredictionSet,
+  type PredictionCase,
+  type ProspectivePredictionCommitment,
 } from '@ald/analysis';
 import {
   SEMANTIC_LEAKAGE_ANALYSIS_VERSION,
@@ -332,6 +338,30 @@ export interface NurseryRuntimeOptions {
    * §14.5 forbids.
    */
   retryBudget?: number;
+  /**
+   * E16 outcome-blind prediction provider. It is called only after the
+   * Gateway fixes the delivered artifact and before the receiver acts.
+   */
+  causalPredictionFor?: (
+    config: RunConfig,
+  ) => CausalPredictionRuntimeProvider | undefined;
+}
+
+export interface CausalPredictionProviderInput {
+  readonly runId: string;
+  readonly turn: number;
+  readonly receiver: BabyRole;
+  readonly testCase: PredictionCase;
+  readonly ledgers: {
+    readonly babyA: readonly LedgerEvent[];
+    readonly babyB: readonly LedgerEvent[];
+  };
+}
+
+export interface CausalPredictionRuntimeProvider {
+  readonly selection: ComparatorSelection;
+  readonly predictionFunctionVersion: string;
+  predictNative(input: CausalPredictionProviderInput): NativeLedgerPredictionSet;
 }
 
 export interface CarrierLeakageEvaluationRequest {
@@ -423,6 +453,8 @@ interface RunRuntime {
   lastCurriculumTurn: number;
   /** Ledger-derived E16 schedule, frozen before evaluation starts. */
   probeSchedule: ProbeSchedule | null;
+  /** Outcome-blind E16 baseline/native prediction provider, when configured. */
+  causalPrediction: CausalPredictionRuntimeProvider | undefined;
   /** One pre-registered E14 second attempt waiting to run. */
   pendingRepair: PendingRepair | null;
 }
@@ -484,6 +516,7 @@ interface TurnScratch {
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash | undefined;
   probeHash: Sha256Hash | undefined;
+  predictionCommitment: ProspectivePredictionCommitment | undefined;
   repairAttempt: TurnRecord['repairAttempt'] | undefined;
 }
 
@@ -617,6 +650,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     this.#assertLiveProbeSupported(runConfig);
     this.#assertRepairSupported(runConfig);
     this.#assertAnchorPolicy(runConfig);
+    const causalPrediction = this.#causalPredictionProvider(runConfig);
 
     const curriculum = CurriculumExecutor.fromRunConfig(runConfig);
     const adapters = this.#createAdapters(runConfig);
@@ -695,6 +729,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       curriculum,
       lastCurriculumTurn: -1,
       probeSchedule: null,
+      causalPrediction,
       pendingRepair: null,
     };
     this.#runs.set(runId, run);
@@ -753,6 +788,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       babyProposalHash: null,
       deliveredArtifactHash: undefined,
       probeHash: undefined,
+      predictionCommitment: undefined,
       repairAttempt:
         pendingRepair === null
           ? undefined
@@ -844,6 +880,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       outcomeHash: hashCanonical(HASH_DOMAINS.outcome, recordedOutcome),
       outcome: recordedOutcome,
     });
+    if (scratch.predictionCommitment !== undefined) {
+      await this.#recordCausalPredictionScore(
+        run,
+        scratch.predictionCommitment,
+        instance,
+        turnRecord,
+        action,
+      );
+    }
 
     run.lastOutcome = outcome;
     run.turn = turn + 1;
@@ -1095,6 +1140,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       } else {
         scratch.babyProposalHash = submission.babyProposalHash;
         scratch.deliveredArtifactHash = submission.deliveredArtifactHash;
+        if (phase === 'evaluating' && run.causalPrediction !== undefined) {
+          scratch.predictionCommitment = await this.#recordCausalPredictionCommitment(
+            run,
+            turn,
+            receiver,
+            instance,
+            observations[receiver],
+            submission.deliveredArtifactHash,
+          );
+        }
         const receiverTurn = await this.#runReceiver(
           run,
           turnContext,
@@ -1148,6 +1203,131 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     return { outcome, action, pauseRequested };
+  }
+
+  async #recordCausalPredictionCommitment(
+    run: RunRuntime,
+    turn: number,
+    receiver: BabyRole,
+    instance: ScenarioInstance,
+    observation: Observation,
+    deliveredMessageHash: Sha256Hash,
+  ): Promise<ProspectivePredictionCommitment> {
+    const configured = run.causalPrediction;
+    if (configured === undefined) {
+      throw new RunConfigurationError([
+        { path: 'causalPredictionFor', message: 'prediction provider disappeared during evaluation' },
+      ]);
+    }
+    const testCase: PredictionCase = {
+      caseId: `${run.runId}:turn:${String(turn)}`,
+      actionIds: instance.candidateRefs.map((_, index) => `candidate-${String(index)}`),
+      information: {
+        publicTranscriptHistoryHash: hashCanonical(
+          'dtsf-e16-public-transcript-history-v1',
+          run.writer.readEvents(run.runId, 'channel').map((event) => event.entryHash),
+        ),
+        publicTaskHistoryHash: hashCanonical(
+          'dtsf-e16-public-task-history-v1',
+          run.writer.readEvents(run.runId, 'turns').map((event) => event.entryHash),
+        ),
+        frozenPolicyHash:
+          run.policyRefs[receiver]?.policyHash
+          ?? hashCanonical(HASH_DOMAINS.policyCheckpoint, run.adapters[receiver].exportPolicy()),
+        permittedObservationHash: hashObservation(observation),
+        deliveredMessageHash,
+      },
+    };
+    const nativeLedger = configured.predictNative({
+      runId: run.runId,
+      turn,
+      receiver,
+      testCase,
+      ledgers: this.ledgers(run.runId),
+    });
+    if (nativeLedger.predictionFunctionVersion !== configured.predictionFunctionVersion) {
+      throw new RunConfigurationError([{
+        path: 'causalPredictionFor.predictionFunctionVersion',
+        message: 'native prediction output does not match the configured function version',
+      }]);
+    }
+    const commitment = commitProspectivePredictions({
+      selection: configured.selection,
+      testCases: [testCase],
+      nativeLedger,
+    });
+    await run.writer.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'prediction-commitment',
+      actorId: this.#actorId,
+      reasonCode: 'pre-receiver-action-predictions-committed',
+      details: { turn, receiver, commitment },
+    });
+    await this.#checkpoint(run, 'intervention');
+    return commitment;
+  }
+
+  async #recordCausalPredictionScore(
+    run: RunRuntime,
+    commitment: ProspectivePredictionCommitment,
+    instance: ScenarioInstance,
+    turnRecord: TurnRecord,
+    action: AgentActionProposal | null,
+  ): Promise<void> {
+    const selectedRef =
+      action?.kind === 'select_object'
+        ? (action.publicArtifact as { objectRef?: unknown }).objectRef
+        : undefined;
+    const selectedIndex =
+      typeof selectedRef === 'string' ? instance.candidateRefs.indexOf(selectedRef) : -1;
+    let value: unknown;
+    if (typeof selectedRef !== 'string' || selectedIndex < 0) {
+      value = {
+        pipelineVersion: commitment.pipelineVersion,
+        status: 'unscored',
+        chronology: commitment.chronology,
+        reason: 'receiver-action-not-among-candidates',
+        commitmentHash: commitment.commitmentHash,
+        turnRecordRef: turnRecord.entryHash,
+        actionHash: turnRecord.actionHash,
+        outcomeHash: turnRecord.outcomeHash,
+      };
+    } else {
+      const expectedActionHash = hashCanonical(HASH_DOMAINS.action, {
+        kind: 'select_object',
+        publicArtifact: { objectRef: selectedRef },
+      });
+      if (expectedActionHash !== turnRecord.actionHash) {
+        throw new RunConfigurationError([
+          { path: 'causalPredictionScore.actionHash', message: 'recorded receiver action does not match its turn-record hash' },
+        ]);
+      }
+      value = {
+        status: 'scored',
+        chronology: commitment.chronology,
+        commitmentHash: commitment.commitmentHash,
+        turnRecordRef: turnRecord.entryHash,
+        actionHash: turnRecord.actionHash,
+        outcomeHash: turnRecord.outcomeHash,
+        score: scoreCommittedPredictions({
+          commitment,
+          outcomes: [{
+            caseId: commitment.baselinePredictions[0]?.caseId ?? '',
+            targetActionId: `candidate-${String(selectedIndex)}`,
+          }],
+        }),
+      };
+    }
+    await run.writer.appendAnalysisAttachment({
+      runId: run.runId,
+      path: `analysis/e16-causal-prediction-turn-${String(turnRecord.turn).padStart(6, '0')}.json`,
+      kind: 'causal-prediction',
+      analysisVersion: commitment.pipelineVersion,
+      value,
+      actorId: this.#actorId,
+      reasonCode: 'post-outcome-causal-prediction-score',
+    });
+    await this.#checkpoint(run, 'intervention');
   }
 
   /**
@@ -3397,6 +3577,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lastCurriculumTurn:
         curriculumTurns.length === 0 ? -1 : Math.max(...curriculumTurns),
       probeSchedule: null,
+      causalPrediction: this.#causalPredictionProvider(config),
       pendingRepair,
     };
     this.#runs.set(runId, run);
@@ -3485,6 +3666,48 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           'therefore restricted to the stateless no-learning track (SPEC §9.6)',
       );
     }
+  }
+
+  #causalPredictionProvider(
+    config: RunConfig,
+  ): CausalPredictionRuntimeProvider | undefined {
+    const plan = config.causalPredictionPlan;
+    const provider = this.#options.causalPredictionFor?.(config);
+    if (provider !== undefined && plan === undefined) {
+      throw new RunConfigurationError([
+        {
+          path: 'causalPredictionFor',
+          message: 'prediction provider requires a causalPredictionPlan in RunConfig',
+        },
+      ]);
+    }
+    if (plan !== undefined && provider === undefined) {
+      throw new RunConfigurationError([{
+        path: 'causalPredictionFor',
+        message: 'causalPredictionPlan requires the bound prediction provider',
+      }]);
+    }
+    if (
+      plan !== undefined
+      && provider !== undefined
+      && provider.selection.selectionCommitmentHash !== plan.selectionCommitmentHash
+    ) {
+      throw new RunConfigurationError([{
+        path: 'causalPredictionFor.selection.selectionCommitmentHash',
+        message: 'prediction provider does not match the configured comparator selection',
+      }]);
+    }
+    if (
+      plan !== undefined
+      && provider !== undefined
+      && provider.predictionFunctionVersion !== plan.predictionFunctionVersion
+    ) {
+      throw new RunConfigurationError([{
+        path: 'causalPredictionFor.predictionFunctionVersion',
+        message: 'prediction provider does not match the configured function version',
+      }]);
+    }
+    return provider;
   }
 
   #assertLiveProbeSupported(config: RunConfig): void {
