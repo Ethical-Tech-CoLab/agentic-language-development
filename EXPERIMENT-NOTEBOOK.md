@@ -2,7 +2,7 @@
 
 > **Document type:** Research protocol and results notebook
 >
-> **Status:** Ready for pre-registration; no experiments completed
+> **Status:** Design draft; not registration-ready; no experiments completed
 >
 > **Companion documents:**
 > [CONCEPT-IDEA.md](CONCEPT-IDEA.md) and

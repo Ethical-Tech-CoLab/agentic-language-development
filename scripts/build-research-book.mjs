@@ -157,22 +157,9 @@ function printableHtml(markdown) {
       border-top: 0.5pt solid #c6d1df;
     }
     img { max-width: 100%; break-inside: avoid; }
-    .running-footer {
-      position: fixed;
-      right: 0;
-      bottom: -0.46in;
-      left: 0;
-      color: #778399;
-      font-family: "Segoe UI", Arial, sans-serif;
-      font-size: 7pt;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
-  <div class="running-footer">
-    Ethical Tech CoLab · Working research manuscript · September 2026
-  </div>
   ${rendered}
 </body>
 </html>`;

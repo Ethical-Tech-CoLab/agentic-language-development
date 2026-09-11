@@ -8,15 +8,15 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.76 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.77 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
 >
-> **Authors:** Ethical Tech CoLab; individual author order, affiliations, ORCID
-> identifiers, and corresponding author to be finalized before submission
+> **Authors:** Anonymous working draft; author order, affiliations, ORCID identifiers,
+> and corresponding author are omitted until the authorized submission stage
 >
-> **Repository:** <https://github.com/Ethical-Tech-CoLab/agentic-language-development>
+> **Artifact:** Anonymous review artifact to be prepared only after release approval
 >
 > **Empirical status:** No Nursery Lab experiment has been reported as completed in
 > this manuscript. Sections 10 and 11 distinguish implemented infrastructure from
@@ -75,7 +75,10 @@ Assistance in Formulating Research Questions* guidance [47]:
 - AI-suggested connections are treated as exploratory until supported;
 - the influence and limitations of AI assistance are disclosed;
 - source verification state and journal credibility are recorded in Appendix A;
-- a separate critical-review pass is required before publication.
+- a separate critical-review pass is required before publication; the current
+  internal pass is recorded in
+  [reports/research/research-critical-review.md](reports/research/research-critical-review.md)
+  and does not count as independent review.
 
 In this draft, source retrieval and the first verification pass were performed by an
 AI assistant using web, scholarly-index, and metadata tools, followed by separate AI
@@ -1084,9 +1087,9 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.76 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.77 · 254/258 backlog acceptance criteria verified.
 
-As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
+As of September 11, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
 
 Implemented:
@@ -1252,11 +1255,10 @@ database search with inclusion/exclusion criteria and dual-review screening.
 
 ### 14.1 Code
 
-Source code and planning artifacts are publicly available at:
+Source code and planning artifacts exist in the working repository. An anonymous
+review artifact and any public release URL will be prepared only after release
+approval. Every empirical paper revision will identify an immutable source commit.
 
-<https://github.com/Ethical-Tech-CoLab/agentic-language-development>
-
-Every empirical paper revision will identify the exact Git commit used.
 
 ### 14.2 Protocols
 
@@ -1335,11 +1337,10 @@ Institutional and technical acknowledgements: **TBD before submission**.
 
 ### AI-Assistance Disclosure
 
-This working manuscript was developed with AI assistance in VS Code through the
-Copilot SDK. The AI assistant performed the initial source retrieval, opened the
-arXiv/ACL/PMLR/Crossref/publisher/standards pages summarized in Appendix A, organized
-the manuscript, summarized relevance, and conducted consistency checks. A separate AI
-research-agent pass challenged source status and identified overclaiming risks.
+This working manuscript was developed with AI-assisted research and repository tools.
+The tools supported source retrieval, primary-page inspection, manuscript organization,
+code implementation, executable validation, and critical consistency checks. Separate
+AI-assisted passes challenged source status, numerical claims, and overclaiming risks.
 AI systems are not authors and bear no responsibility for the manuscript. Human
 authors remain responsible for every claim, citation, analysis, and conclusion.
 

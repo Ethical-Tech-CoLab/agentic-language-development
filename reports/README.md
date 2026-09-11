@@ -37,6 +37,11 @@ The causal-prediction runtime qualification binds exact v0.1.75 production chron
 hashed predictor identity and eligibility, fail-closed creation/recovery, and per-turn
 score attachments. It remains software evidence and does not replace registration,
 eligible execution, aggregate inference, or independent review.
+The manuscript-readiness audit reconciles the current paper, experiment notebook,
+data/claim inventory, registration inventory, campaign decision, source register,
+and rendered-book hash. The paired critical review records eight reviewer
+perspectives and a current venue assessment; both return `needs-revision` and are
+internal review, not empirical or independent evidence.
 The registration-readiness inventory applies an eleven-binding fail-closed packet
 contract to all 19 experiment cards. It deliberately emits zero packet hashes while
 190 exact experiment-specific bindings remain unresolved.

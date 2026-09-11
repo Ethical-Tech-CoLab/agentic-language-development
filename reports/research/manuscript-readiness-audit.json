@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "classification": "manuscript-readiness-audit",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "decision": "needs-revision",
+  "manuscript": {
+    "path": "RESEARCH.md",
+    "sha256": "f812cbcbce5f6e0489707cd27b3b82378c4df39ad36faa45afe4cfcf84691444",
+    "version": "0.1.77",
+    "majorSections": 25,
+    "referencesDefined": 50,
+    "referencesCited": 50,
+    "renderedPages": 51,
+    "renderedSourceSha256": "f812cbcbce5f6e0489707cd27b3b82378c4df39ad36faa45afe4cfcf84691444"
+  },
+  "evidenceState": {
+    "experiments": 19,
+    "notStartedExperiments": 19,
+    "researchIncludedBundles": 0,
+    "confirmedPublicChainAnchors": 0,
+    "compiledRegistrationPackets": 0,
+    "unresolvedRegistrationBindings": 190,
+    "campaignBlockers": 14,
+    "independentHumanReview": false
+  },
+  "sourceState": {
+    "existingReferences": 50,
+    "updatedSearchRecords": 5,
+    "allDefinitionsResolve": true,
+    "allDefinedReferencesCited": true,
+    "requiredIndependentHumanRecheck": true
+  },
+  "boundary": "This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, registration, governance, public anchors, human review, or venue acceptance."
+}

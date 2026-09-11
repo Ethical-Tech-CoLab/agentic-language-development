@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.76 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.77 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -57,8 +57,10 @@ Report status: in progress
   intended carrier form is no longer mislabeled as a side channel.
 - Exact v0.1.68 synthetic qualification exercised all five eligible E16 non-ledger
   predictors, disjoint validation selection, prospective commitments, seven negative
-  controls, and the oracle-selection prohibition. Production intervention-chain
-  integration remains open, so this is not an E16 result.
+  controls, and the oracle-selection prohibition. Exact v0.1.75 production-runtime
+  qualification additionally binds predictor identity and eligibility, checkpoints
+  commitments before receiver action, binds later scores, and fails closed on
+  creation/recovery mismatches. Neither qualification is an E16 result.
 - The v0.1.62 D06 candidate passed all 1,771 tests across 140 files, the Rust
   auditor tests and clippy, every consolidated static/design gate, a 641-file secret
   scan, and the high-severity dependency audit. The live base-R leakage-design replay
@@ -103,7 +105,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.55; exact recurrent, full Mode R, generative-carrier, frozen-model, control-lifecycle, and independent bundle audits pass at their recorded candidates |
+| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.76; exact recurrent, full Mode R, generative-carrier, frozen-model, control-lifecycle, causal-prediction-runtime, and independent bundle audits pass at their recorded candidates |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -731,8 +733,7 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    and native prediction-function version, freezes accepted evaluation deliveries as
    the eligibility rule, and fails closed on restart. Exact detached production
    qualification passed; eligible runs still need to bind the exact validation corpus
-   into external registration and
-   complete the registered aggregate analysis.
+   into external registration and complete the registered aggregate analysis.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.
@@ -757,5 +758,12 @@ bounded literature/novelty audit, question/estimand cards, and numeric split/mod
 comparison design, independent statistical validation, prospective causal-ledger and
 leakage protocol, and local audit-cost benchmark are complete. Subsequent revisions
 will add the registration-ready run/data manifest, empirical analyses, public-anchor
-and registered study-scale portions of the audit-cost comparison, claim map, and
-critical review.
+and registered study-scale portions of the audit-cost comparison, and the empirical
+claim map.
+
+The current [critical review](research-critical-review.md) and machine-readable
+[manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
+eight-perspective internal pass. They correct cross-document status and rendering
+defects but return `needs-revision`: 19 experiments remain unstarted, all 111 local
+bundles remain research-excluded, 190 registration bindings remain unresolved, and
+independent review is absent.
