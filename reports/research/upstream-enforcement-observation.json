@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "classification": "external-read-only-enforcement-observation",
   "researchFinding": false,
-  "capturedAt": "2026-09-11T23:27:33Z",
+  "capturedAt": "2026-09-11T23:37:20Z",
   "localCandidate": {
-    "commit": "a8370bcfb1ef6ff2e49e3c8304a9a06b9708dec7",
-    "version": "0.1.77"
+    "commit": "0dc16bd07136fab84ffa6fb101e37656ec85b218",
+    "version": "0.1.78"
   },
   "remoteAlias": "origin",
   "remoteUrlSha256": "987bf77a2257779036cc2a095d136fec418caabd0987bab5b70d0d4e76ab10f1",
@@ -15,7 +15,29 @@
   },
   "executionBranch": {
     "name": "feat/verifiable-core",
-    "presentOnRemote": false
+    "presentOnOriginRemote": false,
+    "presentAsPullRequestHead": true
+  },
+  "pullRequest": {
+    "number": 1,
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "mergeState": "UNSTABLE",
+    "headCommit": "0dc16bd07136fab84ffa6fb101e37656ec85b218",
+    "baseBranch": "main",
+    "updatedAt": "2026-09-11T23:37:15Z",
+    "hostedWorkflow": {
+      "runId": 34658751814,
+      "name": "Consolidated integrity suite",
+      "event": "pull_request",
+      "headCommit": "0dc16bd07136fab84ffa6fb101e37656ec85b218",
+      "createdAt": "2026-09-11T23:37:20Z",
+      "updatedAt": "2026-09-11T23:37:20Z",
+      "status": "completed",
+      "conclusion": "action_required",
+      "jobsStarted": 0
+    }
   },
   "branchProtectionQuery": {
     "httpStatus": 404,
@@ -51,6 +73,6 @@
     ]
   },
   "decision": "not-demonstrated",
-  "closureRequired": "Publish the exact execution branch or immutable candidate, require the consolidated-suite and mode-r checks through upstream protection or rulesets, and retain a fresh passing hosted receipt for that commit.",
+  "closureRequired": "Approve the exact proposed-change workflow, retain passing consolidated-suite and mode-r receipts for that commit, and require both checks through upstream protection or rulesets before merge.",
   "boundary": "This read-only observation changes no upstream state and does not count as workflow approval or required-check enforcement."
 }

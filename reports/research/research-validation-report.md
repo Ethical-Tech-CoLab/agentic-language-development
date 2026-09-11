@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.78 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.79 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -74,9 +74,10 @@ Report status: in progress
   anchors/registration, resources, pilot-selected N, final detector/comparator
   qualification, exact packets, independent review, and citation re-review.
 - The machine-checked external-prerequisite ledger is blocked at 0/6. A fresh
-  read-only upstream observation found no repository ruleset, no upstream execution
-  branch, no demonstrated branch protection, and a failed latest relevant
-  default-branch workflow; it therefore strengthens rather than closes O04.
+  read-only upstream observation found no repository ruleset or demonstrated branch
+  protection. The exact v0.1.78 pull-request workflow is `action_required` with zero
+  jobs started, and the latest relevant default-branch workflow failed; this
+  strengthens rather than closes O04.
 - The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
   in 16 collections. All are excluded from empirical estimates; 63 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.

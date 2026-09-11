@@ -21,10 +21,12 @@ the campaign and experiment-specific preflight gates.
 | O05 independent restore | Missing | A second human completes the authoritative restore runbook with checksums and every policy/prefix result |
 | O06 external registration | Missing | Zero-field-gap packet, external registration, identical hash, and independently verified matching pre-run public anchor |
 
-The 2026-09-11 read-only O04 observation found no repository ruleset, could not
-demonstrate branch protection, found no upstream execution branch, and found that the
-latest relevant default-branch workflow failed. The observation is stored in
-`reports/research/upstream-enforcement-observation.json`; it changes no remote state.
+The 2026-09-11 read-only O04 observation found no repository ruleset and could not
+demonstrate branch protection. The exact v0.1.78 candidate is published as the head of
+the existing upstream pull request, but its proposed-change workflow completed as
+`action_required` before starting any job. The latest relevant default-branch
+workflow also failed. The observation is stored in
+`reports/research/upstream-enforcement-observation.json`.
 
 ## Evidence sequence
 

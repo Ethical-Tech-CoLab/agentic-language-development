@@ -27,6 +27,7 @@ interface ReadinessLedger {
   schemaVersion: number;
   classification: string;
   researchFinding: boolean;
+  localCandidate: { commit: string; version: string };
   decision: 'blocked' | 'ready';
   satisfiedCount: number;
   requiredCount: number;
@@ -45,7 +46,15 @@ interface UpstreamObservation {
   schemaVersion: number;
   classification: string;
   researchFinding: boolean;
-  executionBranch: { presentOnRemote: boolean };
+  executionBranch: { presentOnOriginRemote: boolean; presentAsPullRequestHead: boolean };
+  pullRequest: {
+    number: number;
+    state: string;
+    draft: boolean;
+    mergeable: string;
+    headCommit: string;
+    hostedWorkflow: { headCommit: string; status: string; conclusion: string; jobsStarted: number };
+  };
   branchProtectionQuery: { httpStatus: number };
   repositoryRulesetsQuery: { httpStatus: number; rulesetCount: number };
   latestDefaultBranchWorkflow: { status: string; conclusion: string };
@@ -112,7 +121,18 @@ if (
   upstream.schemaVersion !== 1 ||
   upstream.classification !== 'external-read-only-enforcement-observation' ||
   upstream.researchFinding ||
-  upstream.executionBranch.presentOnRemote ||
+  upstream.executionBranch.presentOnOriginRemote ||
+  !upstream.executionBranch.presentAsPullRequestHead ||
+  upstream.pullRequest.number !== 1 ||
+  upstream.pullRequest.state !== 'OPEN' ||
+  upstream.pullRequest.draft ||
+  upstream.pullRequest.mergeable !== 'MERGEABLE' ||
+  upstream.localCandidate.commit !== upstream.pullRequest.headCommit ||
+  upstream.localCandidate.version !== '0.1.78' ||
+  upstream.pullRequest.headCommit !== upstream.pullRequest.hostedWorkflow.headCommit ||
+  upstream.pullRequest.hostedWorkflow.status !== 'completed' ||
+  upstream.pullRequest.hostedWorkflow.conclusion !== 'action_required' ||
+  upstream.pullRequest.hostedWorkflow.jobsStarted !== 0 ||
   upstream.branchProtectionQuery.httpStatus !== 404 ||
   upstream.repositoryRulesetsQuery.httpStatus !== 200 ||
   upstream.repositoryRulesetsQuery.rulesetCount !== 0 ||

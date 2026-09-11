@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-11  
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.78
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.79
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -46,8 +46,9 @@ received independent verification.
    registration cannot be manufactured from repository work. **Fix (required):**
    obtain authentic records for O01–O06 and rerun the fail-closed readiness compiler.
    The new external-prerequisite ledger remains blocked at 0/6; its read-only O04
-   observation found no ruleset or upstream execution branch, could not demonstrate
-   branch protection, and recorded a failed latest relevant default-branch workflow.
+   observation found no ruleset or demonstrated branch protection. The exact v0.1.78
+   pull-request workflow requires approval and started zero jobs, while the latest
+   relevant default-branch workflow failed.
 
 3. **P1 — The current paper is not a defensible 2027 learning-conference
    submission.** The current ICLR call includes relevant learning, causal-reasoning,

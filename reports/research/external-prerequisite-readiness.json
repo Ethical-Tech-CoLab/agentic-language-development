@@ -62,7 +62,7 @@
       "satisfied": false,
       "receipt": {
         "path": "reports/research/upstream-enforcement-observation.json",
-        "sha256": "09959e95653a936dfb056455be69e4654e8dbf1d476b50965d142e5cf6fb3938"
+        "sha256": "eabff1d5e42b4110f7d0d9345831af8f748db4f6bfefbb5b32121a59c6157e7e"
       },
       "requiredEvidence": [
         "exact execution branch or immutable candidate present upstream",

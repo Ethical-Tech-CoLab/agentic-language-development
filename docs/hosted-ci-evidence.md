@@ -18,9 +18,10 @@ execution and ALD-011 crash safety, but does not claim that upstream branch
 protection or its required-check policy is active.
 
 A newer privacy-minimized read-only observation is recorded in
-`reports/research/upstream-enforcement-observation.json`. As of 2026-09-11 it
-found zero repository rulesets, no upstream execution branch, no demonstrated
-branch protection, and a failed latest relevant default-branch workflow. The local
-workflow still defines both required job IDs. O04 therefore remains open until an
-authorized administrator enforces both checks and a later observation confirms a
-passing exact candidate.
+`reports/research/upstream-enforcement-observation.json`. As of 2026-09-11 it found
+zero repository rulesets and no demonstrated branch protection. The exact v0.1.78
+candidate is now the head of the existing upstream pull request, but its workflow is
+`action_required` and started zero jobs; the latest relevant default-branch workflow
+also failed. The local workflow still defines both required job IDs. O04 therefore
+remains open until the proposed-change workflow is approved, both checks pass, and an
+authorized administrator requires them before merge.

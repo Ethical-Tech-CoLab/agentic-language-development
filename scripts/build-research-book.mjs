@@ -108,7 +108,11 @@ function printableHtml(markdown) {
     p, li { orphans: 3; widows: 3; }
     p { margin: 0 0 0.11in; }
     ul, ol { margin: 0.04in 0 0.13in; padding-left: 0.24in; }
-    li { margin: 0 0 0.035in; }
+    li {
+      margin: 0 0 0.035in;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
     blockquote {
       margin: 0.13in 0;
       padding: 0.11in 0.16in;
