@@ -1,0 +1,398 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification-benchmark",
+  "researchFinding": false,
+  "capturedAt": "2026-09-11",
+  "protocolSha256": "e21ebcec60c663a455f0990596920b0378c9eb5fe6cc5095a12e0fda9ba0a19c",
+  "inputCandidate": {
+    "commit": "199459353a117576d29b826c718ec90340d0be60",
+    "version": "0.1.65",
+    "typescriptVerifierEntryPointSha256": "2d1fd7541ccf0f38fed3f2e99c20e7f7c84adb30c09010e7057870afd692c31e",
+    "typescriptVerifierDistTreeSha256": "c775f0ea8ac36b4fb52bf13f52aef623ad5da2ef81110c7586ca765e368cb254",
+    "rustAuditorSha256": "caddb5b2e600de06bfdada29ab4ef3d588a34dacd86ead4c93a91e3d8e3439cf"
+  },
+  "host": {
+    "platform": "linux",
+    "release": "6.8.0-138-generic",
+    "architecture": "x64",
+    "logicalCpuCount": 6,
+    "cpuModel": "AMD EPYC 9684X 96-Core Processor",
+    "totalMemoryBytes": 8086106112,
+    "node": "v24.20.0"
+  },
+  "method": {
+    "processStartupIncludedForBothVerifiers": true,
+    "filesystemCacheControlled": false,
+    "parallelism": "serial",
+    "timingInterpretation": "descriptive-single-host-only"
+  },
+  "bundles": [
+    {
+      "runId": "qualification-e13-fixed-glyph",
+      "bundlePath": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-fixed-glyph",
+      "capturedTreeSha256": "b03a11e7f3b021e33ef3e7bebcab71beb4c39fc1017ff814c165b4b7a27d908f",
+      "verifierInputTreeSha256": "d8a1affea3634159380ee6ef4ff717b1045e1864947cc8fe8ba61f24a7ec77c9",
+      "storage": {
+        "events": 333,
+        "turns": 52,
+        "payloadLowerBoundBytes": 98346,
+        "ordinaryLogProxyBytes": 123528,
+        "signedStreamBytes": 377457,
+        "integrityCoreBytes": 2150844,
+        "policyStateBytes": 1272700,
+        "experimentMetadataBytes": 8362,
+        "analysisBytes": 71,
+        "otherVerifierInputBytes": 0,
+        "verifierInputBundleBytes": 3809434,
+        "verificationReportBytes": 1561,
+        "capturedDirectoryBytes": 3810995,
+        "signedToOrdinaryRatio": 3.055639,
+        "verifierInputToOrdinaryRatio": 30.838628
+      },
+      "timings": {
+        "ordinaryWholeInputSha256": {
+          "samples": 20,
+          "medianMs": 48.964,
+          "p95Ms": 60.446,
+          "minimumMs": 44.158,
+          "maximumMs": 111.037
+        },
+        "typescriptProductionVerifier": {
+          "samples": 5,
+          "medianMs": 982.747,
+          "p95Ms": 1154.232,
+          "minimumMs": 890.754,
+          "maximumMs": 1154.232
+        },
+        "rustIndependentAuditor": {
+          "samples": 5,
+          "medianMs": 39.159,
+          "p95Ms": 45.54,
+          "minimumMs": 38.423,
+          "maximumMs": 45.54
+        }
+      },
+      "coverage": {
+        "typescriptProductionVerifier": {
+          "streamEvents": 333,
+          "checkpoints": 30,
+          "proofFilesChecked": 2736,
+          "experimentRecordPresent": true,
+          "chainChecked": false
+        },
+        "rustIndependentAuditor": {
+          "streamEvents": 333,
+          "checkpoints": 30,
+          "attachments": 0,
+          "proofFilesChecked": 0,
+          "chainChecked": false
+        }
+      },
+      "disposition": "accepted-local-unanchored-by-both-verifiers"
+    },
+    {
+      "runId": "qualification-e13-fixed-token",
+      "bundlePath": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-fixed-token",
+      "capturedTreeSha256": "f4c1f743c774ea21425484f4803075f7ac357fca8a0919d6caac55b5129d4450",
+      "verifierInputTreeSha256": "3e4119de941781dab99c5631c2ed7c5130699c62d5997e505538c5a321aaeac5",
+      "storage": {
+        "events": 345,
+        "turns": 52,
+        "payloadLowerBoundBytes": 79451,
+        "ordinaryLogProxyBytes": 105834,
+        "signedStreamBytes": 366367,
+        "integrityCoreBytes": 2443843,
+        "policyStateBytes": 1280574,
+        "experimentMetadataBytes": 8270,
+        "analysisBytes": 71,
+        "otherVerifierInputBytes": 0,
+        "verifierInputBundleBytes": 4099125,
+        "verificationReportBytes": 1561,
+        "capturedDirectoryBytes": 4100686,
+        "signedToOrdinaryRatio": 3.461714,
+        "verifierInputToOrdinaryRatio": 38.731646
+      },
+      "timings": {
+        "ordinaryWholeInputSha256": {
+          "samples": 20,
+          "medianMs": 49.712,
+          "p95Ms": 52.169,
+          "minimumMs": 48.717,
+          "maximumMs": 54.166
+        },
+        "typescriptProductionVerifier": {
+          "samples": 5,
+          "medianMs": 1027.571,
+          "p95Ms": 1213.02,
+          "minimumMs": 974.383,
+          "maximumMs": 1213.02
+        },
+        "rustIndependentAuditor": {
+          "samples": 5,
+          "medianMs": 41.201,
+          "p95Ms": 42.991,
+          "minimumMs": 40.517,
+          "maximumMs": 42.991
+        }
+      },
+      "coverage": {
+        "typescriptProductionVerifier": {
+          "streamEvents": 345,
+          "checkpoints": 33,
+          "proofFilesChecked": 3095,
+          "experimentRecordPresent": true,
+          "chainChecked": false
+        },
+        "rustIndependentAuditor": {
+          "streamEvents": 345,
+          "checkpoints": 33,
+          "attachments": 0,
+          "proofFilesChecked": 0,
+          "chainChecked": false
+        }
+      },
+      "disposition": "accepted-local-unanchored-by-both-verifiers"
+    },
+    {
+      "runId": "qualification-e13-generative-bitmap",
+      "bundlePath": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-bitmap",
+      "capturedTreeSha256": "2091a6f83708a6d5148910bc83d7d2bc698477b73f8048e14e33dbd33d25cda8",
+      "verifierInputTreeSha256": "36be5d48e5e387610e24f2112833dc3e85a1c4578c581c615b37016682b4a0fb",
+      "storage": {
+        "events": 378,
+        "turns": 52,
+        "payloadLowerBoundBytes": 122719,
+        "ordinaryLogProxyBytes": 152188,
+        "signedStreamBytes": 433392,
+        "integrityCoreBytes": 2474801,
+        "policyStateBytes": 1342961,
+        "experimentMetadataBytes": 8263,
+        "analysisBytes": 77,
+        "otherVerifierInputBytes": 0,
+        "verifierInputBundleBytes": 4259494,
+        "verificationReportBytes": 1567,
+        "capturedDirectoryBytes": 4261061,
+        "signedToOrdinaryRatio": 2.847741,
+        "verifierInputToOrdinaryRatio": 27.98837
+      },
+      "timings": {
+        "ordinaryWholeInputSha256": {
+          "samples": 20,
+          "medianMs": 52.751,
+          "p95Ms": 71.926,
+          "minimumMs": 51.364,
+          "maximumMs": 95.228
+        },
+        "typescriptProductionVerifier": {
+          "samples": 5,
+          "medianMs": 1156.726,
+          "p95Ms": 1430.737,
+          "minimumMs": 1022.66,
+          "maximumMs": 1430.737
+        },
+        "rustIndependentAuditor": {
+          "samples": 5,
+          "medianMs": 47.084,
+          "p95Ms": 48.651,
+          "minimumMs": 45.701,
+          "maximumMs": 48.651
+        }
+      },
+      "coverage": {
+        "typescriptProductionVerifier": {
+          "streamEvents": 378,
+          "checkpoints": 35,
+          "proofFilesChecked": 3140,
+          "experimentRecordPresent": true,
+          "chainChecked": false
+        },
+        "rustIndependentAuditor": {
+          "streamEvents": 378,
+          "checkpoints": 35,
+          "attachments": 0,
+          "proofFilesChecked": 0,
+          "chainChecked": false
+        }
+      },
+      "disposition": "accepted-local-unanchored-by-both-verifiers"
+    },
+    {
+      "runId": "qualification-e13-generative-canvas",
+      "bundlePath": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-canvas",
+      "capturedTreeSha256": "10adca00b802dff0d0e350b4a8ee00e456846bd1b20335b21080385dde0c3b16",
+      "verifierInputTreeSha256": "528ffbd9c8cb578ed84a4e7c8a46853f4aad3a9a07241dcd46df897c1e7f6167",
+      "storage": {
+        "events": 381,
+        "turns": 52,
+        "payloadLowerBoundBytes": 122318,
+        "ordinaryLogProxyBytes": 152070,
+        "signedStreamBytes": 434873,
+        "integrityCoreBytes": 2470162,
+        "policyStateBytes": 1274596,
+        "experimentMetadataBytes": 8278,
+        "analysisBytes": 77,
+        "otherVerifierInputBytes": 0,
+        "verifierInputBundleBytes": 4187986,
+        "verificationReportBytes": 1567,
+        "capturedDirectoryBytes": 4189553,
+        "signedToOrdinaryRatio": 2.85969,
+        "verifierInputToOrdinaryRatio": 27.539857
+      },
+      "timings": {
+        "ordinaryWholeInputSha256": {
+          "samples": 20,
+          "medianMs": 52.136,
+          "p95Ms": 55.589,
+          "minimumMs": 50.967,
+          "maximumMs": 59.482
+        },
+        "typescriptProductionVerifier": {
+          "samples": 5,
+          "medianMs": 1069.228,
+          "p95Ms": 1223.577,
+          "minimumMs": 1050.756,
+          "maximumMs": 1223.577
+        },
+        "rustIndependentAuditor": {
+          "samples": 5,
+          "medianMs": 47.236,
+          "p95Ms": 48.968,
+          "minimumMs": 46.753,
+          "maximumMs": 48.968
+        }
+      },
+      "coverage": {
+        "typescriptProductionVerifier": {
+          "streamEvents": 381,
+          "checkpoints": 36,
+          "proofFilesChecked": 3146,
+          "experimentRecordPresent": true,
+          "chainChecked": false
+        },
+        "rustIndependentAuditor": {
+          "streamEvents": 381,
+          "checkpoints": 36,
+          "attachments": 0,
+          "proofFilesChecked": 0,
+          "chainChecked": false
+        }
+      },
+      "disposition": "accepted-local-unanchored-by-both-verifiers"
+    },
+    {
+      "runId": "qualification-e13-generative-tone",
+      "bundlePath": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-tone",
+      "capturedTreeSha256": "e30048717c60bbc20dbdca9bba0e3a39f9c975c3362f5f0c266ddf70375c4c7d",
+      "verifierInputTreeSha256": "5bcdd3e3fcb9b14b00e2dc70d7eda05bcc37f3610b559fc1a25fec515442d99e",
+      "storage": {
+        "events": 391,
+        "turns": 52,
+        "payloadLowerBoundBytes": 123584,
+        "ordinaryLogProxyBytes": 154296,
+        "signedStreamBytes": 441544,
+        "integrityCoreBytes": 2577613,
+        "policyStateBytes": 1266694,
+        "experimentMetadataBytes": 8249,
+        "analysisBytes": 75,
+        "otherVerifierInputBytes": 0,
+        "verifierInputBundleBytes": 4294175,
+        "verificationReportBytes": 1565,
+        "capturedDirectoryBytes": 4295740,
+        "signedToOrdinaryRatio": 2.861668,
+        "verifierInputToOrdinaryRatio": 27.83076
+      },
+      "timings": {
+        "ordinaryWholeInputSha256": {
+          "samples": 20,
+          "medianMs": 53.95,
+          "p95Ms": 57.997,
+          "minimumMs": 52.521,
+          "maximumMs": 59.944
+        },
+        "typescriptProductionVerifier": {
+          "samples": 5,
+          "medianMs": 1108.121,
+          "p95Ms": 1369.444,
+          "minimumMs": 1068.973,
+          "maximumMs": 1369.444
+        },
+        "rustIndependentAuditor": {
+          "samples": 5,
+          "medianMs": 49.963,
+          "p95Ms": 52.843,
+          "minimumMs": 48.237,
+          "maximumMs": 52.843
+        }
+      },
+      "coverage": {
+        "typescriptProductionVerifier": {
+          "streamEvents": 391,
+          "checkpoints": 37,
+          "proofFilesChecked": 3274,
+          "experimentRecordPresent": true,
+          "chainChecked": false
+        },
+        "rustIndependentAuditor": {
+          "streamEvents": 391,
+          "checkpoints": 37,
+          "attachments": 0,
+          "proofFilesChecked": 0,
+          "chainChecked": false
+        }
+      },
+      "disposition": "accepted-local-unanchored-by-both-verifiers"
+    }
+  ],
+  "aggregateStorage": {
+    "events": 1828,
+    "turns": 260,
+    "payloadLowerBoundBytes": 546418,
+    "ordinaryLogProxyBytes": 687916,
+    "signedStreamBytes": 2053633,
+    "integrityCoreBytes": 12117263,
+    "policyStateBytes": 6437525,
+    "experimentMetadataBytes": 41422,
+    "analysisBytes": 371,
+    "otherVerifierInputBytes": 0,
+    "verifierInputBundleBytes": 20650214,
+    "verificationReportBytes": 7821,
+    "capturedDirectoryBytes": 20658035,
+    "signedToOrdinaryRatio": 2.985296,
+    "verifierInputToOrdinaryRatio": 30.018511
+  },
+  "utility": {
+    "sourceReceipt": "reports/research/integrity-challenge-receipt.json",
+    "sourceReceiptSha256": "fab176bcdd5a62d36a76532af273384c61742804e71148fe7e2fe6e8df7f7387",
+    "mutationCases": [
+      "event-content",
+      "attachment-bytes",
+      "lineage-injection",
+      "wrong-chain",
+      "false-receipt",
+      "unanchored-tail"
+    ],
+    "implementations": [
+      "typescript-production-verifier",
+      "rust-independent-integrity-auditor"
+    ],
+    "challenges": 12,
+    "observedRejections": 12,
+    "unchangedExportAcceptedByBoth": true,
+    "interpretation": "one deterministic fixture per mutation and implementation; not a detector-sensitivity estimate"
+  },
+  "publicChainAnchor": {
+    "status": "not-measured",
+    "transactions": 0,
+    "latencyMs": null,
+    "fee": null,
+    "reason": "The qualification bundles are unanchored, no RPC was supplied, and no public transaction was authorized."
+  },
+  "limitations": [
+    "All bundles are software qualifications excluded from empirical hypothesis estimates.",
+    "The ordinary-log proxy is a deterministic storage model, not a separately implemented logging system.",
+    "Hash timing assumes a trusted prior digest and does not validate signatures, sequence, lineage, receipts, or semantic truth.",
+    "Verifier timing is descriptive for one host and includes process startup; filesystem cache state was not controlled.",
+    "Full-bundle storage includes policy snapshots and research metadata, so the ratio over ordinary logs is not cryptographic overhead alone.",
+    "No RPC lookup, public-chain confirmation, transaction latency, or transaction fee was measured."
+  ]
+}

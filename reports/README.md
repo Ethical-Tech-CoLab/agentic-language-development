@@ -25,6 +25,10 @@ The data/claim manifest inventories every locally captured export by content has
 claim boundary. Its live audit resolves 111 bundles while keeping all 111 excluded
 from empirical use and distinguishing 63 local fake-chain confirmations from zero
 confirmed public-chain anchors.
+The audit-cost/utility protocol and receipt compare a declared ordinary-log proxy,
+actual signed streams, integrity structures, policy state, whole-input hashing, and
+two offline verifiers over five immutable qualification bundles. Public-chain latency
+and fee remain explicitly not measured, so A03 remains in progress.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

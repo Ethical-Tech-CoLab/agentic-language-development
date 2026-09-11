@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.65 (D08 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.66 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -70,6 +70,10 @@ Report status: in progress
 - The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
   in 16 collections. All are excluded from empirical estimates; 63 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
+- The frozen local audit-cost benchmark covers five immutable qualifications: 260
+  turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
+  actual signed streams, and 20,650,214 verifier-input bytes. Both implementations
+  account for 12/12 prior mutation challenges; public-anchor cost remains unmeasured.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -639,7 +643,41 @@ deterministic boundary. The focused suite passed 20 consecutive executions and t
 complete gate then passed all 1,771 tests across 140 files. This stabilizes the test
 without relaxing the real transport evaluator or its tolerances.
 
-## 19. Critical gaps before empirical claims
+## 19. Local audit cost and integrity utility
+
+The [audit cost and utility note](../../docs/audit-cost-and-utility.md) binds five
+immutable, research-excluded E13 qualifications to a versioned benchmark protocol.
+Across 260 turns and 1,828 stream events, the payload-only lower bound is 546,418
+bytes and the declared ordinary JSONL proxy is 687,916 bytes. Actual signed streams
+occupy 2,053,633 bytes, 2.985 times the proxy. Complete verifier inputs occupy
+20,650,214 bytes, 30.019 times the proxy.
+
+The full ratio is not cryptographic overhead. Integrity structures account for
+12,117,263 bytes, including 11,795,564 bytes of individual proof files and 309,373
+bytes of checkpoints. Policy snapshots account for another 6,437,525 bytes. The
+small-run checkpoint frequency and individual-proof layout make these ratios highly
+design-dependent.
+
+With process startup included, per-bundle median production-verifier latency ranges
+from 982.747 to 1,156.726 ms. The independent Rust auditor ranges from 39.159 to
+49.963 ms, while a whole-input SHA-256 ranges from 48.964 to 53.950 ms. These are not
+equivalent operations: the production verifier checked 15,391 exported proof files;
+the Rust auditor covered the same 1,828 events and 171 checkpoints but does not check
+those exported proof files; hashing supplies only byte-change detection relative to
+a trusted digest. Timings are uncontrolled-cache, single-host descriptions.
+
+The receipt binds the already-prespecified mutation challenge. Both verifier
+implementations accepted the unchanged fixture and rejected event-content,
+attachment-byte, lineage, wrong-chain, false-receipt, and unanchored-tail mutations:
+12 observed rejections across 12 implementation-by-case checks. One fixture per case
+is deterministic conformance evidence, not a sensitivity estimate.
+
+A03 remains in progress. No RPC was supplied, zero public transactions occurred, and
+public anchor latency and fee are null rather than estimated. Registered study-scale
+ordinary/signed/full comparisons must also wait for eligible pilot and confirmatory
+bundles.
+
+## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
 experiment cards and identifies 14 blockers with explicit closure tests. It does not
@@ -665,7 +703,7 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 20. Current scientific and publication conclusion
+## 21. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -679,7 +717,8 @@ The provisional [requirement-level conformance matrix](../../docs/requirement-co
 now inventories every backlog criterion and normative MUST-bearing source line with
 concrete executable surfaces and required receipts. The software candidate and
 bounded literature/novelty audit, question/estimand cards, and numeric split/model
-comparison design, independent statistical validation, and prospective causal-ledger
-and leakage protocol are complete. Subsequent revisions will add
-the registration-ready run/data manifest, analyses, audit-cost comparison, claim map,
-and critical review.
+comparison design, independent statistical validation, prospective causal-ledger and
+leakage protocol, and local audit-cost benchmark are complete. Subsequent revisions
+will add the registration-ready run/data manifest, empirical analyses, public-anchor
+and registered study-scale portions of the audit-cost comparison, claim map, and
+critical review.

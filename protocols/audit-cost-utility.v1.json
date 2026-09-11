@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "classification": "software-qualification-benchmark",
+  "researchFinding": false,
+  "purpose": "Measure local evidence-storage and end-to-end offline verification cost, then bind those measurements to the already-prespecified integrity challenge. This protocol does not estimate scientific outcomes or public-chain overhead.",
+  "inputCommit": "199459353a117576d29b826c718ec90340d0be60",
+  "inputVersion": "0.1.65",
+  "bundles": [
+    {
+      "runId": "qualification-e13-fixed-glyph",
+      "path": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-fixed-glyph",
+      "capturedTreeSha256": "b03a11e7f3b021e33ef3e7bebcab71beb4c39fc1017ff814c165b4b7a27d908f"
+    },
+    {
+      "runId": "qualification-e13-fixed-token",
+      "path": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-fixed-token",
+      "capturedTreeSha256": "f4c1f743c774ea21425484f4803075f7ac357fca8a0919d6caac55b5129d4450"
+    },
+    {
+      "runId": "qualification-e13-generative-bitmap",
+      "path": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-bitmap",
+      "capturedTreeSha256": "2091a6f83708a6d5148910bc83d7d2bc698477b73f8048e14e33dbd33d25cda8"
+    },
+    {
+      "runId": "qualification-e13-generative-canvas",
+      "path": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-canvas",
+      "capturedTreeSha256": "10adca00b802dff0d0e350b4a8ee00e456846bd1b20335b21080385dde0c3b16"
+    },
+    {
+      "runId": "qualification-e13-generative-tone",
+      "path": "evidence/validation/20260911-d07-resource-benchmark/bundles/runs/qualification-e13-generative-tone",
+      "capturedTreeSha256": "e30048717c60bbc20dbdca9bba0e3a39f9c975c3362f5f0c266ddf70375c4c7d"
+    }
+  ],
+  "timing": {
+    "warmupIterationsPerBundleAndVerifier": 1,
+    "measuredIterationsPerBundleAndVerifier": 5,
+    "ordinaryHashMeasuredIterationsPerBundle": 20,
+    "summaryStatistics": ["median", "p95", "minimum", "maximum"],
+    "typescriptCommand": "node packages/verifier/bin/ald-verify.js <bundle> --allow-unanchored --json --no-report --verifier-version audit-cost-v1",
+    "rustCommand": ".artifacts/cargo-target/release/ald-integrity-auditor <bundle>",
+    "ordinaryHashDefinition": "One SHA-256 over sorted relative paths and bytes for every verifier-input file; verification-report.json is excluded.",
+    "clock": "process.hrtime.bigint monotonic wall clock",
+    "interpretation": "Descriptive on this host only; process startup is included for both verifier commands, filesystem cache state is uncontrolled, and no inferential latency claim is allowed."
+  },
+  "storage": {
+    "payloadLowerBound": "UTF-8 JSON serialization of each event content value plus one newline.",
+    "ordinaryLogProxy": "UTF-8 JSONL containing only stream, sequence, turn when present, eventType, and content, in that key order.",
+    "signedStreams": "The five stream files declared by run-manifest.json, including hashes, links, key identifiers, signatures where applicable, and witness fields.",
+    "verifierInputBundle": "Every bundle file except verification-report.json.",
+    "capturedDirectory": "Every captured file, including the pre-existing verification-report.json.",
+    "interpretation": "The ordinary-log proxy is a declared storage comparator, not a runnable integrity system. Full-bundle overhead also includes policy snapshots and scientific metadata, so it must not be attributed entirely to cryptography."
+  },
+  "utility": {
+    "sourceReceipt": "reports/research/integrity-challenge-receipt.json",
+    "prespecifiedMutationCases": [
+      "event-content",
+      "attachment-bytes",
+      "lineage-injection",
+      "wrong-chain",
+      "false-receipt",
+      "unanchored-tail"
+    ],
+    "implementations": [
+      "typescript-production-verifier",
+      "rust-independent-integrity-auditor"
+    ],
+    "interpretation": "Observed rejection of one fixture per mutation and implementation is a deterministic software challenge, not a statistical detector-sensitivity estimate."
+  },
+  "anchorBoundary": {
+    "offlineBenchmarkAllowsUnanchored": true,
+    "rpcSupplied": false,
+    "publicTransactionsAuthorized": false,
+    "publicAnchorLatencyAndFee": "not-measured"
+  }
+}
