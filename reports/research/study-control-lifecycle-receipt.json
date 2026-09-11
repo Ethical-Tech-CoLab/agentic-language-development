@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "classification": "non-confirmatory-study-control-software-qualification",
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "candidate": {
+    "commit": "39a6e4570b9593d3305d979a19412bee4f104094",
+    "version": "0.1.55",
+    "trackedTreeAtLaunch": "clean"
+  },
+  "execution": {
+    "command": "pnpm run qualify:study-controls -- --out evidence/validation/20260911-v10-39a6e45-exact/qualification.json --root evidence/validation/20260911-v10-39a6e45-exact/runtime",
+    "exitCode": 0,
+    "wallSeconds": 10.05,
+    "maximumResidentSetKiB": 195940,
+    "bundleCount": 7,
+    "productionVerifierPasses": 7,
+    "independentRustAuditorPasses": 7,
+    "independentAuditEvents": 365,
+    "independentAuditCheckpoints": 52
+  },
+  "controls": {
+    "trainedNormalParent": {
+      "runId": "v10-trained-parent",
+      "trainingTurns": 16,
+      "evaluationTurns": 4,
+      "policiesChangedDuringTraining": true,
+      "evaluationPolicyHashesFrozen": true,
+      "probeScheduleFrozen": true,
+      "liveProbeApplications": 2
+    },
+    "derivedDisabledChild": {
+      "runId": "v10-derived-disabled-control",
+      "trainingTurns": 1,
+      "evaluationTurns": 4,
+      "sourcePolicyHashesMatchParent": true,
+      "evaluationPolicyHashesFrozen": true,
+      "evaluationCommunicationDisabled": true,
+      "lineageVerifierGaps": 0
+    },
+    "noLearning": {
+      "runId": "v10-no-learning",
+      "turns": 4,
+      "updatePolicyAbsentBothRoles": true,
+      "policyHashesConstant": true,
+      "policyCheckpointEvents": 0
+    }
+  },
+  "failureAndRecoveryPaths": {
+    "deadline": {
+      "runId": "v10-deadline",
+      "responseBudgetMs": 1000,
+      "timedOutTurns": 2,
+      "timeoutRejections": 2,
+      "unrecordedTurns": 0
+    },
+    "manualAbort": {
+      "runId": "v10-manual-abort",
+      "turnsBeforeAbort": 1,
+      "terminalState": "aborted-sealed",
+      "experimentDisposition": "aborted"
+    },
+    "evaluationSafetyStop": {
+      "runId": "v10-evaluation-safety-stop",
+      "adapterFailureTriggers": 1,
+      "retryAttempts": 2,
+      "safetyEscalationAbortEvents": 1,
+      "turnsBeforeStop": 2,
+      "terminalState": "aborted-sealed"
+    },
+    "snapshotRestore": {
+      "runId": "v10-snapshot-restore",
+      "snapshotTurn": 4,
+      "snapshotDigest": "sha256:89945a6588698b1537c29abd8729ec5eb6fdff70364fdc9074f0e59d4a0b94b3",
+      "turnCursorMatched": true,
+      "policyHashesMatchedBothRoles": true,
+      "committedPrefixVerified": true,
+      "recoveryEventRecorded": true,
+      "completedTurnsAfterRestore": 10
+    }
+  },
+  "rawEvidence": {
+    "path": "evidence/validation/20260911-v10-39a6e45-exact",
+    "gitIgnored": true,
+    "fileCount": 3108,
+    "bytes": 5949655,
+    "qualificationSha256": "e03965315e95587a763e3f65bf3fa9fc705e7d4c6c128b672779973703743383",
+    "qualificationLogSha256": "2d872bf1c329289df6e9cc0089dac2bafa8d219d34f86077987f890c531c7a60",
+    "independentAuditLogSha256": "683810d1420684f3d06ff54bc564786b8a0a48192f81e9bf4b2ca86f3c7dc575",
+    "fileManifestSha256": "a9a1f9f9fd42740b55ac4c4f309f3a2a41053a4a631286d242895ee35df1f88b"
+  },
+  "failedDiagnosticsRetained": [
+    "The first dirty invocation exposed an undeclared root workspace dependency for the anchor package.",
+    "The second dirty invocation incorrectly required the initialized child policy hash to equal its parent artifact hash instead of checking the pre-initialization source-policy witness.",
+    "Two dirty invocations corrected the qualification assertions to the canonical timeout outcome and channel fields.",
+    "A dirty invocation supplied the snapshot API clock that the initial runner omitted.",
+    "The first exact v0.1.54 execution passed the production qualification, but the independent Rust auditor rejected the derived child because it compared the manifest's normalized initial-policy references to a nonexistent top-level configuration field. That result is excluded from the passing count; v0.1.55 corrected and regression-tested the auditor before the exact rerun."
+  ],
+  "limitations": [
+    "The runs are deterministic software qualifications, not prospectively registered experiment data.",
+    "The anchor publisher used an explicitly labeled local fake-chain transport; no public transaction occurred.",
+    "In-process learners qualify controller behavior but do not replace the separately recorded Mode R container qualification.",
+    "The one-second deadline fixture proves recording and termination semantics, not model latency or production capacity.",
+    "The derived disabled-channel run contains one child training turn before frozen evaluation and is not a paired estimate of communication effect.",
+    "The snapshot restart reused in-memory qualification signers within one process; independent-machine restore with authorized persistent signers remains open."
+  ]
+}

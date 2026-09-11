@@ -50,6 +50,16 @@ This report proves only that a real open-weight model completed both Baby roles
 through the tool-only learner boundary. Its two-episode descriptive success
 rate is not a behavioral result and must not be cited as one.
 
+## Study-control lifecycle software qualification
+
+[`study-control-lifecycle-receipt.json`](research/study-control-lifecycle-receipt.json)
+binds the production-backed V10 qualification for frozen evaluation, a derived
+disabled-channel control, no-learning, deadline forfeits, manual and automatic
+abort paths, verified export, and SQLite snapshot restart. The receipt separates
+the seven production-verifier and independent Rust-auditor passes from the failed
+diagnostics that preceded them. These local fake-chain, in-process fixtures are
+software evidence only; they are not registered experiment outcomes.
+
 The local weights file must be read-only. Regenerate the complete attested
 qualification with the Homebrew `llama-server` on `PATH`:
 

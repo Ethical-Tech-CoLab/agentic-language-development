@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest qualified component candidate: `d6d98df` / v0.1.52
+Latest qualified component candidate: `39a6e45` / v0.1.55
 Report status: in progress  
 
 ## Executive Summary
@@ -30,6 +30,11 @@ Report status: in progress
   server probes, clean-process replay, all four tool-only calls, and the distinction
   between changing private memory and an absent weight-update path. Its serialized
   topology and 300-second qualification ceiling are not production-capacity evidence.
+- The exact v0.1.55 control-lifecycle candidate exported and production-verified
+  seven bounded runs spanning trained/frozen evaluation, a derived disabled-channel
+  control, no-learning, deadline forfeits, manual abort, evaluation safety escalation,
+  and SQLite snapshot restart. The independent Rust auditor accepted all 365 events
+  and 52 checkpoints after its own lineage-normalization defect was exposed and fixed.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -53,7 +58,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.52; exact recurrent, full Mode R, generative-carrier, frozen-model, and independent bundle audits pass at their recorded candidates |
+| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.55; exact recurrent, full Mode R, generative-carrier, frozen-model, control-lifecycle, and independent bundle audits pass at their recorded candidates |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -124,6 +129,7 @@ their cause, and followed by clean passing executions.
 | Consolidated check | Pass | 135 test files, 1,739 tests, source/contract/boundary/readiness/status/API checks, build, secret scan, and dependency audit |
 | Recurrent candidate check | Pass | Exact v0.1.48 detached candidate: 137 test files, 1,750 tests, Rust tests/clippy, every consolidated gate, secret scan, and dependency audit |
 | Generative-carrier candidate check | Pass | Exact v0.1.50 detached candidate: 139 test files, 1,760 tests, Rust tests/clippy, every consolidated gate, secret scan, dependency audit, five production carrier runs, and five separate Rust bundle audits |
+| Control-lifecycle candidate check | Pass | v0.1.55: 140 test files, 1,765 tests, three Rust tests plus clippy, every consolidated gate, 616-file secret scan, dependency audit, seven production-verifier passes, and seven separate Rust bundle audits |
 | Dependency audit | Pass | No known advisories at the configured high threshold; does not prove absence of vulnerabilities |
 | Mode R smoke | Pass | Two distinct containers, denied direct routes/filesystem/clipboard/process/worker access, normalized timing/size/error checks, 12 attack categories, kill-survival, and local updates for three reference tracks |
 
@@ -140,9 +146,9 @@ run. Because this report and receipt are later documentation, they are not part 
 the candidate that was exercised.
 
 These results establish bounded software behavior on one host and candidate. Later
-V07, V08, and V09 receipts qualify the recurrent learners, generative-carrier
-learning mechanism, and locally served frozen-model path. Public-chain execution and
-a frozen same-commit candidate containing every later research mechanism remain open.
+V07–V10 receipts qualify the recurrent learners, generative-carrier learning,
+locally served frozen-model path, and study control lifecycle. Public-chain execution
+and a frozen same-commit candidate containing every later research mechanism remain open.
 
 ## 6. Independent integrity challenge
 
@@ -327,7 +333,48 @@ study deadline. The executable/bottle hashes also do not enumerate every dynamic
 system library. Finally, the zero-of-two descriptive task success is not a scientific
 estimate, and the run is neither registered nor anchored.
 
-## 11. Critical gaps before empirical claims
+## 11. Study-control lifecycle qualification
+
+The [study-control lifecycle receipt](study-control-lifecycle-receipt.json) binds V10
+to exact commit `39a6e4570b9593d3305d979a19412bee4f104094` / v0.1.55. A clean launch
+executed seven exported runs through the production SQLite writer, checkpoint service,
+local qualification anchor, exporter, and verifier. All seven production reports had
+exit code zero. The separate Rust auditor accepted all seven bundles, independently
+checking 365 events and 52 checkpoints with no issue.
+
+The trained parent changed both scratch policies over 16 training turns and held both
+hashes constant for four evaluation turns. Its evaluation schedule was frozen before
+evaluation and two causal probes were applied. A derived child loaded both immutable
+parent policy artifacts, recorded matching pre-initialization source hashes, used a
+disabled channel throughout four evaluation turns, froze both policies during that
+phase, and produced no lineage verifier gap. The no-learning run exposed no
+`updatePolicy` method on either role, emitted no policy-checkpoint event, and retained
+constant policy hashes.
+
+Two deliberately over-budget turns each produced a Gateway timeout rejection and a
+recorded forfeited turn. A manual abort after one turn produced an `aborted-sealed`
+bundle and aborted experiment disposition. A fault on the first evaluation turn was
+retried exactly once, wrote one adapter-failure trigger, escalated because pause is
+unavailable in evaluation, and stopped after the failed turn with a verified
+`aborted-sealed` bundle. A scratch run was snapshotted at turn four, its SQLite store
+closed and reopened, and automatic recovery matched the turn cursor, both policy
+hashes, and every committed stream prefix before completing ten turns and sealing.
+
+The first exact candidate is an informative negative result: its production verifier
+accepted the derived bundle, but the independent Rust auditor rejected it because the
+auditor expected initial-policy references at the wrong configuration location. The
+auditor was corrected to normalize `babyA.initialPolicyRef` and
+`babyB.initialPolicyRef`, given a focused regression, and the entire consolidated
+suite rerun before the clean v0.1.55 qualification. The failed audit is not included
+in the seven-pass result.
+
+The exact run consumed 10.05 seconds and peaked at 195,940 KiB resident memory. Its
+3,108-file, 5,949,655-byte ignored evidence tree is content-bound in the receipt. These
+runs are unregistered software fixtures on a local fake chain. They do not estimate a
+communication effect, production model latency, public anchoring, or independent-host
+restore; the disabled child also contains one training turn before frozen evaluation.
+
+## 12. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -335,9 +382,9 @@ estimate, and the run is neither registered nor anchored.
 2. The existing E03 sufficient-statistic simulator does not yet validate the complete
    gate under bounded episode generation, multiplicity, dependence, tails, invalid
    runs, and reserve use.
-3. Existing no-learning message controls share identical paired trajectories because
-   the receiver ignores messages. A fixed trained receiver under controlled messages
-   is needed for causal communication qualification.
+3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
+   a prospectively registered, seed-paired panel of normal, disabled, constant, random,
+   and shuffled controls is still needed to estimate causal communication effects.
 4. Leakage measurements need explicit allowed and forbidden information sets plus
    detectable positive controls before a negative bound is meaningful.
 5. Ledger-prediction value must be compared with transcript-only, policy-state, random,
@@ -349,7 +396,7 @@ estimate, and the run is neither registered nor anchored.
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 12. Current scientific and publication conclusion
+## 13. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
