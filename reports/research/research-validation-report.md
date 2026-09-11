@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.62 (D06 consolidated gate passed)
+Latest tracked research-design candidate: v0.1.63 (D07 consolidated gate passed)
 Report status: in progress  
 
 ## Executive Summary
@@ -59,6 +59,10 @@ Report status: in progress
   auditor tests and clippy, every consolidated static/design gate, a 641-file secret
   scan, and the high-severity dependency audit. The live base-R leakage-design replay
   was byte-identical to the frozen receipt.
+- The seed/resource design derives 27,190 collision-free values across disjoint
+  qualification, pilot, confirmatory, and replication domains and caps tuning at five
+  development iterations. A fresh five-run benchmark supplies measured CPU, memory,
+  time, byte, and file rates rather than an assumed cost model.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -581,13 +585,46 @@ clearance is 0.9959, boundary Type I error is 0.05, and a 0.04-bit positive cont
 detected with probability above 0.99999999. A blinded pilot must verify the variance
 assumption or D07 must increase N. These are operating characteristics, not outcomes.
 
-## 18. Critical gaps before empirical claims
+## 18. Disjoint allocation and resource feasibility
+
+The [seed and resource allocation](../../docs/seed-and-resource-allocation.md) freezes
+NUL-separated SHA-256 domains for software qualification, blinded pilots,
+confirmatory execution, and replication. Paired conditions share a scenario seed at
+the same experiment/slot while each condition, role, Gateway, and analysis stream is
+distinct. The generated audit derived 27,190 seed values without collision. Pilot
+outcomes may choose only the primary N and fixed ten-percent reserve prefix; they
+cannot tune models, outcomes, margins, directions, splits, or exclusions.
+
+The candidate grid is N=25, 50, 75, 100, 125, 150, 200, and 300. Each hypothesis's
+frozen raw margin and blinded-pilot upper variance bound must drive 30,000 complete
+family simulations. The smallest shared N whose lower 95% Monte Carlo power bound is
+at least 0.90 is selected. N=100 is only the provisional resource value supported by
+the existing standardized-effect-0.40 family simulation. If N=300 is insufficient,
+the affected study remains unregistered rather than widening its margin.
+
+A fresh five-carrier/260-turn qualification took 37.58 wall seconds at about one CPU,
+peaked at 264,896 KiB RSS, and wrote 25,532,466 bytes across 15,695 files. Scaling the
+maximum seed pools at this recurrent-run rate yields 9,171 bundles, 9,358,100 turns,
+855.9 GiB uncompressed, and 375.7 single-core hours. Frozen-model and public-chain
+costs are not included and can only raise requirements. The authorized local ceiling
+is 72 CPU-hours, 25 GiB, 6 GiB process memory, one frozen-model process, and zero
+external spend. Local qualification and bounded pilots fit; the complete campaign
+does not. This is a measured feasibility finding, not an empirical research result.
+
+The first consolidated D07 run failed one synthetic transport-timing assertion after
+1,770 other tests passed because its no-op fixture used the contended host wall clock.
+The harness already exposed an injectable monotonic clock, so the test now uses that
+deterministic boundary. The focused suite passed 20 consecutive executions and the
+complete gate then passed all 1,771 tests across 140 files. This stabilizes the test
+without relaxing the real transport evaluator or its tolerances.
+
+## 19. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
    generalization, and useful sign invention remain unimplemented or untested.
-2. Hypothesis-specific raw-scale practical margins, disjoint pilot variances, complete
-   member simulations, and resulting seed allocations remain to be frozen in D07.
+2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
+   to be produced before D08 can freeze registration-ready configurations.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
@@ -602,7 +639,7 @@ assumption or D07 must increase N. These are operating characteristics, not outc
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 19. Current scientific and publication conclusion
+## 20. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -618,5 +655,5 @@ concrete executable surfaces and required receipts. The software candidate and
 bounded literature/novelty audit, question/estimand cards, and numeric split/model
 comparison design, independent statistical validation, and prospective causal-ledger
 and leakage protocol are complete. Subsequent revisions will add
-the pilot cost model, run/data manifest, analyses, audit-cost comparison, claim map,
+the registration-ready run/data manifest, analyses, audit-cost comparison, claim map,
 and critical review.

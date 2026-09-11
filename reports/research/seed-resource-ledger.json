@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "classification": "outcome-blind-design-evidence",
+  "researchFinding": false,
+  "protocolSha256": "2875b9be8da12a0e45693157c869db703eb06803cf0d94097986162d130a779c",
+  "seedAlgorithm": "sha256-nul-separated-v1",
+  "distinctDerivedSeeds": 27190,
+  "collisions": 0,
+  "allocations": [
+    {
+      "experiment": "E00",
+      "stage": "software-qualification",
+      "conditions": 1,
+      "primarySlots": 5,
+      "reserveSlots": 0,
+      "bundles": 5,
+      "turns": 500,
+      "allocationCommitment": "6e6857d28c3a713edaac834fab51614fa9549243f2ade0b42effaaea6f7c82d2"
+    },
+    {
+      "experiment": "E01",
+      "stage": "software-qualification",
+      "conditions": 1,
+      "primarySlots": 5,
+      "reserveSlots": 0,
+      "bundles": 5,
+      "turns": 500,
+      "allocationCommitment": "e1e9564fb4fd58bcbd8201bd9c6cb963621cf89dbd22e7183421479322f71c52"
+    },
+    {
+      "experiment": "E02",
+      "stage": "software-qualification",
+      "conditions": 1,
+      "primarySlots": 5,
+      "reserveSlots": 0,
+      "bundles": 5,
+      "turns": 4000,
+      "allocationCommitment": "a6f9359bb45d9fba67f0f49450c0aacb82320a4e55ca7821afed19faa3b6acc7"
+    },
+    {
+      "experiment": "E03",
+      "stage": "blinded-pilot",
+      "conditions": 6,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 120,
+      "turns": 24000,
+      "allocationCommitment": "4ecf3bea4c4520a034151752b02258af7632654046897b45728b5d5ba9692160"
+    },
+    {
+      "experiment": "E03",
+      "stage": "confirmatory",
+      "conditions": 6,
+      "primarySlots": 300,
+      "reserveSlots": 30,
+      "bundles": 1980,
+      "turns": 396000,
+      "allocationCommitment": "e34a52c47d3ab536e3f8710a394adf1682eac153571161127ce8d5c6dcf64597"
+    },
+    {
+      "experiment": "E10",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 165,
+      "turns": 23100,
+      "allocationCommitment": "da792c7ff7113e733bac3db6981efebfd85fdf3b14b0b4a7039c634955c07592"
+    },
+    {
+      "experiment": "E11",
+      "stage": "blinded-pilot",
+      "conditions": 5,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 100,
+      "turns": 120000,
+      "allocationCommitment": "f57aaa251a9bdcef8a28ec955e8f3ab5c563ae5523a6cc87160fedc1e51d96ab"
+    },
+    {
+      "experiment": "E11",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 550,
+      "turns": 660000,
+      "allocationCommitment": "ced373157841f76111ab6daf93105a2a222454cb119a9d984fe407ce77965d4a"
+    },
+    {
+      "experiment": "E12",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 165,
+      "turns": 198000,
+      "allocationCommitment": "7d4d3f479f6ca5dd0cacc961e65c0af6b66d2a640132eacaa625940720b42fdf"
+    },
+    {
+      "experiment": "E13",
+      "stage": "blinded-pilot",
+      "conditions": 5,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 100,
+      "turns": 120000,
+      "allocationCommitment": "7f23f91ca1dce5e585fa402dc65e41260f8bd79872a625fbc216c1285150e7ab"
+    },
+    {
+      "experiment": "E13",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 550,
+      "turns": 660000,
+      "allocationCommitment": "a596454f4ae7a1072850f807dca0024a53c868d7de3a76ef3ba0801a5d479c8a"
+    },
+    {
+      "experiment": "E14",
+      "stage": "confirmatory",
+      "conditions": 2,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 66,
+      "turns": 79200,
+      "allocationCommitment": "442e652e2432dc92683be521bd3c5cfd096f5fd59d20e6fdedfc3abf72c607ce"
+    },
+    {
+      "experiment": "E15",
+      "stage": "blinded-pilot",
+      "conditions": 2,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 40,
+      "turns": 48000,
+      "allocationCommitment": "cbc714ec4f15c568cc62f9d56f90b6c9a0d72ec07ef78ee7f86b3e404554dc1a"
+    },
+    {
+      "experiment": "E15",
+      "stage": "confirmatory",
+      "conditions": 2,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 220,
+      "turns": 264000,
+      "allocationCommitment": "74bb35064d4866563d51fc277f85c6f35dc61484665de2e416429409509116cd"
+    },
+    {
+      "experiment": "E16",
+      "stage": "blinded-pilot",
+      "conditions": 1,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 20,
+      "turns": 24000,
+      "allocationCommitment": "096a07f010992b3ac0735f9d14ea5845c064b4cdacc7dabe171ff267a6d5fe6c"
+    },
+    {
+      "experiment": "E16",
+      "stage": "confirmatory",
+      "conditions": 1,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 110,
+      "turns": 132000,
+      "allocationCommitment": "76b59f0927a66d5dc645fb8c4cd75cc6944a2e1f3176ee2675446c59ad139694"
+    },
+    {
+      "experiment": "E20",
+      "stage": "blinded-pilot",
+      "conditions": 5,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 100,
+      "turns": 125000,
+      "allocationCommitment": "7f767dfbda1fee3af6a63f0cdd466faca27997683467647cfb42dcdbab23c5ba"
+    },
+    {
+      "experiment": "E20",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 550,
+      "turns": 687500,
+      "allocationCommitment": "418cc71155ae6df20e299dc7c37fef3759eabf5be4ccefd705dc19450c2bd307"
+    },
+    {
+      "experiment": "E21",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 165,
+      "turns": 198000,
+      "allocationCommitment": "558b6ea55ada7ba69382f47bd2573969259143d6528d32ec644e6d05df6bc258"
+    },
+    {
+      "experiment": "E22",
+      "stage": "confirmatory",
+      "conditions": 8,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 264,
+      "turns": 316800,
+      "allocationCommitment": "100028f06a71d6f35f492391a60b1ef3c0cc8fb987d8f4645f38180b8d3c1cde"
+    },
+    {
+      "experiment": "E30",
+      "stage": "blinded-pilot",
+      "conditions": 2,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 40,
+      "turns": 48000,
+      "allocationCommitment": "540045281842f8e66f1a6b71a44b19d4faeff22ab46d494846b1966de8f1e422"
+    },
+    {
+      "experiment": "E30",
+      "stage": "confirmatory",
+      "conditions": 2,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 220,
+      "turns": 264000,
+      "allocationCommitment": "8942a47c2da5496f0a9bf91ee2f82c0ba0b35868b57239f889b5be0b94b333c7"
+    },
+    {
+      "experiment": "E31",
+      "stage": "confirmatory",
+      "conditions": 2,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 66,
+      "turns": 660000,
+      "allocationCommitment": "40efca19a2f91249b295a80a52a19d37bb0b59c119bc9c2a32504516a05f063f"
+    },
+    {
+      "experiment": "E32",
+      "stage": "blinded-pilot",
+      "conditions": 5,
+      "primarySlots": 20,
+      "reserveSlots": 0,
+      "bundles": 100,
+      "turns": 120000,
+      "allocationCommitment": "3c9c6f108b438111d2fb950dcd8fd8e91ffc7cdbcbbf77b570ab3d3abf971299"
+    },
+    {
+      "experiment": "E32",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 100,
+      "reserveSlots": 10,
+      "bundles": 550,
+      "turns": 660000,
+      "allocationCommitment": "9f2b4b4a1375e1b957f30064bb0c590c452a8542fa4fb2c24463d197aa10333b"
+    },
+    {
+      "experiment": "E40",
+      "stage": "confirmatory",
+      "conditions": 5,
+      "primarySlots": 30,
+      "reserveSlots": 3,
+      "bundles": 165,
+      "turns": 198000,
+      "allocationCommitment": "e6910393c976b515a4b4e2700ea4ce6090c82de63f1e1c8fade67f1444785c11"
+    }
+  ],
+  "totals": {
+    "nonReplicationBundles": 6421,
+    "replicationBundles": 2750,
+    "maximumMaterializedBundles": 9171,
+    "nonReplicationTurns": 6030600,
+    "replicationTurns": 3327500,
+    "maximumMaterializedTurns": 9358100,
+    "projectedUncompressedGiBAtMeasuredRate": 855.8688616329947,
+    "projectedSingleCoreHoursAtMeasuredRate": 375.7237158119658,
+    "fitsLocalWorkingStorageCeiling": false,
+    "fitsLocalCpuCeiling": false
+  },
+  "boundary": "Maximum pools are prospective identifiers, not permission to execute or evidence that resources, governance, registration, anchors, or external review exist."
+}

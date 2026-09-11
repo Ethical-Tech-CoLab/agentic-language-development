@@ -102,8 +102,13 @@ describe('ALD-067 active side-channel harness', () => {
 
   it('actively samples timing, wire size, and response shape', async () => {
     const response = '{"turnComplete":true}';
+    let clockTick = 0;
     const report = await runActiveTransportAttacks({
       deploymentMode: 'research-grade',
+      now: () => {
+        clockTick += 1;
+        return clockTick;
+      },
       samplesPerCondition: 3,
       conditions: [
         {

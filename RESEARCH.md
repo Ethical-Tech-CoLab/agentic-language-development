@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.62 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.63 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -885,6 +885,22 @@ Allowed and forbidden information sets and detector-positive controls are explic
 for E01, E02, E13, and E20. Intended normalized carrier form is communication, not a
 side channel.
 
+Seed and resource allocation is frozen in
+[`protocols/seed-and-resource-allocation.v1.json`](protocols/seed-and-resource-allocation.v1.json).
+Qualification, blinded-pilot, confirmatory, and replication stages use disjoint
+SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway, or
+analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
+complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
+of at least 0.90. N=100 is a planning value, not a selected result.
+
+A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
+At that measured uncompressed rate, maximum materialized pools including replication
+project to 9,171 bundles, 9.36 million turns, 855.9 GiB, and 375.7 single-core hours.
+The present local ceiling is 72 CPU-hours, 25 GiB, one frozen-model process, and zero
+external spend. It supports bounded qualification and pilots, not the full campaign;
+confirmatory registration requires an exact selected prefix and an approved execution
+resource plan.
+
 Run exclusions are limited to pre-specified integrity or protocol failures. Each
 condition receives a fixed ordered list of primary and reserve seeds before outcomes
 are observed. An invalid primary seed may be replaced only by the next reserve seed;
@@ -1068,7 +1084,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.62 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.63 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.

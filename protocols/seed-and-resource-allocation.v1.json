@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-09-11",
+  "status": "D07-frozen allocation and resource policy; actual confirmatory prefixes remain outcome-blind pilot outputs",
+  "evidenceBoundary": "No seed in this design has been used for a pilot, confirmatory, or replication outcome. Qualification fixtures remain a separate evidence class.",
+  "seedDerivation": {
+    "algorithm": "SHA-256 UTF-8 domain strings separated by one NUL byte",
+    "root": "ald-seed-allocation-v1",
+    "stageDomains": ["software-qualification", "blinded-pilot", "confirmatory", "replication"],
+    "scenario": "root || NUL || stage || NUL || experiment || NUL || slot || NUL || scenario",
+    "learner": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || role || NUL || learner",
+    "gateway": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || gateway",
+    "analysis": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || analysis",
+    "pairingRule": "Conditions in a paired comparison share the scenario seed at a stage/experiment/slot but have distinct learner, Gateway, and analysis seeds.",
+    "roleRule": "baby-a and baby-b always receive distinct learner seeds.",
+    "encoding": "lowercase 64-character hexadecimal digest"
+  },
+  "stagePolicy": {
+    "softwareQualification": "May validate mechanics only; excluded from all variance, effect, confirmatory, and replication estimates.",
+    "blindedPilot": "Twenty slots per condition where a primary design needs variance or feasibility estimation. Pilot outcomes select N using the frozen rule and never enter confirmatory estimates.",
+    "confirmatory": "Use the ordered prefix selected before unblinding, followed only by ordered reserves for prespecified validity failures. No outcome-based stopping or seed replacement.",
+    "replication": "Uses a distinct stage domain and the frozen original N and conditions; no original or pilot seed can recur.",
+    "amendment": "A changed model, outcome, margin, split, or test creates a new protocol version and new root. Prior attempts remain indexed."
+  },
+  "tuningBudget": {
+    "maximumDevelopmentIterationsPerExperiment": 5,
+    "maximumQualificationSeedsPerIterationPerCondition": 5,
+    "selectionDataset": "training plus validation only",
+    "heldOutAccesses": 1,
+    "pilotMayTune": ["primary seed count", "reserve count from the fixed ten-percent rule"],
+    "pilotMayNotTune": ["model architecture", "outcome definition", "effect margin", "test direction", "test split", "exclusion rule"],
+    "failedIterationRule": "Preserve and report it; do not rerun the same seed into a pass."
+  },
+  "sampleSizeRule": {
+    "family": "H1-H8 with H2 and H4 separate, for nine global-Holm members",
+    "familyWiseAlpha": 0.05,
+    "targetPower": 0.90,
+    "monteCarloRepetitions": 30000,
+    "monteCarloLowerConfidenceFloor": 0.90,
+    "pilotSlotsPerCondition": 20,
+    "candidatePrimarySeeds": [25, 50, 75, 100, 125, 150, 200, 300],
+    "provisionalPlanningN": 100,
+    "provisionalMinimumStandardizedEffect": 0.4,
+    "selection": "For every member, use its frozen raw-scale margin and blinded-pilot upper variance bound to simulate the complete member test, composite rule, missingness, and global Holm family. Select the smallest shared candidate N whose all-required-decisions lower 95% Monte Carlo power bound is at least 0.90.",
+    "failure": "If no candidate through N=300 qualifies, do not widen a margin. Redesign prospectively or obtain a larger approved resource envelope before registration.",
+    "reserves": "ceil(0.10 * selected N) per condition; validity failures only."
+  },
+  "allocations": [
+    {"experiment":"E00","class":"qualification","conditions":["integrity-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":100},
+    {"experiment":"E01","class":"qualification","conditions":["isolation-attack-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":100},
+    {"experiment":"E02","class":"qualification","conditions":["semantic-leakage-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":800},
+    {"experiment":"E03","class":"qualification","conditions":["disabled","constant","random","shuffled","normal-no-learning","oracle"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":200},
+    {"experiment":"E03","class":"qualification","conditions":["disabled","constant","random","shuffled","normal-no-learning","oracle"],"stage":"confirmatory","slots":300,"reserves":30,"turnsPerRun":200,"allocationRule":"Only the prefix selected from the E03 variance bands is attempted; 300+30 is the pre-materialized maximum pool."},
+    {"experiment":"E10","class":"secondary-benchmark","conditions":["normal","disabled","constant","random","shuffled"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":140},
+    {"experiment":"E11","class":"confirmatory-H1","conditions":["normal","disabled","constant","random","shuffled"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E11","class":"confirmatory-H1","conditions":["normal","disabled","constant","random","shuffled"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E12","class":"secondary-benchmark","conditions":["self-supervised","no-learning","memory-frozen","loss-disabled","message-shuffled"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":1200},
+    {"experiment":"E13","class":"confirmatory-H5","conditions":["fixed-token","fixed-glyph","generative-bitmap","generative-canvas","generative-tone"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E13","class":"confirmatory-H5","conditions":["fixed-token","fixed-glyph","generative-bitmap","generative-canvas","generative-tone"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E14","class":"secondary","conditions":["repair-turn","no-repair-turn"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":1200},
+    {"experiment":"E15","class":"confirmatory-H3","conditions":["bandwidth-32x4","bandwidth-128x8"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E15","class":"confirmatory-H3","conditions":["bandwidth-32x4","bandwidth-128x8"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E16","class":"confirmatory-H2-H4","conditions":["paired-intervention-suite"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E16","class":"confirmatory-H2-H4","conditions":["paired-intervention-suite"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E20","class":"confirmatory-H6a-H6b","conditions":["none","declared-six","permuted-six","opaque-six","derived"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1250},
+    {"experiment":"E20","class":"confirmatory-H6a-H6b","conditions":["none","declared-six","permuted-six","opaque-six","derived"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1250},
+    {"experiment":"E21","class":"secondary-benchmark","conditions":["no-learning","frozen-memory","extrinsic-rl","intrinsic-rl","self-supervised"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":1200},
+    {"experiment":"E22","class":"secondary","conditions":["constant","learning-rate-annealing","exploration-annealing","memory-growth","staged-complexity","staged-bandwidth","consolidation","curriculum"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":1200},
+    {"experiment":"E30","class":"confirmatory-H7","conditions":["fixed-dyad","eight-partner-round-robin"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E30","class":"confirmatory-H7","conditions":["fixed-dyad","eight-partner-round-robin"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E31","class":"secondary","conditions":["no-shift","registered-shift"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":10000},
+    {"experiment":"E32","class":"confirmatory-H8","conditions":["cooperative","private-aligned","semi-cooperative","conflicting","no-agreement"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":1200},
+    {"experiment":"E32","class":"confirmatory-H8","conditions":["cooperative","private-aligned","semi-cooperative","conflicting","no-agreement"],"stage":"confirmatory","slots":100,"reserves":10,"turnsPerRun":1200},
+    {"experiment":"E40","class":"exploratory","conditions":["plain","ephemeral","standard-ratchet","known-adversary","unseen-adversary"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":1200}
+  ],
+  "replication": {
+    "stage": "replication",
+    "sourceExperiments": ["E11", "E13", "E15", "E16", "E20", "E30", "E32"],
+    "conditionsPerSlot": 25,
+    "slots": 100,
+    "reserves": 10,
+    "plannedBundles": 2750,
+    "rule": "D08 replaces the provisional 100+10 with the exact original selected N+reserves before E50 registration; all designated primary conditions are repeated."
+  },
+  "resourceBenchmark": {
+    "classification": "software qualification; not study data",
+    "command": "pnpm run qualify:generative-carriers with five carriers, 40 training and 12 evaluation turns",
+    "runs": 5,
+    "turns": 260,
+    "wallSeconds": 37.58,
+    "userSeconds": 32.5,
+    "systemSeconds": 4.8,
+    "maximumResidentKiB": 264896,
+    "bytes": 25532466,
+    "files": 15695,
+    "bytesPerTurn": 98201.79230769231,
+    "wallSecondsPerRun": 7.516,
+    "limitations": [
+      "The benchmark includes build startup and local fake-chain verification.",
+      "It is a short recurrent carrier qualification, not a frozen-model or public-chain measurement.",
+      "Linear scaling is a conservative planning approximation, not a throughput guarantee."
+    ]
+  },
+  "localCeiling": {
+    "cpuHours": 72,
+    "workingStorageGiB": 25,
+    "maximumResidentGiB": 6,
+    "frozenModelConcurrency": 1,
+    "externalSpend": 0,
+    "allowed": "software qualification, protocol checks, and explicitly labeled outcome-blind or non-confirmatory pilots that fit the ceiling",
+    "forbidden": "claiming the ceiling can execute the complete confirmatory plus replication campaign, starting paid compute, or spending chain funds"
+  },
+  "planningAccounting": {
+    "maximumMaterializedBundlesIncludingReplication": 9171,
+    "maximumMaterializedTurns": 9358100,
+    "projectedUncompressedGiBAtMeasuredRate": 855.8688616329947,
+    "projectedSingleCoreHoursAtMeasuredRate": 375.7237158119658,
+    "interpretation": "The maximum seed pools are identifiers, not authorization to execute every slot. The full campaign exceeds the local storage and CPU ceilings before frozen-model and public-chain overhead. D08 must bind selected prefixes and an approved execution environment before registration."
+  }
+}

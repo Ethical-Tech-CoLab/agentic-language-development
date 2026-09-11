@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.62 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.63 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -961,6 +961,20 @@ bound is seed-level Student-t and the percentile bootstrap is sensitivity-only.
 Allowed and forbidden information sets and detector-positive controls are explicit
 for E01, E02, E13, and E20. Intended normalized carrier form is communication, not a
 side channel.</p>
+<p>Seed and resource allocation is frozen in
+<a href="protocols/seed-and-resource-allocation.v1.json"><code>protocols/seed-and-resource-allocation.v1.json</code></a>.
+Qualification, blinded-pilot, confirmatory, and replication stages use disjoint
+SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway, or
+analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
+complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
+of at least 0.90. N=100 is a planning value, not a selected result.</p>
+<p>A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
+At that measured uncompressed rate, maximum materialized pools including replication
+project to 9,171 bundles, 9.36 million turns, 855.9 GiB, and 375.7 single-core hours.
+The present local ceiling is 72 CPU-hours, 25 GiB, one frozen-model process, and zero
+external spend. It supports bounded qualification and pilots, not the full campaign;
+confirmatory registration requires an exact selected prefix and an approved execution
+resource plan.</p>
 <p>Run exclusions are limited to pre-specified integrity or protocol failures. Each
 condition receives a fixed ordered list of primary and reserve seeds before outcomes
 are observed. An invalid primary seed may be replaced only by the next reserve seed;
@@ -1113,7 +1127,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.62 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.63 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>

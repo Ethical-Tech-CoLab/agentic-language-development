@@ -13,6 +13,10 @@ and invalid-run behavior. The causal-ledger/leakage protocol freezes prospective
 prediction chronology, comparator information sets, allowed/forbidden fields,
 detector-positive controls, and powered E02/E20 negative bounds; its base-R receipt
 contains outcome-blind operating characteristics rather than experiment results.
+The seed/resource protocol and generated ledger separately commit disjoint stage
+namespaces, paired-seed derivation, tuning limits, allocation formulas, a fresh local
+resource benchmark, and the explicit finding that the maximum campaign pool exceeds
+the authorized zero-spend local ceiling.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

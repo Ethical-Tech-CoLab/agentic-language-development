@@ -89,8 +89,18 @@ Unless an experiment explicitly varies one of these, hold it constant:
   [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md);
 - the affect channel is disabled unless explicitly under study;
 - experiment schedules and seeds are fixed before the run;
+- software-qualification, blinded-pilot, confirmatory, and replication seeds use
+  disjoint SHA-256 domains; paired conditions share only their scenario seed;
+- pilot outcomes select only the predeclared seed-count prefix and never enter a
+  confirmatory or replication estimate;
 - held-out evaluation runs with learning disabled;
 - no production secrets or personal data appear in any experiment.
+
+The exact derivation, tuning limit, candidate N grid, ordered reserves, per-condition
+allocations, and current zero-spend local resource ceiling are frozen in
+[`protocols/seed-and-resource-allocation.v1.json`](protocols/seed-and-resource-allocation.v1.json).
+The generated ledger contains design commitments only; it is not evidence that any
+pilot or study seed has run.
 
 ## 6. Standard Run Record
 
