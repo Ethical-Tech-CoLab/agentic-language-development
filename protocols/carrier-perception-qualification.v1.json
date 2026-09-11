@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "classification": "synthetic-software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "645a529094300e09e78d5e5e5cb5152246d538d7",
+    "version": "0.1.71"
+  },
+  "sourceHashes": {
+    "packages/analysis/src/carrier-perception.ts": "c87edd52183cc3b9db816c36149894c915ab5a163a9c5a8205aa8616b928c3ef",
+    "packages/analysis/__tests__/carrier-perception.test.ts": "f6c9f843bc7a96d7e8e59928564a2fe586138da8d845fbd26aaa19894a16f86f"
+  },
+  "carriers": [
+    "generative-bitmap",
+    "generative-canvas",
+    "generative-tone"
+  ],
+  "fixture": {
+    "familiesPerCarrier": 2,
+    "prototypesPerCarrier": 2,
+    "novelQueriesPerCarrier": 2,
+    "expectedAccuracy": 1,
+    "expectedNovelQueries": 2
+  },
+  "negativeControls": [
+    "cross-carrier-distance",
+    "malformed-bitmap",
+    "malformed-canvas",
+    "malformed-right-tone",
+    "duplicate-identifier",
+    "uncovered-query-family"
+  ],
+  "exactValidation": {
+    "freshFrozenInstall": true,
+    "focusedTests": 9,
+    "testFiles": 143,
+    "tests": 1790,
+    "rustTests": 3,
+    "secretFilesScanned": 668,
+    "highSeverityDependencyVulnerabilities": 0,
+    "consolidatedWallSeconds": 177.67,
+    "consolidatedMaximumResidentSetKiB": 951768,
+    "trackedFilesManifestSha256": "10e32f0c71125dba0070e46304c0f90f4c6947437f6863ed71f2c6ce32058108"
+  },
+  "rawEvidence": {
+    "directory": "evidence/validation/20260911-d08-b09-645a529-exact",
+    "gitTracked": false,
+    "installLogSha256": "9057991e8420c620798bc1fb3667092cd44452fd5243a616d74ebd7e42cb6135",
+    "focusedLogSha256": "615b3de9c9a5bb732da0a9cd7c456373c435ca52b367c169bce0ac3e4c0296e9",
+    "checkLogSha256": "48bb1e8277f22d105c11e1f34ca9a266d9e81fb015f326a67858cfd8b483437f"
+  },
+  "boundary": "This qualifies deterministic handcrafted carrier-distance plumbing on synthetic positive and negative controls. It does not show that a learner acquired the distance, learned a transformation rule, generalized to held-out forms, used the forms successfully, or resisted side-feature leakage in the selected study topology."
+}

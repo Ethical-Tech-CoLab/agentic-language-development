@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.71 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.72 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -703,8 +703,10 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants. Handcrafted carrier-specific distances and held-out nearest-prototype
-   scoring are implemented, but this does not establish learned transformation,
-   learned perceptual generalization, or useful sign invention.
+   scoring passed exact clean-candidate synthetic qualification across all three
+   generated carrier classes and six rejection paths, but this does not establish
+   learned transformation, learned perceptual generalization, useful sign invention,
+   or selected-topology side-feature bounds.
 2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
    to be produced before D08 can freeze registration-ready configurations.
    The fail-closed packet inventory currently resolves 19 protocol-card bindings but

@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.71 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.72 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1084,7 +1084,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.71 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.72 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1109,7 +1109,8 @@ Implemented:
   leaves 190 experiment-specific bindings open, and emits zero registration hashes;
 - grammar-valid bitmap, translation-tolerant canvas, and graded tone distances with
   deterministic nearest-prototype evaluation; this is a handcrafted E13 diagnostic,
-  not evidence that a learner learned the metric or generalized to novel forms;
+  not evidence that a learner learned the metric or generalized to novel forms; an
+  exact clean-candidate qualification covers three carriers and six rejection paths;
 - a Base anchor client with confirmation/recovery handling and explicit mainnet
   gating, tested without claiming a funded public transaction;
 - deterministic scenarios, the tool-only Gateway, all declared carrier controls,

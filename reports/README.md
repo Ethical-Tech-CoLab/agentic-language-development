@@ -36,6 +36,10 @@ next candidate corrected. It is synthetic software evidence, not an E16 result.
 The registration-readiness inventory applies an eleven-binding fail-closed packet
 contract to all 19 experiment cards. It deliberately emits zero packet hashes while
 190 exact experiment-specific bindings remain unresolved.
+The carrier-perception protocol and receipt bind a clean v0.1.71 candidate, three
+handcrafted carrier distances, held-out nearest-prototype fixtures, and six rejection
+paths. Its perfect synthetic controls do not establish learner generalization or
+production-topology leakage bounds, so B09 and E13 remain open.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

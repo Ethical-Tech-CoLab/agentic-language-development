@@ -37,9 +37,11 @@ to relabel any existing fixture as a pilot.
 
 ## Major design and implementation blockers
 
-- E13 still needs perceptual generalization and positive controls for forbidden
-  metadata, timing, envelope, dimension, sample-rate, compression, and container
-  paths on the selected media.
+- E13 now has an exact synthetic qualification for handcrafted bitmap, canvas, and
+  tone distance plus held-out nearest-prototype scoring. It still needs prospective
+  learned-form generalization and positive controls for forbidden metadata, timing,
+  envelope, dimension, sample-rate, compression, and container paths on the selected
+  production media.
 - E15/E16 now have an exact synthetically qualified validation-only comparator core
   for all five non-ledger baselines, but production intervention-chain integration
   and prospectively eligible execution are still absent.
