@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest qualified component candidate: `39a6e45` / v0.1.55
+Latest integrated software candidate: `b2b119c` / v0.1.56
 Report status: in progress  
 
 ## Executive Summary
@@ -35,6 +35,11 @@ Report status: in progress
   control, no-learning, deadline forfeits, manual abort, evaluation safety escalation,
   and SQLite snapshot restart. The independent Rust auditor accepted all 365 events
   and 52 checkpoints after its own lineage-normalization defect was exposed and fixed.
+- The integrated v0.1.56 candidate passed a clean detached frozen install, all 1,765
+  tests and consolidated gates, the four-track real-container topology, the seven-run
+  control replay, and 11 independent Rust bundle audits on one immutable commit. A
+  nested document-renderer build stage retains two known high-severity dev-toolchain
+  advisories, so no hardened supply-chain claim is made.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -374,7 +379,39 @@ runs are unregistered software fixtures on a local fake chain. They do not estim
 communication effect, production model latency, public anchoring, or independent-host
 restore; the disabled child also contains one training turn before frozen evaluation.
 
-## 12. Critical gaps before empirical claims
+## 12. Integrated software candidate
+
+The [integrated candidate receipt](integrated-software-candidate-receipt.json) binds
+V11 to detached exact commit `b2b119c9469bdc452dbdfab4dabd70337b0ba837` /
+v0.1.56. The worktree was clean before and after a frozen pnpm install, after the
+consolidated check, and after container execution. The exact suite passed 1,765 tests
+in 140 files, three Rust tests plus clippy, every static/readiness/status/API gate, a
+617-file secret scan, and the configured high-severity dependency audit in 164.15
+seconds with 938,296 KiB peak resident memory.
+
+On that same commit, four distinct-learner-container Mode R tracks completed 32 turns,
+261 primary events, and 49 checkpoints. Every run sealed and production-verified;
+the recurrent scratch and self-supervised tracks retained matched 4,049-parameter
+capacity, independent initialization, observed training updates, and frozen evaluation
+hashes. The seven-bundle control lifecycle replay also passed. A freshly rebuilt Rust
+auditor accepted all 11 exports, independently checking 662 events and 101 checkpoints.
+The retained 4B model and Homebrew inference executable hashes also remained unchanged.
+
+The image build reproduced two known high-severity advisories inside the commit-pinned
+document renderer's nested dev lock: `pdfjs-dist` 6.1.200 and `sharp` 0.35.3. The root
+workspace uses fixed versions 6.3.289 and 0.35.4, and exact scans found neither
+vulnerable nested version in any of the three pruned runtime images. This narrows the
+risk to the source-prepare build stage; it does not eliminate it. V11 is therefore
+closed with an explicit claim reduction: runtime integration is qualified, while
+hardened or vulnerability-free image construction is not claimed.
+
+The exact candidate used local qualification anchors and ephemeral qualification
+signers. It does not supply a public-chain receipt, authentic registration, governance
+approval, independent-host restoration, or scientific outcome. The frozen-model and
+five-carrier live component runs were not repeated because their implementations did
+not change after their exact receipts; their assets and integrated tests were rechecked.
+
+## 13. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -396,7 +433,7 @@ restore; the disabled child also contains one training turn before frozen evalua
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 13. Current scientific and publication conclusion
+## 14. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal

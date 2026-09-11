@@ -60,6 +60,11 @@ the seven production-verifier and independent Rust-auditor passes from the faile
 diagnostics that preceded them. These local fake-chain, in-process fixtures are
 software evidence only; they are not registered experiment outcomes.
 
+[`integrated-software-candidate-receipt.json`](research/integrated-software-candidate-receipt.json)
+records the same-commit detached install, consolidated suite, real-container Mode R
+run, control replay, independent Rust audits, asset hashes, and the explicit claim
+reduction for the renderer's build-stage advisories.
+
 The local weights file must be read-only. Regenerate the complete attested
 qualification with the Homebrew `llama-server` on `PATH`:
 

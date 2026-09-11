@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "classification": "integrated-software-candidate-qualification",
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "candidate": {
+    "commit": "b2b119c9469bdc452dbdfab4dabd70337b0ba837",
+    "version": "0.1.56",
+    "worktree": "detached-exact-commit",
+    "cleanBeforeInstall": true,
+    "cleanAfterInstall": true,
+    "cleanAfterExecution": true
+  },
+  "frozenInstall": {
+    "command": "pnpm install --frozen-lockfile",
+    "exitCode": 0,
+    "wallSeconds": 0.58,
+    "maximumResidentSetKiB": 57284,
+    "packagesReused": 218,
+    "packagesDownloaded": 0
+  },
+  "consolidatedCheck": {
+    "command": "pnpm run check",
+    "exitCode": 0,
+    "wallSeconds": 164.15,
+    "maximumResidentSetKiB": 938296,
+    "testFiles": 140,
+    "tests": 1765,
+    "rustTests": 3,
+    "secretScanFiles": 617,
+    "dependencyAudit": "no-known-vulnerabilities-at-high-threshold"
+  },
+  "actualContainerQualification": {
+    "command": "pnpm run test:mode-r-study",
+    "exitCode": 0,
+    "wallSeconds": 525.83,
+    "hostProcessMaximumResidentSetKiB": 54196,
+    "tracks": 4,
+    "turns": 32,
+    "primaryEvents": 261,
+    "checkpoints": 49,
+    "allSealedAndProductionVerified": true,
+    "distinctLearnerContainersEveryTrack": true,
+    "fortComposeBoundaryVerified": true,
+    "recurrentCapacityMatched": true,
+    "containerImages": {
+      "nurseryStudy": "sha256:6012b3a9b450edf56f97b97ce4091451a7c04c9411f3b736187a673b78d92b0f",
+      "babyA": "sha256:d6eb8787e7a66452f8439a259849c0d8e9b363be46dfb1dea6e79ff246874c13",
+      "babyB": "sha256:1a9439e28e50dface904ea6f0223babc8d8155af5cd1e2e5692d372bee41925e"
+    }
+  },
+  "controlLifecycleReplay": {
+    "command": "pnpm run qualify:study-controls",
+    "exitCode": 0,
+    "wallSeconds": 9.46,
+    "maximumResidentSetKiB": 205432,
+    "bundles": 7,
+    "allAcceptanceChecksPassed": true
+  },
+  "independentAudit": {
+    "implementation": "ald-integrity-auditor-rust-v1",
+    "bundles": 11,
+    "passes": 11,
+    "events": 662,
+    "checkpoints": 101,
+    "issues": 0
+  },
+  "assetRecheck": {
+    "model": {
+      "path": "evidence/models/Qwen3-4B-Q4_K_M.gguf",
+      "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+    },
+    "inferenceExecutable": {
+      "installationManager": "homebrew",
+      "path": "/home/linuxbrew/.linuxbrew/bin/llama-server",
+      "sha256": "d6011228fbddb324d21fa51d950af6b75dda5f7fa5060995027fc1912499e518"
+    }
+  },
+  "rendererBuildAdvisoryDisposition": {
+    "status": "claim-reduced-build-time-risk-open",
+    "pinnedSourceIsLatestUpstreamRevision": true,
+    "nestedAuditExitCode": 1,
+    "nestedLockedVulnerabilities": [
+      {
+        "package": "pdfjs-dist",
+        "lockedVersion": "6.1.200",
+        "fixedRootVersion": "6.3.289",
+        "advisory": "GHSA-hq66-cqwq-w95j",
+        "severity": "high"
+      },
+      {
+        "package": "sharp",
+        "lockedVersion": "0.35.3",
+        "fixedRootVersion": "0.35.4",
+        "advisory": "GHSA-rgj7-g3m4-5g8c",
+        "severity": "high"
+      }
+    ],
+    "vulnerableLockedVersionsAbsentFromAllThreePrunedRuntimeImages": true,
+    "boundary": "The exact runtime images do not contain the vulnerable nested versions, but building the commit-pinned renderer source still executes its vulnerable dev toolchain in the image build stage. Runtime qualification passes; a hardened supply-chain claim is not made."
+  },
+  "rawEvidence": {
+    "path": "evidence/validation/20260911-v11-b2b119c-exact",
+    "gitIgnored": true,
+    "fileCount": 5451,
+    "bytes": 12594712,
+    "trackedFileCount": 617,
+    "installLogSha256": "0c6622d7be4d44e8110deee80a138502d9de8d0035d025b2bee98acdfa165b9d",
+    "checkLogSha256": "c7efdf9d4409fce6d287acb591379ee96789931eb0c03df36f8280f8cd338eda",
+    "modeRLogSha256": "36d526cacb7c08e4d840d1a0e03c1144b307c2e6f251576902bb8121411d6527",
+    "controlLogSha256": "5a673b732b0add1a5143f76ebba5d6be91b70d8e1f5a0eb41f3c06594fca7762",
+    "controlReportSha256": "1ec7ea2949d8a7aa980859127468fdbf8b88bacabd851d04cf470a1528fa8702",
+    "independentAuditLogSha256": "486bf7bf158211031e9eee6e9cfb94710b7594df24ea0978f57acba5f61f4e58",
+    "rendererAuditSha256": "40514101639e9916b590536baba9af315e10258c406c6bb000729ba43cf0c08d",
+    "trackedFilesManifestSha256": "15cf76f0f9d891df969e60d470c7db9199c8f81b31e12dce4ea0314b5960d8c1",
+    "evidenceFilesManifestSha256": "fb25f78f9f5ad735350ef13c46221a635cb6429ebabcbb4cec34541d47faad39"
+  },
+  "limitations": [
+    "All anchors in these qualification runs used an explicitly labeled local fake chain; no public transaction occurred.",
+    "No authorized persistent-signer Fort session, external registration, governance approval, or independent-host restore was performed.",
+    "The model asset and executable were rehashed, but the expensive live frozen-model inference was not repeated at this integrated candidate because no frozen-model code changed after its exact component receipt.",
+    "The generative-carrier mechanism was covered by the consolidated suite but its five-run qualification was not repeated because no carrier implementation changed after its exact component receipt.",
+    "The nested renderer build-stage advisories remain an open supply-chain risk and prevent a claim of hardened or vulnerability-free image construction.",
+    "This receipt qualifies software integration only and cannot be used as an experimental result."
+  ]
+}
