@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.72 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.73 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1084,7 +1084,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.72 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.73 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1116,7 +1116,9 @@ Implemented:
 - deterministic scenarios, the tool-only Gateway, all declared carrier controls,
   five learner tracks, DTSF twin routes, and the complete turn lifecycle;
 - process/container Mode R isolation, training separation, active side-channel and
-  observation red teams, telemetry, retention, snapshot/restore, and failure policy;
+  observation red teams, including a reusable 28-case generated-carrier structural
+  side-feature audit with accepted controls and fail-closed evidence readiness;
+  telemetry, retention, snapshot/restore, and failure policy;
 - readiness gates for E00-E50, reproducible E03 design and seed artifacts, canonical
   E03 registration compilation, and a fail-closed confirmatory preflight;
 - a privacy-minimized real-model software qualification of Qwen3-4B Q4_K_M through

@@ -8,6 +8,7 @@ import {
   SIDE_CHANNEL_MITIGATIONS,
   evaluateHostIsolationAttacks,
   runActiveTransportAttacks,
+  runCarrierSideFeatureAttacks,
   runGatewaySideChannelAttacks,
   runHiddenStateCorrelationAttack,
   runSideChannelRedTeamSuite,
@@ -28,6 +29,40 @@ function deniedProbe(processId: number): IsolationProbeResult {
 }
 
 describe('ALD-067 active side-channel harness', () => {
+  it('rejects E13 generated-carrier side features through the real Gateway', async () => {
+    const report = await runCarrierSideFeatureAttacks({
+      'generative-bitmap': buildConformanceRunConfig('no-learning', {
+        deploymentMode: 'research-grade',
+        carrierMode: 'generative-bitmap',
+        runId: 'side-feature-bitmap',
+      }),
+      'generative-canvas': buildConformanceRunConfig('no-learning', {
+        deploymentMode: 'research-grade',
+        carrierMode: 'generative-canvas',
+        runId: 'side-feature-canvas',
+      }),
+      'generative-tone': buildConformanceRunConfig('no-learning', {
+        deploymentMode: 'research-grade',
+        carrierMode: 'generative-tone',
+        runId: 'side-feature-tone',
+      }),
+    });
+    expect(report.passed).toBe(true);
+    expect(report.positiveControls).toHaveLength(3);
+    expect(report.attacks).toHaveLength(28);
+    expect(report.features).toEqual([
+      'compression',
+      'container',
+      'dimension',
+      'metadata',
+      'raw-media',
+      'sample-rate',
+    ]);
+    expect(report.attacks.every((attack) => attack.noDelivery)).toBe(true);
+    expect(report.evidenceReady).toBe(false);
+    expect(report.boundary).toBe('structural-gateway-qualification-only');
+  });
+
   it('maps every SPEC §10.3 category to one enforced mitigation', () => {
     expect(Object.keys(SIDE_CHANNEL_MITIGATIONS).sort()).toEqual(
       [...SIDE_CHANNEL_ATTACK_CATEGORIES].sort(),

@@ -630,6 +630,34 @@ export const GENERATIVE_BITMAP_VECTORS: readonly ConformanceVector[] = [
     ),
     expect: 'unexpected-artifact-field',
   },
+  {
+    name: 'rejects an explicit bitmap width side feature',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0) }, width: 16 }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects an explicit bitmap height side feature',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0) }, height: 16 }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a bitmap compression side feature',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0) }, compression: 'rle' }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a bitmap container side feature',
+    envelope: envelope(
+      bitmapProposal({ bitmap: { bits: bits(() => 0) }, container: 'png' }),
+    ),
+    expect: 'free-text-present',
+  },
 
   // --- envelope frame and routing ----------------------------------------
   {
@@ -757,6 +785,26 @@ export const GENERATIVE_CANVAS_VECTORS: readonly ConformanceVector[] = [
       canvasProposal({ strokes: [stroke({ pressure: 2 })] }),
     ),
     expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects an explicit canvas width side feature',
+    envelope: envelope(canvasProposal({ strokes: [stroke()], canvasWidth: 16 })),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects an explicit canvas height side feature',
+    envelope: envelope(canvasProposal({ strokes: [stroke()], canvasHeight: 16 })),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a canvas compression side feature',
+    envelope: envelope(canvasProposal({ strokes: [stroke()], compression: 'svgz' })),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a canvas container side feature',
+    envelope: envelope(canvasProposal({ strokes: [stroke()], container: 'svg' })),
+    expect: 'free-text-present',
   },
   {
     name: 'rejects a string pen width as free text',
@@ -894,6 +942,27 @@ export const GENERATIVE_TONE_VECTORS: readonly ConformanceVector[] = [
       toneProposal({ tones: { tones: [tone({ velocity: 5 })] } }),
     ),
     expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a tone sample-rate side feature',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone()] }, sampleRate: 48_000 }),
+    ),
+    expect: 'unexpected-artifact-field',
+  },
+  {
+    name: 'rejects a tone compression side feature',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone()] }, compression: 'flac' }),
+    ),
+    expect: 'free-text-present',
+  },
+  {
+    name: 'rejects a tone container side feature',
+    envelope: envelope(
+      toneProposal({ tones: { tones: [tone()] }, container: 'wav' }),
+    ),
+    expect: 'free-text-present',
   },
 
   // --- envelope frame and routing ----------------------------------------

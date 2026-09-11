@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.72"
+    "version": "0.1.73"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -374,6 +374,7 @@
         "ALD-031: the same canonical artifact hashes differently per carrier",
         "ALD-031: is insensitive to key order but sensitive to mark order",
         "ALD-031: a ${carrier} delivery records the markHash as its artifact hash",
+        "covers the E13 dimension, sample-rate, compression, and container side features",
         "ALD-031: covers every reason code the §9.2 modules can produce",
         "ALD-031 ${carrier} ${label}: ${vector.name}",
         "ALD-031: commits exactly one channel event per submission, per carrier",
@@ -1193,6 +1194,7 @@
     },
     "packages/redteam/__tests__/side-channel.test.ts": {
       "selectors": [
+        "rejects E13 generated-carrier side features through the real Gateway",
         "maps every SPEC §10.3 category to one enforced mitigation",
         "fails closed on any allowed host capability",
         "actively records why Prototype Mode cannot carry an isolation claim",

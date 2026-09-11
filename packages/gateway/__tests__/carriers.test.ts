@@ -341,6 +341,26 @@ describe('carrier-qualified markHash (ALD-031 criterion 1)', () => {
 });
 
 describe('alternate carrier conformance vectors (ALD-031, ALD-036)', () => {
+  it('covers the E13 dimension, sample-rate, compression, and container side features', () => {
+    const names = [...ALTERNATE_CARRIER_VECTORS.values()]
+      .flatMap((vectors) => vectors.map((vector) => vector.name));
+    for (const required of [
+      'bitmap width side feature',
+      'bitmap height side feature',
+      'canvas width side feature',
+      'canvas height side feature',
+      'tone sample-rate side feature',
+      'bitmap compression side feature',
+      'canvas compression side feature',
+      'tone compression side feature',
+      'bitmap container side feature',
+      'canvas container side feature',
+      'tone container side feature',
+    ]) {
+      expect(names.some((name) => name.includes(required)), required).toBe(true);
+    }
+  });
+
   it('ALD-031: covers every reason code the §9.2 modules can produce', () => {
     const covered = new Set<string>();
     for (const vectors of ALTERNATE_CARRIER_VECTORS.values()) {

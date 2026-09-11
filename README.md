@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.72 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.73 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -138,7 +138,9 @@ implemented and tested:
   and failure supervision; configuration-driven, verifier-bound live causal probes
   and bounded repair turns, plus held-out, curriculum, drift, and statistical
   scaffolds; the committed observation-text and quarantine-bypass corpus; and
-  an active twelve-category side-channel red-team suite shared by Mode P and Mode R.
+  an active twelve-category side-channel red-team suite shared by Mode P and Mode R,
+  plus 28 generated-carrier dimension, metadata, raw-media, sample-rate, compression,
+  and container attacks through the real Gateway.
   These are tested foundations, not a completed production Mode R deployment or
   a scientific result. `pnpm run test:mode-r` builds the locked-down learner image,
   denies Baby-to-Baby routes on separate internal networks, checks host capability

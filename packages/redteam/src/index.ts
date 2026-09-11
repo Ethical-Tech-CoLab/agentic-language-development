@@ -54,6 +54,14 @@ export {
   type TransportAttackObservation,
 } from './side-channel/transport.js';
 export {
+  CARRIER_SIDE_FEATURE_ATTACK_PLAN,
+  GENERATED_CARRIERS,
+  runCarrierSideFeatureAttacks,
+  type CarrierSideFeatureAttackResult,
+  type CarrierSideFeatureReport,
+  type GeneratedCarrier,
+} from './side-channel/carrier-features.js';
+export {
   SIDE_CHANNEL_ATTACK_CATEGORIES,
   SIDE_CHANNEL_MITIGATIONS,
   runSideChannelRedTeamSuite,
