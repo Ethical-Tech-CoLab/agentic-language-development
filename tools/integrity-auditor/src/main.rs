@@ -192,6 +192,24 @@ fn string_field<'a>(value: &'a Value, field: &str) -> Result<&'a str, String> {
         .ok_or_else(|| format!("missing string field {field}"))
 }
 
+fn normalized_initial_policy_refs(config: &Value) -> Result<Option<Value>, String> {
+    let baby_a = config.pointer("/babyA/initialPolicyRef");
+    let baby_b = config.pointer("/babyB/initialPolicyRef");
+    match (baby_a, baby_b) {
+        (None, None) => Ok(None),
+        (Some(a), Some(b)) => {
+            let a = a
+                .as_str()
+                .ok_or_else(|| "babyA.initialPolicyRef is not a string".to_string())?;
+            let b = b
+                .as_str()
+                .ok_or_else(|| "babyB.initialPolicyRef is not a string".to_string())?;
+            Ok(Some(json!({ "babyA": a, "babyB": b })))
+        }
+        _ => Err("derived run has an incomplete initial-policy reference pair".to_string()),
+    }
+}
+
 fn u64_field(value: &Value, field: &str) -> Result<u64, String> {
     value
         .get(field)
@@ -306,17 +324,21 @@ impl Auditor {
                 "runId differs from manifest",
             );
         }
-        for field in [
-            "parentRunId",
-            "derivedFromCheckpointHash",
-            "initialPolicyRefs",
-        ] {
+        for field in ["parentRunId", "derivedFromCheckpointHash"] {
             if manifest.get(field) != config.get(field) {
                 self.issue(
                     "configuration/run-config.json",
                     format!("lineage field {field} differs from manifest"),
                 );
             }
+        }
+        match normalized_initial_policy_refs(&config) {
+            Ok(expected) if manifest.get("initialPolicyRefs") == expected.as_ref() => {}
+            Ok(_) => self.issue(
+                "configuration/run-config.json",
+                "lineage field initialPolicyRefs differs from manifest",
+            ),
+            Err(error) => self.issue("configuration/run-config.json", error),
         }
         if let Some(run_id) = manifest.get("runId").and_then(Value::as_str) {
             let rebuilt = domain_hash("dtsf-run-id-v1", 0, &[run_id.as_bytes()]);
@@ -832,6 +854,25 @@ mod tests {
         assert_eq!(
             domain_hash("dtsf-run-id-v1", 0, &[b"run-test"]),
             "sha256:d6ad6a2b93facebcbd9ab7a49b2d3711c81ec1a96a57bee7946925c1e66d9fdd"
+        );
+    }
+
+    #[test]
+    fn nested_run_config_policy_refs_normalize_to_manifest_shape() {
+        let config = json!({
+            "babyA": { "initialPolicyRef": "policies/baby-a-latest.json" },
+            "babyB": { "initialPolicyRef": "policies/baby-b-latest.json" }
+        });
+        assert_eq!(
+            normalized_initial_policy_refs(&config).unwrap(),
+            Some(json!({
+                "babyA": "policies/baby-a-latest.json",
+                "babyB": "policies/baby-b-latest.json"
+            }))
+        );
+        assert_eq!(
+            normalized_initial_policy_refs(&json!({ "babyA": {}, "babyB": {} })).unwrap(),
+            None
         );
     }
 }
