@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.59"
+    "version": "0.1.60"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1258,6 +1258,8 @@
         "builds numeric-only observations in the SPEC §10.1 shape",
         "keeps the receiver order independent of the target position",
         "never targets a held-out type in the train split",
+        "never exposes a held-out type as a training or validation distractor",
+        "uses the seen type pool for validation targets with a separate PRNG domain",
         "only targets held-out types in the held-out split",
         "draws evaluation targets from every type code",
         "targets every type code in the held-out split when nothing is held out",

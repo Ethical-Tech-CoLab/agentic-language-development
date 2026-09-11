@@ -1904,6 +1904,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     };
     const episodeCounts: Record<ScenarioSplit, number> = {
       train: 0,
+      validation: 0,
       'held-out': 0,
       evaluation: 0,
     };

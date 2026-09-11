@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.59 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.60 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -661,6 +661,23 @@ Researcher ground truth may contain semantic labels; learner observations may no
 Observations use opaque numeric arrays, pixels, or separately qualified hybrid
 features. Images containing OCR-detectable text are quarantined before a run.
 
+The initial numeric referential design contains 16 two-attribute combinations. The
+four equal-attribute diagonal combinations are the locked compositional test targets;
+the remaining 12 combinations are the shared semantic support for training and
+in-distribution validation. Training and validation use independent PRNG domains,
+and no held-out type may occur in either split as a target or distractor. Validation
+is learning-off and may be used for tuning and baseline selection. The held-out split
+is learning-off and is accessed once after those choices freeze. The broader
+`evaluation` split remains an engineering and software-qualification surface and is
+not interchangeable with the confirmatory held-out test.
+
+The versioned split, duplicate rules, matched budget dimensions, and boundaries
+between within-architecture causal contrasts and cross-architecture descriptive
+benchmarks are frozen in
+[`protocols/scenario-split-and-model-comparison.v1.json`](protocols/scenario-split-and-model-comparison.v1.json)
+and explained in
+[`docs/scenario-splits-and-model-comparisons.md`](docs/scenario-splits-and-model-comparisons.md).
+
 ### 6.5 Communication Conditions
 
 For the baseline fixed-token carrier, each run declares a random inventory such as
@@ -1028,7 +1045,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.59 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.60 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.

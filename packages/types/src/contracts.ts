@@ -434,7 +434,7 @@ export interface RunStateMachine {
 // Scenario Engine (SPEC §4.1 item 4, §9.5, §10.1, §11.2)
 // ---------------------------------------------------------------------------
 
-export type ScenarioSplit = 'train' | 'held-out' | 'evaluation';
+export type ScenarioSplit = 'train' | 'validation' | 'held-out' | 'evaluation';
 
 export interface Outcome {
   success: boolean;

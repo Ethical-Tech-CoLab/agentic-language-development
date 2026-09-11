@@ -84,8 +84,8 @@ export interface ReferentialScenarioConfig {
   /** Candidates per episode; chance success is its reciprocal (§15.3). */
   candidatesPerEpisode: number;
   /**
-   * Type codes never used as a target in the `train` split and the only
-   * targets used in `held-out`; `evaluation` draws from all type codes.
+   * Type codes absent from all `train` and `validation` candidates and the
+   * only targets used in `held-out`; `evaluation` draws from all type codes.
    */
   heldOutTypeCodes: number[];
   /** Carrier inventory used to encode the §9.6 `oracle` artifact. */
@@ -352,6 +352,12 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
         'heldOutTypeCodes must leave at least one train target',
       );
     }
+    if (typeCodeCount - heldOutTypeCodes.length < candidatesPerEpisode) {
+      throw new ScenarioEngineError(
+        'invalid-config',
+        'heldOutTypeCodes must leave enough distinct training candidates',
+      );
+    }
 
     let width = 1;
     let capacity = symbolInventory.length;
@@ -474,9 +480,10 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
     const prng = this.episodePrng(episodeIndex, split);
     const targetPool = this.targetPool(split);
     const targetTypeCode = targetPool[prng.nextInt(targetPool.length)] as number;
+    const candidatePool = this.candidatePool(split);
     const distractors = sampleDistinct(
       prng,
-      this.allTypeCodes.filter((code) => code !== targetTypeCode),
+      candidatePool.filter((code) => code !== targetTypeCode),
       this.config.candidatesPerEpisode - 1,
     );
     const candidateTypeCodes = [targetTypeCode, ...distractors];
@@ -680,6 +687,7 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
   private targetPool(split: ScenarioSplit): readonly number[] {
     switch (split) {
       case 'train':
+      case 'validation':
         return this.trainTargetPool;
       case 'held-out':
         return this.heldOutTargetPool;
@@ -688,6 +696,17 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
       default:
         throw new ScenarioEngineError('invalid-request', `unknown split: ${String(split)}`);
     }
+  }
+
+  /**
+   * Training and validation candidates exclude every held-out type, not merely
+   * held-out targets. Otherwise an unseen combination would leak into learner
+   * observations as a distractor before the confirmatory test.
+   */
+  private candidatePool(split: ScenarioSplit): readonly number[] {
+    return split === 'train' || split === 'validation'
+      ? this.trainTargetPool
+      : this.allTypeCodes;
   }
 
   private mintCandidateRefs(prng: SeededPrng, count: number): string[] {

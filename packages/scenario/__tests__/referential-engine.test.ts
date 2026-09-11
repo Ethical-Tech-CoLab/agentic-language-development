@@ -76,6 +76,9 @@ describe('ReferentialScenarioEngine configuration', () => {
     expect(() =>
       engine({ heldOutTypeCodes: Array.from({ length: 16 }, (_, index) => index) }),
     ).toThrow(ScenarioEngineError);
+    expect(() =>
+      engine({ heldOutTypeCodes: Array.from({ length: 13 }, (_, index) => index) }),
+    ).toThrow(ScenarioEngineError);
     expect(() => engine({ attributeCount: 0 })).toThrow(ScenarioEngineError);
     expect(() => engine({}, '')).toThrow(ScenarioEngineError);
   });
@@ -94,7 +97,12 @@ describe('determinism (ALD-041 criterion 1)', () => {
     const left = engine();
     const right = engine();
     for (let episode = 0; episode <= 50; episode += 1) {
-      for (const split of ['train', 'held-out', 'evaluation'] as ScenarioSplit[]) {
+      for (const split of [
+        'train',
+        'validation',
+        'held-out',
+        'evaluation',
+      ] as ScenarioSplit[]) {
         expect(canonicalJson(right.generate(episode, split, ROLES))).toBe(
           canonicalJson(left.generate(episode, split, ROLES)),
         );
@@ -128,6 +136,9 @@ describe('determinism (ALD-041 criterion 1)', () => {
     );
     // The label only reaches the evaluation split.
     expect(canonicalJson(labelled.generate(3, 'train', ROLES))).toBe(
+      canonicalJson(scenario.generate(3, 'train', ROLES)),
+    );
+    expect(canonicalJson(scenario.generate(3, 'validation', ROLES))).not.toBe(
       canonicalJson(scenario.generate(3, 'train', ROLES)),
     );
   });
@@ -224,6 +235,36 @@ describe('held-out rule', () => {
       );
       expect(heldOutTypeCodes).not.toContain(truth.targetTypeCode);
     }
+  });
+
+  it('never exposes a held-out type as a training or validation distractor', () => {
+    for (let episode = 0; episode < 500; episode += 1) {
+      for (const split of ['train', 'validation'] as const) {
+        const truth = readGroundTruth(
+          scenario.generate(episode, split, ROLES).groundTruth,
+        );
+        for (const code of truth.senderOrder) {
+          expect(heldOutTypeCodes).not.toContain(code);
+        }
+        for (const code of truth.receiverOrder) {
+          expect(heldOutTypeCodes).not.toContain(code);
+        }
+      }
+    }
+  });
+
+  it('uses the seen type pool for validation targets with a separate PRNG domain', () => {
+    let splitDifferences = 0;
+    for (let episode = 0; episode < 500; episode += 1) {
+      const train = scenario.generate(episode, 'train', ROLES);
+      const validation = scenario.generate(episode, 'validation', ROLES);
+      const truth = readGroundTruth(validation.groundTruth);
+      expect(heldOutTypeCodes).not.toContain(truth.targetTypeCode);
+      if (train.stateHash !== validation.stateHash) {
+        splitDifferences += 1;
+      }
+    }
+    expect(splitDifferences).toBe(500);
   });
 
   it('only targets held-out types in the held-out split', () => {

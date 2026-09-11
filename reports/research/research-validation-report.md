@@ -43,6 +43,10 @@ Report status: in progress
 - The bounded source audit and novelty challenge are complete, and all 19 experiments
   now have frozen question/estimand/outcome-class cards. H2 tests a causal receiver
   effect; H4 separately tests held-out ledger prediction beyond non-ledger baselines.
+- The numeric referential design now has an executable 12-type train/validation and
+  four-type compositional test partition. A real leakage defect that exposed test
+  types as training distractors was corrected, and model comparisons now declare
+  matched budgets plus causal-versus-descriptive interpretation boundaries.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -464,10 +468,42 @@ component p-value and require every direction and practical threshold. E00–E03
 experiment-specific integrity checks are validity gates rather than alpha-bearing
 hypotheses; missing or failed gates produce `not-tested`.
 
-This closes D03 at the question/estimand level. It does not complete D04–D08, choose
+This closes D03 at the question/estimand level. It does not complete D05–D08, choose
 all statistical thresholds, supply power, authorize collection, or create a result.
 
-## 15. Critical gaps before empirical claims
+## 15. Locked scenario splits and model-comparison boundaries
+
+The [scenario and comparison design](../../docs/scenario-splits-and-model-comparisons.md)
+freezes the current numeric referential space before outcome collection. Of the 16
+two-attribute semantic types, 12 non-diagonal types support training and
+in-distribution validation; the four diagonal combinations are held out as test
+targets. Every attribute value occurs in both partitions. Training and validation
+have independent PRNG domains, learning is disabled during validation, and no
+held-out type may occur in either split as a target or distractor. The held-out test
+is accessed once after tuning and baseline selection freeze. The pre-existing
+`evaluation` split remains qualification-only.
+
+This audit exposed and corrected a substantive leak: the engine previously excluded
+held-out types as training targets but could still sample them as distractors, making
+the supposedly unseen combinations visible to a learner. An executable design audit
+now generates 2,000 instances from each of train, validation, and held-out, rejects
+cross-split instance duplication, verifies candidate-level exclusion, and requires
+coverage of every held-out target type.
+
+The same manifest classifies recurrent learning-mechanism, bandwidth, carrier,
+affect, partner-training, and incentive contrasts as within-architecture causal only
+when their declared budget dimensions match. Comparisons between pretrained and
+recurrent or otherwise different architectures are descriptive because pretraining,
+scale, tokenizer, memory, runtime, and optimization cannot be isolated by merely
+matching task episodes. For E30, equal total exposure intentionally produces one
+eighth of the per-partner exposure in the eight-partner arm, so both quantities must
+be reported.
+
+This closes D04 for the numeric generator and declared model comparisons. It does
+not determine sample sizes, statistical operating characteristics, resource ceilings,
+or asset near-duplicate thresholds and does not create an experimental result.
+
+## 16. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -489,7 +525,7 @@ all statistical thresholds, supply power, authorize collection, or create a resu
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 16. Current scientific and publication conclusion
+## 17. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -502,7 +538,7 @@ showing an insight beyond systems integration.
 The provisional [requirement-level conformance matrix](../../docs/requirement-conformance-matrix.md)
 now inventories every backlog criterion and normative MUST-bearing source line with
 concrete executable surfaces and required receipts. The software candidate and
-bounded literature/novelty audit and question/estimand cards are complete. Subsequent
-revisions will add locked scenario splits, statistical validation, leakage protocols,
+bounded literature/novelty audit, question/estimand cards, and numeric split/model
+comparison design are complete. Subsequent revisions will add statistical validation, leakage protocols,
 the pilot cost model, run/data manifest, analyses, audit-cost comparison, claim map,
 and critical review.

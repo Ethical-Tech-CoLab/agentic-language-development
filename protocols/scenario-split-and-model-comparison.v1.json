@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-09-11",
+  "status": "D04-frozen; sample counts and seed identities are owned by D07",
+  "scenario": {
+    "generator": "referential-game-v1",
+    "attributeCount": 2,
+    "valuesPerAttribute": 4,
+    "typeCodeRule": "4 * firstAttribute + secondAttribute",
+    "typeCodeCount": 16,
+    "candidatesPerEpisode": 4,
+    "chanceSuccess": 0.25,
+    "trainAndValidationTargetTypeCodes": [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14],
+    "heldOutTestTargetTypeCodes": [0, 5, 10, 15],
+    "heldOutRule": "The four equal-attribute diagonal combinations are never present as targets or distractors in training or validation; each attribute value remains represented in the seen pool.",
+    "splits": {
+      "train": "Seen target and candidate pool; policy updates enabled.",
+      "validation": "Same seen type support under an independent split PRNG domain; policy updates disabled; tuning and baseline selection only.",
+      "held-out": "Target restricted to the four unseen diagonal combinations; policy updates disabled; accessed once after lock.",
+      "evaluation": "All-type engineering/qualification surface; prohibited as a confirmatory test split."
+    },
+    "duplicateRules": [
+      "No scenarioRef or stateHash may occur in more than one split.",
+      "No held-out type code may occur anywhere in a training or validation candidate set.",
+      "No held-out target may occur in training or validation.",
+      "Every held-out type must appear as a held-out target before analysis is complete.",
+      "Asset-backed scenarios must be deduplicated by normalized asset SHA-256 and semantic source identifier before quarantine approval.",
+      "Near-duplicate image or audio thresholds are not yet applicable to the numeric generator and must be registered before adding asset-backed bundles."
+    ]
+  },
+  "budgetDimensions": [
+    "training episodes",
+    "environment turns",
+    "optimizer updates",
+    "examples per update",
+    "evaluation episodes",
+    "intervention opportunities",
+    "effective message capacity",
+    "trainable parameter count where the architecture is shared",
+    "measured CPU/GPU time and peak memory as reported diagnostics"
+  ],
+  "comparisonRules": [
+    {"id":"C-RNN-MECHANISM","experiments":["E11","E12","E21"],"kind":"within-architecture-causal","architecture":"independent per-role single-layer GRU policy, 4,049 trainable parameters per role","mustMatch":["initialization namespace","scenario slots","training episodes","environment turns","optimizer-update opportunities","hidden size","parameter count","carrier","effective capacity","evaluation and intervention sets"],"mayDiffer":["registered learning signal","loss function required by the intervention"],"claim":"Randomized or paired within-architecture mechanism and ablation effects may receive causal interpretation."},
+    {"id":"C-BANDWIDTH","experiments":["E15"],"kind":"within-architecture-causal","architecture":"same recurrent architecture and initialization rule in both arms","mustMatch":["scenario slots","training episodes","environment turns","optimizer updates","trainable parameter count","evaluation set","compute ceiling"],"mayDiffer":["32-symbol/4-token versus 128-symbol/8-token channel"],"claim":"The registered arm contrast isolates the assigned bandwidth condition within the tested architecture."},
+    {"id":"C-CARRIER","experiments":["E13","E14"],"kind":"within-architecture-causal","architecture":"same recurrent learner in all carrier arms","mustMatch":["eight selectable form slots","3-bit effective one-mark capacity","scenario slots","training and update budgets","evaluation set"],"mayDiffer":["fixed token, unfamiliar glyph, bitmap, stroke, or tone physical grammar"],"claim":"Carrier assignment effects may receive causal interpretation; larger physical grammar capacity is reported separately and is not learner capacity."},
+    {"id":"C-AFFECT","experiments":["E20"],"kind":"within-architecture-causal","architecture":"same frozen trained recurrent policies at evaluation","mustMatch":["scenario slots","post-outcome windows","one-display cardinality","timing envelope","repair opportunities","evaluation budget"],"mayDiffer":["none, declared six, permuted six, opaque six, or derived display mapping"],"claim":"Assigned affect-display effects may receive causal interpretation within the registered threat model."},
+    {"id":"C-PARTNER","experiments":["E30"],"kind":"within-architecture-causal","architecture":"same recurrent family for the primary new-partner contrast","mustMatch":["total interaction episodes","total optimizer updates","scenario slots","evaluation set","adaptation budget"],"mayDiffer":["fixed dyad versus eight-partner round-robin exposure"],"claim":"The same-architecture degradation difference may receive causal interpretation; cross-architecture replacement is secondary."},
+    {"id":"C-INCENTIVE","experiments":["E32"],"kind":"within-architecture-causal","architecture":"same frozen cooperative starting policies and scenario slots","mustMatch":["interaction opportunities","channel","candidate sets","evaluation budget","information boundary"],"mayDiffer":["registered utilities, reservation values, and private-information condition"],"claim":"Paired incentive-condition effects may receive causal interpretation."},
+    {"id":"C-CROSS-ARCH","experiments":["E10","E11","E12","E21","E30"],"kind":"cross-architecture-descriptive","architecture":"frozen pretrained model versus recurrent learned policies or a different partner architecture","mustMatch":["scenario definitions where supported","channel constraints","evaluation accounting","reported resource measurements"],"mayDiffer":["parameter count","pretraining","tokenization","inference stack","memory mechanism","optimization"],"claim":"Report effects and uncertainty as descriptive benchmarks; do not attribute differences causally to the learning mechanism."}
+  ]
+}

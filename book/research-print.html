@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.59 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.60 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -744,6 +744,21 @@ frontier-scale or continuously updated hosted models.</p>
 <p>Researcher ground truth may contain semantic labels; learner observations may not.
 Observations use opaque numeric arrays, pixels, or separately qualified hybrid
 features. Images containing OCR-detectable text are quarantined before a run.</p>
+<p>The initial numeric referential design contains 16 two-attribute combinations. The
+four equal-attribute diagonal combinations are the locked compositional test targets;
+the remaining 12 combinations are the shared semantic support for training and
+in-distribution validation. Training and validation use independent PRNG domains,
+and no held-out type may occur in either split as a target or distractor. Validation
+is learning-off and may be used for tuning and baseline selection. The held-out split
+is learning-off and is accessed once after those choices freeze. The broader
+<code>evaluation</code> split remains an engineering and software-qualification surface and is
+not interchangeable with the confirmatory held-out test.</p>
+<p>The versioned split, duplicate rules, matched budget dimensions, and boundaries
+between within-architecture causal contrasts and cross-architecture descriptive
+benchmarks are frozen in
+<a href="protocols/scenario-split-and-model-comparison.v1.json"><code>protocols/scenario-split-and-model-comparison.v1.json</code></a>
+and explained in
+<a href="docs/scenario-splits-and-model-comparisons.md"><code>docs/scenario-splits-and-model-comparisons.md</code></a>.</p>
 <h3>6.5 Communication Conditions</h3>
 <p>For the baseline fixed-token carrier, each run declares a random inventory such as
 <code>S01</code>-<code>S32</code> without assigned meaning. The gateway supports six control conditions:</p>
@@ -1077,7 +1092,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.59 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.60 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>

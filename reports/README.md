@@ -4,7 +4,9 @@
 
 The living research-validation report, source-lineage register, source-verification
 register, novelty-comparator matrix, research protocol cards, and machine-readable
-environment manifest.
+environment manifest. The versioned scenario/comparison manifest and its readable
+design note freeze the numeric compositional split, leak checks, matched budgets, and
+causal-versus-descriptive interpretation boundaries.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator
