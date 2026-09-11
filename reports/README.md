@@ -21,6 +21,10 @@ The campaign readiness review covers all 19 experiment cards and deliberately re
 `not-registration-ready` while governance, external anchors/registration, selected
 sample sizes, resources, final detector/comparator qualifications, and independent
 review remain absent.
+The data/claim manifest inventories every locally captured export by content hash and
+claim boundary. Its live audit resolves 111 bundles while keeping all 111 excluded
+from empirical use and distinguishing 63 local fake-chain confirmations from zero
+confirmed public-chain anchors.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

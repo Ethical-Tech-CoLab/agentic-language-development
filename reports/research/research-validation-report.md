@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.64 (D08 fail-closed review in progress)
+Latest tracked research-design candidate: v0.1.65 (D08 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -67,6 +67,9 @@ Report status: in progress
   `not-registration-ready`. Fourteen evidence-linked blockers include governance,
   anchors/registration, resources, pilot-selected N, final detector/comparator
   qualification, exact packets, independent review, and citation re-review.
+- The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
+  in 16 collections. All are excluded from empirical estimates; 63 local fake-chain
+  confirmations are separately labeled from zero confirmed public-chain anchors.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -113,15 +116,29 @@ normative refinements. The map identifies a material boundary: implementation an
 readiness work after the original protocols does not convert earlier qualification
 runs into experimental evidence.
 
-## 3. Current corpus
+## 3. Current corpus and claim inventory
 
-The historical qualification store contains 28,776 files totaling 280,373,166 bytes
-and 33 exported run directories: five seeds each for six E03-style conditions and
-three E11-style runs. Its SQLite database hash is
-`sha256:2f349a0b417fb74432b7b12bd6b7c92db4e89941d547a381e1007af006b40185`.
-The corpus is useful for verifier, export, report, and pipeline checks. It is not a
-pilot or confirmatory dataset because every run uses the Prototype Mode,
-unregistered, unanchored invalid path.
+The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
+exported bundle present in ignored local evidence storage at the cutoff: 111 bundles,
+16 collections, and 219,742,662 bundle bytes. It records content-tree, manifest, and
+verification-report hashes without copying raw events or private ledger content.
+Thirty-six bundles have tracked exact/current bounded software-qualification support,
+33 are historical qualification exports, and 42 are failed or superseded diagnostic
+artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
+hypothesis estimates.
+
+All 111 have a recorded verifier exit code of zero. The 33 historical exports remain
+incompatible with the current intervention-tree declaration and do not inherit later
+verifier status. Sixty-three reports record anchor confirmation, but those receipts
+are local fake-chain qualification evidence. Confirmed public-chain anchors: zero.
+This distinction is machine-enforced so an anchor flag cannot silently become a
+public-chain claim.
+
+The historical qualification subset contains 33 exported run directories: five seeds
+each for six E03-style conditions and three E11-style runs. Its SQLite database hash
+is `sha256:2f349a0b417fb74432b7b12bd6b7c92db4e89941d547a381e1007af006b40185`.
+It remains useful for verifier, export, report, and pipeline checks but is not a pilot
+or confirmatory dataset.
 
 A replacement two-episode frozen-model qualification binds a locally retained,
 read-only weight file and the resolved Homebrew inference executable by independently
