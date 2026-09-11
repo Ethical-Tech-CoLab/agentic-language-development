@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "classification": "non-confirmatory-software-qualification",
+  "researchFinding": false,
+  "candidate": {
+    "commit": "d6d98dfb4826d3c86d4dcc35e2e93edf53e4591e",
+    "version": "0.1.52",
+    "trackedTreeAtLaunch": "clean"
+  },
+  "qualificationReport": {
+    "path": "reports/qualification/frozen-model-qwen3-4b-q4-k-m.json",
+    "sha256": "b34605484e26733cfd38f333fbdf59df2034a5e6f8706d9875dd78d595613fa5"
+  },
+  "modelAsset": {
+    "sourceRepository": "https://huggingface.co/Qwen/Qwen3-4B-GGUF",
+    "repositoryRevision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+    "fileName": "Qwen3-4B-Q4_K_M.gguf",
+    "fileBytes": 2497280256,
+    "fileMode": "0444",
+    "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+  },
+  "runtime": {
+    "installationManager": "homebrew",
+    "formula": "llama.cpp",
+    "formulaVersion": "0.4.0",
+    "build": "b10809-5266f24da",
+    "executableSha256": "d6011228fbddb324d21fa51d950af6b75dda5f7fa5060995027fc1912499e518",
+    "bottleSha256": "acecd0797b0619b3e4a6ac5e51d34e8cb0905c06f1827f0c4466f82272d28770"
+  },
+  "result": {
+    "episodes": 2,
+    "liveModelCalls": 4,
+    "conformingToolOnlyCalls": 4,
+    "rolesExercised": ["baby-a", "baby-b"],
+    "dedicatedRoleProcesses": true,
+    "roleProcessesOverlap": false,
+    "distinctLoopbackEndpoints": true,
+    "singleSlotPerRole": true,
+    "promptCacheEnabled": false,
+    "cleanProcessReplayMatchedBothRoles": true,
+    "updatePolicyExposed": false,
+    "privateMemoryChangedBothRoles": true,
+    "weightsAndRuntimeRehashedUnchangedAfterExecution": true
+  },
+  "rawEvidence": {
+    "path": "evidence/validation/20260911-v09-d6d98df-exact/servers",
+    "gitIgnored": true,
+    "fileCount": 7,
+    "bytes": 15064,
+    "files": [
+      {
+        "name": "01-before-reset-baby-a.log",
+        "sha256": "45753e9a72f2e6bf9f25e380f9531d3275750013564eb4a5574a353ead1952f3"
+      },
+      {
+        "name": "02-before-reset-baby-b.log",
+        "sha256": "7804b823991fd0c85f04561fe0ad4d80283fe6b3cb110328e62fc25900c58c8e"
+      },
+      {
+        "name": "03-after-reset-baby-a.log",
+        "sha256": "167bd3e96b8385d75494e7707ad82b755dbde0a7073e9fe5f31f6995927723ec"
+      },
+      {
+        "name": "04-after-reset-baby-b.log",
+        "sha256": "4a73f6139263cdd119bedb297bd23144dc768346a663b3bb79f9fe2abd781830"
+      },
+      {
+        "name": "05-qualification-baby-a.log",
+        "sha256": "1fd561e3d9a83bd4a91e8cb3145647fe817999d920fff60ceb955eef6c501b03"
+      },
+      {
+        "name": "06-qualification-baby-b.log",
+        "sha256": "1d4244944fff9e32a5188d1cea46458de4a6995ffdacaa72099eaa966d9e4915"
+      },
+      {
+        "name": "07-qualification-baby-a.log",
+        "sha256": "070fd8d3a727edafa3cc5f8be557bce1330bba929f42d7e37fed549847a705d6"
+      }
+    ]
+  },
+  "failedDiagnosticsRetained": [
+    "A first probe exposed an omitted thinking-disable request setting.",
+    "A concurrent two-process attempt exceeded available memory and lost one server process.",
+    "A serialized attempt exceeded the prior 114000 ms model ceiling on one role.",
+    "A 64-token attempt exhausted its output budget before one receiver produced a valid tool call."
+  ],
+  "limitations": [
+    "The qualification is not registered or anchored and is not experimental evidence.",
+    "The serialized process topology validates role-state isolation on this host but does not validate concurrent production latency or capacity.",
+    "The executable hash and Homebrew bottle hash do not independently enumerate every dynamically linked system library.",
+    "Two episodes and zero descriptive successes establish no convergence, generalization, comparative performance, or behavioral effect.",
+    "Private episodic memory is expected to change; frozen refers to the model weights and absence of an updatePolicy path."
+  ]
+}

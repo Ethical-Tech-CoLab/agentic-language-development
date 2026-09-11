@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.52 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.53 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -166,11 +166,14 @@ blocks confirmatory execution until its immutable software, isolation, external
 registration, and confirmed pre-run anchor bindings agree.
 
 The frozen-LLM operator path also completed a real two-episode qualification
-against Qwen3-4B Q4_K_M through llama.cpp. The retained
+against Qwen3-4B Q4_K_M through Homebrew llama.cpp 0.4.0. The retained
 [`reports/qualification/frozen-model-qwen3-4b-q4-k-m.json`](reports/qualification/frozen-model-qwen3-4b-q4-k-m.json)
-binds the exact model weights, runtime archive, software commit, and seed while
-omitting prompts and private output. It is software evidence, not an empirical
-finding.
+binds the exact model weights, resolved executable and bottle, software commit,
+live server configuration, separate role processes, clean-process replay,
+tool-only calls, and frozen-weight/private-memory semantics while omitting prompts
+and private output. The 7.5-GiB validation host required non-overlapping role
+processes and a 300-second qualification ceiling, so this is bounded software
+evidence rather than a production-capacity or empirical finding.
 
 The E01/E02 software-readiness outputs have a hashed attachment path linked from
 the append-only Experiment Record and independently checked against their evidence

@@ -36,29 +36,40 @@ gitignored; the underlying evidence is.
 
 [`frozen-model-qwen3-4b-q4-k-m.json`](qualification/frozen-model-qwen3-4b-q4-k-m.json)
 is a privacy-minimized, non-confirmatory qualification of the frozen-LLM
-adapter against the public Qwen3-4B Q4_K_M weights served by the official
-llama.cpp b10870 Linux x64 release. It records the exact SHA-256 hashes of both
-the weight file and runtime archive, the software commit exercised, bounded
-event counts, and policy hashes. It intentionally omits prompts, observations,
-raw model output, candidate references, and private ledger content.
+adapter against the public Qwen3-4B Q4_K_M weights served by a Homebrew-managed
+llama.cpp runtime. The runner hashes the local weights and resolved executable,
+cross-checks the Homebrew bottle, probes the live model/context/slot/template
+metadata, gives each role a dedicated non-overlapping process and endpoint,
+and checks deterministic responses across clean process restarts. It also
+records actual request settings, live tool-call counts, changing private-memory
+hashes, and the structural absence of a weight-update path. It intentionally
+omits prompts, observations, raw model output, candidate references, and private
+ledger content.
 
 This report proves only that a real open-weight model completed both Baby roles
 through the tool-only learner boundary. Its two-episode descriptive success
 rate is not a behavioral result and must not be cited as one.
 
-Regenerate it against a loopback server with:
+The local weights file must be read-only. Regenerate the complete attested
+qualification with the Homebrew `llama-server` on `PATH`:
 
 ```sh
 pnpm run qualify:frozen-model \
-  --endpoint http://127.0.0.1:18080 \
-  --model ../Qwen3-4B-Q4_K_M.gguf \
+  --model qwen3-4b-q4-k-m \
   --weights /absolute/path/Qwen3-4B-Q4_K_M.gguf \
   --quantization Q4_K_M \
-  --runtime-id llama.cpp-b10870-linux-x64 \
-  --runtime-artifact-hash sha256:<64-hex-digit-runtime-archive-digest> \
+  --context-length 4096 \
+  --max-output-tokens 192 \
+  --turn-response-budget-ms 300000 \
+  --baby-a-port 19091 \
+  --baby-b-port 19092 \
   --episodes 2 \
   --out reports/qualification/frozen-model-qwen3-4b-q4-k-m.json
 ```
+
+On the six-CPU, 7.5-GiB, no-swap validation host, concurrent role processes
+exceeded memory. Serialized dedicated processes therefore qualify isolation and
+functionality, not concurrent deployment capacity or the normal study deadline.
 
 ## `evidence/qualification/`
 

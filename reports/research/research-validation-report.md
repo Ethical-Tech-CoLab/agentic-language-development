@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest qualified component candidate: `886dd53` / v0.1.50
+Latest qualified component candidate: `d6d98df` / v0.1.52
 Report status: in progress  
 
 ## Executive Summary
@@ -25,15 +25,20 @@ Report status: in progress
   model capacity, later emitted both origins, froze during evaluation, and passed
   both production and separate Rust verification. This is mechanism qualification,
   not E13 evidence.
+- The exact v0.1.52 frozen-model candidate used Homebrew llama.cpp 0.4.0 and the
+  hash-matched Qwen3-4B Q4_K_M asset. Both dedicated role processes passed live
+  server probes, clean-process replay, all four tool-only calls, and the distinction
+  between changing private memory and an absent weight-update path. Its serialized
+  topology and 300-second qualification ceiling are not production-capacity evidence.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
-- The current host can support software validation and bounded CPU pilots, but no
-  accelerator or local model weights were found in the recorded scan. The
-  perceptual carrier generalization, confirmatory, or replication program is yet
-  qualified; those paths require further implementation, measured pilot costs, and
-  authentic external approvals.
+- The current host can support software validation and bounded CPU pilots and now
+  retains the verified 4B model asset, but has no qualified accelerator and cannot
+  hold two inference processes concurrently. The perceptual carrier generalization,
+  confirmatory, and replication paths require further implementation, measured
+  pilot costs, and authentic external approvals.
 - The defensible publication position today is a protocol and software-readiness
   draft, not a completed empirical paper. This report will be extended only from
   verified artifacts; null, failed, invalid, and blocked outcomes remain visible.
@@ -48,7 +53,7 @@ classes that must not be collapsed:
 | Evidence class | Meaning | Present status |
 |---|---|---|
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
-| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass at v0.1.50; exact recurrent, full Mode R, generative-carrier, and independent bundle audits pass at their recorded candidates |
+| Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.52; exact recurrent, full Mode R, generative-carrier, frozen-model, and independent bundle audits pass at their recorded candidates |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
 | Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
 
@@ -81,11 +86,10 @@ The corpus is useful for verifier, export, report, and pipeline checks. It is no
 pilot or confirmatory dataset because every run uses the Prototype Mode,
 unregistered, unanchored invalid path.
 
-A separate two-episode frozen-model report binds reported model/runtime identifiers
-and hashes. The corresponding model weights and inference executable were not found
-under the bounded local asset scan, so local independent reproduction is presently
-impossible. Two episodes cannot establish convergence, generalization, or model
-comparison in any case.
+A replacement two-episode frozen-model qualification binds a locally retained,
+read-only weight file and the resolved Homebrew inference executable by independently
+computed SHA-256. Its live probes and server logs are now locally reproducible. Two
+episodes still cannot establish convergence, generalization, or model comparison.
 
 ## 4. Environment and reproducibility baseline
 
@@ -97,8 +101,8 @@ credential or secret value.
 The validation host has six logical x86-64 CPUs, 8,086,106,112 bytes of memory, no
 swap, and 198,498,086,912 bytes of filesystem capacity available at capture. The
 active tools are Homebrew 6.0.22, Homebrew Node 24.20.0, Homebrew pnpm 12.3.4,
-Homebrew actionlint 1.7.12, pre-existing Rust 1.94.0, and pre-existing Docker 29.7.2
-with Compose 2.29.7. No GPU capability is asserted.
+Homebrew actionlint 1.7.12, Homebrew llama.cpp 0.4.0, pre-existing Rust 1.94.0,
+and pre-existing Docker 29.7.2 with Compose 2.29.7. No GPU capability is asserted.
 
 The pnpm migration preserved directly resolved external dependency versions where
 they remained compatible, pins lifecycle-build permissions to exact versions or a
@@ -136,9 +140,9 @@ run. Because this report and receipt are later documentation, they are not part 
 the candidate that was exercised.
 
 These results establish bounded software behavior on one host and candidate. Later
-V07 and V08 receipts qualify the recurrent learners and generative-carrier learning
-mechanism, but frozen-model reattestation, public-chain execution, and a frozen
-same-commit candidate containing every later research mechanism remain open.
+V07, V08, and V09 receipts qualify the recurrent learners, generative-carrier
+learning mechanism, and locally served frozen-model path. Public-chain execution and
+a frozen same-commit candidate containing every later research mechanism remain open.
 
 ## 6. Independent integrity challenge
 
@@ -285,7 +289,45 @@ unanchored software qualifications with invalid research dispositions, and E13
 remains not started. The mechanism and its boundary are documented in
 [generative carrier learning](../../docs/generative-carrier-learning.md).
 
-## 10. Critical gaps before empirical claims
+## 10. Frozen-model runtime qualification
+
+The [frozen-model qualification receipt](frozen-model-qualification-receipt.json)
+binds the version-2 report to exact commit
+`d6d98dfb4826d3c86d4dcc35e2e93edf53e4591e`. The official 2,497,280,256-byte
+Qwen3-4B Q4_K_M GGUF matches SHA-256
+`7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5`.
+The Homebrew llama.cpp 0.4.0 server reports build `b10809-5266f24da`; its resolved
+executable and x86_64 bottle match the independently recorded hashes in the receipt.
+
+Each role ran through a dedicated, non-overlapping process on a distinct loopback
+endpoint with one 4,096-token slot. The operator disabled prompt caching and model
+thinking, required tool calls, used greedy temperature zero with per-turn seeds, and
+set a 192-token output cap plus a 300-second qualification budget. Live `/health`,
+`/props`, `/v1/models`, and `/slots` probes cross-checked the loaded alias, Q4_K
+medium file type, model dimensions, runtime build, context, slot count, tool-capable
+chat template, and modality flags. Both roles produced identical hashed tool-only
+responses before and after clean process restarts.
+
+The two-episode adapter run made four live model calls and all four passed the
+tool-only learner boundary. Both roles sent and received, and each role's two policy
+snapshot hashes differed because private episodic memory changed. The adapter exposed
+no `updatePolicy` method, both role clients retained the same exact weight description,
+and the runner rehashed the read-only weights and executable after execution. Thus
+“frozen” is evidenced as an immutable weight asset and absent weight-update path; it
+does not mean private memory is static.
+
+Failure history materially shaped the result. A first probe exposed a missing
+thinking-disable request. A concurrent two-process attempt exceeded this host's
+7.5-GiB/no-swap capacity and lost one process. A serialized attempt exceeded the old
+114-second model ceiling, and a 64-token cap ended one receiver completion before a
+valid tool call. Those failures are retained as diagnostics; the passing run uses the
+historical 192-token cap and an explicit 300-second software-qualification ceiling.
+The serialized result does not establish concurrent deployment capacity or the normal
+study deadline. The executable/bottle hashes also do not enumerate every dynamic
+system library. Finally, the zero-of-two descriptive task success is not a scientific
+estimate, and the run is neither registered nor anchored.
+
+## 11. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
@@ -300,13 +342,14 @@ remains not started. The mechanism and its boundary are documented in
    detectable positive controls before a negative bound is meaningful.
 5. Ledger-prediction value must be compared with transcript-only, policy-state, random,
    majority, and oracle baselines without circular access to the target policy.
-6. The frozen-model path needs current executable/weight attestation, actual inference
-   configuration verification, both roles, reset, and memory-freeze requalification.
-7. The bounded full topology and recurrent models are qualified, but real chain receipts, external
-   registration, governance, independent restore, and independent replication
-   records do not exist.
+6. Frozen-model functionality and serialized role-state isolation are now qualified,
+   but concurrent capacity and the normal study latency budget are not; those require
+   a larger execution host and the actual study topology.
+7. The bounded full topology and recurrent models are qualified, but real chain
+   receipts, external registration, governance, independent restore, and independent
+   replication records do not exist.
 
-## 11. Current scientific and publication conclusion
+## 12. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal

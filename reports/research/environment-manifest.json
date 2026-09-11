@@ -30,7 +30,8 @@
     "installedForThisPlan": [
       "node@24 24.20.0",
       "pnpm 12.3.4",
-      "actionlint 1.7.12"
+      "actionlint 1.7.12",
+      "llama.cpp 0.4.0"
     ],
     "transitiveFormulaeRelevantToValidation": [
       "shellcheck 0.11.0"
@@ -72,6 +73,13 @@
       "composeVersion": "2.29.7",
       "installation": "pre-existing; not installed during this plan",
       "clientSha256": "a429e235ef670ea83357a5c8c7451f0a69d485a6fee49f9032fd938a0ab4969d"
+    },
+    "llamaServer": {
+      "version": "0.4.0",
+      "build": "b10809-5266f24da",
+      "installation": "Homebrew formula llama.cpp",
+      "sha256": "d6011228fbddb324d21fa51d950af6b75dda5f7fa5060995027fc1912499e518",
+      "bottleSha256": "acecd0797b0619b3e4a6ac5e51d34e8cb0905c06f1827f0c4466f82272d28770"
     }
   },
   "containerQualification": {
@@ -100,10 +108,20 @@
     "historicalQualificationRunCount": 33,
     "historicalQualificationDatabaseSha256": "2f349a0b417fb74432b7b12bd6b7c92db4e89941d547a381e1007af006b40185"
   },
+  "subsequentQualificationUpdates": {
+    "updatedAtUtc": "2026-09-11T18:32:58Z",
+    "candidateCommit": "d6d98dfb4826d3c86d4dcc35e2e93edf53e4591e",
+    "modelAssetsNowPresent": 1,
+    "modelFileName": "Qwen3-4B-Q4_K_M.gguf",
+    "modelFileBytes": 2497280256,
+    "modelFileSha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "qualificationReceipt": "reports/research/frozen-model-qualification-receipt.json"
+  },
   "limitations": [
     "Available memory and filesystem capacity are point-in-time observations.",
     "No accelerator was identified or qualified in this inventory.",
-    "The historical frozen-model weights and inference executable are not present under the bounded model-asset scan root, so that run cannot yet be independently repeated from local assets.",
+    "At the original capture time, historical frozen-model weights and the inference executable were absent; the subsequent qualification update records the newly retained exact model asset and Homebrew runtime without rewriting the original scan count.",
+    "The validation host cannot keep two 4B inference processes resident concurrently; V09 uses dedicated non-overlapping role processes and does not establish concurrent capacity.",
     "No credential, signer, RPC endpoint, or secret value was read or recorded.",
     "This manifest describes software validation and does not establish any empirical research result."
   ]
