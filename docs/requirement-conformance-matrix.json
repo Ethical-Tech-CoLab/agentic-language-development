@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.60"
+    "version": "0.1.61"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -47,7 +47,7 @@
     },
     "packages/analysis/__tests__/e03-design.test.ts": {
       "selectors": [
-        "reproduces all four registered rows above the 90% power floor",
+        "reproduces all four component rows above the 90% power floor",
         "is byte-for-byte deterministic for a fixed seed",
         "rejects malformed designs instead of emitting a power decision",
         "derives the registered slots and ten-percent reserve deterministically"
@@ -68,12 +68,14 @@
         "qualifies with no unmet criteria",
         "declares every non-oracle condition equivalent after Holm correction",
         "meets oracle adequacy above 0.90",
-        "meets oracle separation with Holm-adjusted interval levels",
+        "meets oracle separation with Holm tests and simultaneous intervals",
         "audits the §D.10 high-seed share",
         "is deterministic for a seed and seed-sensitive otherwise",
         "names the above-chance condition and still qualifies the others",
         "fails oracle adequacy when the oracle is weak",
         "reports insufficient seeds instead of a decision",
+        "enforces the five-seed qualification floor",
+        "routes high seeds to leakage review without treating an arbitrary share as a test",
         "adds Wilson intervals only when episode counts are supplied",
         "rejects malformed episode counts",
         "requires conditions paired with the oracle by seed slot",

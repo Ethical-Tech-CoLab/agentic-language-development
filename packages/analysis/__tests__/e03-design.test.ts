@@ -7,8 +7,12 @@ import {
 } from '../src/e03-design.js';
 
 describe('E03 outcome-blind design simulation', () => {
-  it('reproduces all four registered rows above the 90% power floor', () => {
+  it('reproduces all four component rows above the 90% power floor', () => {
     const result = simulateE03DesignPower();
+    expect(result.scope).toBe('single-control-equivalence-component');
+    expect(result.registrationFacingReceipt).toBe(
+      'reports/research/statistical-validation.tsv',
+    );
     expect(result.repetitions).toBe(30_000);
     expect(result.rows).toHaveLength(E03_DESIGN_ROWS.length);
     expect(result.passes).toBe(true);

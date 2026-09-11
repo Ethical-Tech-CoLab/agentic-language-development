@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "D03-frozen; later operational fields are owned by D04-D08",
+  "status": "D03-frozen; D04 and D05 are frozen in linked design protocols; remaining operational fields are owned by D06-D08",
   "frozenAt": "2026-09-11",
   "contributionScope": {
     "candidate": "Incremental predictive and audit value of outcome-blind contemporaneous private semantic ledgers beyond transcript, task-outcome, policy-state, ordinary-log, and signed-log comparators in controlled emergent-communication studies.",

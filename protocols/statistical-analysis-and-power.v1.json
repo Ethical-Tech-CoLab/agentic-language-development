@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-09-11",
+  "status": "D05-frozen; hypothesis-specific raw-scale margins and final seed allocations remain D07 inputs",
+  "evidenceBoundary": "Outcome-blind design validation only; no experiment outcomes were generated or analyzed.",
+  "independentReference": {
+    "runtime": "Homebrew R 4.6.1",
+    "dependencies": "base R only",
+    "script": "scripts/validate-statistics.R",
+    "scriptSha256": "28417be7bdc7188fc75390e278ef32bf427566f161b0c21d08e858704897f4fd",
+    "receipt": "reports/research/statistical-validation.tsv",
+    "receiptSha256": "ee848fdaf12c27092de0b573acacc5a57b854c4cefd56a0e53b1c7ea1175ec52",
+    "portableAudit": "scripts/check-statistical-validation.ts",
+    "liveReplay": "pnpm audit:statistics:r"
+  },
+  "e03Amendment": {
+    "reason": "Full bounded simulation showed the former five-percent high-seed cap was not a calibrated test and reduced complete-rule power below 0.10 in every registered variance row.",
+    "independentUnit": "seed/run success proportion over 200 repeated episodes",
+    "minimumValidSeeds": 5,
+    "controlEquivalence": "Five TOST p-values for bounds [0.20, 0.30], Holm-adjusted at family-wise alpha 0.05.",
+    "oracleAdequacy": "One-sided seed-level t test and 95% lower bound above 0.90.",
+    "oracleSeparation": "Five paired seed-level oracle-minus-control t tests above 0.60, Holm-adjusted at family-wise alpha 0.05; report conservative 99% Bonferroni lower bounds.",
+    "bootstrapRole": "Seed bootstrap intervals are sensitivity estimates, not primary gates, because the smallest-row percentile interval undercovered in independent simulation.",
+    "highSeedRule": "Every non-oracle seed at or above 0.35 triggers case-level leakage review; no arbitrary count is itself a statistical rejection.",
+    "invalidRuns": "Use the next ordered reserve only for a prespecified validity failure; report all attempts; fewer than N valid runs yields incomplete primary analysis; additionally report invalid-as-failure sensitivity without converting it into the primary estimate."
+  },
+  "validationAcceptance": {
+    "referenceTolerance": 1e-10,
+    "primaryCoverageLowerFloor": 0.94,
+    "tostBoundaryPointCeiling": 0.012,
+    "fullE03MonteCarloLowerPowerFloor": 0.90,
+    "monteCarloInterval": "two-sided 95% Wilson interval on simulation success count"
+  },
+  "confirmedFindings": [
+    "Production normal, Student-t, one-sample and Welch tests, TOST, Holm, Wilson, exact-binomial, type-7 quantile, log-beta, entropy, mutual-information, and beta-binomial-fit values agree with independent R references.",
+    "Wilson and seed-level t intervals attained at least 0.94 lower Monte Carlo coverage bounds in the registered stress cases.",
+    "The 999-resample percentile bootstrap at N=25 had 0.9335 estimated coverage with upper 95% Monte Carlo bound below 0.95, so it is sensitivity-only.",
+    "TOST boundary false-equivalence estimates ranged from 0.0071 to 0.0109 at nominal per-test alpha 0.01.",
+    "Ignoring seed clusters inflated the stress-case Type I estimate to 0.3081; seed-level inference estimated 0.0406.",
+    "All four bounded full-E03 numeric-rule rows exceeded the 0.90 lower Monte Carlo power floor after removing the uncalibrated high-tail count rejection.",
+    "Treating five percent of N=75 runs as failures drove numeric-rule power to zero in the registered stress case; this is a deliberately severe sensitivity, not a replacement for reserve accounting."
+  ],
+  "confirmatoryFamily": {
+    "members": 9,
+    "procedure": "One valid p-value per member, global Holm at family-wise alpha 0.05; composite members contribute the maximum component p-value and require all practical directions.",
+    "sensitivity": [
+      {"seeds": 75, "standardizedEffect": 0.40, "allNinePower": 0.675166666666667, "lower95": 0.669845173544792},
+      {"seeds": 100, "standardizedEffect": 0.40, "allNinePower": 0.9068, "lower95": 0.903458053556625},
+      {"seeds": 150, "standardizedEffect": 0.30, "allNinePower": 0.8017, "lower95": 0.797149645017281}
+    ],
+    "selectionRule": "D07 must transform each frozen raw-scale practical margin and pilot variance into a member-specific standardized effect, simulate that member's complete test including composites and missingness, then choose the largest required primary-seed count whose lower 95% Monte Carlo power bound is at least 0.90. The ten-seed publication floor and historical 75-seed convention are not power justifications."
+  }
+}

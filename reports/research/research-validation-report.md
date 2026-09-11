@@ -47,6 +47,10 @@ Report status: in progress
   four-type compositional test partition. A real leakage defect that exposed test
   types as training distractors was corrected, and model comparisons now declare
   matched budgets plus causal-versus-descriptive interpretation boundaries.
+- Independent base-R validation now agrees with 18 production numerical values and
+  quantifies interval coverage, TOST boundary error, clustering, invalid runs, the
+  complete E03 numeric gate, and nine-member Holm sensitivity. It exposed and removed
+  an uncalibrated E03 tail-count rejection before registration.
 - This does not answer the research questions. The experiment notebook still marks
   all 19 experiments `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -503,14 +507,49 @@ This closes D04 for the numeric generator and declared model comparisons. It doe
 not determine sample sizes, statistical operating characteristics, resource ceilings,
 or asset near-duplicate thresholds and does not create an experimental result.
 
-## 16. Critical gaps before empirical claims
+## 16. Independent statistical validation and power
+
+Homebrew R 4.6.1 supplied an implementation independent of the TypeScript analysis
+package. The frozen 66-row receipt checks distribution functions, one-sample and
+Welch tests, TOST, Holm, Wilson, exact-binomial, quantile, entropy, mutual information,
+and a beta-binomial fit; all 28 production references
+agree within `1e-10`. Every simulation proportion includes its two-sided 95% Wilson
+Monte Carlo interval.
+
+The validation confirmed approximately nominal Wilson and seed-t coverage. A
+999-resample percentile bootstrap at N=25 instead covered 0.9335 of bounded
+beta-binomial draws, with 95% Monte Carlo interval [0.9217, 0.9436]. Bootstrap output
+therefore remains a sensitivity estimate. Under seed clustering, pooled episode
+inference had estimated Type I error 0.3081 while the seed-level test had 0.0406,
+empirically confirming that episodes cannot be treated as independent.
+
+The audit also found that the former E03 requirement limiting high-rate seeds to 5%
+was incompatible with its own variance design. Its full-rule power was 0.0705 in the
+lowest-variance row and zero observed passes in the other 10,000-repetition rows.
+The prospective amendment retains every rate at or above 0.35 as a mandatory
+case-level leakage review but does not treat the count as a statistical test. The
+complete bounded numeric rule now has estimated power 0.9318, 0.9308, 0.9163, and
+0.9552 across the four registered variance rows; every lower 95% Monte Carlo bound
+exceeds 0.90.
+
+Global Holm is not free. For nine independent one-sided members with standardized
+effect 0.40, the probability all nine reject was 0.6752 at N=75 and 0.9068 at N=100.
+Those values do not set a universal sample size. D07 must use each hypothesis's
+frozen raw-scale practical margin and disjoint pilot variance, simulate its complete
+test including composite outcomes and missingness, and select the largest count whose
+lower Monte Carlo power bound reaches 0.90. Full methods and limitations are in the
+[statistical validation note](../../docs/statistical-validation-and-power.md).
+
+This closes D05's method validation. It does not substitute design simulations for
+observed evidence and does not finalize D07's hypothesis-specific allocation.
+
+## 17. Critical gaps before empirical claims
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants, but perceptual similarity, learned transformation, held-out form
    generalization, and useful sign invention remain unimplemented or untested.
-2. The existing E03 sufficient-statistic simulator does not yet validate the complete
-   gate under bounded episode generation, multiplicity, dependence, tails, invalid
-   runs, and reserve use.
+2. Hypothesis-specific raw-scale practical margins, disjoint pilot variances, complete
+   member simulations, and resulting seed allocations remain to be frozen in D07.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
@@ -525,7 +564,7 @@ or asset near-duplicate thresholds and does not create an experimental result.
    receipts, external registration, governance, independent restore, and independent
    replication records do not exist.
 
-## 17. Current scientific and publication conclusion
+## 18. Current scientific and publication conclusion
 
 The repository supports continued engineering and protocol work. It does not support
 an abstract or conclusion claiming emergent communication, compositionality, causal
@@ -539,6 +578,7 @@ The provisional [requirement-level conformance matrix](../../docs/requirement-co
 now inventories every backlog criterion and normative MUST-bearing source line with
 concrete executable surfaces and required receipts. The software candidate and
 bounded literature/novelty audit, question/estimand cards, and numeric split/model
-comparison design are complete. Subsequent revisions will add statistical validation, leakage protocols,
+comparison design and independent statistical validation are complete. Subsequent
+revisions will add leakage protocols,
 the pilot cost model, run/data manifest, analyses, audit-cost comparison, claim map,
 and critical review.

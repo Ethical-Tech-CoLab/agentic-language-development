@@ -1,6 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "claimBoundary": "outcome-blind-design-simulation",
+  "scope": "single-control-equivalence-component",
+  "registrationFacingReceipt": "reports/research/statistical-validation.tsv",
   "samplingModel": "normal-seed-rate-with-binomial-episode-variance",
   "seed": "ald-e03-v1-design-check",
   "repetitions": 30000,

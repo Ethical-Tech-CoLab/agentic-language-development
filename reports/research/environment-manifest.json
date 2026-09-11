@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "capturedAtUtc": "2026-09-11T14:27:34Z",
+  "lastExtendedAtUtc": "2026-09-11T20:15:00Z",
   "classification": "software-validation-environment",
   "researchFinding": false,
   "repository": {
@@ -31,7 +32,8 @@
       "node@24 24.20.0",
       "pnpm 12.3.4",
       "actionlint 1.7.12",
-      "llama.cpp 0.4.0"
+      "llama.cpp 0.4.0",
+      "r 4.6.1"
     ],
     "transitiveFormulaeRelevantToValidation": [
       "shellcheck 0.11.0"
@@ -80,6 +82,13 @@
       "installation": "Homebrew formula llama.cpp",
       "sha256": "d6011228fbddb324d21fa51d950af6b75dda5f7fa5060995027fc1912499e518",
       "bottleSha256": "acecd0797b0619b3e4a6ac5e51d34e8cb0905c06f1827f0c4466f82272d28770"
+    },
+    "r": {
+      "version": "4.6.1",
+      "installation": "Homebrew formula r",
+      "path": "/home/linuxbrew/.linuxbrew/bin/Rscript",
+      "sha256": "2573953a7a4a22c3ec7ecb6936df5e337d61b4e8697a7c6fe0c686cf97972503",
+      "use": "Independent base-R numerical and Monte Carlo validation for D05"
     }
   },
   "containerQualification": {

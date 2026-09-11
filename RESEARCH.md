@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.60 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.61 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -821,10 +821,11 @@ equal-weight eight-partner-training degradation.
 
 ### 7.3 Statistical Plan
 
-The final analysis plan will be frozen before confirmatory runs.
+The common analysis and multiplicity rules are frozen in
+[`protocols/statistical-analysis-and-power.v1.json`](protocols/statistical-analysis-and-power.v1.json).
+Experiment-specific raw-scale practical margins and seed allocations will be frozen
+after disjoint pilots and before confirmatory runs.
 
-- Alpha is `0.05` for each experiment's primary family.
-- Holm-Bonferroni correction is applied across primary metrics within an experiment.
 - The confirmatory study family contains nine members: H1, H2, H3, H4, H5, H6a,
   H6b, H7, and H8. One pre-registered p-value is formed per member and Holm correction
   is applied globally at family-wise alpha 0.05. Multi-component directional members
@@ -855,6 +856,16 @@ publication-facing seeds **per condition** is an engineering floor, not a claim 
 Before empirical submission, simulation-based power analysis will determine the
 required number of independent seeds for each primary contrast; the larger value
 governs.
+
+Independent base-R validation agrees with the production special functions and
+seed-level tests, demonstrates calibrated boundary behavior, and shows why pooled
+episode inference is prohibited. The complete E03 numeric decision has a lower 95%
+Monte Carlo power bound above 0.90 in all four planned variance rows. A nine-member
+Holm sensitivity shows that 75 seeds is not generally sufficient: at standardized
+effect 0.40, all-member power is 0.6752 at N=75 and 0.9068 at N=100. These values are
+design evidence rather than universal sample sizes; D07 applies the registered
+member-specific rule. Full methods and Monte Carlo intervals are in
+[`docs/statistical-validation-and-power.md`](docs/statistical-validation-and-power.md).
 
 Claims that a control is "at chance" or that leakage is absent use equivalence or
 upper-bound tests, not failure to reject a difference. Each pre-registration must
@@ -1045,7 +1056,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.60 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.61 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1719,22 +1730,25 @@ The unit of analysis is the run/seed success proportion across 200 episodes.
    normal no-learning, perform two one-sided one-sample tests on seed-level success
    proportions against equivalence bounds 0.20 and 0.30. Equivalence requires both
    one-sided tests to reject at the Holm-adjusted alpha.
-2. **Oracle adequacy:** The lower bound of the two-sided 95% bootstrap confidence
-   interval for mean seed-level oracle success must exceed 0.90.
+2. **Oracle adequacy:** A one-sided seed-level t test and its 95% lower confidence
+   bound must exceed 0.90. A two-sided 95% seed-bootstrap interval is reported as a
+   sensitivity estimate.
 3. **Oracle separation:** For each non-oracle condition, compute paired seed-level
-   oracle-minus-control differences. The lower bound of the Holm-adjusted 95%
-   confidence interval must exceed 0.60.
+   oracle-minus-control differences. One-sided t-test p-values above 0.60 receive
+   Holm correction across the five conditions. Conservative 99% Bonferroni lower
+   bounds and nominal paired seed-bootstrap intervals are reported.
 
 No episode is analyzed as an independent run.
 
 ### D.7 Sensitivity and Power
 
 Before final registration, a separate outcome-blind-for-confirmatory-use pilot of 20
-seeds per non-oracle condition will estimate the largest between-seed standard
-deviation. Pilot runs will not enter confirmatory estimates. The registered primary
+seeds per non-oracle condition will fit the beta-binomial model and estimate the
+largest latent between-seed standard deviation after accounting for 200-episode
+sampling. Pilot runs will not enter confirmatory estimates. The registered primary
 seed count is selected by this fixed rule:
 
-| Largest pilot SD | Primary seeds per condition |
+| Largest latent pilot SD | Primary seeds per condition |
 |---:|---:|
 | <= 0.05 | 25 |
 | > 0.05 and <= 0.10 | 75 |
@@ -1742,23 +1756,23 @@ seed count is selected by this fixed rule:
 | > 0.15 and <= 0.20 | 300 |
 | > 0.20 | New simulation and amended registration required before collection |
 
-A committed 30,000-replicate deterministic Monte Carlo design check uses a true
-seed-level mean of 0.25, 200 binomial episodes per seed, and conservative per-test
-alpha of 0.01. Estimated equivalence-test power was 0.9093 at SD 0.05 with 25
-seeds, 0.9196 at SD 0.10 with 75 seeds, 0.9109 at SD 0.15 with 155 seeds, and
-0.9487 at SD 0.20 with 300 seeds. The corresponding lower 95% Monte Carlo bounds
-were 0.9061, 0.9165, 0.9077, and 0.9462, respectively, so every registered row
-clears the 90% floor. The code, exact output, and derived seed manifest are
-committed as `packages/analysis/src/e03-design.ts`,
-`docs/e03-design-simulation.json`, and `docs/e03-seed-manifest.json` and must be
-independently rerun before registration. Failure to reproduce at least 90% power
-blocks registration; it does not permit post-hoc widening of the margin.
+The original 30,000-replicate normal sufficient-statistic calculation is retained as
+a single-control equivalence component check. It is not the registration-facing
+power claim. Independent base-R simulation instead draws a bounded latent seed
+probability from a beta distribution and then 200 binary episodes, applies all five
+Holm-adjusted control TOSTs, the oracle adequacy test, and all five Holm-adjusted
+paired separation tests. With 10,000 repetitions per row, full numeric-rule power
+was 0.9318, 0.9308, 0.9163, and 0.9552 for the four rows; lower 95% Monte Carlo bounds
+were 0.9267, 0.9257, 0.9107, and 0.9510. Exact output is committed in
+`reports/research/statistical-validation.tsv` and independently replayed by
+`pnpm audit:statistics:r`. Failure to reproduce a lower bound of at least 0.90 blocks
+registration; it does not permit post-hoc widening of the margin.
 
 Sensitivity analyses:
 
 - Wilson intervals over pooled episodes are descriptive only;
-- a hierarchical Bernoulli model with seed random intercept is reported as a
-  robustness check;
+- a hierarchical Bernoulli model with seed random intercept and percentile bootstrap
+  intervals are reported as sensitivity checks;
 - invalid primary runs are treated as failures in a worst-case sensitivity analysis.
 
 ### D.8 Exclusions, Invalid Runs, and Replacement
@@ -1785,8 +1799,9 @@ E03 qualifies the downstream chance baseline only if:
 
 - all five non-oracle conditions meet equivalence;
 - oracle adequacy and separation criteria pass;
-- no non-oracle condition has more than 5% of its primary seeds with observed success
-  of 0.35 or greater; every such seed is individually audited for leakage;
+- every non-oracle primary seed with observed success of 0.35 or greater receives an
+  individually resolved leakage audit; the count is diagnostic and is not an
+  uncalibrated statistical rejection rule;
 - all included evidence bundles pass verification;
 - no unplanned metadata or channel leakage is detected.
 

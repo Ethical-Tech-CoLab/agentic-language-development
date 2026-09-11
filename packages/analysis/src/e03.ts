@@ -25,6 +25,7 @@ import {
   summarize,
   wilsonInterval,
   type DescriptiveSummary,
+  type ConfidenceInterval,
   type ProportionSummary,
   type WilsonInterval,
 } from './descriptive.js';
@@ -39,7 +40,13 @@ import {
   evaluateControlEquivalence,
   type EquivalenceDecision,
 } from './equivalence.js';
-import { holmBonferroni, type TostResult } from './hypothesis.js';
+import {
+  holmBonferroni,
+  oneSampleTTest,
+  type OneSampleTTestResult,
+  type TostResult,
+} from './hypothesis.js';
+import { studentTQuantile } from './special.js';
 
 /** Appendix D §D.10 clause 3: seeds at or above this success rate are audited. */
 export const E03_HIGH_SEED_THRESHOLD = 0.35;
@@ -49,6 +56,8 @@ export const E03_HIGH_SEED_SHARE_LIMIT = 0.05;
 export const E03_ORACLE_LOWER_BOUND = 0.9;
 /** Appendix D §D.6 item 3 oracle separation floor. */
 export const E03_SEPARATION_LOWER_BOUND = 0.6;
+/** SPECIFICATION.md §15.3 floor for E00-E03. */
+export const E03_MINIMUM_SEEDS = 5;
 
 const DEFAULT_ITERATIONS = 10_000;
 const DEFAULT_CONFIDENCE = 0.95;
@@ -90,6 +99,8 @@ export interface E03AnalysisInput {
   readonly highSeedThreshold?: number;
   /** Override the §D.10 high-seed share limit (default 0.05). */
   readonly highSeedShareLimit?: number;
+  /** Qualification seed floor; defaults to the normative five-seed minimum. */
+  readonly minimumSeeds?: number;
 }
 
 export interface E03HighSeedAudit {
@@ -99,19 +110,24 @@ export interface E03HighSeedAudit {
   readonly share: number;
   /** Zero-based seed slots at or above `threshold`, for the leakage audit. */
   readonly seedIndices: number[];
+  /** Diagnostic threshold only; every listed seed requires a leakage audit. */
+  readonly auditRequired: boolean;
+  /** Retained for transparent comparison with the original diagnostic cap. */
   readonly withinLimit: boolean;
 }
 
 export interface E03SeparationResult {
-  /** Nominal (unadjusted) paired bootstrap interval, descriptive. */
+  /** Nominal paired bootstrap interval, retained as a sensitivity estimate. */
   readonly interval: BootstrapCi;
-  /** Holm step-down rank, 1 = largest observed difference. */
+  /** One-sided seed-level t test of difference above the practical floor. */
+  readonly test: OneSampleTTestResult;
+  readonly rawP: number;
+  readonly holmAdjustedP: number;
+  /** Holm rank by ascending raw p, 1 = smallest p. */
   readonly rank: number;
-  /** Coverage used for this condition's Holm-adjusted interval. */
-  readonly holmLevel: number;
-  /** Interval at `holmLevel`, from the same replicate set. */
-  readonly holmInterval: BootstrapCi;
-  /** `holmInterval.lower > separationLowerBound` under the step-down. */
+  /** Conservative one-sided Bonferroni simultaneous interval. */
+  readonly simultaneousInterval: ConfidenceInterval;
+  /** Holm rejects and the simultaneous lower bound exceeds the floor. */
   readonly meets: boolean;
 }
 
@@ -142,8 +158,11 @@ export interface E03ConditionResult {
 export interface E03OracleResult {
   readonly n: number;
   readonly summary: DescriptiveSummary;
-  /** Two-sided bootstrap interval for mean seed-level oracle success. */
+  /** Two-sided bootstrap interval retained as a sensitivity estimate. */
   readonly adequacy: BootstrapCi;
+  /** Primary one-sided seed-level t test above `lowerBound`. */
+  readonly test: OneSampleTTestResult;
+  readonly simultaneousInterval: ConfidenceInterval;
   readonly lowerBound: number;
   readonly meetsAdequacy: boolean;
   readonly pooledEpisodes?: WilsonInterval;
@@ -156,8 +175,6 @@ export interface E03Criteria {
   readonly oracleAdequate: boolean;
   /** §D.10 clause 2b: oracle separation for every non-oracle condition. */
   readonly allSeparationsMeet: boolean;
-  /** §D.10 clause 3 (numeric part): high-seed share within the limit. */
-  readonly highSeedSharesWithinLimit: boolean;
 }
 
 export interface E03Analysis {
@@ -175,8 +192,8 @@ export interface E03Analysis {
   readonly criteria: E03Criteria;
   /**
    * Every registered clause this run fails, as stable codes such as
-   * `equivalence:shuffled`, `separation:random`, `high-seed-share:constant`,
-   * or `oracle-adequacy`. Empty iff `qualifies` is true.
+   * `equivalence:shuffled`, `separation:random`, or `oracle-adequacy`.
+   * Empty iff `qualifies` is true.
    */
   readonly unmetCriteria: string[];
   /**
@@ -185,14 +202,18 @@ export interface E03Analysis {
    * leakage detected) are the harness's to add.
    */
   readonly qualifies: boolean;
+  /** High-tail diagnostics requiring case-level leakage review by the harness. */
+  readonly auditTriggers: string[];
+  readonly minimumSeeds: number;
   /** Human-readable provenance of the rule that produced `qualifies`. */
   readonly decisionRule: string;
 }
 
 const DECISION_RULE =
-  'RESEARCH.md Appendix D §D.10 clauses 1-3 (control equivalence, oracle ' +
-  'adequacy and separation, high-seed share). Evidence-bundle verification ' +
-  'and the leakage audit are supplied by the harness.';
+  'RESEARCH.md Appendix D §D.10 numeric clauses (Holm control equivalence, ' +
+  'one-sided seed-level oracle adequacy, and Holm separation). High-tail ' +
+  'case review, evidence-bundle verification, and leakage disposition are ' +
+  'supplied by the harness.';
 
 /** Seed-level success proportions must be probabilities (Appendix D §D.6). */
 function assertProportions(rates: readonly number[], label: string): void {
@@ -272,7 +293,24 @@ function highSeedAudit(
     count: seedIndices.length,
     share,
     seedIndices,
+    auditRequired: seedIndices.length > 0,
     withinLimit: share <= shareLimit,
+  };
+}
+
+function oneSidedLowerInterval(
+  test: OneSampleTTestResult,
+  alpha: number,
+): ConfidenceInterval {
+  const level = 1 - alpha;
+  if (test.n < 2 || Number.isNaN(test.se)) {
+    return { lower: NaN, upper: 1, level };
+  }
+  const critical = studentTQuantile(level, test.df);
+  return {
+    lower: test.mean - critical * test.se,
+    upper: 1,
+    level,
   };
 }
 
@@ -289,13 +327,12 @@ function highSeedAudit(
  *    the non-oracle conditions. Conditions with fewer than
  *    `MINIMUM_EQUIVALENCE_SEEDS` seeds are excluded from the family (their
  *    p is undefined) and reported as `insufficient-seeds`.
- * 2. **Separation.** §D.6 asks for the lower bound of a "Holm-adjusted 95%
- *    confidence interval". Holm's step-down is applied to the interval level:
- *    conditions are ranked by descending observed paired difference (the
- *    order Holm would visit them in), rank `k` of `m` uses coverage
- *    `1 - alpha / (m - k + 1)`, and once a rank fails every later rank fails.
- *    All ranks share one replicate set per condition, so the adjusted and
- *    nominal intervals are quantiles of the same bootstrap draw.
+ * 2. **Adequacy and separation.** Primary decisions use one-sided seed-level
+ *    t tests. Separation p values receive Holm correction. A conservative
+ *    Bonferroni one-sided simultaneous interval accompanies each separation;
+ *    the percentile bootstrap remains a sensitivity interval. This avoids
+ *    ranking confidence levels by observed effect magnitude, which is not
+ *    equivalent to Holm ordering when standard errors differ.
  */
 export function e03Analysis(input: E03AnalysisInput): E03Analysis {
   assertLevel(input.alpha, 'alpha');
@@ -321,6 +358,10 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
   assertLevel(confidence, 'confidence');
   const threshold = input.highSeedThreshold ?? E03_HIGH_SEED_THRESHOLD;
   const shareLimit = input.highSeedShareLimit ?? E03_HIGH_SEED_SHARE_LIMIT;
+  const minimumSeeds = input.minimumSeeds ?? E03_MINIMUM_SEEDS;
+  if (!Number.isInteger(minimumSeeds) || minimumSeeds < 2) {
+    throw new AnalysisError('domain', 'minimumSeeds must be an integer at least 2');
+  }
   const midpoint = (input.equivalenceLower + input.equivalenceUpper) / 2;
 
   const oracleRates = input.oracle;
@@ -336,6 +377,8 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     readonly unadjustedDecision: EquivalenceDecision;
     readonly rawP: number;
     readonly replicates: readonly number[];
+    readonly differences: readonly number[];
+    readonly separationTest: OneSampleTTestResult;
     readonly difference: number;
     readonly highSeeds: E03HighSeedAudit;
     readonly pooledEpisodes?: WilsonInterval;
@@ -370,6 +413,9 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
         confidence,
       },
     );
+    const differences = oracleRates.map(
+      (oracleRate, index) => oracleRate - (rates[index] as number),
+    );
     return {
       condition,
       rates,
@@ -378,6 +424,12 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
       unadjustedDecision: equivalence.decision,
       rawP: equivalence.tost.p,
       replicates,
+      differences,
+      separationTest: oneSampleTTest(
+        differences,
+        input.separationLowerBound,
+        'greater',
+      ),
       difference: oracleMean - sampleMean(rates),
       highSeeds: highSeedAudit(rates, threshold, shareLimit),
       ...(counts === undefined
@@ -389,6 +441,7 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
   // --- Holm across conditions for the equivalence family ------------------
   const family = working.filter(
     (entry) =>
+      entry.rates.length >= minimumSeeds &&
       entry.unadjustedDecision !== 'insufficient-seeds' &&
       Number.isFinite(entry.rawP),
   );
@@ -405,32 +458,59 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     });
   }
 
-  // --- Holm step-down on the separation interval level --------------------
-  const separationOrder = [...working].sort(
-    (left, right) => right.difference - left.difference,
+  // --- Holm separation tests and simultaneous intervals -------------------
+  const separationFamily = working.filter(
+    (entry) =>
+      entry.rates.length >= minimumSeeds &&
+      Number.isFinite(entry.separationTest.p),
   );
-  const m = separationOrder.length;
+  const separationAdjusted = new Map<string, number>();
+  const separationRejected = new Map<string, boolean>();
+  if (separationFamily.length > 0) {
+    const holm = holmBonferroni(
+      separationFamily.map((entry) => entry.separationTest.p),
+      input.alpha,
+    );
+    separationFamily.forEach((entry, index) => {
+      separationAdjusted.set(entry.condition, holm.adjusted[index] as number);
+      separationRejected.set(entry.condition, holm.rejected[index] as boolean);
+    });
+  }
+  const separationOrder = [...working].sort((left, right) => {
+    const leftP = Number.isFinite(left.separationTest.p)
+      ? left.separationTest.p
+      : Infinity;
+    const rightP = Number.isFinite(right.separationTest.p)
+      ? right.separationTest.p
+      : Infinity;
+    return leftP - rightP;
+  });
+  const m = working.length;
   const separations = new Map<string, E03SeparationResult>();
-  let priorMet = true;
   separationOrder.forEach((entry, index) => {
     const rank = index + 1;
-    const holmLevel = 1 - input.alpha / (m - rank + 1);
     const nominal = percentileInterval(entry.replicates, confidence);
-    const adjusted = percentileInterval(entry.replicates, holmLevel);
     const base = {
       estimate: entry.difference,
       n: entry.rates.length,
       iterations,
       seed: deriveSeedHex(input.seed, 'e03-separation', entry.condition),
     };
+    const adjustedP = separationAdjusted.get(entry.condition) ?? NaN;
+    const simultaneousInterval = oneSidedLowerInterval(
+      entry.separationTest,
+      input.alpha / m,
+    );
     const meets =
-      priorMet && adjusted.lower > input.separationLowerBound;
-    priorMet = meets;
+      (separationRejected.get(entry.condition) ?? false) &&
+      simultaneousInterval.lower > input.separationLowerBound;
     separations.set(entry.condition, {
       interval: { ...nominal, ...base },
+      test: entry.separationTest,
+      rawP: entry.separationTest.p,
+      holmAdjustedP: adjustedP,
       rank,
-      holmLevel,
-      holmInterval: { ...adjusted, ...base },
+      simultaneousInterval,
       meets,
     });
   });
@@ -443,6 +523,15 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     confidence,
   });
   const oracleInterval = percentileInterval(oracleReplicates, confidence);
+  const oracleTest = oneSampleTTest(
+    oracleRates,
+    input.oracleLowerBound,
+    'greater',
+  );
+  const oracleSimultaneousInterval = oneSidedLowerInterval(
+    oracleTest,
+    input.alpha,
+  );
   const oracleCounts = episodeCountsFor(
     input.episodeCounts?.['oracle'],
     oracleRates.length,
@@ -458,8 +547,13 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
       iterations,
       seed: oracleSeed,
     },
+    test: oracleTest,
+    simultaneousInterval: oracleSimultaneousInterval,
     lowerBound: input.oracleLowerBound,
-    meetsAdequacy: oracleInterval.lower > input.oracleLowerBound,
+    meetsAdequacy:
+      oracleRates.length >= minimumSeeds &&
+      oracleTest.p < input.alpha &&
+      oracleSimultaneousInterval.lower > input.oracleLowerBound,
     ...(oracleCounts === undefined
       ? {}
       : {
@@ -469,10 +563,12 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
 
   // --- assemble -----------------------------------------------------------
   const unmetCriteria: string[] = [];
+  const auditTriggers: string[] = [];
   const conditions: E03ConditionResult[] = working.map((entry) => {
     const adjustedP = holmAdjusted.get(entry.condition) ?? NaN;
     const rejected = holmRejected.get(entry.condition) ?? false;
     const decision: EquivalenceDecision =
+      entry.rates.length < minimumSeeds ||
       entry.unadjustedDecision === 'insufficient-seeds'
         ? 'insufficient-seeds'
         : rejected
@@ -485,8 +581,8 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     if (!separation.meets) {
       unmetCriteria.push(`separation:${entry.condition}`);
     }
-    if (!entry.highSeeds.withinLimit) {
-      unmetCriteria.push(`high-seed-share:${entry.condition}`);
+    if (entry.highSeeds.auditRequired) {
+      auditTriggers.push(`high-seed-review:${entry.condition}`);
     }
     return {
       condition: entry.condition,
@@ -515,9 +611,6 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     ),
     oracleAdequate: oracle.meetsAdequacy,
     allSeparationsMeet: conditions.every((entry) => entry.separation.meets),
-    highSeedSharesWithinLimit: conditions.every(
-      (entry) => entry.highSeeds.withinLimit,
-    ),
   };
   return {
     alpha: input.alpha,
@@ -532,11 +625,12 @@ export function e03Analysis(input: E03AnalysisInput): E03Analysis {
     oracle,
     criteria,
     unmetCriteria,
+    auditTriggers,
     qualifies:
       criteria.allControlsEquivalent &&
       criteria.oracleAdequate &&
-      criteria.allSeparationsMeet &&
-      criteria.highSeedSharesWithinLimit,
+      criteria.allSeparationsMeet,
+    minimumSeeds,
     decisionRule: DECISION_RULE,
   };
 }

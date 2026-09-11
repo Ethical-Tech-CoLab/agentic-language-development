@@ -19,7 +19,7 @@ import {
 } from './e03-design.js';
 import { AnalysisError } from './errors.js';
 
-export const E03_REGISTRATION_COMPILER_VERSION = 1;
+export const E03_REGISTRATION_COMPILER_VERSION = 2;
 export const E03_REGISTRATION_CLAIM_BOUNDARY =
   'Draft artifact only: external registration, governance review, and a ' +
   'confirmed pre-run Base anchor are still required before confirmatory collection.';

@@ -1,0 +1,67 @@
+category	case	metric	value	mc_n	lower95	upper95
+reference	normal	qnorm-0.975	1.95996398454005			
+reference	student-t	qt-0.975-df10	2.22813885198627			
+reference	student-t	pt-2.228138851964-df10	0.974999999999056			
+reference	one-sample-t	t	14.142135623731			
+reference	one-sample-t	p-greater	7.25640853065987e-05			
+reference	tost	p-lower	0.00105532292254564			
+reference	tost	p-upper	0.00105532292254564			
+reference	tost	p-max	0.00105532292254564			
+reference	holm	adjusted-1	0.03			
+reference	holm	adjusted-2	0.06			
+reference	holm	adjusted-3	0.06			
+reference	holm	adjusted-4	0.02			
+reference	wilson-8-of-10	lower	0.490162471536642			
+reference	wilson-8-of-10	upper	0.943317848545625			
+reference	binomial-4-of-5	greater-p	0.1875			
+reference	quantile-type7	q-0.025	0.1			
+reference	quantile-type7	q-0.975	3.9			
+reference	special	lbeta-2-3	-2.484906649788			
+reference	welch	t	2.56382281261804			
+reference	welch	df	6.95264724710242			
+reference	welch	p-greater	0.018778996265993			
+reference	entropy-2-3-5	plugin-bits	1.48547529722733			
+reference	entropy-2-3-5	miller-madow-bits	1.62974480131623			
+reference	mutual-information-perfect-binary	plugin-bits	1			
+reference	mutual-information-perfect-binary	miller-madow-bits	1.03606737602222			
+reference	beta-binomial-overdispersed	mu	0.499999999999993			
+reference	beta-binomial-overdispersed	precision	2.54869202675403			
+reference	beta-binomial-overdispersed	log-likelihood	-11.9339316509427			
+coverage	wilson-binomial-p0.25-n200	contains-true-mean	0.959166666666667	30000	0.956867797524193	0.961347959541831
+coverage	seed-t-beta-binomial-n25-sd0.05	contains-true-mean	0.9523	30000	0.949829793256485	0.954654388785539
+coverage	percentile-bootstrap-beta-binomial-n25-sd0.05-b999	contains-true-mean	0.9335	2000	0.921728365442976	0.943609554564178
+type-i	tost-lower-bound-n25	declares-equivalence-alpha0.01	0.00706666666666667	30000	0.00617985670362327	0.00807969934048837
+type-i	tost-upper-bound-n25	declares-equivalence-alpha0.01	0.0109	30000	0.00978607427821509	0.0121391668521102
+type-i	tost-lower-bound-n75	declares-equivalence-alpha0.01	0.00723333333333333	30000	0.00633549599571238	0.00825735070432159
+type-i	tost-upper-bound-n75	declares-equivalence-alpha0.01	0.0099	30000	0.00884073787816627	0.011084759316625
+type-i	tost-lower-bound-n155	declares-equivalence-alpha0.01	0.00833333333333333	30000	0.0073657453987007	0.00942681963042066
+type-i	tost-upper-bound-n155	declares-equivalence-alpha0.01	0.00973333333333333	30000	0.00868345284055493	0.010908753698314
+type-i	tost-lower-bound-n300	declares-equivalence-alpha0.01	0.00876666666666667	30000	0.00777289974020029	0.00988622099431913
+type-i	tost-upper-bound-n300	declares-equivalence-alpha0.01	0.00916666666666667	30000	0.00814931485851934	0.0103097034502137
+clustering	beta-binomial-n25-sd0.10	pooled-episode-type-i	0.3081	30000	0.302900222840171	0.313348915930856
+clustering	beta-binomial-n25-sd0.10	seed-level-type-i	0.0406	30000	0.038424869707983	0.0428927663077018
+full-e03	n25-latent-sd0.05	numeric-rule-power	0.9318	10000	0.926691506687575	0.936576872319509
+full-e03	n25-latent-sd0.05	old-high-tail-cap-pass	0.0722	10000	0.0672898340009516	0.0774387150049993
+full-e03	n25-latent-sd0.05	old-complete-rule-power	0.0705	10000	0.0656459116352372	0.0756839429651739
+full-e03	n75-latent-sd0.10	numeric-rule-power	0.9308	10000	0.92565850846824	0.935610638535584
+full-e03	n75-latent-sd0.10	old-high-tail-cap-pass	0	10000	0	0.000383998370676596
+full-e03	n75-latent-sd0.10	old-complete-rule-power	0	10000	0	0.000383998370676596
+invalid-runs	n75-sd0.10-five-percent-as-failures	numeric-rule-power	0	10000	0	0.000383998370676596
+full-e03	n155-latent-sd0.15	numeric-rule-power	0.9163	10000	0.910710956932968	0.921569326023606
+full-e03	n155-latent-sd0.15	old-high-tail-cap-pass	0	10000	0	0.000383998370676596
+full-e03	n155-latent-sd0.15	old-complete-rule-power	0	10000	0	0.000383998370676596
+full-e03	n300-latent-sd0.20	numeric-rule-power	0.9552	10000	0.950967744073914	0.959082663809422
+full-e03	n300-latent-sd0.20	old-high-tail-cap-pass	0	10000	0	0.000383998370676596
+full-e03	n300-latent-sd0.20	old-complete-rule-power	0	10000	0	0.000383998370676596
+invalid-runs	n75-reserve8-q0.02	all-six-conditions-avoid-reserve-exhaustion	0.999882757232783			
+invalid-runs	n75-reserve8-q0.05	all-six-conditions-avoid-reserve-exhaustion	0.927723976322216			
+invalid-runs	n75-reserve8-q0.10	all-six-conditions-avoid-reserve-exhaustion	0.0871215644746425			
+confirmatory-family	n75-d0.30	all-nine-holm-power	0.108366666666667	30000	0.104899221801575	0.11193439491213
+confirmatory-family	n75-d0.40	all-nine-holm-power	0.675166666666667	30000	0.669845173544792	0.680443305829578
+confirmatory-family	n75-d0.50	all-nine-holm-power	0.962966666666667	30000	0.960769780781829	0.965045003239224
+confirmatory-family	n100-d0.30	all-nine-holm-power	0.349733333333333	30000	0.344356513427689	0.355148631192737
+confirmatory-family	n100-d0.40	all-nine-holm-power	0.9068	30000	0.903458053556625	0.910037779418602
+confirmatory-family	n100-d0.50	all-nine-holm-power	0.995566666666667	30000	0.99474881847989	0.996257617839571
+confirmatory-family	n150-d0.30	all-nine-holm-power	0.8017	30000	0.797149645017281	0.806173100333324
+confirmatory-family	n150-d0.40	all-nine-holm-power	0.994933333333333	30000	0.994064096601838	0.995675835225119
+confirmatory-family	n150-d0.50	all-nine-holm-power	0.999966666666667	30000	0.999811193811876	0.999994115823935

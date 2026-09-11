@@ -9,14 +9,16 @@
  * independent chi-square sample variance. The registered TOST interval then
  * determines whether equivalence to the [0.20, 0.30] bounds would be declared.
  *
- * This is an outcome-blind power calculation, not an experiment result.
+ * This is an outcome-blind single-component check, not a full-rule power
+ * calculation or an experiment result. D05's independent bounded simulation
+ * validates the complete numeric rule and is the registration-facing source.
  */
 import { SeededPrng, deriveSeedHex } from '@ald/hashing';
 
 import { AnalysisError, assertLevel, assertProbability } from './errors.js';
 import { studentTQuantile } from './special.js';
 
-export const E03_DESIGN_SIMULATION_VERSION = 1;
+export const E03_DESIGN_SIMULATION_VERSION = 2;
 export const E03_DESIGN_REPETITIONS = 30_000;
 export const E03_DESIGN_MINIMUM_POWER = 0.9;
 export const E03_DESIGN_SEED = 'ald-e03-v1-design-check';
@@ -68,6 +70,8 @@ export interface E03DesignPowerRow {
 export interface E03DesignSimulation {
   readonly version: typeof E03_DESIGN_SIMULATION_VERSION;
   readonly claimBoundary: 'outcome-blind-design-simulation';
+  readonly scope: 'single-control-equivalence-component';
+  readonly registrationFacingReceipt: 'reports/research/statistical-validation.tsv';
   readonly samplingModel: 'normal-seed-rate-with-binomial-episode-variance';
   readonly seed: string;
   readonly repetitions: number;
@@ -225,6 +229,8 @@ export function simulateE03DesignPower(
   return {
     version: E03_DESIGN_SIMULATION_VERSION,
     claimBoundary: 'outcome-blind-design-simulation',
+    scope: 'single-control-equivalence-component',
+    registrationFacingReceipt: 'reports/research/statistical-validation.tsv',
     samplingModel: 'normal-seed-rate-with-binomial-episode-variance',
     seed,
     repetitions,

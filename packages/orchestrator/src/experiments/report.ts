@@ -128,7 +128,8 @@ function renderE03Section(e03: E03Result): string {
 
   const separationRows = analysis.conditions.map((condition) => [
     condition.condition,
-    num(condition.separation.holmInterval.lower),
+    num(condition.separation.simultaneousInterval.lower),
+    num(condition.separation.holmAdjustedP),
     condition.separation.meets ? 'meets' : 'fails',
   ]);
 
@@ -148,12 +149,17 @@ function renderE03Section(e03: E03Result): string {
       conditionRows,
     ),
     '',
-    `Oracle adequacy: bootstrap lower bound ${num(analysis.oracle.adequacy.lower)} vs floor ${num(analysis.oracleLowerBound)} — ${analysis.criteria.oracleAdequate ? 'meets' : 'fails'}.`,
+    `Oracle adequacy: one-sided seed-level t lower bound ${num(analysis.oracle.simultaneousInterval.lower)} vs floor ${num(analysis.oracleLowerBound)} — ${analysis.criteria.oracleAdequate ? 'meets' : 'fails'} (bootstrap sensitivity lower bound ${num(analysis.oracle.adequacy.lower)}).`,
     '',
-    '### Oracle separation (Holm step-down)',
+    '### Oracle separation (seed-level Holm tests)',
     '',
     markdownTable(
-      ['condition', `paired lower bound vs ${num(analysis.separationLowerBound)}`, 'decision'],
+      [
+        'condition',
+        `simultaneous lower bound vs ${num(analysis.separationLowerBound)}`,
+        'Holm-adjusted p',
+        'decision',
+      ],
       separationRows,
     ),
     '',
@@ -161,6 +167,9 @@ function renderE03Section(e03: E03Result): string {
     analysis.unmetCriteria.length > 0
       ? `Unmet criteria: ${analysis.unmetCriteria.join(', ')}`
       : 'Unmet criteria: none',
+    analysis.auditTriggers.length > 0
+      ? `Required leakage-audit triggers: ${analysis.auditTriggers.join(', ')}`
+      : 'Required leakage-audit triggers: none',
     '',
     `All evidence bundles verified: ${String(e03.allBundlesVerified)}`,
   ];

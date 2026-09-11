@@ -61,8 +61,9 @@ const result = compileE03Registration({
     'exceeds the registered adequacy and separation thresholds.',
   analysisPlan:
     'RESEARCH.md Appendix D §D.6-§D.10: seed-level TOST with ' +
-    'Holm-Bonferroni correction, bootstrap oracle adequacy and paired ' +
-    'separation, fixed high-seed audit, registered exclusions, and no ' +
+    'Holm-Bonferroni correction, one-sided seed-level oracle adequacy, ' +
+    'Holm-adjusted paired separation, bootstrap sensitivity intervals, ' +
+    'mandatory case-level high-seed review, registered exclusions, and no ' +
     'outcome-dependent stopping or replacement.',
 });
 const outputPath = resolve(values.out);

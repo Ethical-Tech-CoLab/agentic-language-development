@@ -49,7 +49,6 @@ describe('e03Analysis on a qualifying synthetic run', () => {
       allControlsEquivalent: true,
       oracleAdequate: true,
       allSeparationsMeet: true,
-      highSeedSharesWithinLimit: true,
     });
   });
 
@@ -73,7 +72,7 @@ describe('e03Analysis on a qualifying synthetic run', () => {
     expect(analysis.oracle.summary.mean).toBeGreaterThan(0.9);
   });
 
-  it('meets oracle separation with Holm-adjusted interval levels', () => {
+  it('meets oracle separation with Holm tests and simultaneous intervals', () => {
     const ranks = analysis.conditions
       .map((condition) => condition.separation.rank)
       .sort((a, b) => a - b);
@@ -81,16 +80,10 @@ describe('e03Analysis on a qualifying synthetic run', () => {
     for (const condition of analysis.conditions) {
       const { separation } = condition;
       expect(separation.meets).toBe(true);
-      expect(separation.holmInterval.lower).toBeGreaterThan(0.6);
-      // Rank k of 5 uses coverage 1 - alpha / (5 - k + 1).
-      expect(separation.holmLevel).toBeCloseTo(
-        1 - 0.05 / (5 - separation.rank + 1),
-        12,
-      );
-      // The adjusted interval is never narrower than the nominal one.
-      expect(separation.holmInterval.lower).toBeLessThanOrEqual(
-        separation.interval.lower,
-      );
+      expect(separation.simultaneousInterval.lower).toBeGreaterThan(0.6);
+      expect(separation.simultaneousInterval.level).toBeCloseTo(0.99, 12);
+      expect(separation.holmAdjustedP).toBeLessThan(0.05);
+      expect(separation.holmAdjustedP).toBeGreaterThanOrEqual(separation.rawP);
     }
   });
 
@@ -123,7 +116,7 @@ describe('e03Analysis on a non-qualifying run', () => {
     expect(analysis.qualifies).toBe(false);
     expect(analysis.unmetCriteria).toContain('equivalence:shuffled');
     // 0.4 is above the §D.10 audit threshold and 0.97 - 0.4 < 0.60.
-    expect(analysis.unmetCriteria).toContain('high-seed-share:shuffled');
+    expect(analysis.auditTriggers).toContain('high-seed-review:shuffled');
     expect(analysis.unmetCriteria).toContain('separation:shuffled');
     expect(
       analysis.unmetCriteria.filter((code) => !code.endsWith(':shuffled')),
@@ -136,7 +129,7 @@ describe('e03Analysis on a non-qualifying run', () => {
     expect(failing?.tost.pUpper).toBeGreaterThan(0.05);
     expect(failing?.highSeeds.count).toBe(SEEDS);
     expect(failing?.highSeeds.share).toBe(1);
-    // It sorts last in the separation step-down, so the others are unaffected.
+    // It has the weakest separation p value, so the others are unaffected.
     expect(failing?.separation.rank).toBe(5);
     for (const condition of analysis.conditions) {
       if (condition.condition !== 'shuffled') {
@@ -167,6 +160,28 @@ describe('e03Analysis on a non-qualifying run', () => {
     expect(condition?.holmAdjustedP).toBeNaN();
     expect(analysis.qualifies).toBe(false);
     expect(analysis.unmetCriteria).toContain('equivalence:disabled');
+  });
+
+  it('enforces the five-seed qualification floor', () => {
+    const analysis = e03Analysis(
+      input({
+        conditions: { disabled: [0.24, 0.25, 0.26, 0.25] },
+        oracle: [0.97, 0.98, 0.99, 0.98],
+      }),
+    );
+    expect(analysis.minimumSeeds).toBe(5);
+    expect(analysis.conditions[0]?.decision).toBe('insufficient-seeds');
+    expect(analysis.oracle.meetsAdequacy).toBe(false);
+    expect(analysis.qualifies).toBe(false);
+  });
+
+  it('routes high seeds to leakage review without treating an arbitrary share as a test', () => {
+    const conditions = atChanceConditions();
+    conditions['disabled'] = ratesAround(0.25, 0.02, SEEDS);
+    conditions['disabled'][0] = 0.35;
+    const analysis = e03Analysis(input({ conditions }));
+    expect(analysis.auditTriggers).toContain('high-seed-review:disabled');
+    expect(analysis.conditions[0]?.highSeeds.auditRequired).toBe(true);
   });
 });
 
@@ -247,16 +262,19 @@ describe('ALD-072 acceptance criteria', () => {
     expect(analysis.alpha).toBe(0.05);
     // Holm-Bonferroni across the primary metrics of the experiment.
     expect(Number.isFinite(condition.holmAdjustedP)).toBe(true);
-    expect(condition.separation.holmLevel).toBeGreaterThan(0);
+    expect(condition.separation.simultaneousInterval.level).toBeGreaterThan(0);
     // Mandatory effect sizes: Cohen's h for proportions, rank-biserial ordinal.
     expect(Number.isFinite(condition.cohensHVersusMidpoint)).toBe(true);
     expect(Number.isFinite(condition.rankBiserialOracleOverCondition)).toBe(
       true,
     );
-    // Confidence intervals: t-based TOST interval, bootstrap, Wilson.
+    // Confidence intervals: t-based primary intervals, bootstrap sensitivity,
+    // and descriptive Wilson.
     expect(condition.tost.interval.level).toBeCloseTo(0.9, 12);
     expect(condition.separation.interval.level).toBe(0.95);
+    expect(condition.separation.simultaneousInterval.level).toBeCloseTo(0.99, 12);
     expect(analysis.oracle.adequacy.level).toBe(0.95);
+    expect(analysis.oracle.simultaneousInterval.level).toBe(0.95);
     expect(condition.pooledEpisodes?.level).toBe(0.95);
     // Equivalence bound rather than a non-significant difference.
     expect(condition.tost.equivalenceLower).toBe(0.2);
@@ -280,8 +298,7 @@ describe('ALD-072 acceptance criteria', () => {
     expect(analysis.qualifies).toBe(
       analysis.criteria.allControlsEquivalent &&
         analysis.criteria.oracleAdequate &&
-        analysis.criteria.allSeparationsMeet &&
-        analysis.criteria.highSeedSharesWithinLimit,
+        analysis.criteria.allSeparationsMeet,
     );
   });
 });

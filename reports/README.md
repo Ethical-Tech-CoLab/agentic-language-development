@@ -6,7 +6,10 @@ The living research-validation report, source-lineage register, source-verificat
 register, novelty-comparator matrix, research protocol cards, and machine-readable
 environment manifest. The versioned scenario/comparison manifest and its readable
 design note freeze the numeric compositional split, leak checks, matched budgets, and
-causal-versus-descriptive interpretation boundaries.
+causal-versus-descriptive interpretation boundaries. The statistical-validation
+receipt is independently generated with base R and covers numerical reference values,
+coverage, boundary error, clustering, complete E03 power, global-Holm sensitivity,
+and invalid-run behavior.
 These artifacts distinguish inspected repository facts, freshly executed software
 qualification, planned empirical work, and externally blocked prerequisites. The
 literature register records evidence depth and permitted source use; the comparator

@@ -371,6 +371,10 @@ messages are randomized, or receiver access to messages is shuffled.
 
 A numerically complete worked registration for this experiment is provided in
 [RESEARCH.md Appendix D](RESEARCH.md#appendix-d-worked-preregistration-example-e03-controls).
+Its D05 amendment uses seed-level primary tests, treats high-rate seeds as mandatory
+leakage-review triggers rather than an uncalibrated count rejection, and is backed by
+the independent bounded simulation in
+[`docs/statistical-validation-and-power.md`](docs/statistical-validation-and-power.md).
 
 ### Conditions
 
