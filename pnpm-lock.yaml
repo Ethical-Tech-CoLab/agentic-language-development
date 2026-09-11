@@ -15,6 +15,9 @@ importers:
       '@ald/analysis':
         specifier: workspace:*
         version: link:packages/analysis
+      '@ald/anchor':
+        specifier: workspace:*
+        version: link:packages/anchor
       '@ald/gateway':
         specifier: workspace:*
         version: link:packages/gateway

@@ -27,6 +27,7 @@ import type {
   SignerRegistry,
   VerificationReport,
 } from '@ald/types';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { InMemorySignerRegistry } from '@ald/hashing';
 import {
@@ -156,12 +157,21 @@ export function createProductionRuntime(
     await service.writeProofFiles(runId, bundleDir);
   };
 
-  const verifier = (bundleDir: string): Promise<VerificationReport> =>
-    verifyBundle(bundleDir, {
+  const verifier = async (bundleDir: string): Promise<VerificationReport> => {
+    const manifest = JSON.parse(
+      await readFile(join(bundleDir, 'run-manifest.json'), 'utf8'),
+    ) as { parentRunId?: unknown };
+    const parentBundleDir =
+      typeof manifest.parentRunId === 'string'
+        ? join(options.bundleRoot, 'runs', manifest.parentRunId)
+        : undefined;
+    return verifyBundle(bundleDir, {
       verifierVersion: VERIFIER_VERSION,
       now: () => clock.now(),
       allowUnanchored,
+      ...(parentBundleDir === undefined ? {} : { parentBundleDir }),
     });
+  };
 
   const runtime = createNurseryRuntime({
     database,
