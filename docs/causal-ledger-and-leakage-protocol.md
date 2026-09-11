@@ -31,6 +31,15 @@ task-history, and frozen-policy-state predictors. The oracle is a diagnostic
 positive control and cannot be selected. Learner-native state, generated
 post-run interpretations, and human coding remain separate evidence classes.
 
+The implementation candidate in `@ald/analysis` enforces this chronology as
+separate APIs. Five eligible comparators fit on a validation-fit fold, selection
+uses a disjoint validation-selection fold, the winner is refit on all validation
+rows, and outcome-free test predictions are hash-committed before the scoring API
+accepts labels. Exact object-key checks reject undeclared information fields. The
+oracle is constructed only as a post-outcome detector-positive diagnostic and is not
+a member of the selectable comparator type. Exact-commit qualification and production
+evidence remain required before blocker B10 can close.
+
 ## Leakage decision principle
 
 Absence of a significant association does not establish absence of leakage. A

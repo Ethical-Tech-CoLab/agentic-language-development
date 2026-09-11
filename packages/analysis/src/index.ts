@@ -170,6 +170,27 @@ export {
   type CarrierMarkLeakageMetric,
   type RecognizableGlyphOutcome,
 } from './carrier-leakage.js';
+export {
+  CAUSAL_PREDICTION_PIPELINE_VERSION,
+  NON_LEDGER_COMPARATOR_IDS,
+  commitProspectivePredictions,
+  multiclassBrierScore,
+  scoreCommittedPredictions,
+  selectNonLedgerComparator,
+  type CausalPredictionScore,
+  type ComparatorInformation,
+  type ComparatorModel,
+  type ComparatorSelection,
+  type ComparatorValidationScore,
+  type LabeledPredictionCase,
+  type NativeLedgerPredictionSet,
+  type NonLedgerComparatorId,
+  type PredictionCase,
+  type PredictionOutcome,
+  type ProbabilityPrediction,
+  type ProspectivePredictionCommitment,
+  type ScoredPredictionCase,
+} from './causal-prediction.js';
 
 // ---------------------------------------------------------------------------
 // Intervention-suite and experiment-readiness scaffolds (BACKLOG ALD-072;

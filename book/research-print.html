@@ -121,7 +121,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.66 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.67 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Ethical Tech CoLab; individual author order, affiliations, ORCID
@@ -1127,7 +1127,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.66 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.67 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
@@ -1139,6 +1139,11 @@ qualification bundles, with ordinary-log, signed-stream, integrity-structure,
 policy-state, and complete-bundle storage separated; descriptive offline verifier
 timing and the prior six-case mutation challenge are reported without claiming a
 public anchor or an empirical result;</li>
+<li>an E16 comparator pipeline that fits all five eligible non-ledger predictors on a
+validation-fit fold, selects by Brier score on a disjoint validation-selection
+fold, refits and hash-locks the selected model, commits baseline and native-ledger
+predictions before accepting test outcomes, and keeps the oracle diagnostic
+ineligible for selection;</li>
 <li>a Base anchor client with confirmation/recovery handling and explicit mainnet
 gating, tested without claiming a funded public transaction;</li>
 <li>deterministic scenarios, the tool-only Gateway, all declared carrier controls,

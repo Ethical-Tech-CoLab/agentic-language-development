@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.66 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.67 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1084,7 +1084,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.66 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.67 · 254/258 backlog acceptance criteria verified.
 
 As of September 9, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1098,6 +1098,11 @@ Implemented:
   policy-state, and complete-bundle storage separated; descriptive offline verifier
   timing and the prior six-case mutation challenge are reported without claiming a
   public anchor or an empirical result;
+- an E16 comparator pipeline that fits all five eligible non-ledger predictors on a
+  validation-fit fold, selects by Brier score on a disjoint validation-selection
+  fold, refits and hash-locks the selected model, commits baseline and native-ledger
+  predictions before accepting test outcomes, and keeps the oracle diagnostic
+  ineligible for selection;
 - a Base anchor client with confirmation/recovery handling and explicit mainnet
   gating, tested without claiming a funded public transaction;
 - deterministic scenarios, the tool-only Gateway, all declared carrier controls,

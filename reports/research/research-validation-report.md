@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.66 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.67 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -695,7 +695,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 4. The E01 timing/envelope detectors and E13 forbidden-side-feature detectors must be
    exercised in the actual selected topology before their negative claims are eligible.
 5. Causal-ledger comparator implementations and registered practical effect margins
-   must be qualified and then executed prospectively; this design does not supply outcomes.
+   now have validation-only selection and prospective scoring code, but exact-commit
+   qualification, production integration, and prospective execution remain required;
+   this design does not supply outcomes.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.
