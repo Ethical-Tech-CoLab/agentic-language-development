@@ -116,13 +116,13 @@ async function mutateCase(
 
 async function main(): Promise<void> {
   const registration = JSON.parse(
-    await readFile('protocols/e00-registration.v2.json', 'utf8'),
+    await readFile('protocols/e00-registration.v3.json', 'utf8'),
   ) as {
     preRegistrationHash: string;
     artifact: { bindings: Array<{ key: string; content: unknown }> };
   };
   const binding = JSON.parse(
-    await readFile('protocols/e00-registration-binding.v1.json', 'utf8'),
+    await readFile('protocols/e00-registration-binding.v2.json', 'utf8'),
   ) as {
     preRegistrationHash: string;
     preRunAnchor?: { anchorClass: string; inputData: string; status: string };
@@ -353,7 +353,7 @@ async function main(): Promise<void> {
       researchFinding: false,
       experimentId: 'E00',
       registrationHash: registration.preRegistrationHash,
-      registrationBinding: 'protocols/e00-registration-binding.v1.json',
+      registrationBinding: 'protocols/e00-registration-binding.v2.json',
       executionCommit: executionCommit.stdout.trim(),
       fixture: {
         slots: slotResults.length,
