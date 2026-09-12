@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.84 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.85 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary

@@ -47,7 +47,7 @@ Therefore:
 - compiled canonical packets: 1/19;
 - pre-registration hashes emitted by this inventory: 1; and
 - immutable repository registration and matching simulated pre-run commitments:
-  pending the commit that freezes the E00 packet.
+  complete for E00 packet v2; zero real funds or public RPC calls used.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently
