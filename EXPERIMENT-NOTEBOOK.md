@@ -184,7 +184,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
-| E00 | Ledger integrity and simulated commitment | None | V4 failed; v5 pending | Rust anchor-class coverage gap found |
+| E00 | Ledger integrity and simulated commitment | None | V5 committed; execution pending | V2/v4 failures preserved |
 | E01 | Channel isolation and side-channel red team | E00 | Not started | — |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** Registered qualification attempts v2 and v4 failed closed; v5 amendment pending
+**Status:** V5 repository-registered and simulation-committed; execution pending
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -284,7 +284,9 @@ auditor accepted them. The complete failure receipt is retained at
 `reports/research/e00-integrity-qualification-attempt-2.json`, all five unchanged
 signed bundles remain under `evidence/qualification/e00-v4/`, and no v4 seed will be
 rerun into success. V5 binds the repaired anchor-class comparison and a fresh seed
-domain before another attempt.
+domain before another attempt. Its immutable packet is registered at commit
+`8cef99cb07daf130c38f93968e5ba24845af49e3` and has a matching confirmed
+deterministic simulated commitment before execution.
 
 ---
 

@@ -56,8 +56,8 @@ Therefore:
 - compiled canonical packets: 1/19;
 - pre-registration hashes emitted by this inventory: 1; and
 - immutable repository registration and matching simulated pre-run commitments:
-  v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5
-  awaits repository registration and a deterministic simulated commitment.
+  v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5 is
+  repository-registered and has a deterministic simulated commitment before execution.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

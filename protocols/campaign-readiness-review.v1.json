@@ -24,7 +24,7 @@
     {"id":"B14","severity":"major","owner":"W04+R03","finding":"The source audit is single-screener and human re-verification of load-bearing full-text claim mappings remains open.","closure":"Independent citation/claim audit with corrections and preserved review history."}
   ],
   "experiments": [
-    {"id":"E00","ready":false,"blockers":["E00-v5-pre-run-commitment"]},
+    {"id":"E00","ready":true,"blockers":[]},
     {"id":"E01","ready":false,"blockers":["E00","B11","B12"]},
     {"id":"E02","ready":false,"blockers":["E00","B11"]},
     {"id":"E03","ready":false,"blockers":["E01","E02","B08","B11"]},

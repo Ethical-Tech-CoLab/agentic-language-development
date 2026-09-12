@@ -1,0 +1,21 @@
+{
+  "registrationClass": "qualification",
+  "registrationAuthority": "repository-native",
+  "preRegistrationHash": "sha256:d5510b336513275fce21de19053edc01a0207a36aa205009233b38b21d18b91b",
+  "repositoryRegistration": {
+    "commit": "8cef99cb07daf130c38f93968e5ba24845af49e3",
+    "path": "protocols/e00-registration.v5.json",
+    "artifactSha256": "sha256:d5510b336513275fce21de19053edc01a0207a36aa205009233b38b21d18b91b",
+    "committedAt": "2026-09-12T13:47:57+00:00"
+  },
+  "preRunAnchor": {
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "transactionHash": "0x64264c7f578f6b2fdb28d02832a5888c0a226438ff5c8fca5ca6c5f11db043ed",
+    "inputData": "0xd5510b336513275fce21de19053edc01a0207a36aa205009233b38b21d18b91b",
+    "blockNumber": 1,
+    "status": "confirmed"
+  },
+  "label": "qualification: repository-registered and simulation-committed before E00 execution"
+}
