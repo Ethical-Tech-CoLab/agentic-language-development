@@ -16,9 +16,10 @@ stored directly in environment variables or repository files.
 | `ALD_DATABASE_PATH` | Path | `<evidence>/ald.sqlite` | No |
 | `ALD_RUN_SIGNER_SEEDS_JSON_FILE` | Fort-materialized path | None | Yes in research-grade mode |
 | `ALD_LOG_LEVEL` | `debug`, `info`, `warn`, or `error` | `info` | No |
+| `ALD_ANCHOR_CLASS` | `simulated` or `public-chain` | `simulated` | No |
 | `ALD_BASE_NETWORK` | `base-sepolia` or `base-mainnet` | `base-sepolia` | No |
-| `ALD_BASE_RPC_URL_FILE` | Fort-materialized path | None | Required only when anchoring is enabled |
-| `ALD_ANCHOR_KEY_FILE` | Fort-materialized path | None | Required only when anchoring is enabled |
+| `ALD_BASE_RPC_URL_FILE` | Fort-materialized path | None | Required only for an amended `public-chain` profile |
+| `ALD_ANCHOR_KEY_FILE` | Fort-materialized path | None | Required only for an amended `public-chain` profile |
 | `ALD_ALLOW_MAINNET_ANCHORING` | `true` or unset | unset | Must be `true` (together with an explicit publisher opt-in) before any Base mainnet transaction is submitted |
 
 ## Secret Handling
@@ -26,11 +27,14 @@ stored directly in environment variables or repository files.
 - Store all secret values only in the encrypted `safe` repository and access them
   through `si fort`; do not create ad-hoc secret files.
 - Do not commit `.env` files. The repository ignores `.env` and `.env.*`.
-- Use a dedicated, low-balance anchor wallet.
+- The approved research `RunConfig` defaults to `anchorClass: "simulated"` and uses
+  no wallet, RPC credential, faucet, token, or fee.
+- If a future amendment permits `anchorClass: "public-chain"`, use a dedicated,
+  low-balance anchor wallet and independent verification endpoint.
 - Run `pnpm run scan:secrets` before committing.
 - Research-grade mode fails fast unless Fort materializes
   `ALD_RUN_SIGNER_SEEDS_JSON_FILE` in files mode.
-- Mainnet anchoring is double opt-in: the anchor publisher must be constructed with `allowMainnet: true` and `ALD_ALLOW_MAINNET_ANCHORING=true` must be set; the default anchors to Base Sepolia only.
+- Mainnet anchoring is double opt-in: the anchor publisher must be constructed with `allowMainnet: true` and `ALD_ALLOW_MAINNET_ANCHORING=true` must be set. The current governance policy separately prohibits all public-chain research transactions.
 - The signer material is a versioned JSON envelope containing an exact run-id map
   and all six Ed25519 signer domains. The Nursery reads its mode-0600 regular file
   once; the path is then removed from the child environment. Learner containers
@@ -55,4 +59,5 @@ si fort run --repo agentic-language-development --env dev \
 
 The encrypted value must authorize each exact study run id. The qualification
 command can run without credentials using ephemeral in-memory signers, but that
-path is explicitly non-confirmatory and cannot satisfy a public-study gate.
+path is explicitly non-confirmatory. Simulated funding removes the wallet/RPC
+dependency; it does not remove the persistent per-run signer or registration gates.

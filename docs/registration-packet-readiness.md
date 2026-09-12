@@ -19,7 +19,7 @@ operational surfaces before it emits canonical bytes or a pre-registration hash:
 8. the exact scenario bundle and split definition;
 9. exclusion and invalid-run rules;
 10. stopping and resource-exhaustion rules; and
-11. evidence, verifier, chain, finality, and anchor policy.
+11. evidence, verifier, simulated-commitment, and optional public-chain boundary policy.
 
 The compiler accepts no missing or extra binding key. It recursively rejects null,
 undefined, empty, non-finite, and placeholder values such as `TBD`, `unknown`, or
@@ -27,9 +27,9 @@ undefined, empty, non-finite, and placeholder values such as `TBD`, `unknown`, o
 binding set is then canonicalized and hashed under the repository's pre-registration
 domain. Any change to any bound content changes the packet hash.
 
-The emitted claim boundary is `draft-until-externally-registered-and-pre-run-anchored`.
+The emitted claim boundary is `draft-until-externally-registered-and-pre-run-committed`.
 Compilation alone cannot establish external registration, governance approval,
-public anchoring, or independent review.
+a completed commitment, public anchoring, or independent review.
 
 ## Current inventory
 
@@ -40,7 +40,7 @@ total. Therefore:
 - registration-ready experiments: 0/19;
 - compiled canonical packets: 0/19;
 - pre-registration hashes emitted by this inventory: 0; and
-- authentic external registration and matching public pre-run anchors: 0.
+- authentic external registration and matching simulated pre-run commitments: 0.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently
@@ -51,7 +51,7 @@ value rather than a pilot-selected seed prefix.
 
 A complete packet must still receive authentic governance approval, external
 registration of the identical canonical hash, independent verification of the same
-pre-run public anchor, and independent methods review. These are recorded as external
+pre-run simulated commitment, and independent methods review. These are recorded as external
 steps, not fields that local code can declare satisfied.
 
 ## Verification

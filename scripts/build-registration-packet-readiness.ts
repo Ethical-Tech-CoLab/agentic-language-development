@@ -45,7 +45,7 @@ const packets = source.cards.map((card) => ({
       : key === 'executionHost'
         ? 'No approved study execution host and exact environment-manifest hash are bound.'
         : key === 'evidenceAndAnchorPolicy'
-          ? 'No experiment-specific authorized public-chain execution and verification policy is bound.'
+          ? 'No experiment-specific simulated commitment and verification policy is bound.'
           : `No final experiment-specific ${key} artifact is bound.`,
   })),
   compileAttempt: 'blocked-before-compiler',
@@ -71,10 +71,10 @@ const report = {
   externalStepsNotRepresentedAsBindings: [
     'authentic governance approval',
     'external registration receipt for the compiled packet hash',
-    'independently verified matching pre-run public anchor',
+    'independently verified matching pre-run simulated commitment',
     'independent methods review',
   ],
-  boundary: 'This inventory is deliberately incomplete. It is not a registration, an anchor, governance approval, or permission to collect outcomes.',
+  boundary: 'This inventory is deliberately incomplete. It is not a registration, a completed simulated commitment, governance approval, or permission to collect outcomes.',
 };
 
 if (report.totals.registrationReady !== 0 || report.totals.compiledPackets !== 0) throw new Error('inventory fabricates a ready or compiled packet');

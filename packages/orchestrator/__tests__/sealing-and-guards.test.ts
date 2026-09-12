@@ -310,6 +310,28 @@ describe('run creation guard rails', () => {
     ).rejects.toThrow(/prototype mode/u);
   });
 
+  it('refuses a publisher whose simulated/public class differs from RunConfig', async () => {
+    const runId = 'run-anchor-class-mismatch';
+    const simulated = anchorPublisherFor(runId);
+    harness = await createHarness({
+      anchorPolicy: 'required',
+      anchorPublisher: { ...simulated, anchorClass: 'public-chain' },
+    });
+    await expect(
+      harness.runtime.createRun(
+        testConfig(
+          noLearningOverrides({
+            runId,
+            experimentId: 'E03',
+            randomSeed: 'ald-anchor-class-mismatch',
+            maxTurnsPerRun: 1,
+            evaluationTurns: 1,
+          }),
+        ),
+      ),
+    ).rejects.toThrow(/does not match RunConfig\.anchorClass simulated/u);
+  });
+
   it('refuses an external learner boundary under Prototype Mode', async () => {
     harness = await createHarness({
       adapterFactoryFor: (_config, role) =>

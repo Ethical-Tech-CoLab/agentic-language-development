@@ -41,6 +41,7 @@ export const PendingAnchorSubmissionSchema = z.object({
   runId: z.string().min(1),
   checkpointSequence: z.number().int().nonnegative(),
   checkpointHash: z.string().regex(/^sha256:[a-f0-9]{64}$/u),
+  anchorClass: z.enum(['simulated', 'public-chain']),
   network: z.enum(['base-sepolia', 'base-mainnet']),
   chainId: z.number().int().positive(),
   transactionHash: z.string().regex(/^0x[a-f0-9]{64}$/iu),

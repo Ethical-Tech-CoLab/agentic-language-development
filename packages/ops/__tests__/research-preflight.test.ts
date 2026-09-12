@@ -48,6 +48,7 @@ function passingInput() {
     externalRegistrationId: 'osf:e03-v1',
     registeredAt: '2026-09-09T00:00:00.000Z',
     preRunAnchor: {
+      anchorClass: 'simulated',
       network: 'base-sepolia',
       chainId: 84532,
       transactionHash: `0x${'2'.repeat(64)}`,
@@ -110,6 +111,13 @@ describe('confirmatory research preflight', () => {
       binding: {
         ...input.binding,
         preRunAnchor: { ...input.binding.preRunAnchor!, inputData: `0x${'4'.repeat(64)}` },
+      },
+    })],
+    ['pre-run-anchor-network', (input: ReturnType<typeof passingInput>) => ({
+      ...input,
+      binding: {
+        ...input.binding,
+        preRunAnchor: { ...input.binding.preRunAnchor!, anchorClass: 'public-chain' as const },
       },
     })],
   ] as const)('fails the %s check independently', (id, mutate) => {

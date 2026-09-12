@@ -455,6 +455,7 @@ export interface FakeAnchorPublisherOptions {
  * checkpoint digest exactly as `docs/evidence-bundle-format.md` §8 requires.
  */
 export class FakeAnchorPublisher implements AnchorPublisher {
+  readonly anchorClass = 'simulated' as const;
   readonly network = 'base-sepolia' as const;
 
   readonly submitted: AnchorReceipt[] = [];
@@ -474,6 +475,7 @@ export class FakeAnchorPublisher implements AnchorPublisher {
       runId: 'unset',
       checkpointSequence: manifest.checkpointSequence,
       checkpointHash: manifest.checkpointHash,
+      anchorClass: 'simulated',
       network: this.network,
       chainId: 84532,
       transactionHash: `0x${digest}`,
@@ -520,6 +522,7 @@ export function anchorPublisherFor(
 ): AnchorPublisher {
   const inner = new FakeAnchorPublisher(failing, options.finalStatus);
   return {
+    anchorClass: inner.anchorClass,
     network: inner.network,
     submit: async (manifest) => ({ ...(await inner.submit(manifest)), runId }),
     awaitConfirmation: async (receipt) => {

@@ -9,6 +9,7 @@ export interface RuntimeEnvironment {
   databasePath: string;
   signerSeedsFile?: string;
   logLevel: LogLevel;
+  anchorClass: 'simulated' | 'public-chain';
   baseNetwork: 'base-sepolia' | 'base-mainnet';
   baseRpcUrlFile?: string;
   anchorKeyFile?: string;
@@ -94,6 +95,12 @@ export function loadRuntimeEnvironment(
       'ALD_LOG_LEVEL',
       ['debug', 'info', 'warn', 'error'] as const,
       'info',
+    ),
+    anchorClass: parseEnum(
+      source,
+      'ALD_ANCHOR_CLASS',
+      ['simulated', 'public-chain'] as const,
+      'simulated',
     ),
     baseNetwork: parseEnum(
       source,

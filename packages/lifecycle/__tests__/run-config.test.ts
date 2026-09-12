@@ -136,6 +136,7 @@ describe('buildRunConfig defaults (SPEC §18)', () => {
       evaluationSeeds: 5,
       checkpointEventInterval: 64,
       checkpointTimeIntervalMs: 300_000,
+      anchorClass: 'simulated',
       anchorNetwork: 'base-sepolia',
       finalityPolicy: '1-confirmation',
       prototypeRetentionDays: 30,

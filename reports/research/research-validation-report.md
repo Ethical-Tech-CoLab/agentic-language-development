@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.80 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.81 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -70,16 +70,15 @@ Report status: in progress
   development iterations. A fresh five-run benchmark supplies measured CPU, memory,
   time, byte, and file rates rather than an assumed cost model.
 - An internal adversarial readiness review covers every experiment and returns
-  `not-registration-ready`. Fourteen evidence-linked blockers include governance,
-  anchors/registration, resources, pilot-selected N, final detector/comparator
-  qualification, exact packets, independent review, and citation re-review.
-- The machine-checked external-prerequisite ledger is blocked at 0/6. A fresh
-  authenticated Fort deployment now provisions the project scope, four encrypted
-  values, and a dedicated Base Sepolia address. Two independent RPCs agree on chain
-  ID 84532 and a balance of 0 wei, so O02 is observed but unsatisfied. The same Fort
-  boundary completed all four Mode R qualification tracks and closed its ephemeral
-  materialization session normally; this is credential-path evidence, not a public
-  transaction or study result.
+  `not-registration-ready`. Eleven evidence-linked blockers include registration,
+  resources, pilot-selected N, final detector/comparator qualification, exact packets,
+  independent review, and citation re-review. Three former blockers are prospectively
+  resolved by the approved synthetic-only, simulation-funded profile.
+- The machine-checked external-prerequisite ledger is blocked at 1/4 applicable
+  items. O01 is verified by the scoped governance decision. O02 and O03 are excluded
+  from the denominator because external spend is zero and public-chain transactions
+  are prohibited. The earlier Fort qualification remains credential-path and Mode R
+  evidence, but its unfunded wallet is not a campaign dependency or research result.
 - A fresh read-only upstream observation found no repository ruleset or demonstrated
   branch protection. The exact v0.1.79 pull-request workflow is `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
@@ -118,7 +117,7 @@ classes that must not be collapsed:
 | Inspected repository fact | A file, commit, configuration, or implementation property was directly inspected | Available, with requirement-level audit still in progress |
 | Software qualification | A bounded executable path or failure condition was exercised | Consolidated checks pass through v0.1.76; exact recurrent, full Mode R, generative-carrier, frozen-model, control-lifecycle, causal-prediction-runtime, and independent bundle audits pass at their recorded candidates |
 | Pilot evidence | Data collected to test feasibility or freeze design choices, excluded from confirmatory inference | No newly classified pilot corpus yet |
-| Confirmatory or replication result | Data collected under authentic prospective registration, matching pre-run anchor, approved governance, and frozen analysis | None |
+| Confirmatory or replication result | Data collected under authentic prospective registration, matching simulated pre-run commitment, approved governance, and frozen analysis | None |
 
 The evidence cutoff is a versioned snapshot, not a claim that later changes inherit
 its results. Full file and execution provenance will be added to the data/claim
@@ -152,10 +151,11 @@ hypothesis estimates.
 
 All 111 have a recorded verifier exit code of zero. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Sixty-three reports record anchor confirmation, but those receipts
-are local fake-chain qualification evidence. Confirmed public-chain anchors: zero.
-This distinction is machine-enforced so an anchor flag cannot silently become a
-public-chain claim.
+verifier status. Sixty-three reports record anchor confirmation, but those historical
+receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
+zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
+class relabeling so a simulated commitment cannot silently become a public-chain
+claim.
 
 The historical qualification subset contains 33 exported run directories: five seeds
 each for six E03-style conditions and three E11-style runs. Its SQLite database hash
@@ -278,10 +278,10 @@ events, 49 checkpoints, and local receipt bindings with zero issues. The Fort au
 records an allowed open, materialization, and close spanning the run. No credential
 value appears in the tracked receipt.
 
-The same receipt validates the dedicated Base Sepolia public address through two
-RPC providers, both reporting chain ID 84532 and 0 wei. The official programmatic
-faucet requires a credential not present in Fort, so no transaction was attempted.
-This advances O02 from missing to provisioned-unfunded but does not satisfy it.
+The same receipt validates an unused Base Sepolia public address through two RPC
+providers, both reporting chain ID 84532 and 0 wei. Under the later prospective
+governance decision, no faucet funding or public transaction is permitted or needed;
+O02 and O03 are non-applicable campaign items rather than unsatisfied dependencies.
 
 The anchor transport was an explicitly labeled local fake chain. Therefore this
 qualification demonstrates orchestration and evidence integrity only: it is not a
@@ -669,8 +669,8 @@ the affected study remains unregistered rather than widening its margin.
 A fresh five-carrier/260-turn qualification took 37.58 wall seconds at about one CPU,
 peaked at 264,896 KiB RSS, and wrote 25,532,466 bytes across 15,695 files. Scaling the
 maximum seed pools at this recurrent-run rate yields 9,171 bundles, 9,358,100 turns,
-855.9 GiB uncompressed, and 375.7 single-core hours. Frozen-model and public-chain
-costs are not included and can only raise requirements. The authorized local ceiling
+855.9 GiB uncompressed, and 375.7 single-core hours. Frozen-model cost is not included
+and can only raise requirements; public-chain cost is excluded by policy. The authorized local ceiling
 is 72 CPU-hours, 25 GiB, 6 GiB process memory, one frozen-model process, and zero
 external spend. Local qualification and bounded pilots fit; the complete campaign
 does not. This is a measured feasibility finding, not an empirical research result.
@@ -719,7 +719,7 @@ bundles.
 ## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
-experiment cards and identifies 14 blockers with explicit closure tests. It does not
+experiment cards and identifies 11 open blockers with explicit closure tests. It does not
 claim independent review. No experiment is registration-ready, and the fail-closed
 machine audit rejects any ready flag while the recorded campaign decision is negative.
 
@@ -757,14 +757,14 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.
-7. The bounded full topology and recurrent models are qualified, but real chain
-   receipts, external registration, governance, independent restore, and independent
-   replication records do not exist.
+7. The bounded full topology, recurrent models, governance profile, and deterministic
+   commitment path are qualified, but external registration, final-topology evidence,
+   independent restore, and independent replication records do not exist.
 8. The external-prerequisite handoff now defines privacy-safe closure evidence for
-   O01–O06 and rejects receipt-path-only readiness. Its current ledger has 0/6
-   satisfied. O02 is now provisioned-unfunded with an authenticated Fort receipt;
-   the other five gates remain missing or observed-unsatisfied, so no experiment
-   activation follows from this qualification work.
+   O01–O06 and rejects receipt-path-only readiness. Its current ledger has 1/4
+   applicable items satisfied: O01 is verified, O02 and O03 are non-applicable under
+   the zero-spend policy, and O04–O06 remain missing or observed-unsatisfied. No
+   experiment activation follows from governance alone.
 
 ## 21. Current scientific and publication conclusion
 

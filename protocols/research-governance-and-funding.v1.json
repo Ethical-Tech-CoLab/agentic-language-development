@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "ALD-GOV-2026-09-12-01",
+  "decidedAt": "2026-09-12",
+  "status": "approved",
+  "authority": {
+    "role": "project-operator",
+    "scope": "Prospective repository research using synthetic scenarios, simulated funds, and role-labeled operational records.",
+    "evidence": "Explicit approval supplied through the authenticated project workspace task.",
+    "approvalTextNormalized": "for O1 you have all my approval and validation and anything else must be done by yourself",
+    "evidenceSha256": "b05fcac553682af00eb241fc35e0e4202405d916a5f47b96ece8064e5c9947c8",
+    "institutionalApprovalClaimed": false
+  },
+  "dataScope": {
+    "syntheticOnly": true,
+    "humanParticipants": false,
+    "personalDataPermitted": false,
+    "productionSecretsPermitted": false,
+    "humanCoding": "not-used",
+    "amendmentTrigger": "Any human participant, personal data, sensitive data, or human-coded outcome requires a new prospective governance and review decision before collection."
+  },
+  "responsibleRoles": {
+    "projectOperator": "approves research scope and protocol amendments",
+    "researchOperator": "executes registered protocols and records deviations",
+    "integrityVerifier": "runs the production verifier and independent Rust verifier",
+    "dataSteward": "enforces retention, quarantine, and deletion policy",
+    "independentReviewer": "remains unfilled until an eligible second-person review is recorded"
+  },
+  "fundingPolicy": {
+    "profile": "simulation-only",
+    "externalSpendAuthorized": 0,
+    "realCurrencyAuthorized": false,
+    "publicChainTransactionsAuthorized": false,
+    "simulatedBalance": "1000000000000000000",
+    "simulatedBalanceUnit": "non-monetary test units",
+    "transport": "deterministic in-memory chain",
+    "rule": "No research result may describe simulated funds, fees, blocks, or receipts as financially incurred or publicly finalized."
+  },
+  "retentionPolicy": {
+    "eligibleResearchEvidence": "retain indefinitely with immutable manifests and checksums",
+    "developmentPayloads": "eligible for purge after 30 days while metadata, manifests, receipts, and audit logs remain",
+    "accidentalSensitiveMaterial": "quarantine immediately, exclude from research, and delete after incident documentation",
+    "deletionAuthority": "data-steward"
+  },
+  "claimBoundary": "This decision authorizes a synthetic, simulation-funded repository study. It is not institutional ethics approval, external registration, independent review, or evidence that any public-chain transaction occurred."
+}

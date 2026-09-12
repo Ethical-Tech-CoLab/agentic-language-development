@@ -889,6 +889,7 @@ interface RunConfig {
   evaluationSeeds: number;            // default 5 qualification / 10 publication
   checkpointEventInterval: number;   // default 64 (LEDGER-INTEGRITY-DESIGN.md §9)
   checkpointTimeIntervalMs: number;  // default 300000
+  anchorClass: "simulated" | "public-chain";
   anchorNetwork: "base-sepolia" | "base-mainnet";
   finalityPolicy: string;            // default "1-confirmation" or "safe-tag"
   prototypeRetentionDays: number;    // default 30
@@ -1286,16 +1287,23 @@ LEDGER-INTEGRITY-DESIGN.md §4, §7, and §8 exactly, including for the new
 and its own Merkle root, included in the checkpoint manifest as additional named
 trees alongside `babyA`/`babyB`/`channel`).
 
-### 13.4 Base Sepolia / Mainnet Anchoring Policy
+### 13.4 Simulated and Optional Public-Chain Anchoring Policy
 
-Unchanged from LEDGER-INTEGRITY-DESIGN.md §10: Base Sepolia for development and
-qualification (E00); Base mainnet for declared public research runs; only the
-32-byte checkpoint hash and minimal routing metadata are ever public. Finality
-policy default: Sepolia — 1 confirmation for development iteration; mainnet — wait
-for the `safe` block tag (or equivalent finality/confirmation-depth policy the
-chosen RPC provider exposes) before a checkpoint is reported as anchored-final in
-the notebook (resolves part of Q28; provider-specific finality-tag naming is
-deferred, §19).
+The approved research profile is simulation-only. Every prospective campaign run
+MUST declare `anchorClass: "simulated"` and use the deterministic in-memory
+transport. Its Base-shaped network, transaction, block, and confirmation values are
+non-monetary test data and MUST NOT be described as public-chain publication,
+economic finality, or incurred cost. The exact `anchorClass` is bound into the run
+configuration, pending-submission record, anchor receipt, pre-registration binding,
+and verifier checks so a simulated receipt cannot be silently relabeled.
+
+Base Sepolia and Base mainnet remain optional transport capabilities inherited from
+LEDGER-INTEGRITY-DESIGN.md §10. Any real-chain operation MUST instead declare
+`anchorClass: "public-chain"`; only the 32-byte checkpoint hash and minimal routing
+metadata may be public. Public-chain operation is outside the currently approved
+research profile and requires a new prospective governance amendment. If amended,
+Sepolia waits for at least one confirmation and mainnet waits for the `safe` block
+tag or an equivalent provider-specific policy before reporting anchored-final.
 
 ### 13.5 Key Management
 
@@ -1425,10 +1433,14 @@ A run MAY NOT enter `preregistered` (§7.1) until:
 
 For a confirmatory or publication-facing run, the canonical pre-registration
 artifact MUST also be registered with an external timestamping/registration service
-(OSF Registries is the default) and its `preRegistrationHash` MUST be anchored before
-the run enters `running`. The external registration URL and pre-run anchor receipt
-are included in the run manifest. Qualification-only development runs MAY use a
-Base-Sepolia pre-run anchor without OSF, but MUST be labeled non-confirmatory.
+(OSF Registries is the default) and its `preRegistrationHash` MUST be committed
+before the run enters `running`. The external registration URL and pre-run commitment
+receipt are included in the run manifest. Under the approved simulation-only
+profile, that receipt MUST declare `anchorClass: "simulated"`; the external
+registration timestamp and immutable Git commit provide the independent time/order
+evidence, while the deterministic receipt proves exact local consumption and
+tamper detection. Qualification-only development runs MAY omit external registration
+but MUST be labeled non-confirmatory.
 
 The run's `ExperimentRecord.disposition` and the matching EXPERIMENT-NOTEBOOK.md
 run record MUST agree; the Verifier's `VerificationReport` is authoritative for
@@ -1635,7 +1647,8 @@ defaulted, pre-registerable configuration variable, not an open question:
 | `maxConsecutiveRejections` | `5` | ≥ 1 | Q6 |
 | `checkpointEventInterval` | `64` | ≥ 1 | Q28 |
 | `checkpointTimeIntervalMs` | `300000` | ≥ 1000 | Q28 |
-| `anchorNetwork` | `base-sepolia` (dev), `base-mainnet` (public) | per LEDGER doc §10 | Q28 |
+| `anchorClass` | `simulated` | `simulated`, `public-chain` | approved simulation-funded profile; a public-chain value requires amendment |
+| `anchorNetwork` | `base-sepolia` (emulated by default), `base-mainnet` (optional capability) | per LEDGER doc §10 | Q28 |
 | `finalityPolicy` | `1-confirmation` (Sepolia), `safe-tag` (mainnet) | provider-dependent | Q28 (partially deferred, §19) |
 | `interactionMode` | `cooperative-signaling` | `cooperative-signaling`, `asymmetric-information`, `semi-cooperative-negotiation`, `conflicting-negotiation`, `no-agreement-control` | Q19 |
 | `cipherThreatModel` | `post-run-disclosure` | `post-run-disclosure`, `external-observer-only`, `novelty-only` | Q16, Q18 |

@@ -58,6 +58,7 @@ describe('runRetentionJob', () => {
       runId: config.runId,
       checkpointSequence: checkpoint.checkpointSequence,
       checkpointHash: checkpoint.checkpointHash,
+      anchorClass: 'simulated',
       network: 'base-sepolia',
       chainId: 84532,
       transactionHash: `0x${'1'.repeat(64)}`,
@@ -175,6 +176,7 @@ describe('runRetentionJob', () => {
       experimentId: 'E00',
       randomSeed: 'seed-retention-mainnet',
       prototypeRetentionDays: 1,
+      anchorClass: 'public-chain',
       anchorNetwork: 'base-mainnet',
     });
     await harness.runtime.createRun(config);
@@ -188,6 +190,7 @@ describe('runRetentionJob', () => {
       runId: config.runId,
       checkpointSequence: checkpoint.checkpointSequence,
       checkpointHash: checkpoint.checkpointHash,
+      anchorClass: 'public-chain',
       network: 'base-mainnet',
       chainId: 8453,
       transactionHash: `0x${'5'.repeat(64)}`,

@@ -321,6 +321,7 @@ function publisherOver(
 ): BaseAnchorPublisher {
   return new BaseAnchorPublisher({
     transport,
+    anchorClass: 'public-chain',
     evidence: ctx.writer,
     clock: ctx.clock,
     anchorAddress: DESTINATION,

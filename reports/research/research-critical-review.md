@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.80
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.81
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -34,26 +34,34 @@ received independent verification.
 ## Prioritized problems and required fixes
 
 1. **P0 — The central research questions have no eligible observations.** All 19
-   experiments remain `Not started`; zero bundles are research-included, zero public
-   anchors are confirmed, and zero registration packets compile. **Fix (required):**
+   experiments remain `Not started`; zero bundles are research-included, zero
+   prospective simulated commitments are confirmed, and zero registration packets
+   compile. **Fix (required):**
    close the external gates, register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
    any Results claim.
 
-2. **P0 — Registration and operating authority are absent.** The machine review has
-   14 open blockers and no independent human review; governance, signer custody,
-   public anchoring, required-check enforcement, restore witnessing, and external
-   registration cannot be manufactured from repository work. **Fix (required):**
-   obtain authentic records for O01–O06 and rerun the fail-closed readiness compiler.
-   The external-prerequisite ledger remains blocked at 0/6. O02 now has a valid
-   encrypted Fort scope, a public Base Sepolia address, two chain-ID checks, and a
-   successful four-track signer-boundary run, but both RPCs report 0 wei and no
-   public receipt exists. Its read-only O04
+2. **P0 — Registration and independent operating evidence remain incomplete.** The
+   machine review has 11 open blockers and no independent human review. Scoped
+   governance is now approved; the campaign is simulation-only, so Sepolia funding
+   and mainnet custody are not applicable. Required-check enforcement, restore
+   witnessing, exact packet compilation, and external registration still cannot be
+   manufactured from repository work. **Fix (required):** complete the applicable
+   O04–O06 evidence and rerun the fail-closed readiness compiler. The
+   external-prerequisite ledger remains blocked at 1/4 applicable items. Its read-only O04
    observation found no ruleset or demonstrated branch protection. The exact v0.1.78
    pull-request workflow requires approval and started zero jobs, while the latest
    relevant default-branch workflow failed.
 
-3. **P1 — The current paper is not a defensible 2027 learning-conference
+3. **P1 — Simulation removes monetary dependency but weakens the timestamp trust
+   model.** A deterministic commitment proves byte binding and mutation detection,
+   not that an independent public network observed the bytes at a given time.
+   **Fix (required):** retain authentic external registration before collection,
+   bind the exact registration hash and immutable Git commit, disclose that the
+   simulated block/fee/finality fields are non-monetary, and make no decentralized
+   persistence or economic-finality claim.
+
+4. **P1 — The current paper is not a defensible 2027 learning-conference
    submission.** The current ICLR call includes relevant learning, causal-reasoning,
    benchmark, and infrastructure topics, but the abstract deadline is 2026-09-18,
    the paper deadline is 2026-09-25, and the main text is limited to nine pages.
@@ -63,7 +71,7 @@ received independent verification.
    [current call](https://www.iclr.cc/Conferences/2027/CallForPapers) and
    [author guidelines](https://iclr.cc/Conferences/2027/AuthorGuidelines).
 
-4. **P1 — Venue fit is plausible but significance is unproved.** Multi-agent learning,
+5. **P1 — Venue fit is plausible but significance is unproved.** Multi-agent learning,
    agent communication, verification, reproducible testbeds, and evaluation
    infrastructure are in scope under the most recent available AAMAS main-track
    criteria, while the current NeurIPS evaluation guidance recognizes evaluation
@@ -76,20 +84,20 @@ received independent verification.
    [NeurIPS evaluation guidance](https://neurips.cc/Conferences/2026/EvaluationsDatasetsReviewerGuidelines),
    and [paper checklist](https://neurips.cc/public/guides/PaperChecklist).
 
-5. **P1 — Source verification is not independent.** The bounded audit resolves all
+6. **P1 — Source verification is not independent.** The bounded audit resolves all
    50 bibliography entries and five newer records, but it is single-screener and the
    required human recheck of seven load-bearing sources is absent. **Fix (required):**
    have an independent reviewer reopen those sources, record claim-level decisions,
    and repeat the update search at manuscript freeze.
 
-6. **Fixed P1 — Readiness claims contradicted each other.** The notebook claimed it
+7. **Fixed P1 — Readiness claims contradicted each other.** The notebook claimed it
    was ready for preregistration while the executable campaign review reported 0/19
    ready and 14 blockers; the validation report also said production E16 integration
    was absent after exact qualification. **Fixed:** the notebook now says not
    registration-ready, and the report distinguishes exact runtime qualification from
    the still-missing eligible E16 execution.
 
-7. **Fixed P1 — Generated pages overprinted the manuscript.** A fixed-position footer
+8. **Fixed P1 — Generated pages overprinted the manuscript.** A fixed-position footer
    crossed body text and a result scaffold on multiple pages. **Fixed:** the footer
    was removed at the renderer source, the 51-page derivative was rebuilt, and five
    representative pages were visually rechecked.
@@ -102,7 +110,7 @@ received independent verification.
 | Statistics | Critical | Nominal significance could arise from seed dependence, multiplicity, invalid-run selection, or underpowered gates | Blinded pilot, frozen sample-size rule, seed-clustered inference, and complete family decision | Numerical routines and operating characteristics are qualified | Pilot variance and selected N are absent |
 | Communication | Critical | Task success could be a holistic code, observation leakage, or receiver indifference | Disabled/shuffled/constant controls, receiver-side interventions, held-out composition, and leakage bounds | Controls and measurement code exist | No learned protocol has been evaluated |
 | Ledger | Major | The native ledger may merely restate policy or transcript information | Pre-outcome native prediction versus five validation-selected non-ledger baselines on untouched cases | Synthetic and production chronology are exactly qualified | Incremental empirical value is unknown |
-| Isolation and integrity | Critical | Reference-topology controls may fail on final learners/carriers, or an operator may omit pre-commit data | Final-topology detector-positive attacks, public pre-run commitment, complete run accounting, independent restore | Current topology and mutation qualifications pass within bounds | Final topology, public anchors, and independent witness are absent |
+| Isolation and integrity | Critical | Reference-topology controls may fail on final learners/carriers, or an operator may omit pre-commit data | Final-topology detector-positive attacks, registered simulated pre-run commitment, complete run accounting, independent restore | Current topology and mutation qualifications pass within bounds; simulated/public receipt-class relabeling is rejected | Final topology, prospective commitments, and independent witness are absent |
 | Literature | Major | Closest prior work may already contain the substantive contribution | Independent full-text claim audit and freeze-date update search | Fifty sources and five updates are mapped; priority full texts were checked | Single-screener and human recheck limitations remain |
 | Reproduction | Critical | Results may depend on ignored local assets, private interpretation, or unavailable credentials | Fresh authorized operator reproduces primary analyses from immutable public artifacts | Detached software candidates and an independent auditor pass | Study data, public artifacts, and second-operator replay do not exist |
 | Venue | Critical | The draft may be a broad platform description rather than significant new knowledge | One completed result-driven argument assessed against the selected cycle's rules | Topic fit is plausible and current format rules are recorded | Contribution type cannot be selected before results |

@@ -304,23 +304,28 @@ Create a checkpoint:
 - when the run ends or is aborted.
 
 The exact frequency is a protocol parameter recorded before the run. A lower interval
-reduces the unanchored rewrite window but increases anchoring cost.
+reduces the uncommitted rewrite window but increases commitment and storage overhead.
 
-## 10. Base and L1 Anchoring
+## 10. Simulated Commitments and Optional Public Anchoring
 
-### Development
+### Approved Research Profile
 
-Use Base Sepolia to test transaction construction, failure recovery, receipt capture,
-and verification without spending mainnet funds.
+Use the deterministic in-memory transport for development, qualification, pilot,
+confirmatory, and replication runs. It exercises transaction construction, failure
+recovery, receipt capture, and verification with non-monetary test units. Every run,
+pending record, and receipt binds `anchorClass: "simulated"`; the verifier rejects a
+class mismatch. These receipts are not public timestamps or economic finality.
 
-### Public Research Runs
+### Optional Public-Chain Capability
 
-Use Base mainnet for routine checkpoint anchoring. Only the 32-byte checkpoint hash
-and minimal routing metadata should be public.
+Base Sepolia and Base mainnet transports remain optional capabilities outside the
+approved research profile. Any activation requires a prospective governance and
+spending amendment. Only the 32-byte checkpoint hash and minimal routing metadata
+should be public.
 
 The simplest viable anchor is a zero-value transaction from the project anchor wallet
 to a designated project address with the checkpoint hash in transaction calldata.
-The evidence bundle records:
+For either receipt class, the evidence bundle records:
 
 - chain ID;
 - transaction hash;
@@ -354,8 +359,8 @@ root and anchor that root to Ethereum L1. For example:
 - daily during an active study;
 - before publishing a paper or dataset release.
 
-Base anchoring is sufficient for the initial implementation. L1 anchoring is an
-additional trust and archival choice, not a prerequisite for every turn.
+Public anchoring is not a prerequisite for the approved campaign. L1 anchoring is an
+additional future trust and archival choice.
 
 ## 11. Key Management
 
@@ -482,15 +487,16 @@ Failure evidence is part of the research record.
 - checkpoint consistency proofs;
 - signed checkpoint manifests.
 
-### Phase 2: Testnet Anchoring
+### Phase 2: Simulated Anchoring and Optional Testnet Capability
 
-- Base Sepolia publisher;
+- deterministic in-memory publisher and explicitly classified receipts;
+- optional Base Sepolia publisher;
 - receipt capture;
 - independent RPC verification;
 - retry and nonce management;
 - deliberate failure tests.
 
-### Phase 3: Public Anchoring
+### Phase 3: Optional Public Anchoring
 
 - Base mainnet anchor wallet;
 - published anchor address or minimal contract;
@@ -514,6 +520,7 @@ verifier rejects:
 - false inclusion proof;
 - inconsistent checkpoint prefix;
 - modified run configuration;
+- simulated/public receipt-class relabeling;
 - anchor transaction on the wrong chain;
 - failed or nonexistent anchor transaction;
 - unanchored final ledger tail.
@@ -523,8 +530,9 @@ checkpoint hash.
 
 ## 18. Recommended Initial Decision
 
-Implement Phase 0 and Phase 1 first. Add Base Sepolia anchoring immediately after the
-local verifier is stable. Move to Base mainnet only for declared public research runs.
+Implement Phase 0 and Phase 1 first. Use deterministic simulated anchoring after the
+local verifier is stable. Keep Base Sepolia and Base mainnet disabled unless a later
+prospective amendment explicitly authorizes public-chain operation.
 
 This design is simple enough for an initial Node.js implementation using SQLite,
 `node:crypto`, canonical JSON, and a small Base transaction publisher. It provides

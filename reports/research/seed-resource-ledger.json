@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "outcome-blind-design-evidence",
   "researchFinding": false,
-  "protocolSha256": "2875b9be8da12a0e45693157c869db703eb06803cf0d94097986162d130a779c",
+  "protocolSha256": "c823c8fd221bafedac568ae73eb4270989ad09f15973fe41c01e8a902f20c427",
   "seedAlgorithm": "sha256-nul-separated-v1",
   "distinctDerivedSeeds": 27190,
   "collisions": 0,

@@ -64,6 +64,7 @@ function publisherFor(
 ): BaseAnchorPublisher {
   return new BaseAnchorPublisher({
     transport,
+    anchorClass: 'simulated',
     evidence: ctx.writer,
     clock: ctx.clock,
     anchorAddress: ANCHOR_ADDRESS,

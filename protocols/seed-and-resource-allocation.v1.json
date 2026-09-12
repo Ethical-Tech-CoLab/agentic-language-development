@@ -115,6 +115,6 @@
     "maximumMaterializedTurns": 9358100,
     "projectedUncompressedGiBAtMeasuredRate": 855.8688616329947,
     "projectedSingleCoreHoursAtMeasuredRate": 375.7237158119658,
-    "interpretation": "The maximum seed pools are identifiers, not authorization to execute every slot. The full campaign exceeds the local storage and CPU ceilings before frozen-model and public-chain overhead. D08 must bind selected prefixes and an approved execution environment before registration."
+    "interpretation": "The maximum seed pools are identifiers, not authorization to execute every slot. The full campaign exceeds the local storage and CPU ceilings before frozen-model overhead; public-chain spend is excluded by policy. D08 must bind selected prefixes and an approved execution environment before registration."
   }
 }

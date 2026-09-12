@@ -158,9 +158,10 @@ its signer's public key listed in `signers`.
 - `preRegistration` (optional, `PreRegistrationBindingSchema`) records how the
   run was bound under SPEC §15.1: `registrationClass` (`qualification` or
   `confirmatory`), the `preRegistrationHash` it binds, the external
-  registration URL/id when one exists, the pre-run anchor of that hash when one
-  exists, and a verbatim `label`. A `confirmatory` binding MUST carry both the
-  external registration and a `confirmed` pre-run anchor; a verifier that finds
+  registration URL/id when one exists, the pre-run commitment of that hash when one
+  exists, its `anchorClass` (`simulated` or `public-chain`), and a verbatim `label`.
+  A `confirmatory` binding MUST carry both the external registration and a
+  `confirmed` pre-run commitment; a verifier that finds
   a `confirmatory` binding without them MUST fail the run. A bundle without this
   field is a run created before ALD-071 completed and is read as
   `qualification`.
@@ -173,12 +174,15 @@ its signer's public key listed in `signers`.
 ## 8. Anchor Receipts
 
 `anchors/base-receipts.json` is a canonical JSON array. Each receipt binds one
-`checkpointHash` to one transaction: `chainId`, `transactionHash`, `from`, `to`,
+`checkpointHash` to one transaction: `anchorClass` (`simulated` or
+`public-chain`), `chainId`, `transactionHash`, `from`, `to`,
 `inputData` (must equal the 32-byte checkpoint digest, `0x` + 64 hex), block
 number and hash once mined, `status`, `confirmations`, `finalityPolicy`, and the
 label of the RPC endpoint used. The verifier recomputes the final checkpoint
 hash and compares it with `inputData`; chain retrieval is performed only when an
-independent RPC URL is supplied, and the report records whether that check ran.
+independent RPC URL is supplied for a public-chain receipt, and the report records
+whether that check ran. A simulated receipt is verified offline and MUST NOT inherit
+a public-chain claim.
 
 ## 9. Verification Report
 

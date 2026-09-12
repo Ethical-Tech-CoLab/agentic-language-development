@@ -611,6 +611,7 @@ describe('checkpoints, anchors and experiment records', () => {
       runId: 'run-test-001',
       checkpointSequence: 1,
       checkpointHash: second.checkpointHash,
+      anchorClass: 'simulated',
       network: 'base-sepolia',
       chainId: 84532,
       transactionHash: `0x${'a'.repeat(64)}`,

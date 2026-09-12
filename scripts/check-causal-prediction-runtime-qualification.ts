@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const protocolPath = 'protocols/causal-prediction-runtime-qualification.v1.json';
@@ -43,8 +44,13 @@ interface Protocol {
 const protocolBytes = readFileSync(protocolPath);
 const protocol = JSON.parse(protocolBytes.toString('utf8')) as Protocol;
 for (const [path, expected] of Object.entries(protocol.sourceHashes)) {
-  if (sha256(readFileSync(path)) !== expected) {
-    throw new Error(`${path} differs from the exact qualified candidate`);
+  const candidateBytes = execFileSync(
+    'git',
+    ['show', `${protocol.candidate.commit}:${path}`],
+    { encoding: 'buffer', maxBuffer: 16 * 1024 * 1024 },
+  );
+  if (sha256(candidateBytes) !== expected) {
+    throw new Error(`${path} differs from the source at the exact qualified candidate`);
   }
 }
 if (protocol.expected.eligibleTurnRule !== 'accepted-evaluation-deliveries') {

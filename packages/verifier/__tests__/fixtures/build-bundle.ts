@@ -329,6 +329,7 @@ export async function buildFixtureBundle(options: {
     runId,
     checkpointSequence: finalCheckpoint.checkpointSequence,
     checkpointHash: finalCheckpoint.checkpointHash,
+    anchorClass: config.anchorClass,
     network: 'base-sepolia',
     chainId: FIXTURE_CHAIN_ID,
     transactionHash: FIXTURE_ANCHOR_TX,

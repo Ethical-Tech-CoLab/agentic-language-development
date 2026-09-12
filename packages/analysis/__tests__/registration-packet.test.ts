@@ -33,7 +33,7 @@ describe('canonical registration packet', () => {
     expect(result.artifact.bindings.every((binding) => binding.sha256.startsWith('sha256:'))).toBe(true);
     expect(JSON.parse(result.canonicalArtifact)).toEqual(result.artifact);
     expect(result.preRegistrationHash).toMatch(/^sha256:[0-9a-f]{64}$/u);
-    expect(result.claimBoundary).toBe('draft-until-externally-registered-and-pre-run-anchored');
+    expect(result.claimBoundary).toBe('draft-until-externally-registered-and-pre-run-committed');
   });
 
   it('is deterministic and changes when any bound content changes', () => {

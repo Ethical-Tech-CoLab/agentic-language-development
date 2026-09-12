@@ -134,6 +134,7 @@ async function populate(): Promise<TestWriter> {
     runId: RUN_ID,
     checkpointSequence: 0,
     checkpointHash,
+    anchorClass: 'simulated',
     network: 'base-sepolia',
     chainId: 84532,
     transactionHash: `0x${'a'.repeat(64)}`,

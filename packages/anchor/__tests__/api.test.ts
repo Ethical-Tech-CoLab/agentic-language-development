@@ -126,6 +126,7 @@ describe('pending submission sidecar', () => {
     runId: 'run-anchor-001',
     checkpointSequence: 0,
     checkpointHash: `sha256:${'cd'.repeat(32)}`,
+    anchorClass: 'simulated',
     network: 'base-sepolia',
     chainId: 84532,
     transactionHash: `0x${'11'.repeat(32)}`,

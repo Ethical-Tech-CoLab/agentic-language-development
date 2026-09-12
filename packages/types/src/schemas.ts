@@ -200,6 +200,7 @@ export const RunConfigSchema = z
     evaluationSeeds: positiveInteger,
     checkpointEventInterval: positiveInteger,
     checkpointTimeIntervalMs: z.number().int().min(1_000),
+    anchorClass: z.enum(['simulated', 'public-chain']).default('simulated'),
     anchorNetwork: z.enum(['base-sepolia', 'base-mainnet']),
     finalityPolicy: nonEmptyString,
     prototypeRetentionDays: nonNegativeInteger,

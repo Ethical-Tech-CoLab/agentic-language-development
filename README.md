@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.80 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.81 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -108,8 +108,8 @@ implemented and tested:
   atomic SQLite Evidence Writer with fork detection, recovery, bundle export, and
   analysis attachments atomically bound to witness-committed intervention events.
 - `@ald/checkpoint`, `@ald/anchor`, `@ald/verifier`: signed checkpoint manifests and
-  proof files, the Base anchor publisher (fake chain and viem transports; the
-  Fort-provisioned Base Sepolia wallet remains unfunded), and the standalone
+  proof files, the Base-shaped anchor publisher (deterministic simulation by default;
+  optional viem public-chain transport outside the approved campaign), and the standalone
   `ald-verify` CLI that re-derives
   every hash, signature, root, proof, binding, and anchor from a bundle alone.
   A separate read-only Rust auditor independently rebuilds canonical event hashes,
@@ -153,8 +153,8 @@ implemented and tested:
   denies Baby-to-Baby routes on separate internal networks, checks host capability
   denial and normalized timing, then kills one learner and verifies the other survives.
   `pnpm run test:mode-r-study` additionally drives every learner track through the
-  actual controller, Gateway, SQLite writer, checkpoint, local qualification anchor,
-  exporter, and verifier. Its explicit fake-chain receipt remains software evidence,
+  actual controller, Gateway, SQLite writer, checkpoint, deterministic simulated commitment,
+  exporter, and verifier. Its explicit simulated receipt remains software evidence,
   not a public-chain transaction or research result. Persistent study signers are
   accepted only from `si fort` files-mode materialization mounted into the Nursery;
   neither learner receives that mount or its path.
@@ -176,7 +176,7 @@ The committed E03 design simulation and seed manifest make the manuscript's
 power rule reproducible; the registration compiler produces canonical hashed
 artifacts and all primary/reserve run templates; and the research preflight
 blocks confirmatory execution until its immutable software, isolation, external
-registration, and confirmed pre-run anchor bindings agree.
+registration, and confirmed pre-run simulated-commitment bindings agree.
 
 The frozen-LLM operator path also completed a real two-episode qualification
 against Qwen3-4B Q4_K_M through Homebrew llama.cpp 0.4.0. The retained
@@ -190,19 +190,19 @@ evidence rather than a production-capacity or empirical finding.
 
 The E01/E02 software-readiness outputs have a hashed attachment path linked from
 the append-only Experiment Record and independently checked against their evidence
-event and anchored prefix. The remaining backlog criteria require authority or
-independent evidence outside this repository: funded Base Sepolia and explicitly
-approved mainnet transactions, upstream required-check enforcement, and a restore
-performed by a second human operator. External registration and governance approval
-remain mandatory before confirmatory collection. The retention job is implemented
+event and committed prefix. The approved prospective research profile uses no real
+funds or public-chain transactions; those remain optional capability tests outside
+the study. Remaining external evidence includes upstream required-check enforcement,
+a restore performed by a second human operator, and external registration before
+confirmatory collection. The retention job is implemented
 and covered against real exported bundles and evidence-store rows.
 
 The [external-prerequisite handoff](docs/external-prerequisite-handoff.md) and its
 machine-readable ledger make O01–O06 auditable without recording secrets or personal
-identity. The current ledger is blocked at 0/6. O02 is provisioned-unfunded after an
-authenticated Fort-backed four-track Mode R qualification and two matching Base
-Sepolia chain checks; a fresh read-only upstream observation also confirms that
-required-check enforcement is not yet demonstrated.
+identity. The current ledger is blocked at 1/4 applicable prerequisites: O01 is
+verified, while O02 and O03 are non-applicable under the simulation-only, zero-spend
+policy. A fresh read-only upstream observation confirms that required-check
+enforcement is not yet demonstrated.
 
 No experiment results are claimed.
 
@@ -221,6 +221,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [RESEARCH.md](RESEARCH.md) | Pre-results academic manuscript, research questions, methods, literature review, analysis plan, source verification, and arXiv preparation checklist |
 | [CONFIGURATION.md](CONFIGURATION.md) | Runtime environment variables, key-store layout, and secret handling |
 | [docs/external-prerequisite-handoff.md](docs/external-prerequisite-handoff.md) | Exact privacy-safe evidence and activation checks for O01–O06 |
+| [docs/simulation-funded-research-profile.md](docs/simulation-funded-research-profile.md) | Approved zero-spend campaign boundary and the distinction between simulated funds and real observations |
 | [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
 | [docs/cryptographic-separation-policy.md](docs/cryptographic-separation-policy.md) | Mandatory boundary between E40 research encodings and production hashing/signing/anchoring |
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |
@@ -277,7 +278,7 @@ pnpm run preflight:research \
 ```
 
 The preflight is expected to fail until the external registration and confirmed
-matching pre-run anchor are real and supplied in the binding file.
+matching pre-run simulated commitment are supplied in the binding file.
 
 Run the Prototype Mode qualification harness and verify a bundle independently:
 
@@ -290,9 +291,9 @@ node packages/verifier/bin/ald-verify.js evidence/qualification/<run-set>/bundle
 ```
 
 Databases and bundles are written under `evidence/`, which is ignored by git; reports
-are written under `reports/qualification/`. Without a funded Base Sepolia wallet
-every run seals along the SPECIFICATION.md §7.2 unanchored path and is recorded as
-`invalid` by construction.
+are written under `reports/qualification/`. The approved profile needs no funded
+wallet: runs use the deterministic in-memory transport, carry
+`anchorClass: "simulated"`, and fail verification if that class is altered.
 
 ## Responsible Research
 

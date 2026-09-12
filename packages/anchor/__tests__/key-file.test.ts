@@ -215,6 +215,7 @@ describe('anchor key files (ALD-019)', () => {
       const transport = new FakeChainTransport({ from });
       const publisher = new BaseAnchorPublisher({
         transport,
+        anchorClass: 'simulated',
         evidence: ctx.writer,
         clock: ctx.clock,
         anchorAddress: ANCHOR_ADDRESS,

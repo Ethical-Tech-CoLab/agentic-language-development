@@ -5,14 +5,16 @@
   "independentHumanReview": false,
   "decision": "not-registration-ready",
   "evidenceBoundary": "This is a fail-closed internal review. It is not governance approval, external registration, independent review, or permission to collect confirmatory outcomes.",
+  "resolvedFindings": [
+    {"id":"B01","owner":"O01","resolution":"Scoped synthetic-only governance, role assignments, retention, and no-human-coding determination are approved in ALD-GOV-2026-09-12-01.","boundary":"Repository governance only; no institutional approval or independent review is claimed."},
+    {"id":"B02","owner":"O02","resolution":"Sepolia funding is not applicable under the approved simulation-only research profile.","boundary":"The deterministic receipt is not a public-chain transaction or economic-finality result."},
+    {"id":"B03","owner":"O03","resolution":"Mainnet funding and custody are not applicable because public-chain transactions are prohibited for this campaign.","boundary":"The optional software capability remains unactivated and outside study claims."}
+  ],
   "blockingFindings": [
-    {"id":"B01","severity":"critical","owner":"O01","finding":"No authentic governance decision, responsible-role record, retention approval, or human-coding determination exists.","closure":"Dated authentic approval covering the synthetic study and any human review."},
-    {"id":"B02","severity":"critical","owner":"O02","finding":"No authorized funded Sepolia signer and independent RPC receipt exists, so E00 cannot execute as specified.","closure":"Fort-mediated signer/RPC provisioning and independently confirmed privacy-minimized transaction."},
-    {"id":"B03","severity":"major","owner":"O03","finding":"No mainnet spending, custody, or finality authority exists for public studies.","closure":"Explicit bounded authorization and managed or hardware-backed signer evidence before any applicable public run."},
     {"id":"B04","severity":"major","owner":"O04","finding":"Local green workflows do not prove upstream required-check enforcement on the exact execution branch.","closure":"Fresh upstream branch-protection and required-check evidence."},
     {"id":"B05","severity":"critical","owner":"O05","finding":"No independent human has completed the restore procedure.","closure":"Second-person restore record with checksums, policy/prefix checks, and role attestation."},
-    {"id":"B06","severity":"critical","owner":"O06","finding":"No confirmatory protocol has an authentic external registration and matching pre-run anchor.","closure":"External registration and independently verified identical canonical hash before collection."},
-    {"id":"B07","severity":"critical","owner":"D07+D08","finding":"Maximum pools project to 855.9 GiB and 375.7 single-core hours before frozen-model and public-chain overhead, exceeding the 25 GiB/72 CPU-hour local ceiling.","closure":"Blinded-pilot selected prefixes plus an approved measured execution/storage envelope; no external spend is currently authorized."},
+    {"id":"B06","severity":"critical","owner":"O06","finding":"No confirmatory protocol has an authentic external registration and matching pre-run simulated commitment.","closure":"External registration and independently verified identical deterministic commitment before collection."},
+    {"id":"B07","severity":"critical","owner":"D07+D08","finding":"Maximum pools project to 855.9 GiB and 375.7 single-core hours before frozen-model overhead, exceeding the 25 GiB/72 CPU-hour local ceiling.","closure":"Blinded-pilot selected prefixes plus an approved measured execution/storage envelope within the zero-external-spend profile."},
     {"id":"B08","severity":"critical","owner":"D08","finding":"No blinded pilot variance or feasibility result exists, so N=100 remains provisional and exact primary/reserve prefixes cannot be registered.","closure":"Prerequisite-qualified 20-slot blinded pilots and complete 30,000-repetition family simulations."},
     {"id":"B09","severity":"major","owner":"V08+D08","finding":"E13 has exact synthetic qualifications for handcrafted bitmap/canvas/tone distance and 28 structural side-feature attacks, but lacks prospective learned-form generalization and powered negative bounds on selected production media.","closure":"Prospective learned-form evaluation plus powered negative-bound qualification on the selected carriers and actual topology."},
     {"id":"B10","severity":"major","owner":"D06+D08","finding":"Exact synthetic and production-runtime qualifications now cover all five non-ledger predictors, config-bound predictor identities and eligibility, pre-action commitments/checkpoints, source-bound scores, and fail-closed mismatch/restart behavior; eligible registered execution and aggregate analysis remain absent.","closure":"Eligible externally registered runs binding the exact validation corpus, per-turn commitments, untouched scores, and aggregate analysis into verified evidence, followed by independent review."},
@@ -22,7 +24,7 @@
     {"id":"B14","severity":"major","owner":"W04+R03","finding":"The source audit is single-screener and human re-verification of load-bearing full-text claim mappings remains open.","closure":"Independent citation/claim audit with corrections and preserved review history."}
   ],
   "experiments": [
-    {"id":"E00","ready":false,"blockers":["B01","B02","B04","B05","B11"]},
+    {"id":"E00","ready":false,"blockers":["B04","B11"]},
     {"id":"E01","ready":false,"blockers":["E00","B11","B12"]},
     {"id":"E02","ready":false,"blockers":["E00","B11"]},
     {"id":"E03","ready":false,"blockers":["E01","E02","B08","B11"]},
@@ -39,8 +41,8 @@
     {"id":"E30","ready":false,"blockers":["E20","E21","E22","B06","B07","B08","B11","B13"]},
     {"id":"E31","ready":false,"blockers":["E30","B07","B11"]},
     {"id":"E32","ready":false,"blockers":["E31","B06","B07","B08","B11","B13"]},
-    {"id":"E40","ready":false,"blockers":["E32","B03","B07","B11","B13"]},
-    {"id":"E50","ready":false,"blockers":["E40","B03","B05","B06","B07","B11","B13","B14"]}
+    {"id":"E40","ready":false,"blockers":["E32","B07","B11","B13"]},
+    {"id":"E50","ready":false,"blockers":["E40","B05","B06","B07","B11","B13","B14"]}
   ],
   "safeLocalNextActions": [
     "build the complete historical data/claim inventory without treating qualification as study data",
@@ -52,7 +54,7 @@
   "prohibitedUntilClosure": [
     "confirmatory outcome collection",
     "promotion of qualification fixtures to pilot or research results",
-    "external spending or mainnet transaction",
+    "external spending, faucet funding, or public-chain transaction",
     "claim of independent review, registration, replication, or publication readiness"
   ]
 }

@@ -10,9 +10,9 @@ Independent human review: not performed
 All 19 experiment cards are covered, but none is ready for outcome collection. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
-software qualifications do not substitute for governance, public-chain evidence,
-external registration, selected sample sizes, adequate resources, or independent
-review.
+software qualifications do not substitute for external registration, prospective
+commitments, selected sample sizes, adequate resources, or independent review. The
+scoped governance and simulation-only funding decision is now complete.
 
 The existing work is internally coherent enough to continue safe local engineering,
 historical evidence inventory, report preparation, detector/comparator qualification,
@@ -21,18 +21,14 @@ to relabel any existing fixture as a pilot.
 
 ## Critical blockers
 
-1. Governance, responsible roles, retention authority, and any human-coding decision
-   have no authentic approval record.
-2. E00 requires an authorized Sepolia signer and independent RPC confirmation; none
-   is provisioned through the required secret boundary.
-3. No confirmatory protocol has an authentic external registration and identical
-   independently verified pre-run anchor.
-4. No independent human restore, methods/statistics review, reproduction review, or
+1. No confirmatory protocol has an authentic external registration and identical
+   independently verified pre-run simulated commitment.
+2. No independent human restore, methods/statistics review, reproduction review, or
    citation audit exists.
-5. No blinded pilot has supplied the variance and feasibility inputs needed to select
+3. No blinded pilot has supplied the variance and feasibility inputs needed to select
    exact confirmatory seed prefixes. N=100 is planning-only.
-6. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
-   frozen-model and public-chain overhead, above the authorized 25 GiB/72-hour,
+4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
+   frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
 
 ## Major design and implementation blockers
@@ -55,20 +51,21 @@ to relabel any existing fixture as a pilot.
 - A fail-closed canonical packet compiler now rejects missing, extra, empty, and
   placeholder operational fields. The 19-card inventory still has 190 unresolved
   exact bindings and therefore compiles zero registration packets.
-- Upstream required-check enforcement, public-study mainnet authority, and
-  load-bearing citation re-review remain external evidence gaps.
+- Upstream required-check enforcement and load-bearing citation re-review remain
+  external evidence gaps. Public-chain authority is non-applicable under the approved
+  simulation-only campaign.
 
 ## Per-experiment disposition
 
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
-| E00 | No | governance, Sepolia authority, upstream enforcement, independent restore, exact packet |
+| E00 | No | upstream enforcement and exact packet |
 | E01/E02 | No | E00 plus topology/packet-specific leakage evidence |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |
 | E30-E32 | No | upstream experimental chain, resources, registration, independent review |
-| E40 | No | E32, mainnet/public-study boundary where applicable, resources, external review |
+| E40 | No | E32, resources, exact packet, external review |
 | E50 | No | completed designated studies plus distinct operator/deployment, registration, restore, resources, citation and methods review |
 
 ## Safe continuation boundary

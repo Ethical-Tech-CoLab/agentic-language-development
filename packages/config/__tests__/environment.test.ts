@@ -12,6 +12,7 @@ describe('loadRuntimeEnvironment', () => {
       databasePath: './evidence/ald.sqlite',
       signerSeedsFile: undefined,
       logLevel: 'info',
+      anchorClass: 'simulated',
       baseNetwork: 'base-sepolia',
       baseRpcUrlFile: undefined,
       anchorKeyFile: undefined,

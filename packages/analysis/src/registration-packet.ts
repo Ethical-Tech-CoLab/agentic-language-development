@@ -40,7 +40,7 @@ export interface CompiledRegistrationPacket {
   readonly artifact: RegistrationPacketArtifact;
   readonly canonicalArtifact: string;
   readonly preRegistrationHash: string;
-  readonly claimBoundary: 'draft-until-externally-registered-and-pre-run-anchored';
+  readonly claimBoundary: 'draft-until-externally-registered-and-pre-run-committed';
 }
 
 export interface CompileRegistrationPacketInput {
@@ -129,6 +129,6 @@ export function compileRegistrationPacket(
     artifact,
     canonicalArtifact,
     preRegistrationHash,
-    claimBoundary: 'draft-until-externally-registered-and-pre-run-anchored',
+    claimBoundary: 'draft-until-externally-registered-and-pre-run-committed',
   };
 }

@@ -41,6 +41,7 @@ function flakyPublisher(runId: string, failures: number): AnchorPublisher {
   const inner = new FakeAnchorPublisher();
   let attempts = 0;
   return {
+    anchorClass: inner.anchorClass,
     network: inner.network,
     submit: async (manifest) => {
       attempts += 1;

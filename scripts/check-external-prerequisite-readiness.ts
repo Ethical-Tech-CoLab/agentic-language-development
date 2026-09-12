@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 const readinessPath = 'reports/research/external-prerequisite-readiness.json';
 const campaignPath = 'protocols/campaign-readiness-review.v1.json';
 const upstreamPath = 'reports/research/upstream-enforcement-observation.json';
-const fortRuntimePath = 'reports/research/fort-runtime-qualification-receipt.json';
+const governancePath = 'protocols/research-governance-and-funding.v1.json';
 const sha256 = (bytes: Buffer | string): string => createHash('sha256').update(bytes).digest('hex');
 
 interface ReceiptReference {
@@ -17,7 +17,7 @@ interface ReceiptReference {
 interface PrerequisiteItem {
   id: string;
   blockingFinding: string;
-  status: 'missing' | 'observed-unsatisfied' | 'verified';
+  status: 'missing' | 'observed-unsatisfied' | 'verified' | 'not-applicable';
   satisfied: boolean;
   receipt: ReceiptReference | null;
   requiredEvidence: string[];
@@ -41,6 +41,7 @@ interface ReadinessLedger {
 interface CampaignReview {
   decision: string;
   blockingFindings: Array<{ id: string; owner: string }>;
+  resolvedFindings: Array<{ id: string; owner: string }>;
 }
 
 interface UpstreamObservation {
@@ -63,35 +64,18 @@ interface UpstreamObservation {
   decision: string;
 }
 
-interface FortRuntimeQualification {
+interface GovernanceDecision {
   schemaVersion: number;
-  classification: string;
-  researchFinding: boolean;
-  publicChainTransaction: boolean;
-  scopeProvisioning: {
-    authenticatedAdminOperation: boolean;
-    canonicalKeyMaterialReused: boolean;
-    keyMaterialReturned: boolean;
-  };
-  encryptedMaterial: { ciphertextPrefixCheck: string; vaultCheck: string };
-  baseSepoliaReadiness: {
-    status: string;
-    chainId: number;
-    primaryRpc: { observedChainId: number; balanceWei: string };
-    independentRpc: { observedChainId: number; balanceWei: string };
-    transactionHash: string | null;
-    confirmedBlock: number | null;
-    independentReceiptVerification: string | null;
-    o02Satisfied: boolean;
-  };
-  modeRQualification: {
-    exitCode: number;
-    fortComposeBoundaryVerified: boolean;
-    allSealedAndProductionVerified: boolean;
-    runCount: number;
-    totalEventsIncludingInterventions: number;
-    totalCheckpoints: number;
-    independentAudit: { passCount: number; bundleCount: number; issueCount: number };
+  decisionId: string;
+  status: string;
+  authority: { role: string; institutionalApprovalClaimed: boolean };
+  dataScope: { syntheticOnly: boolean; humanParticipants: boolean; humanCoding: string };
+  fundingPolicy: {
+    profile: string;
+    externalSpendAuthorized: number;
+    realCurrencyAuthorized: boolean;
+    publicChainTransactionsAuthorized: boolean;
+    transport: string;
   };
 }
 
@@ -100,7 +84,7 @@ const readiness = JSON.parse(readinessBytes.toString('utf8')) as ReadinessLedger
 const campaign = JSON.parse(readFileSync(campaignPath, 'utf8')) as CampaignReview;
 const upstreamBytes = readFileSync(upstreamPath);
 const upstream = JSON.parse(upstreamBytes.toString('utf8')) as UpstreamObservation;
-const fortRuntime = JSON.parse(readFileSync(fortRuntimePath, 'utf8')) as FortRuntimeQualification;
+const governance = JSON.parse(readFileSync(governancePath, 'utf8')) as GovernanceDecision;
 
 if (
   readiness.schemaVersion !== 1 ||
@@ -115,7 +99,7 @@ if (JSON.stringify(readiness.items.map((item) => item.id)) !== JSON.stringify(ex
   throw new Error('external prerequisites must contain O01-O06 exactly once and in order');
 }
 
-const campaignFindings = new Map(campaign.blockingFindings.map((finding) => [finding.id, finding]));
+const campaignFindings = new Map([...campaign.blockingFindings, ...campaign.resolvedFindings].map((finding) => [finding.id, finding]));
 for (const item of readiness.items) {
   const finding = campaignFindings.get(item.blockingFinding);
   if (finding === undefined || !finding.owner.split('+').includes(item.id)) {
@@ -141,11 +125,12 @@ for (const item of readiness.items) {
   }
 }
 
-const satisfiedCount = readiness.items.filter((item) => item.satisfied).length;
-if (readiness.requiredCount !== expectedIds.length || readiness.satisfiedCount !== satisfiedCount) {
+const applicable = readiness.items.filter((item) => item.status !== 'not-applicable');
+const satisfiedCount = applicable.filter((item) => item.satisfied).length;
+if (readiness.requiredCount !== applicable.length || readiness.satisfiedCount !== satisfiedCount) {
   throw new Error('external-prerequisite totals do not reconcile');
 }
-const expectedDecision = satisfiedCount === expectedIds.length ? 'ready' : 'blocked';
+const expectedDecision = satisfiedCount === applicable.length ? 'ready' : 'blocked';
 if (readiness.decision !== expectedDecision) throw new Error('external-prerequisite decision contradicts its items');
 if (campaign.decision === 'not-registration-ready' && readiness.decision === 'ready') {
   throw new Error('external ledger claims readiness while the campaign remains blocked');
@@ -179,41 +164,23 @@ if (
   throw new Error('upstream observation no longer supports O04 observed-unsatisfied');
 }
 
+const o01 = readiness.items.find((item) => item.id === 'O01');
 const o02 = readiness.items.find((item) => item.id === 'O02');
+const o03 = readiness.items.find((item) => item.id === 'O03');
 if (
-  o02?.status !== 'observed-unsatisfied' ||
-  o02.satisfied ||
-  o02.receipt?.path !== fortRuntimePath ||
-  fortRuntime.schemaVersion !== 1 ||
-  fortRuntime.classification !== 'fort-runtime-and-sepolia-readiness-qualification' ||
-  fortRuntime.researchFinding ||
-  fortRuntime.publicChainTransaction ||
-  !fortRuntime.scopeProvisioning.authenticatedAdminOperation ||
-  !fortRuntime.scopeProvisioning.canonicalKeyMaterialReused ||
-  fortRuntime.scopeProvisioning.keyMaterialReturned ||
-  fortRuntime.encryptedMaterial.ciphertextPrefixCheck !== '4/4' ||
-  fortRuntime.encryptedMaterial.vaultCheck !== 'pass' ||
-  fortRuntime.baseSepoliaReadiness.status !== 'provisioned-unfunded' ||
-  fortRuntime.baseSepoliaReadiness.chainId !== 84532 ||
-  fortRuntime.baseSepoliaReadiness.primaryRpc.observedChainId !== 84532 ||
-  fortRuntime.baseSepoliaReadiness.independentRpc.observedChainId !== 84532 ||
-  fortRuntime.baseSepoliaReadiness.primaryRpc.balanceWei !== '0' ||
-  fortRuntime.baseSepoliaReadiness.independentRpc.balanceWei !== '0' ||
-  fortRuntime.baseSepoliaReadiness.transactionHash !== null ||
-  fortRuntime.baseSepoliaReadiness.confirmedBlock !== null ||
-  fortRuntime.baseSepoliaReadiness.independentReceiptVerification !== null ||
-  fortRuntime.baseSepoliaReadiness.o02Satisfied ||
-  fortRuntime.modeRQualification.exitCode !== 0 ||
-  !fortRuntime.modeRQualification.fortComposeBoundaryVerified ||
-  !fortRuntime.modeRQualification.allSealedAndProductionVerified ||
-  fortRuntime.modeRQualification.runCount !== 4 ||
-  fortRuntime.modeRQualification.totalEventsIncludingInterventions !== 297 ||
-  fortRuntime.modeRQualification.totalCheckpoints !== 49 ||
-  fortRuntime.modeRQualification.independentAudit.passCount !== 4 ||
-  fortRuntime.modeRQualification.independentAudit.bundleCount !== 4 ||
-  fortRuntime.modeRQualification.independentAudit.issueCount !== 0
+  o01?.status !== 'verified' || !o01.satisfied || o01.receipt?.path !== governancePath ||
+  o02?.status !== 'not-applicable' || o02.satisfied || o02.receipt?.path !== governancePath ||
+  o03?.status !== 'not-applicable' || o03.satisfied || o03.receipt?.path !== governancePath ||
+  governance.schemaVersion !== 1 || governance.status !== 'approved' ||
+  governance.authority.role !== 'project-operator' || governance.authority.institutionalApprovalClaimed ||
+  !governance.dataScope.syntheticOnly || governance.dataScope.humanParticipants || governance.dataScope.humanCoding !== 'not-used' ||
+  governance.fundingPolicy.profile !== 'simulation-only' ||
+  governance.fundingPolicy.externalSpendAuthorized !== 0 ||
+  governance.fundingPolicy.realCurrencyAuthorized ||
+  governance.fundingPolicy.publicChainTransactionsAuthorized ||
+  governance.fundingPolicy.transport !== 'deterministic in-memory chain'
 ) {
-  throw new Error('Fort runtime receipt no longer supports O02 observed-unsatisfied');
+  throw new Error('governance receipt no longer supports O01 or the O02/O03 not-applicable decisions');
 }
 
 const serialized = readinessBytes.toString('utf8').toLowerCase();
@@ -224,4 +191,4 @@ if (readiness.privacyBoundary.length < 3 || readiness.activationRule.length < 80
   throw new Error('external prerequisite boundaries are incomplete');
 }
 
-console.log(`external prerequisites valid: ${String(satisfiedCount)}/${String(expectedIds.length)} satisfied, decision=${readiness.decision}, O04=${upstream.decision}`);
+console.log(`external prerequisites valid: ${String(satisfiedCount)}/${String(applicable.length)} applicable satisfied, 2 public-chain items not applicable, decision=${readiness.decision}, O04=${upstream.decision}`);

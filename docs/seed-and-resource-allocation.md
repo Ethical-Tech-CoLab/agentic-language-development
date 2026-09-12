@@ -47,7 +47,7 @@ A fresh five-carrier software qualification executed 260 turns in 37.58 seconds 
 about one CPU, peaked at 264,896 KiB RSS, and wrote 25,532,466 bytes in 15,695 files.
 The observed planning rates are 98,201.79 bytes per turn and 7.516 wall seconds per
 short run. This measurement includes build startup, local fake-chain work, and
-verification; it does not estimate frozen-model latency, public-chain latency, or
+verification; it does not estimate frozen-model latency or any prohibited public-chain latency or
 distributed throughput.
 
 The maximum materialized pools contain 9,171 bundles and 9,358,100 turns, including

@@ -372,6 +372,7 @@ async function verifyManifestAndConfiguration(
         anchor === undefined ||
         anchor.status !== 'confirmed' ||
         anchor.blockNumber === null ||
+        anchor.anchorClass !== config.data.anchorClass ||
         anchor.network !== config.data.anchorNetwork ||
         anchor.chainId !== expectedChainId ||
         anchor.inputData.toLowerCase() !== expectedInput

@@ -121,8 +121,9 @@ export const PreRegistrationArtifactSchema = z.object({
 /**
  * How a run's pre-registration was bound (SPEC §15.1; ALD-071). Recorded in
  * the run manifest. A `confirmatory` binding MUST carry the external
- * registration and a confirmed pre-run anchor of `preRegistrationHash`; a
- * `qualification` binding is labeled non-confirmatory.
+ * registration and a confirmed pre-run commitment of `preRegistrationHash`,
+ * including its simulated/public receipt class; a `qualification` binding is
+ * labeled non-confirmatory.
  */
 export const PreRegistrationBindingSchema = z.object({
   registrationClass: z.enum(['qualification', 'confirmatory']),
@@ -132,6 +133,7 @@ export const PreRegistrationBindingSchema = z.object({
   registeredAt: isoDateTime.optional(),
   preRunAnchor: z
     .object({
+      anchorClass: z.enum(['simulated', 'public-chain']),
       network: z.enum(['base-sepolia', 'base-mainnet']),
       chainId: positiveInteger,
       transactionHash: evmHash,
@@ -183,6 +185,7 @@ export const AnchorReceiptSchema = z.object({
   runId: nonEmptyString,
   checkpointSequence: nonNegativeInteger,
   checkpointHash: strictHash,
+  anchorClass: z.enum(['simulated', 'public-chain']),
   network: z.enum(['base-sepolia', 'base-mainnet']),
   chainId: positiveInteger,
   transactionHash: evmHash,

@@ -49,6 +49,7 @@ const evidence = {
 };
 const publisher = new BaseAnchorPublisher({
   transport,
+  anchorClass: 'simulated',
   evidence,
   clock,
   anchorAddress: `0x${'42'.repeat(20)}`,

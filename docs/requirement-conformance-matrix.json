@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.80"
+    "version": "0.1.81"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1160,6 +1160,7 @@
         "fills in placeholder bundle hashes and rejects a mismatch",
         "refuses the shuffled condition for a learning track",
         "refuses to skip anchoring outside prototype mode",
+        "refuses a publisher whose simulated/public class differs from RunConfig",
         "refuses an external learner boundary under Prototype Mode",
         "refuses a Research-Grade label without normalized distinct containers",
         "accepts a Research-Grade label only for normalized distinct containers",
@@ -1442,8 +1443,8 @@
     "backlogCriteria": 258,
     "checkedBacklogCriteria": 254,
     "openBacklogCriteria": 4,
-    "normativeLines": 92,
-    "mappedNormativeLines": 88,
+    "normativeLines": 96,
+    "mappedNormativeLines": 92,
     "unmappedNormativeLines": 0,
     "nonRequirementLines": 4
   },
@@ -3935,7 +3936,7 @@
     {
       "id": "ALD-071.1",
       "checked": true,
-      "statement": "A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run anchor receipt.",
+      "statement": "A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run commitment receipt whose simulated/public class matches the run configuration.",
       "itemId": "ALD-071",
       "itemTitle": "Pre-registration binding and Experiment Record writer",
       "disposition": "provisional-mapped",
@@ -4388,7 +4389,7 @@
     {
       "id": "ALD-084.1",
       "checked": true,
-      "statement": "Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable commit, seed count, external registration, and confirmed matching pre-run anchor.",
+      "statement": "Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable commit, seed count, external registration, and confirmed matching pre-run commitment.",
       "itemId": "ALD-084",
       "itemTitle": "Fail-closed research preflight",
       "disposition": "provisional-mapped",
@@ -6090,8 +6091,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L973",
-      "source": "SPECIFICATION.md:973",
+      "id": "SPEC-MUST-L974",
+      "source": "SPECIFICATION.md:974",
       "section": 11,
       "statement": "`runId`, `turn`, `sender`, sequences, timestamps, and hashes are absent from Baby-produced proposals. The Gateway derives them from the authenticated service identity and authoritative run state. Any payload containing a Baby-supplied trusted metadata field is rejected. `DeliveredChannelArtifact` is a Gateway-to-Baby message, not a Baby proposal; the receiver MUST echo its `channelEventHash` unchanged in the returned `LedgerDraftEnvelope`, and the Evidence Writer validates it against the recorded delivery receipt.",
       "applicable": true,
@@ -6116,8 +6117,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1005",
-      "source": "SPECIFICATION.md:1005",
+      "id": "SPEC-MUST-L1006",
+      "source": "SPECIFICATION.md:1006",
       "section": 11,
       "statement": "`agent-native-ledger` content MAY include embeddings/weights references, probability distributions, and prediction errors; `human-audit-ledger` content MUST use the two/three-column hypothesis/evidence shape from CONCEPT-IDEA.md §11.1 regardless of which layer produced it.",
       "applicable": true,
@@ -6142,8 +6143,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1041",
-      "source": "SPECIFICATION.md:1041",
+      "id": "SPEC-MUST-L1042",
+      "source": "SPECIFICATION.md:1042",
       "section": 11,
       "statement": "`channelEventHash` means `ChannelEvent.entryHash`, computed with the channel-event domain separator and verified by the Channel Event Signer. Rejected events use a hash of the rejected payload and MUST NOT retain the raw payload. Normal, constant, random, and shuffled accepted events MUST contain `babyProposalHash`, the sender ledger binding, and (unless disabled) a delivery receipt. `oracle` events use `origin: \"gateway-control\"` and may omit Baby proposal and ledger fields. `disabled` events have no delivery receipt. Rejected events omit delivery fields unless a separate rejection-intention event was atomically committed. For `disabled`, `publicArtifactHash` is the domain-separated hash of canonical `null`.",
       "applicable": true,
@@ -6168,8 +6169,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1073",
-      "source": "SPECIFICATION.md:1073",
+      "id": "SPEC-MUST-L1074",
+      "source": "SPECIFICATION.md:1074",
       "section": 11,
       "statement": "Normative shape is LEDGER-INTEGRITY-DESIGN.md §8, including its optional named `auxiliaryTrees` map for `affect`, `audit`, `turns`, and witness-committed unsigned `intervention` roots. Every run manifest MUST additionally be reachable from an `ExperimentRecord` (§11.9) via `checkpointManifestRef`.",
       "applicable": true,
@@ -6194,8 +6195,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1148",
-      "source": "SPECIFICATION.md:1148",
+      "id": "SPEC-MUST-L1149",
+      "source": "SPECIFICATION.md:1149",
       "section": 12,
       "statement": "All routes follow the DTSF unprefixed convention: a twin's Express route is `/:twinName/*`, and the runtime strips the twin name before dispatch, so a handler registered as `/observe` is reachable externally as `/baby-a/observe`. Route patterns and this specification's OpenAPI-equivalent listings below MUST NOT include the twin-name prefix (matching the DTSF convention already used elsewhere in this environment).",
       "applicable": true,
@@ -6215,8 +6216,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1228",
-      "source": "SPECIFICATION.md:1228",
+      "id": "SPEC-MUST-L1229",
+      "source": "SPECIFICATION.md:1229",
       "section": 12,
       "statement": "The Evidence Writer MUST reject any commit request whose authenticated sender, authoritative run/turn state, and requested event domain do not agree. Event Signers MUST reject calls from every identity except `internal-evidence-writer`.",
       "applicable": true,
@@ -6236,8 +6237,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1230",
-      "source": "SPECIFICATION.md:1230",
+      "id": "SPEC-MUST-L1231",
+      "source": "SPECIFICATION.md:1231",
       "section": 12,
       "statement": "The Evidence Writer MUST reject any commit request whose authenticated sender, authoritative run/turn state, and requested event domain do not agree. Event Signers MUST reject calls from every identity except `internal-evidence-writer`.",
       "applicable": true,
@@ -6257,8 +6258,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1247",
-      "source": "SPECIFICATION.md:1247",
+      "id": "SPEC-MUST-L1248",
+      "source": "SPECIFICATION.md:1248",
       "section": 13,
       "statement": "All new tables MUST use WAL mode, serialize writes through the same single evidence-writer service, and reject `UPDATE`/`DELETE` via triggers, matching the existing tables' controls.",
       "applicable": true,
@@ -6299,8 +6300,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1283",
-      "source": "SPECIFICATION.md:1283",
+      "id": "SPEC-MUST-L1284",
+      "source": "SPECIFICATION.md:1284",
       "section": 13,
       "statement": "Normative and unchanged from LEDGER-INTEGRITY-DESIGN.md: RFC 8785 canonical JSON; SHA-256 with domain-separated prefixes; Ed25519 writer/witness signatures; RFC 6962-style ordered Merkle trees with `sequence`-bound leaf hashes. This specification does not restate the hash/Merkle formulas; implementers MUST follow LEDGER-INTEGRITY-DESIGN.md §4, §7, and §8 exactly, including for the new `affect_events` and `audit_ledger_entries` tables (each gets its own hash chain and its own Merkle root, included in the checkpoint manifest as additional named trees alongside `babyA`/`babyB`/`channel`).",
       "applicable": true,
@@ -6341,8 +6342,134 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1317",
-      "source": "SPECIFICATION.md:1317",
+      "id": "SPEC-MUST-L1293",
+      "source": "SPECIFICATION.md:1293",
+      "section": 13,
+      "statement": "The approved research profile is simulation-only. Every prospective campaign run MUST declare `anchorClass: \"simulated\"` and use the deterministic in-memory transport. Its Base-shaped network, transaction, block, and confirmation values are non-monetary test data and MUST NOT be described as public-chain publication, economic finality, or incurred cost. The exact `anchorClass` is bound into the run configuration, pending-submission record, anchor receipt, pre-registration binding, and verifier checks so a simulated receipt cannot be silently relabeled.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-005",
+        "ALD-006",
+        "ALD-007",
+        "ALD-008",
+        "ALD-009",
+        "ALD-012",
+        "ALD-013",
+        "ALD-016",
+        "ALD-018",
+        "ALD-019",
+        "ALD-020",
+        "ALD-021",
+        "ALD-022",
+        "ALD-064"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/anchor/__tests__/key-file.test.ts",
+        "packages/anchor/__tests__/publisher.test.ts",
+        "packages/anchor/__tests__/verify-anchor.test.ts",
+        "packages/anchor/__tests__/viem-transport.test.ts",
+        "packages/checkpoint/__tests__/checkpoint-service.test.ts",
+        "packages/evidence/__tests__/canonical.test.ts",
+        "packages/evidence/__tests__/database.test.ts",
+        "packages/evidence/__tests__/event-types.test.ts",
+        "packages/evidence/__tests__/export.test.ts",
+        "packages/hashing/__tests__/keystore.test.ts",
+        "packages/merkle/__tests__/consistency.test.ts",
+        "packages/merkle/__tests__/inclusion.test.ts",
+        "packages/merkle/__tests__/tree.test.ts",
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/ops/__tests__/snapshot.test.ts",
+        "packages/orchestrator/__tests__/audit-interpreter.test.ts"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1295",
+      "source": "SPECIFICATION.md:1295",
+      "section": 13,
+      "statement": "The approved research profile is simulation-only. Every prospective campaign run MUST declare `anchorClass: \"simulated\"` and use the deterministic in-memory transport. Its Base-shaped network, transaction, block, and confirmation values are non-monetary test data and MUST NOT be described as public-chain publication, economic finality, or incurred cost. The exact `anchorClass` is bound into the run configuration, pending-submission record, anchor receipt, pre-registration binding, and verifier checks so a simulated receipt cannot be silently relabeled.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-005",
+        "ALD-006",
+        "ALD-007",
+        "ALD-008",
+        "ALD-009",
+        "ALD-012",
+        "ALD-013",
+        "ALD-016",
+        "ALD-018",
+        "ALD-019",
+        "ALD-020",
+        "ALD-021",
+        "ALD-022",
+        "ALD-064"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/anchor/__tests__/key-file.test.ts",
+        "packages/anchor/__tests__/publisher.test.ts",
+        "packages/anchor/__tests__/verify-anchor.test.ts",
+        "packages/anchor/__tests__/viem-transport.test.ts",
+        "packages/checkpoint/__tests__/checkpoint-service.test.ts",
+        "packages/evidence/__tests__/canonical.test.ts",
+        "packages/evidence/__tests__/database.test.ts",
+        "packages/evidence/__tests__/event-types.test.ts",
+        "packages/evidence/__tests__/export.test.ts",
+        "packages/hashing/__tests__/keystore.test.ts",
+        "packages/merkle/__tests__/consistency.test.ts",
+        "packages/merkle/__tests__/inclusion.test.ts",
+        "packages/merkle/__tests__/tree.test.ts",
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/ops/__tests__/snapshot.test.ts",
+        "packages/orchestrator/__tests__/audit-interpreter.test.ts"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1301",
+      "source": "SPECIFICATION.md:1301",
+      "section": 13,
+      "statement": "Base Sepolia and Base mainnet remain optional transport capabilities inherited from LEDGER-INTEGRITY-DESIGN.md §10. Any real-chain operation MUST instead declare `anchorClass: \"public-chain\"`; only the 32-byte checkpoint hash and minimal routing metadata may be public. Public-chain operation is outside the currently approved research profile and requires a new prospective governance amendment. If amended, Sepolia waits for at least one confirmation and mainnet waits for the `safe` block tag or an equivalent provider-specific policy before reporting anchored-final.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-005",
+        "ALD-006",
+        "ALD-007",
+        "ALD-008",
+        "ALD-009",
+        "ALD-012",
+        "ALD-013",
+        "ALD-016",
+        "ALD-018",
+        "ALD-019",
+        "ALD-020",
+        "ALD-021",
+        "ALD-022",
+        "ALD-064"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/anchor/__tests__/key-file.test.ts",
+        "packages/anchor/__tests__/publisher.test.ts",
+        "packages/anchor/__tests__/verify-anchor.test.ts",
+        "packages/anchor/__tests__/viem-transport.test.ts",
+        "packages/checkpoint/__tests__/checkpoint-service.test.ts",
+        "packages/evidence/__tests__/canonical.test.ts",
+        "packages/evidence/__tests__/database.test.ts",
+        "packages/evidence/__tests__/event-types.test.ts",
+        "packages/evidence/__tests__/export.test.ts",
+        "packages/hashing/__tests__/keystore.test.ts",
+        "packages/merkle/__tests__/consistency.test.ts",
+        "packages/merkle/__tests__/inclusion.test.ts",
+        "packages/merkle/__tests__/tree.test.ts",
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/ops/__tests__/snapshot.test.ts",
+        "packages/orchestrator/__tests__/audit-interpreter.test.ts"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1325",
+      "source": "SPECIFICATION.md:1325",
       "section": 13,
       "statement": "Only checkpoint hashes are ever anchored on-chain (§13.4). The `audit_ledger_entries` table (resolves Q25) is populated by a deterministic or BabySitter-generated Interpreter that reads `agent-native-ledger` content on a delayed, batched basis and writes to this strictly separate table; the architecture MUST NOT expose any Baby-reachable API for reading `audit_ledger_entries`, enforced by the same role model as §12.2 (only `researcher-viewer`/`researcher-operator`/`verifier-service` may read it). Every generated interpretation is labeled `source: \"generated-analysis\"` and MUST NOT be represented, in any report, as the Baby's own explanation. The reference implementation validates every `sourceEntryHash` against the named Baby's signed native stream, waits until at least one later turn is fully complete, validates the whole submitted batch before its first append, and creates an `analysis` checkpoint after the batch. The Interpreter has no adapter or Gateway dependency, so no generated interpretation can be delivered back to a Baby as observation, outcome, message, or ledger feedback.",
       "applicable": true,
@@ -6383,8 +6510,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1320",
-      "source": "SPECIFICATION.md:1320",
+      "id": "SPEC-MUST-L1328",
+      "source": "SPECIFICATION.md:1328",
       "section": 13,
       "statement": "Only checkpoint hashes are ever anchored on-chain (§13.4). The `audit_ledger_entries` table (resolves Q25) is populated by a deterministic or BabySitter-generated Interpreter that reads `agent-native-ledger` content on a delayed, batched basis and writes to this strictly separate table; the architecture MUST NOT expose any Baby-reachable API for reading `audit_ledger_entries`, enforced by the same role model as §12.2 (only `researcher-viewer`/`researcher-operator`/`verifier-service` may read it). Every generated interpretation is labeled `source: \"generated-analysis\"` and MUST NOT be represented, in any report, as the Baby's own explanation. The reference implementation validates every `sourceEntryHash` against the named Baby's signed native stream, waits until at least one later turn is fully complete, validates the whole submitted batch before its first append, and creates an `analysis` checkpoint after the batch. The Interpreter has no adapter or Gateway dependency, so no generated interpretation can be delivered back to a Baby as observation, outcome, message, or ledger feedback.",
       "applicable": true,
@@ -6425,8 +6552,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1343",
-      "source": "SPECIFICATION.md:1343",
+      "id": "SPEC-MUST-L1351",
+      "source": "SPECIFICATION.md:1351",
       "section": 14,
       "statement": "Every human read is logged as a low-noise `audit.human_view` event (non-blocking, informational). Every human intervention (pause/resume/abort/ annotate) requires the `researcher-operator` role, writes to `intervention_log`, and MUST also produce a checkpoint (§7.2) and a corresponding EXPERIMENT-NOTEBOOK.md §9 deviation-log row if it was not part of the pre-registered protocol (resolves Q22).",
       "applicable": true,
@@ -6452,8 +6579,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1349",
-      "source": "SPECIFICATION.md:1349",
+      "id": "SPEC-MUST-L1357",
+      "source": "SPECIFICATION.md:1357",
       "section": 14,
       "statement": "A run's evidence bundle MUST support two replay checks:",
       "applicable": true,
@@ -6479,8 +6606,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1367",
-      "source": "SPECIFICATION.md:1367",
+      "id": "SPEC-MUST-L1375",
+      "source": "SPECIFICATION.md:1375",
       "section": 14,
       "statement": "For nondeterministic adapters that cannot reproduce execution under recorded seeds, the report MUST mark execution replay `not-applicable`, state why, and still pass scenario replay plus a recorded-decision playback check. It MUST NOT claim full execution reproducibility. This resolves the replay half of Q21.",
       "applicable": true,
@@ -6506,8 +6633,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1368",
-      "source": "SPECIFICATION.md:1368",
+      "id": "SPEC-MUST-L1376",
+      "source": "SPECIFICATION.md:1376",
       "section": 14,
       "statement": "For nondeterministic adapters that cannot reproduce execution under recorded seeds, the report MUST mark execution replay `not-applicable`, state why, and still pass scenario replay plus a recorded-decision playback check. It MUST NOT claim full execution reproducibility. This resolves the replay half of Q21.",
       "applicable": true,
@@ -6533,8 +6660,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1377",
-      "source": "SPECIFICATION.md:1377",
+      "id": "SPEC-MUST-L1385",
+      "source": "SPECIFICATION.md:1385",
       "section": 14,
       "statement": "Reuses the existing DTSF snapshot mechanism: automatic snapshots every 300 seconds (`DTSF_SNAPSHOT_INTERVAL_MS`, configurable), a final snapshot on graceful shutdown (SIGINT/SIGTERM), and `autoRestore()` on startup loading the latest snapshot. Ledger/channel/checkpoint state additionally has its own independent integrity chain (§13), so a DTSF snapshot restore MUST be followed by the recovery procedure in §7.3 (verify committed prefix before accepting new writes), not treated as a substitute for it.",
       "applicable": true,
@@ -6560,8 +6687,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1383",
-      "source": "SPECIFICATION.md:1383",
+      "id": "SPEC-MUST-L1391",
+      "source": "SPECIFICATION.md:1391",
       "section": 14,
       "statement": "Automated safety triggers (any of which MUST cause a `pause`, not a silent continue):",
       "applicable": true,
@@ -6587,10 +6714,10 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1427",
-      "source": "SPECIFICATION.md:1427",
+      "id": "SPEC-MUST-L1435",
+      "source": "SPECIFICATION.md:1435",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be anchored before the run enters `running`. The external registration URL and pre-run anchor receipt are included in the run manifest. Qualification-only development runs MAY use a Base-Sepolia pre-run anchor without OSF, but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6612,10 +6739,10 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1428",
-      "source": "SPECIFICATION.md:1428",
+      "id": "SPEC-MUST-L1436",
+      "source": "SPECIFICATION.md:1436",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be anchored before the run enters `running`. The external registration URL and pre-run anchor receipt are included in the run manifest. Qualification-only development runs MAY use a Base-Sepolia pre-run anchor without OSF, but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6637,10 +6764,10 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1431",
-      "source": "SPECIFICATION.md:1431",
+      "id": "SPEC-MUST-L1439",
+      "source": "SPECIFICATION.md:1439",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be anchored before the run enters `running`. The external registration URL and pre-run anchor receipt are included in the run manifest. Qualification-only development runs MAY use a Base-Sepolia pre-run anchor without OSF, but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6662,8 +6789,33 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1434",
-      "source": "SPECIFICATION.md:1434",
+      "id": "SPEC-MUST-L1443",
+      "source": "SPECIFICATION.md:1443",
+      "section": 15,
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-041",
+        "ALD-071",
+        "ALD-072"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/analysis/__tests__/e03.test.ts",
+        "packages/orchestrator/__tests__/experiments/e03-controls.test.ts",
+        "packages/orchestrator/__tests__/experiments/e11-naming-game.test.ts",
+        "packages/orchestrator/__tests__/experiments/production-runtime.test.ts",
+        "packages/orchestrator/__tests__/experiments/verifier-integration.test.ts",
+        "packages/orchestrator/__tests__/pre-registration.test.ts",
+        "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "packages/orchestrator/__tests__/sealing-and-guards.test.ts",
+        "packages/scenario/__tests__/referential-engine.test.ts",
+        "scripts/run-qualification.mjs"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1446",
+      "source": "SPECIFICATION.md:1446",
       "section": 15,
       "statement": "The run's `ExperimentRecord.disposition` and the matching EXPERIMENT-NOTEBOOK.md run record MUST agree; the Verifier's `VerificationReport` is authoritative for **integrity** (did the evidence chain hold), while the notebook is authoritative for **scientific interpretation status** (is the run valid/invalid/replicated). This resolves Q29.",
       "applicable": true,
@@ -6687,8 +6839,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1441",
-      "source": "SPECIFICATION.md:1441",
+      "id": "SPEC-MUST-L1453",
+      "source": "SPECIFICATION.md:1453",
       "section": 15,
       "statement": "Ledger meanings MUST be validated behaviorally, not accepted from ledger prose alone (resolves Q14). The mandatory suite, run during `evaluating`:",
       "applicable": true,
@@ -6712,8 +6864,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1452",
-      "source": "SPECIFICATION.md:1452",
+      "id": "SPEC-MUST-L1464",
+      "source": "SPECIFICATION.md:1464",
       "section": 15,
       "statement": "Default descriptive readiness threshold: within each run, ledger-predicted direction matches observed behavior change in at least 70% of probed instances. This is not an inferential test. Confirmatory inference MUST account for probe clustering within run/seed using a hierarchical Bernoulli model or a pre-registered seed-level equivalent against the E03 chance baseline at alpha = 0.05.",
       "applicable": true,
@@ -6737,8 +6889,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1470",
-      "source": "SPECIFICATION.md:1470",
+      "id": "SPEC-MUST-L1482",
+      "source": "SPECIFICATION.md:1482",
       "section": 15,
       "statement": "Any conclusion that performance is equivalent to chance or that leakage is absent MUST use a pre-registered equivalence/non-inferiority bound or Bayes-factor criterion with power or sensitivity analysis. A non-significant difference alone cannot satisfy a no-leakage or at-chance acceptance criterion.",
       "applicable": true,
@@ -6762,8 +6914,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1489",
-      "source": "SPECIFICATION.md:1489",
+      "id": "SPEC-MUST-L1501",
+      "source": "SPECIFICATION.md:1501",
       "section": 15,
       "statement": "A nonce, salt, unique artifact hash, or low recovery rate against one Eve model MUST NOT change the third field. Learned encodings MUST NOT be imported into the production hashing, signing, anchoring, authentication, or key-management packages. This formalizes Q17 and the `cipherThreatModel` variable in §18.",
       "applicable": true,
@@ -6787,8 +6939,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1490",
-      "source": "SPECIFICATION.md:1490",
+      "id": "SPEC-MUST-L1502",
+      "source": "SPECIFICATION.md:1502",
       "section": 15,
       "statement": "A nonce, salt, unique artifact hash, or low recovery rate against one Eve model MUST NOT change the third field. Learned encodings MUST NOT be imported into the production hashing, signing, anchoring, authentication, or key-management packages. This formalizes Q17 and the `cipherThreatModel` variable in §18.",
       "applicable": true,
@@ -6812,8 +6964,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1517",
-      "source": "SPECIFICATION.md:1517",
+      "id": "SPEC-MUST-L1529",
+      "source": "SPECIFICATION.md:1529",
       "section": 16,
       "statement": "- run configuration and pre-registration status; - live transcript view (public artifacts only, never a Baby's private ledger content exposed to the other Baby's view, even in the human console's own layout — the console MUST render Baby A's and Baby B's perspectives as clearly separated panels, never merged); - ledger convergence comparison (read-only, side-by-side, never fed back into a live run); - checkpoint/anchor status with links to the independent chain explorer; - pause/resume/abort controls gated to `researcher-operator`; - verification-report status (pass/fail, last-run timestamp).",
       "applicable": true,
@@ -6830,44 +6982,44 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1543",
-      "source": "SPECIFICATION.md:1543",
-      "section": 16,
-      "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
-      "applicable": true,
-      "backlogItems": [
-        "ALD-063",
-        "ALD-065",
-        "ALD-066"
-      ],
-      "disposition": "provisional-mapped",
-      "assertionPaths": [
-        "packages/orchestrator/__tests__/run-lifecycle.test.ts",
-        "scripts/check-research-console.mjs",
-        "twins/packs/__tests__/routes.test.ts"
-      ]
-    },
-    {
-      "id": "SPEC-MUST-L1544",
-      "source": "SPECIFICATION.md:1544",
-      "section": 16,
-      "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
-      "applicable": true,
-      "backlogItems": [
-        "ALD-063",
-        "ALD-065",
-        "ALD-066"
-      ],
-      "disposition": "provisional-mapped",
-      "assertionPaths": [
-        "packages/orchestrator/__tests__/run-lifecycle.test.ts",
-        "scripts/check-research-console.mjs",
-        "twins/packs/__tests__/routes.test.ts"
-      ]
-    },
-    {
       "id": "SPEC-MUST-L1555",
       "source": "SPECIFICATION.md:1555",
+      "section": 16,
+      "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-063",
+        "ALD-065",
+        "ALD-066"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/check-research-console.mjs",
+        "twins/packs/__tests__/routes.test.ts"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1556",
+      "source": "SPECIFICATION.md:1556",
+      "section": 16,
+      "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
+      "applicable": true,
+      "backlogItems": [
+        "ALD-063",
+        "ALD-065",
+        "ALD-066"
+      ],
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/check-research-console.mjs",
+        "twins/packs/__tests__/routes.test.ts"
+      ]
+    },
+    {
+      "id": "SPEC-MUST-L1567",
+      "source": "SPECIFICATION.md:1567",
       "section": 17,
       "statement": "- every applicable MUST in this document is satisfied and demonstrated by an automated test where feasible; - the Verifier (§11.10) passes on a synthetic evidence bundle and correctly rejects every mutation case enumerated in LEDGER-INTEGRITY-DESIGN.md §17; - the Replay Fidelity Test (§14.3) passes on at least one evaluation-phase run; - Mode P and Mode R claim-boundary sentences (§5.1/§5.2) are reproduced verbatim in generated reports; - the Intervention Test Suite (§15.2) is wired into the evaluation pipeline, even if a given experiment's results are still pending.",
       "applicable": true,
@@ -6892,8 +7044,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1654",
-      "source": "SPECIFICATION.md:1654",
+      "id": "SPEC-MUST-L1667",
+      "source": "SPECIFICATION.md:1667",
       "section": 19,
       "statement": "| ADR-01 | Exact Base RPC provider(s) for submission and independent verification | Vendor/account/SLA choice outside this specification's authority | Any RPC provider satisfying: chain-ID confirmation, calldata/event retrieval, and block/finality-tag reporting; the Verifier MUST be provider-agnostic |",
       "applicable": true,
@@ -6906,8 +7058,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1698",
-      "source": "SPECIFICATION.md:1698",
+      "id": "SPEC-MUST-L1711",
+      "source": "SPECIFICATION.md:1711",
       "section": 20,
       "statement": "This specification is implementation-ready for Phase 0 (§17.3) as of the date of its commit. Amendments MUST follow the same protocol-amendment discipline as EXPERIMENT-NOTEBOOK.md §3: record the change, apply it to new runs, and never silently reinterpret an already-sealed run's evidence.",
       "applicable": true,

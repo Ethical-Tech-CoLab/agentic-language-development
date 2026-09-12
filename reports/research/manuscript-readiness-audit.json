@@ -6,13 +6,13 @@
   "decision": "needs-revision",
   "manuscript": {
     "path": "RESEARCH.md",
-    "sha256": "7b4208f8a9b23ef8c91ca6d7438bb636633041eb741b7b881e779639acba74ec",
-    "version": "0.1.80",
+    "sha256": "20728dbf77f0d57bf7b993b9d01cf2e6eaeb5b5b2493a739d1128f83c317dfe3",
+    "version": "0.1.81",
     "majorSections": 25,
     "referencesDefined": 50,
     "referencesCited": 50,
     "renderedPages": 51,
-    "renderedSourceSha256": "7b4208f8a9b23ef8c91ca6d7438bb636633041eb741b7b881e779639acba74ec"
+    "renderedSourceSha256": "20728dbf77f0d57bf7b993b9d01cf2e6eaeb5b5b2493a739d1128f83c317dfe3"
   },
   "evidenceState": {
     "experiments": 19,
@@ -21,9 +21,9 @@
     "confirmedPublicChainAnchors": 0,
     "compiledRegistrationPackets": 0,
     "unresolvedRegistrationBindings": 190,
-    "campaignBlockers": 14,
-    "externalPrerequisitesSatisfied": 0,
-    "externalPrerequisitesRequired": 6,
+    "campaignBlockers": 11,
+    "externalPrerequisitesSatisfied": 1,
+    "externalPrerequisitesRequired": 4,
     "upstreamEnforcement": "not-demonstrated",
     "independentHumanReview": false
   },
@@ -34,5 +34,5 @@
     "allDefinedReferencesCited": true,
     "requiredIndependentHumanRecheck": true
   },
-  "boundary": "This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, registration, governance, public anchors, human review, or venue acceptance."
+  "boundary": "This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, external registration, prospective simulated commitments, human review, or venue acceptance."
 }

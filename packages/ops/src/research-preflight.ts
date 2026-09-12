@@ -2,6 +2,7 @@
  * Confirmatory research preflight (SPEC §5.2, §10.4, §13.4, §15.1).
  * This checks immutable inputs and their recorded binding before collection;
  * it does not query a chain or decide that a study is scientifically valid.
+ * Simulated commitments are accepted only when their class matches RunConfig.
  */
 import { hashCanonical } from '@ald/hashing';
 import {
@@ -18,7 +19,8 @@ import {
 export const RESEARCH_PREFLIGHT_VERSION = 1;
 export const RESEARCH_PREFLIGHT_CLAIM_BOUNDARY =
   'Configuration-and-binding preflight only: this report does not verify a ' +
-  'public chain, governance approval, experiment outcomes, or scientific validity.';
+  'public chain, governance approval, experiment outcomes, or scientific validity; ' +
+  'a simulated commitment proves only deterministic local binding.';
 
 export type ResearchPreflightCheckId =
   | 'run-config-valid'
@@ -204,22 +206,23 @@ export function evaluateResearchPreflight(
       'pre-run-anchor-confirmed',
       binding?.preRunAnchor?.status === 'confirmed' &&
         binding.preRunAnchor.blockNumber !== null,
-      'Pre-run anchor is confirmed with a block number.',
-      'A confirmed pre-run anchor with a block number is required.',
+      'Pre-run commitment is confirmed with a block number.',
+      'A confirmed pre-run commitment with a block number is required.',
     ),
     check(
       'pre-run-anchor-network',
       parsedConfig.success &&
+        binding?.preRunAnchor?.anchorClass === config.anchorClass &&
         binding?.preRunAnchor?.network === config.anchorNetwork &&
         binding.preRunAnchor.chainId === CHAIN_IDS[config.anchorNetwork],
-      'Pre-run anchor network and chain ID match RunConfig.',
-      'Pre-run anchor network or chain ID does not match RunConfig.',
+      'Pre-run anchor class, network, and chain ID match RunConfig.',
+      'Pre-run anchor class, network, or chain ID does not match RunConfig.',
     ),
     check(
       'pre-run-anchor-payload',
       binding?.preRunAnchor?.inputData.toLowerCase() === inputData.toLowerCase(),
-      'Pre-run anchor payload is exactly the artifact hash.',
-      'Pre-run anchor payload must be exactly the artifact hash.',
+      'Pre-run commitment payload is exactly the artifact hash.',
+      'Pre-run commitment payload must be exactly the artifact hash.',
     ),
   ];
   const blockers = checks.filter((item) => !item.pass).map((item) => item.id);

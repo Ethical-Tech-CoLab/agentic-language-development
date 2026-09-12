@@ -85,6 +85,7 @@ export const RUN_CONFIG_DEFAULTS = {
   evaluationSeeds: 5,
   checkpointEventInterval: 64,
   checkpointTimeIntervalMs: 300_000,
+  anchorClass: 'simulated',
   anchorNetwork: 'base-sepolia',
   finalityPolicy: '1-confirmation',
   prototypeRetentionDays: 30,
@@ -476,6 +477,7 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     checkpointTimeIntervalMs:
       overrides.checkpointTimeIntervalMs ??
       RUN_CONFIG_DEFAULTS.checkpointTimeIntervalMs,
+    anchorClass: overrides.anchorClass ?? RUN_CONFIG_DEFAULTS.anchorClass,
     anchorNetwork,
     finalityPolicy,
     prototypeRetentionDays:

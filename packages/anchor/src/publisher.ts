@@ -158,6 +158,8 @@ export interface AnchorConfirmationPollOptions {
 
 export interface BaseAnchorPublisherOptions {
   transport: ChainTransport;
+  /** Declares whether receipts came from a deterministic simulation or a public chain. */
+  anchorClass: AnchorReceipt['anchorClass'];
   evidence: AnchorEvidenceStore;
   clock: Clock;
   /** Designated destination of the zero-value anchor transaction. */
@@ -191,6 +193,7 @@ async function defaultSleep(milliseconds: number): Promise<void> {
 }
 
 export class BaseAnchorPublisher implements AnchorPublisher {
+  readonly anchorClass: AnchorReceipt['anchorClass'];
   readonly network: AnchorNetwork;
   readonly chainId: number;
   readonly finalityPolicy: string;
@@ -218,6 +221,7 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   private readonly inFlight = new Map<string, Promise<AnchorReceipt>>();
 
   constructor(options: BaseAnchorPublisherOptions) {
+    this.anchorClass = options.anchorClass;
     this.transport = options.transport;
     this.evidence = options.evidence;
     this.clock = options.clock;
@@ -440,6 +444,7 @@ export class BaseAnchorPublisher implements AnchorPublisher {
       runId: submission.runId,
       checkpointSequence: submission.checkpointSequence,
       checkpointHash: submission.checkpointHash,
+      anchorClass: submission.anchorClass,
       network: submission.network,
       chainId: submission.chainId,
       transactionHash: submission.transactionHash,
@@ -492,6 +497,7 @@ export class BaseAnchorPublisher implements AnchorPublisher {
       runId,
       checkpointSequence: manifest.checkpointSequence,
       checkpointHash: manifest.checkpointHash,
+      anchorClass: this.anchorClass,
       network: this.network,
       chainId: this.chainId,
       transactionHash: sent.transactionHash,

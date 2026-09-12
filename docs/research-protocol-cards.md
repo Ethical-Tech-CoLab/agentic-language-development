@@ -109,7 +109,7 @@ families.
 
 | ID | Confirmatory | Secondary | Exploratory |
 |---|---|---|---|
-| E00 | None; deterministic acceptance | Verification latency, bytes, anchor cost | None |
+| E00 | None; deterministic acceptance | Verification latency, bytes, simulated-commitment overhead | None |
 | E01 | None; deterministic acceptance | Rejection timing and audit completeness | Unanticipated route taxonomy |
 | E02 | None; validity bound | Post-restore stability and field attribution | Nonlinear probe sensitivity |
 | E03 | None; qualification decisions | Tail and invalid-run sensitivity | None |
@@ -137,4 +137,3 @@ dependency references, class labels, required fields, H2/H4 nonidentity, family
 membership, and synchronization with the experiment notebook. Changing a frozen
 question, estimand, outcome class, or family rule requires a dated protocol amendment;
 after outcome access it cannot be relabeled confirmatory.
-

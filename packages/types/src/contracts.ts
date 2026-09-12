@@ -360,6 +360,7 @@ export interface CheckpointService {
 }
 
 export interface AnchorPublisher {
+  readonly anchorClass: AnchorReceipt['anchorClass'];
   readonly network: AnchorReceipt['network'];
   submit(manifest: CheckpointManifest): Promise<AnchorReceipt>;
   awaitConfirmation(receipt: AnchorReceipt): Promise<AnchorReceipt>;

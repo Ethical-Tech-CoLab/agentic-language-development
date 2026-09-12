@@ -111,8 +111,8 @@ semantic and structural rules that the verifiers apply.
 A03 stays `IN_PROGRESS`. Its local software-qualification component is complete, but
 three preconditions remain:
 
-1. measure real anchor submission, confirmation latency, receipt verification, and
-   transaction fee from authorized public-chain runs;
+1. measure actual deterministic simulated-commitment submission, confirmation, and
+   receipt-verification latency; monetary fee remains not applicable;
 2. repeat cost measurement on prospectively registered pilot and confirmatory
    bundles at the selected checkpoint schedule and study scale; and
 3. execute the registered ordinary-log, signed-log, and full-audit comparison on the

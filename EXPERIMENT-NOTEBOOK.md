@@ -61,18 +61,18 @@ permits otherwise.
 | Field | Value |
 |---|---|
 | Study title | Agentic Language Development Nursery Lab |
-| Study version | `TBD` |
-| Principal investigator | `TBD` |
-| Research team | `TBD` |
+| Study version | `0.1.81` prospective design snapshot |
+| Principal investigator | project-operator role |
+| Research team | research-operator, integrity-verifier, and data-steward roles |
 | Repository | `Ethical-Tech-CoLab/agentic-language-development` |
 | DTSF version / commit | `TBD` |
 | Evidence verifier version | `TBD` |
-| Base anchor network | Base Sepolia for qualification; Base mainnet for public studies |
-| Public anchor address / contract | `TBD` |
+| Commitment profile | deterministic simulation of Base Sepolia semantics; no public transaction |
+| Public anchor address / contract | Not applicable under `ALD-GOV-2026-09-12-01` |
 | Study start date | `TBD` |
 | Study end date | `TBD` |
-| Ethics or governance review | `TBD` |
-| Data-retention policy | `TBD` |
+| Ethics or governance review | `ALD-GOV-2026-09-12-01`: synthetic-only, no human participants or human-coded outcomes |
+| Data-retention policy | Eligible research evidence indefinite; development bulk payloads 30 days; immutable metadata retained |
 
 ## 5. Default Experimental Invariants
 
@@ -206,7 +206,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ---
 
-## E00. Ledger Integrity and Base Anchoring
+## E00. Ledger Integrity and Simulated Commitment
 
 **Status:** Not started
 
@@ -220,7 +220,7 @@ pre-registered mutation of a committed ledger or transcript.
 - [ ] Implement local hash chains and Ed25519 signatures.
 - [ ] Implement ordered Merkle checkpoints.
 - [ ] Implement standalone verifier.
-- [ ] Configure Base Sepolia anchor wallet.
+- [ ] Bind `anchorClass: "simulated"` and configure the deterministic transport.
 - [ ] Pre-register checkpoint frequency and finality rule.
 - [ ] Seal protocol commit and configuration hashes.
 
@@ -228,8 +228,9 @@ pre-registered mutation of a committed ledger or transcript.
 
 - [ ] Create a synthetic run with at least 100 events in each Baby ledger.
 - [ ] Produce at least three checkpoints.
-- [ ] Anchor each checkpoint to Base Sepolia.
-- [ ] Verify the unchanged bundle through an independent RPC provider.
+- [ ] Commit each checkpoint through the deterministic simulation transport.
+- [ ] Verify the unchanged bundle through both independent verifier implementations.
+- [ ] Relabel a simulated receipt as public-chain evidence and verify rejection.
 - [ ] Modify one event payload and verify rejection.
 - [ ] Delete a middle event and verify rejection.
 - [ ] Insert an event and verify rejection.

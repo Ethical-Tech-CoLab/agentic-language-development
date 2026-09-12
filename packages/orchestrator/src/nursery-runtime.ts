@@ -3782,6 +3782,11 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         'anchorPolicy "required" needs an anchorPublisher (SPEC §7.2, §13.4)',
       );
     }
+    if (this.#options.anchorPublisher.anchorClass !== config.anchorClass) {
+      throw new AnchorPolicyError(
+        `anchor publisher class ${this.#options.anchorPublisher.anchorClass} does not match RunConfig.anchorClass ${config.anchorClass}`,
+      );
+    }
   }
 
   #validatePreRegistration(
@@ -3842,6 +3847,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         anchor === undefined ||
         anchor.status !== 'confirmed' ||
         anchor.blockNumber === null ||
+        anchor.anchorClass !== config.anchorClass ||
         anchor.network !== config.anchorNetwork ||
         anchor.chainId !== expectedChainId ||
         anchor.inputData.toLowerCase() !== expectedInput

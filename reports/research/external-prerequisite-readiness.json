@@ -4,15 +4,18 @@
   "researchFinding": false,
   "capturedAt": "2026-09-12",
   "decision": "blocked",
-  "satisfiedCount": 0,
-  "requiredCount": 6,
+  "satisfiedCount": 1,
+  "requiredCount": 4,
   "items": [
     {
       "id": "O01",
       "blockingFinding": "B01",
-      "status": "missing",
-      "satisfied": false,
-      "receipt": null,
+      "status": "verified",
+      "satisfied": true,
+      "receipt": {
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
+      },
       "requiredEvidence": [
         "dated authentic governance decision identifier",
         "approved synthetic-data and human-review scope",
@@ -21,42 +24,45 @@
         "human-coding review determination",
         "approval authenticity verification"
       ],
-      "nextAction": "An authorized governance role records and verifies the scoped decision."
+      "nextAction": "Re-open this decision prospectively if the data, human-review, retention, or funding boundary changes."
     },
     {
       "id": "O02",
       "blockingFinding": "B02",
-      "status": "observed-unsatisfied",
+      "status": "not-applicable",
       "satisfied": false,
       "receipt": {
-        "path": "reports/research/fort-runtime-qualification-receipt.json",
-        "sha256": "c023f6e94fb18285c9c66e0fd4d979ff27e265730016969fcfbbaddb17fb3a99"
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
       },
       "requiredEvidence": [
-        "Fort-mediated files-mode provisioning receipt",
-        "Base Sepolia chain ID 84532",
-        "public low-balance signer address",
-        "independent RPC provider reference without credentials",
-        "privacy-minimized transaction hash and confirmed block",
-        "independent receipt verification timestamp"
+        "approved simulation-only funding profile",
+        "external spend authorization fixed at zero",
+        "public-chain transactions explicitly prohibited",
+        "deterministic in-memory transport selection",
+        "simulated values labeled non-monetary",
+        "prospective amendment required for public-chain use"
       ],
-      "nextAction": "Fund the recorded Base Sepolia address through an authorized faucet credential, submit one privacy-minimized transaction, and independently verify its confirmed receipt."
+      "nextAction": "No funding action is permitted or required; execute the deterministic simulated anchor path and preserve its explicit simulated classification."
     },
     {
       "id": "O03",
       "blockingFinding": "B03",
-      "status": "missing",
+      "status": "not-applicable",
       "satisfied": false,
-      "receipt": null,
+      "receipt": {
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
+      },
       "requiredEvidence": [
-        "explicit bounded mainnet spending decision",
-        "approved maximum balance and fee envelope",
-        "custody and recovery roles",
-        "Base mainnet chain ID 8453",
-        "public signer address without private material",
-        "finality and incident-stop policy"
+        "approved simulation-only funding profile",
+        "real currency authorization explicitly false",
+        "mainnet transaction authorization explicitly false",
+        "external spend fixed at zero",
+        "optional mainnet capability kept outside study claims",
+        "prospective amendment required before activation"
       ],
-      "nextAction": "An authorized financial and custody role either approves the bounded policy or records that mainnet-dependent work remains prohibited."
+      "nextAction": "Keep mainnet disabled; a future request would require a new prospective governance, custody, and spending amendment."
     },
     {
       "id": "O04",
@@ -104,10 +110,10 @@
         "external registration identifier and timestamp",
         "external registration URL",
         "identical canonical pre-registration hash",
-        "confirmed pre-run public anchor with matching payload",
-        "independent chain receipt verification before outcome collection"
+        "confirmed pre-run simulated commitment with matching payload",
+        "independent offline receipt verification before outcome collection"
       ],
-      "nextAction": "After D08 compiles an exact packet, an authorized role registers and anchors that unchanged packet before any eligible collection."
+      "nextAction": "After D08 compiles an exact packet, register it externally and commit the unchanged hash through the deterministic simulated transport before eligible collection."
     }
   ],
   "privacyBoundary": [
@@ -115,6 +121,6 @@
     "Tracked artifacts use role labels rather than personal identity.",
     "Credentials are materialized only through si fort from encrypted project environment material."
   ],
-  "activationRule": "No experiment may use an item merely because a receipt path exists. The item must be authentically completed, independently checked where specified, changed to verified, and accepted by the campaign and experiment-specific preflight gates.",
-  "boundary": "This ledger is a closure checklist, not an approval, credential, registration, public-chain receipt, independent review, or authorization to collect outcomes."
+  "activationRule": "No experiment may use an applicable item merely because a receipt path exists. It must be authentically completed, independently checked where specified, changed to verified, and accepted by campaign and experiment-specific preflight gates; not-applicable items are excluded from the denominator only under the approved simulation-only policy.",
+  "boundary": "This ledger records one scoped governance approval and two public-chain prerequisites made inapplicable by policy. It is not institutional approval, external registration, independent review, or authorization to invent outcomes."
 }

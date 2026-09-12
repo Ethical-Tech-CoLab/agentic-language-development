@@ -258,6 +258,12 @@ export async function verifyAnchors(
       );
     }
     if (config !== undefined) {
+      if (receipt.anchorClass !== config.anchorClass) {
+        accumulator.failStructural(
+          'anchor-class-mismatch',
+          `${at}: run-config.json declares anchorClass ${config.anchorClass}, receipt claims ${receipt.anchorClass}`,
+        );
+      }
       // LEDGER §17 "anchor transaction on the wrong chain": the run's
       // authenticated configuration, not the receipt itself, says which
       // network the run anchors to.

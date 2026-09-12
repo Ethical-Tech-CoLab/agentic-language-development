@@ -446,6 +446,22 @@ describe('anchor mutations (LEDGER §17)', () => {
     );
   });
 
+  it('rejects a simulated receipt relabeled as public-chain evidence', async () => {
+    await withMutatedBundle(
+      async (dir) => {
+        await mutateReceipts(dir, (receipts) => {
+          const receipt = receipts[0];
+          if (receipt !== undefined) receipt['anchorClass'] = 'public-chain';
+        });
+      },
+      async (dir) => {
+        const report = await verifyBundle(dir, OPTIONS);
+        expect(report.exitCode).toBe(1);
+        expect(gapsMatching(report.gaps, 'anchor-class-mismatch').length).toBe(1);
+      },
+    );
+  });
+
   it('rejects a failed anchor transaction', async () => {
     await withMutatedBundle(
       async (dir) => {

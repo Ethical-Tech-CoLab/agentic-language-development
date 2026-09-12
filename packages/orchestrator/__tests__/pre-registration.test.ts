@@ -38,6 +38,7 @@ describe('confirmatory pre-registration binding (ALD-071)', () => {
       externalRegistrationId: 'osf:ald03-v1',
       registeredAt: '2026-09-01T00:00:00.000Z',
       preRunAnchor: {
+        anchorClass: 'simulated',
         network: 'base-sepolia',
         chainId: 84532,
         transactionHash: `0x${'2'.repeat(64)}`,

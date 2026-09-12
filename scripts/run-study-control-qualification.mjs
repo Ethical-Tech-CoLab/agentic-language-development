@@ -151,6 +151,7 @@ function openRuntime(name, adapterFactoryFor) {
   };
   const publisher = new BaseAnchorPublisher({
     transport,
+    anchorClass: 'simulated',
     evidence,
     clock: { now: () => new Date().toISOString() },
     anchorAddress: `0x${'42'.repeat(20)}`,

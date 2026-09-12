@@ -4,7 +4,7 @@
   "researchFinding": false,
   "capturedAt": "2026-09-11",
   "compilerVersion": 1,
-  "sourceCardsSha256": "acc4a6f5903220b73f98775da7b4f33ef19e6620fcb87e0a256b37ec42cc9aae",
+  "sourceCardsSha256": "8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d",
   "requiredBindings": [
     "protocolCard",
     "runConfigurations",
@@ -33,7 +33,7 @@
       "resolvedBindings": [
         {
           "key": "protocolCard",
-          "sha256": "sha256:7a3cfa721707f6c817f3214100b8a7342f32af11414bccef438979634d4ff8e0",
+          "sha256": "sha256:c88631610ba327368574819ff10d0e4ea2f437e1c14220ad32b6b4015f041a32",
           "source": "protocols/research-protocol-cards.v1.json"
         }
       ],
@@ -76,7 +76,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -132,7 +132,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -188,7 +188,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -244,7 +244,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -300,7 +300,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -356,7 +356,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -412,7 +412,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -468,7 +468,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -524,7 +524,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -580,7 +580,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -636,7 +636,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -692,7 +692,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -748,7 +748,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -804,7 +804,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -860,7 +860,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -916,7 +916,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -972,7 +972,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -1028,7 +1028,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -1084,7 +1084,7 @@
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific authorized public-chain execution and verification policy is bound."
+          "reason": "No experiment-specific simulated commitment and verification policy is bound."
         }
       ],
       "compileAttempt": "blocked-before-compiler",
@@ -1094,8 +1094,8 @@
   "externalStepsNotRepresentedAsBindings": [
     "authentic governance approval",
     "external registration receipt for the compiled packet hash",
-    "independently verified matching pre-run public anchor",
+    "independently verified matching pre-run simulated commitment",
     "independent methods review"
   ],
-  "boundary": "This inventory is deliberately incomplete. It is not a registration, an anchor, governance approval, or permission to collect outcomes."
+  "boundary": "This inventory is deliberately incomplete. It is not a registration, a completed simulated commitment, governance approval, or permission to collect outcomes."
 }

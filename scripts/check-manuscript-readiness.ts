@@ -60,14 +60,14 @@ if (experimentRows.length !== 19 || campaign.experiments.length !== 19) {
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');
 }
-if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 14) {
+if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 11) {
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');
 if (
   external.decision !== 'blocked' ||
-  external.satisfiedCount !== 0 ||
-  external.requiredCount !== 6 ||
+  external.satisfiedCount !== 1 ||
+  external.requiredCount !== 4 ||
   upstream.decision !== 'not-demonstrated'
 ) {
   throw new Error('external prerequisite or upstream-enforcement status changed');
@@ -76,7 +76,7 @@ if (registration.totals['compiledPackets'] !== 0 || registration.totals['unresol
   throw new Error('registration readiness counts changed');
 }
 if (claims.totals['researchIncluded'] !== 0 || claims.totals['confirmedPublicChainAnchors'] !== 0) {
-  throw new Error('manuscript cannot become results-ready without eligible data and public anchors');
+  throw new Error('pre-results manuscript status contradicts the eligible-data or public-chain inventory');
 }
 if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(/\r\n?/gu, '\n'))) {
   throw new Error('rendered research book is missing pages or does not bind the current manuscript');
@@ -123,7 +123,7 @@ const result = {
     allDefinedReferencesCited: true,
     requiredIndependentHumanRecheck: true,
   },
-  boundary: 'This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, registration, governance, public anchors, human review, or venue acceptance.'
+  boundary: 'This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, external registration, prospective simulated commitments, human review, or venue acceptance.'
 };
 const rendered = `${JSON.stringify(result, null, 2)}\n`;
 if (process.argv.includes('--write')) {

@@ -88,6 +88,7 @@ export function runConfig(overrides: Partial<RunConfig> = {}): RunConfig {
     evaluationSeeds: 4,
     checkpointEventInterval: 25,
     checkpointTimeIntervalMs: 60_000,
+    anchorClass: 'simulated',
     anchorNetwork: 'base-sepolia',
     finalityPolicy: '1-confirmation',
     prototypeRetentionDays: 30,

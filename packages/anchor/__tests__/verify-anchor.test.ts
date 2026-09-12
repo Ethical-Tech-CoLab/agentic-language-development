@@ -37,6 +37,7 @@ async function anchored(): Promise<Anchored> {
   const transport = new FakeChainTransport();
   const publisher = new BaseAnchorPublisher({
     transport,
+    anchorClass: 'simulated',
     evidence: ctx.writer,
     clock: ctx.clock,
     anchorAddress: ANCHOR_ADDRESS,
@@ -193,6 +194,7 @@ describe('verifyAnchorReceipt', () => {
     const transport = new FakeChainTransport();
     const publisher = new BaseAnchorPublisher({
       transport,
+      anchorClass: 'simulated',
       evidence: ctx.writer,
       clock: ctx.clock,
       anchorAddress: ANCHOR_ADDRESS,
