@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospectively-registered-failed-qualification-attempt",
+  "researchFinding": false,
+  "experimentId": "E00",
+  "capturedAt": "2026-09-12",
+  "registrationPacket": "protocols/e00-registration.v2.json",
+  "registrationHash": "sha256:92ba98556ea7c166017457b42f41cde78da00b7fe9e654698434c53305c2ed78",
+  "registrationBinding": "protocols/e00-registration-binding.v1.json",
+  "executionCommit": "6ac2b199ba5f0dcec1a7a78229f3405ead52956c",
+  "attemptedSlots": [1],
+  "completedSlots": 0,
+  "unattemptedSlots": [2, 3, 4, 5],
+  "decision": "failed-closed",
+  "completedBeforeFailure": {
+    "unchangedBundleAcceptedByBoth": true,
+    "mutationsRejectedByBoth": [
+      "event-content",
+      "deleted-middle-event",
+      "inserted-event",
+      "reordered-events",
+      "foreign-writer-signature"
+    ]
+  },
+  "failure": {
+    "case": "modified-merkle-proof",
+    "expectedPass": false,
+    "typescriptVerifierPass": false,
+    "rustAuditorPass": true,
+    "typescriptGapCount": 2,
+    "rustIssueCount": 0,
+    "typescriptPrimaryGap": "inclusion-proof-invalid",
+    "cause": "The independent Rust auditor did not inspect exported inclusion-proof files, so the registered dual-verifier mutation criterion was not met."
+  },
+  "disposition": "Packet v2 and slot 1 cannot be promoted or rerun into a success. Repair the independent auditor, create a prospective packet with a new seed domain, and preserve this attempt.",
+  "claimBoundary": "This is a failed E00 software-qualification attempt and verifier-coverage finding. It is not an agent-language outcome, a successful qualification, a public-chain result, or an independent replication."
+}

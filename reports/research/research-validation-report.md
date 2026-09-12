@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.86 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.87 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -40,7 +40,8 @@ Report status: in progress
   control replay, and 11 independent Rust bundle audits on one immutable commit. A
   nested document-renderer build stage retains two known high-severity dev-toolchain
   advisories, so no hardened supply-chain claim is made.
-- The bounded source audit and novelty challenge are complete, and all 19 experiments
+- The bounded source audit and novelty challenge are complete; E00 v2 failed closed
+  on independent inclusion-proof coverage, and the other 18 experiments
   now have frozen question/estimand/outcome-class cards. H2 tests a causal receiver
   effect; H4 separately tests held-out ledger prediction beyond non-ledger baselines.
 - The numeric referential design now has an executable 12-type train/validation and
@@ -92,7 +93,8 @@ Report status: in progress
   actual signed streams, and 20,650,214 verifier-input bytes. Both implementations
   account for 12/12 prior mutation challenges; public-anchor cost remains unmeasured.
 - This does not answer the research questions. The experiment notebook still marks
-  all 19 experiments `Not started`; the only retained behavioral corpus contains
+  E00 records one failed registered software-qualification attempt and the other 18
+  experiments remain `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
 - The current host can support software validation and bounded CPU pilots and now
@@ -790,6 +792,7 @@ claim map.
 The current [critical review](research-critical-review.md) and machine-readable
 [manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
 eight-perspective internal pass. They correct cross-document status and rendering
-defects but return `needs-revision`: 19 experiments remain unstarted, all 115 local
+defects but return `needs-revision`: E00 has one failed qualification attempt, 18
+experiments remain unstarted, all 115 local
 bundles remain research-excluded, 180 registration bindings remain unresolved, and
 independent review is absent.

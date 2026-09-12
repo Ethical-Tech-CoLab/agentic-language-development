@@ -54,7 +54,7 @@ classification of historical qualification evidence.
 | Reinforcement and reward-free mechanisms must be separated | `ae23c89` amendment | E12/E21 and learner contracts | Reference adapters exist; matched recurrent scientific comparison remains open |
 | Hash-chained, signed, checkpointed, independently verifiable evidence | Ledger design, `490ef05` | Specification, evidence bundle format, verifier, anchor package | Local integrity core implemented; fresh mutation-matrix qualification and real chain evidence remain open |
 | Anchoring is evidence binding, not semantic truth | Ledger design, `490ef05` | Specification claim boundaries and preflight | Preserved; historical runs are unanchored and cannot become confirmatory retrospectively |
-| Experiments have ordered prerequisites and explicit status | Experiment notebook, `490ef05` | Backlog gates and registration compiler | All 19 experiments remain `Not started` |
+| Experiments have ordered prerequisites and explicit status | Experiment notebook, `490ef05` | Backlog gates and registration compiler | E00 v2 failed closed; 18 experiments remain `Not started` |
 | Human interpretation is delayed external analysis | Concept and notebook | Audit-ledger implementation and manuscript | Implemented as a separate stream; no completed human study evidence |
 | Learned encodings are not production cryptography | Concept and ledger design | Cryptographic separation policy and E40 boundary lint | Enforced in software; E40 and external cryptographic review are open |
 | Failed, invalid, aborted, and null runs remain accounted for | Ledger design and notebook | Lifecycle, verifier, reports, and analysis plan | Implemented in schemas and qualification artifacts; confirmatory run index does not yet exist |

@@ -34,7 +34,11 @@ a completed commitment, public anchoring, or independent review.
 E00 packet v1 was committed without outcomes, then superseded prospectively because
 its environment manifest included mutable package metadata and would have forced the
 execution commit to contradict the registered environment. Packet v2 removes that
-cycle, records the v1 hash and reason, and is the only eligible E00 packet.
+cycle and records the v1 hash and reason. Packet v2 was committed and simulation-
+committed, but its first slot failed closed when the Rust auditor accepted a modified
+inclusion proof. Packet v3 binds the repaired Rust and TypeScript source hashes, a
+fresh E00-only seed domain, and both prior dispositions. It requires a new prospective
+commitment before execution.
 
 ## Current inventory
 
@@ -47,7 +51,7 @@ Therefore:
 - compiled canonical packets: 1/19;
 - pre-registration hashes emitted by this inventory: 1; and
 - immutable repository registration and matching simulated pre-run commitments:
-  complete for E00 packet v2; zero real funds or public RPC calls used.
+  v2 is complete but failed; v3 awaits its packet commit and matching commitment.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

@@ -57,7 +57,7 @@ to relabel any existing fixture as a pilot.
 
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
-| E00 | Yes | no remaining pre-execution blocker; execute only after the packet commit is immutable |
+| E00 | No | v2 failed on independent proof coverage; repaired v3 awaits its prospective packet commit and simulated commitment |
 | E01/E02 | No | E00 plus topology/packet-specific leakage evidence |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |

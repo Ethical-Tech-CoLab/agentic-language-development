@@ -184,7 +184,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
-| E00 | Ledger integrity and Base anchoring | None | Not started | — |
+| E00 | Ledger integrity and simulated commitment | None | Failed qualification; v3 pending | Rust proof-coverage gap found |
 | E01 | Channel isolation and side-channel red team | E00 | Not started | — |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** Not started
+**Status:** Registered qualification attempt v2 failed closed; v3 amendment pending
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -253,8 +253,8 @@ pre-registered mutation of a committed ledger or transcript.
 
 | Metric | Planned | Observed |
 |---|---:|---:|
-| Valid bundle accepted | 100% | `TBD` |
-| Mutation cases detected | 100% | `TBD` |
+| Valid bundle accepted | 100% | 1/1 attempted unchanged bundle accepted by both verifiers before fail-closed stop |
+| Mutation cases detected | 100% | 5/6 attempted cases rejected by both; modified inclusion proof rejected by TypeScript but accepted by Rust |
 | Anchor receipts verified | 100% | `TBD` |
 | Private content found on-chain | 0 | `TBD` |
 
@@ -263,7 +263,11 @@ pre-registered mutation of a committed ledger or transcript.
 - [ ] Base anchor verified
 - [ ] Result committed
 
-**Result summary:** `Not run`
+**Result summary:** v2 slot 1 stopped at the first dual-verifier disagreement. Slots
+2-5 were not attempted and slot 1 will not be rerun into success. The Rust auditor
+did not inspect inclusion-proof files; the failed receipt is retained at
+`reports/research/e00-integrity-qualification-attempt-1.json`. V3 binds the repaired
+auditor and a fresh seed domain before any further attempt.
 
 ---
 

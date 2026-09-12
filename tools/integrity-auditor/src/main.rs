@@ -185,6 +185,44 @@ fn merkle_root(leaves: &[String]) -> Result<String, String> {
     )
 }
 
+fn verify_inclusion(
+    leaf_hash: &str,
+    leaf_index: u64,
+    tree_size: u64,
+    path: &[Value],
+    root: &str,
+) -> Result<bool, String> {
+    if leaf_index >= tree_size || tree_size == 0 {
+        return Ok(false);
+    }
+    let mut fn_index = leaf_index;
+    let mut sn = tree_size - 1;
+    let mut computed = leaf_hash.to_string();
+    for sibling in path {
+        if sn == 0 {
+            return Ok(false);
+        }
+        let sibling = sibling
+            .as_str()
+            .ok_or_else(|| "inclusion sibling is not a hash string".to_string())?;
+        decode_hash(sibling)?;
+        if fn_index & 1 == 1 || fn_index == sn {
+            computed = merkle_node(sibling, &computed)?;
+            if fn_index & 1 == 0 {
+                while fn_index & 1 == 0 && fn_index != 0 {
+                    fn_index >>= 1;
+                    sn >>= 1;
+                }
+            }
+        } else {
+            computed = merkle_node(&computed, sibling)?;
+        }
+        fn_index >>= 1;
+        sn >>= 1;
+    }
+    Ok(sn == 0 && computed == root)
+}
+
 fn string_field<'a>(value: &'a Value, field: &str) -> Result<&'a str, String> {
     value
         .get(field)
@@ -619,6 +657,91 @@ impl Auditor {
         }
     }
 
+    fn verify_inclusion_proofs(&mut self) {
+        let directory = self.root.join("proofs/inclusion");
+        if !directory.exists() {
+            return;
+        }
+        let mut paths = match fs::read_dir(&directory) {
+            Ok(entries) => entries
+                .filter_map(Result::ok)
+                .map(|entry| entry.path())
+                .filter(|path| {
+                    path.extension()
+                        .is_some_and(|extension| extension == "json")
+                })
+                .collect::<Vec<_>>(),
+            Err(error) => {
+                self.issue("proofs/inclusion", error.to_string());
+                return;
+            }
+        };
+        paths.sort();
+        for path in paths {
+            let file = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("inclusion-proof");
+            let location = format!("proofs/inclusion/{file}");
+            let proof = match canonical_file(&path) {
+                Ok(value) => value,
+                Err(error) => {
+                    self.issue(&location, error);
+                    continue;
+                }
+            };
+            let checked = (|| {
+                let stream = string_field(&proof, "stream")?;
+                let tree = string_field(&proof, "treeName")?;
+                let checkpoint_sequence = u64_field(&proof, "checkpointSequence")?;
+                let tree_size = u64_field(&proof, "treeSize")?;
+                let leaf_index = u64_field(&proof, "leafIndex")?;
+                let sequence = u64_field(&proof, "sequence")?;
+                let entry_hash = string_field(&proof, "entryHash")?;
+                let leaf_hash = string_field(&proof, "leafHash")?;
+                let root = string_field(&proof, "root")?;
+                let path = proof
+                    .get("path")
+                    .and_then(Value::as_array)
+                    .ok_or_else(|| "missing inclusion path".to_string())?;
+                if sequence != leaf_index + 1 {
+                    return Err("sequence and leafIndex disagree".to_string());
+                }
+                let event_index = usize::try_from(leaf_index)
+                    .map_err(|_| "leafIndex exceeds host range".to_string())?;
+                let event = self
+                    .streams
+                    .get(stream)
+                    .and_then(|events| events.get(event_index))
+                    .ok_or_else(|| "proof references an unknown stream event".to_string())?;
+                if event.get("entryHash") != Some(&json!(entry_hash)) {
+                    return Err("entryHash differs from stream event".to_string());
+                }
+                if merkle_leaf(sequence, entry_hash)? != leaf_hash {
+                    return Err("leafHash does not reproduce".to_string());
+                }
+                let checkpoint = self
+                    .checkpoints
+                    .get(&checkpoint_sequence)
+                    .ok_or_else(|| "proof references an unknown checkpoint".to_string())?;
+                let reference = Self::reference_for(checkpoint, tree)
+                    .ok_or_else(|| "proof references an unknown checkpoint tree".to_string())?;
+                if reference.get("treeSize") != Some(&json!(tree_size))
+                    || reference.get("merkleRoot") != Some(&json!(root))
+                {
+                    return Err("proof root or size differs from checkpoint".to_string());
+                }
+                if !verify_inclusion(leaf_hash, leaf_index, tree_size, path, root)? {
+                    return Err("inclusion path does not reproduce root".to_string());
+                }
+                Ok::<(), String>(())
+            })();
+            if let Err(error) = checked {
+                self.issue(&location, error);
+            }
+        }
+    }
+
     fn verify_anchors(&mut self) -> bool {
         let path = self.root.join("anchors/base-receipts.json");
         let receipts = match canonical_file(&path) {
@@ -795,6 +918,7 @@ impl Auditor {
                 }
             }
             self.verify_checkpoints(manifest);
+            self.verify_inclusion_proofs();
         }
         let anchored = self.verify_anchors();
         self.verify_attachments();
@@ -874,5 +998,19 @@ mod tests {
             normalized_initial_policy_refs(&json!({ "babyA": {}, "babyB": {} })).unwrap(),
             None
         );
+    }
+
+    #[test]
+    fn independent_inclusion_verifier_rejects_a_mutated_path() {
+        let leaves = [
+            merkle_leaf(1, &encoded_hash(sha256(&[b"event-1"]))).unwrap(),
+            merkle_leaf(2, &encoded_hash(sha256(&[b"event-2"]))).unwrap(),
+            merkle_leaf(3, &encoded_hash(sha256(&[b"event-3"]))).unwrap(),
+        ];
+        let root = merkle_root(&leaves).unwrap();
+        let valid_path = vec![json!(leaves[1]), json!(leaves[2])];
+        assert!(verify_inclusion(&leaves[0], 0, 3, &valid_path, &root).unwrap());
+        let mutated_path = vec![json!(encoded_hash(sha256(&[b"mutated"]))), json!(leaves[2])];
+        assert!(!verify_inclusion(&leaves[0], 0, 3, &mutated_path, &root).unwrap());
     }
 }

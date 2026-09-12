@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
 
-const outputPath = 'protocols/e00-registration.v2.json';
-const protocolBaseCommit = '59cd60d26937e1b595d645c95c8155758b091312';
+const outputPath = 'protocols/e00-registration.v3.json';
+const protocolBaseCommit = '6ac2b199ba5f0dcec1a7a78229f3405ead52956c';
 const read = (path: string): Buffer => readFileSync(path);
 const sha256 = (value: Buffer | string): string =>
   createHash('sha256').update(value).digest('hex');
@@ -34,7 +34,7 @@ if (card === undefined || allocationRow === undefined) {
   throw new Error('E00 protocol card or allocation is missing');
 }
 
-const seedRoot = allocation.seedDerivation.root;
+const seedRoot = 'ald-seed-allocation-e00-v3';
 const primary = Array.from({ length: 5 }, (_, index) => {
   const slot = index + 1;
   return {
@@ -74,9 +74,10 @@ const bindings = {
   runConfigurations: [{
     protocolBaseCommit,
     supersededRegistration: {
-      path: 'protocols/e00-registration.v1.json',
-      preRegistrationHash: 'sha256:be3c156fe34abb19b9adc71f7cccfc8237d813b37cd09033dffceb80c391bc36',
-      reason: 'The v1 environment manifest bound mutable package metadata, creating a registration/execution commit cycle; no outcomes were collected.',
+      path: 'protocols/e00-registration.v2.json',
+      preRegistrationHash: 'sha256:92ba98556ea7c166017457b42f41cde78da00b7fe9e654698434c53305c2ed78',
+      failedAttempt: 'reports/research/e00-integrity-qualification-attempt-1.json',
+      reason: 'Slot 1 failed because the independent Rust auditor did not verify inclusion-proof files; slots 2-5 were not attempted and no v2 slot may be rerun into success.',
     },
     experimentId: 'E00',
     stage: 'software-qualification',
@@ -93,8 +94,16 @@ const bindings = {
     permittedPrivateContentInCommitment: 0,
   },
   analysisVersions: [
-    'typescript-production-verifier@integrity-challenge-v2',
-    'rust-independent-integrity-auditor@0.1.0',
+    {
+      implementation: 'typescript-production-verifier@integrity-challenge-v2',
+      path: 'scripts/run-integrity-challenge.ts',
+      sha256: sha256(read('scripts/run-integrity-challenge.ts')),
+    },
+    {
+      implementation: 'rust-independent-integrity-auditor@0.1.0',
+      path: 'tools/integrity-auditor/src/main.rs',
+      sha256: sha256(read('tools/integrity-auditor/src/main.rs')),
+    },
   ],
   modelAssets: [{
     role: 'both-agents',
@@ -103,7 +112,11 @@ const bindings = {
     contractSha256: sha256(read('contracts/learner-contract.no-learning.v1.md')),
   }],
   selectedSeedPrefix: {
-    derivation: allocation.seedDerivation,
+    derivation: {
+      ...allocation.seedDerivation,
+      root: seedRoot,
+      amendment: 'Fresh E00-only root after the registered v2 verifier-coverage failure.',
+    },
     stage: 'software-qualification',
     condition: 'integrity-suite',
     primary,

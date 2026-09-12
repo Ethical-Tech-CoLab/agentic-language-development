@@ -40,7 +40,9 @@ const [body, references = ''] = manuscript.split('\n## References\n');
 const definedReferences = [...references.matchAll(/^\[(\d+)\]/gmu)].map((match) => Number(match[1]));
 const citedReferences = [...body.matchAll(/\[(\d+)\]/gu)].map((match) => Number(match[1]));
 const uniqueCitations = [...new Set(citedReferences)].sort((left, right) => left - right);
-const experimentRows = [...notebook.matchAll(/^\| (E\d{2}) \|.*\| Not started \|/gmu)].map((match) => match[1]);
+const experimentIndex = notebook.split('## 8. Experiment Index')[1]?.split('\n---\n')[0] ?? '';
+const experimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|[^\n]+\|$/gmu)].map((match) => match[1]);
+const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|.*\| Not started \|/gmu)].map((match) => match[1]);
 const exact = (needle: string): void => {
   if (!compactManuscript.includes(needle)) throw new Error(`manuscript lacks exact audited claim: ${needle}`);
 };
@@ -54,7 +56,7 @@ if (uniqueCitations.join('|') !== definedReferences.join('|')) {
 if (sources.existingReferences.length !== 50 || sources.updatedSearch.length !== 5) {
   throw new Error('source register counts differ from the manuscript audit scope');
 }
-if (experimentRows.length !== 19 || campaign.experiments.length !== 19) {
+if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 18 || campaign.experiments.length !== 19) {
   throw new Error('experiment inventory must contain 19 not-started experiments');
 }
 if (notebook.includes('Ready for pre-registration')) {
@@ -105,7 +107,7 @@ const result = {
   },
   evidenceState: {
     experiments: experimentRows.length,
-    notStartedExperiments: experimentRows.length,
+    notStartedExperiments: notStartedExperimentRows.length,
     researchIncludedBundles: claims.totals['researchIncluded'],
     confirmedPublicChainAnchors: claims.totals['confirmedPublicChainAnchors'],
     compiledRegistrationPackets: registration.totals['compiledPackets'],
@@ -132,4 +134,4 @@ if (process.argv.includes('--write')) {
 } else if (read(outputPath) !== rendered) {
   throw new Error('manuscript readiness audit is stale; run pnpm run build:manuscript-readiness');
 }
-console.log(`manuscript readiness valid: ${String(experimentRows.length)} experiments not started, ${String(definedReferences.length)} references resolved, decision=${result.decision}`);
+console.log(`manuscript readiness valid: ${String(experimentRows.length)} experiments tracked, ${String(notStartedExperimentRows.length)} not started, ${String(definedReferences.length)} references resolved, decision=${result.decision}`);
