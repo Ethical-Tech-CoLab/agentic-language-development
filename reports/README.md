@@ -23,11 +23,11 @@ sample sizes, resources, final detector/comparator qualifications, and independe
 review remain absent.
 The external-prerequisite ledger converts O01–O06 into exact, privacy-minimized
 closure checks. Its read-only upstream observation records that required-check
-enforcement is not demonstrated; the ledger remains `blocked` with 0/6 satisfied and
-does not treat a receipt path as approval.
+enforcement is not demonstrated; the zero-spend profile ledger is ready at 1/1
+applicable item and does not treat a receipt path as external approval.
 The data/claim manifest inventories every locally captured export by content hash and
-claim boundary. Its live audit resolves 111 bundles while keeping all 111 excluded
-from empirical use and distinguishing 63 local fake-chain confirmations from zero
+claim boundary. Its live audit resolves 125 bundles while keeping all 125 excluded
+from empirical use and distinguishing 77 local fake-chain confirmations from zero
 confirmed public-chain anchors.
 The audit-cost/utility protocol and receipt compare a declared ordinary-log proxy,
 actual signed streams, integrity structures, policy state, whole-input hashing, and

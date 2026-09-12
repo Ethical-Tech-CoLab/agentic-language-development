@@ -1,0 +1,601 @@
+{
+  "schemaVersion": 2,
+  "classification": "prospectively-registered-software-qualification",
+  "researchFinding": false,
+  "experimentId": "E00",
+  "registrationHash": "sha256:d5510b336513275fce21de19053edc01a0207a36aa205009233b38b21d18b91b",
+  "registrationBinding": "protocols/e00-registration-binding.v4.json",
+  "executionCommit": "6a3faa8e85cb9f7a9fe7847445897c6e98ee56cb",
+  "fixture": {
+    "slots": 5,
+    "turnsPerSlot": 100,
+    "minimumBabyLedgerEventsPerSlot": 100,
+    "minimumCheckpointsPerSlot": 3
+  },
+  "implementations": [
+    "typescript-production-verifier",
+    "rust-independent-integrity-auditor"
+  ],
+  "slots": [
+    {
+      "slot": 1,
+      "scenarioSeed": "da59f2b97b908e89ec61078ed2f99d3bd533171a4e295a26dfc6979f63eef5a7",
+      "runId": "run-e00-qualified-01",
+      "eventCount": 402,
+      "checkpointCount": 4,
+      "babyLedgerEvents": {
+        "babyA": 100,
+        "babyB": 100
+      },
+      "anchored": true,
+      "commitmentPayloadsOnly32ByteHashes": true,
+      "wallMilliseconds": 2415.291248,
+      "cases": [
+        {
+          "case": "unchanged-export",
+          "expectedPass": true,
+          "verifierPass": true,
+          "auditorPass": true,
+          "verifierGapCount": 1,
+          "auditorIssueCount": 0
+        },
+        {
+          "case": "event-content",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "deleted-middle-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "inserted-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 7,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "reordered-events",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 10,
+          "auditorIssueCount": 12
+        },
+        {
+          "case": "foreign-writer-signature",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "modified-merkle-proof",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "wrong-chain",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 3,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "simulated-class-relabel",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "false-receipt-payload",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "unanchored-tail",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "inconsistent-checkpoint-prefix",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 8,
+          "auditorIssueCount": 5
+        }
+      ],
+      "allDispositionsMatched": true,
+      "retainedBundle": "evidence/qualification/e00-v5/run-e00-qualified-01"
+    },
+    {
+      "slot": 2,
+      "scenarioSeed": "b52a597c552b3c4b6f02b3e0a3af1f86b453b566523c22e5ecf377e29ef8891e",
+      "runId": "run-e00-qualified-02",
+      "eventCount": 402,
+      "checkpointCount": 4,
+      "babyLedgerEvents": {
+        "babyA": 100,
+        "babyB": 100
+      },
+      "anchored": true,
+      "commitmentPayloadsOnly32ByteHashes": true,
+      "wallMilliseconds": 2240.7539110000002,
+      "cases": [
+        {
+          "case": "unchanged-export",
+          "expectedPass": true,
+          "verifierPass": true,
+          "auditorPass": true,
+          "verifierGapCount": 1,
+          "auditorIssueCount": 0
+        },
+        {
+          "case": "event-content",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "deleted-middle-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "inserted-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 7,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "reordered-events",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 10,
+          "auditorIssueCount": 12
+        },
+        {
+          "case": "foreign-writer-signature",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "modified-merkle-proof",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "wrong-chain",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 3,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "simulated-class-relabel",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "false-receipt-payload",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "unanchored-tail",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "inconsistent-checkpoint-prefix",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 8,
+          "auditorIssueCount": 5
+        }
+      ],
+      "allDispositionsMatched": true,
+      "retainedBundle": "evidence/qualification/e00-v5/run-e00-qualified-02"
+    },
+    {
+      "slot": 3,
+      "scenarioSeed": "a83fe423e7148c7a5f5b8a66c02df0a2161868fc16d08dd9c69b7d8b86610e40",
+      "runId": "run-e00-qualified-03",
+      "eventCount": 402,
+      "checkpointCount": 4,
+      "babyLedgerEvents": {
+        "babyA": 100,
+        "babyB": 100
+      },
+      "anchored": true,
+      "commitmentPayloadsOnly32ByteHashes": true,
+      "wallMilliseconds": 2225.614523,
+      "cases": [
+        {
+          "case": "unchanged-export",
+          "expectedPass": true,
+          "verifierPass": true,
+          "auditorPass": true,
+          "verifierGapCount": 1,
+          "auditorIssueCount": 0
+        },
+        {
+          "case": "event-content",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "deleted-middle-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "inserted-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 7,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "reordered-events",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 10,
+          "auditorIssueCount": 12
+        },
+        {
+          "case": "foreign-writer-signature",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "modified-merkle-proof",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "wrong-chain",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 3,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "simulated-class-relabel",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "false-receipt-payload",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "unanchored-tail",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "inconsistent-checkpoint-prefix",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 8,
+          "auditorIssueCount": 5
+        }
+      ],
+      "allDispositionsMatched": true,
+      "retainedBundle": "evidence/qualification/e00-v5/run-e00-qualified-03"
+    },
+    {
+      "slot": 4,
+      "scenarioSeed": "191c60c0c5c39a027d1c30389cf4135296c73e31a50ef12aac0c635c3920433c",
+      "runId": "run-e00-qualified-04",
+      "eventCount": 402,
+      "checkpointCount": 4,
+      "babyLedgerEvents": {
+        "babyA": 100,
+        "babyB": 100
+      },
+      "anchored": true,
+      "commitmentPayloadsOnly32ByteHashes": true,
+      "wallMilliseconds": 2174.7436749999997,
+      "cases": [
+        {
+          "case": "unchanged-export",
+          "expectedPass": true,
+          "verifierPass": true,
+          "auditorPass": true,
+          "verifierGapCount": 1,
+          "auditorIssueCount": 0
+        },
+        {
+          "case": "event-content",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "deleted-middle-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "inserted-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 7,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "reordered-events",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 10,
+          "auditorIssueCount": 12
+        },
+        {
+          "case": "foreign-writer-signature",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "modified-merkle-proof",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "wrong-chain",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 3,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "simulated-class-relabel",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "false-receipt-payload",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "unanchored-tail",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "inconsistent-checkpoint-prefix",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 8,
+          "auditorIssueCount": 5
+        }
+      ],
+      "allDispositionsMatched": true,
+      "retainedBundle": "evidence/qualification/e00-v5/run-e00-qualified-04"
+    },
+    {
+      "slot": 5,
+      "scenarioSeed": "0e30c1439c607c75f871c454f0987e45e6f466db2b9914cc84eaf3ee8c387980",
+      "runId": "run-e00-qualified-05",
+      "eventCount": 402,
+      "checkpointCount": 4,
+      "babyLedgerEvents": {
+        "babyA": 100,
+        "babyB": 100
+      },
+      "anchored": true,
+      "commitmentPayloadsOnly32ByteHashes": true,
+      "wallMilliseconds": 2362.360503,
+      "cases": [
+        {
+          "case": "unchanged-export",
+          "expectedPass": true,
+          "verifierPass": true,
+          "auditorPass": true,
+          "verifierGapCount": 1,
+          "auditorIssueCount": 0
+        },
+        {
+          "case": "event-content",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "deleted-middle-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "inserted-event",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 7,
+          "auditorIssueCount": 60
+        },
+        {
+          "case": "reordered-events",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 10,
+          "auditorIssueCount": 12
+        },
+        {
+          "case": "foreign-writer-signature",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "modified-merkle-proof",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "wrong-chain",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 3,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "simulated-class-relabel",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "false-receipt-payload",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 9,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "unanchored-tail",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 2,
+          "auditorIssueCount": 1
+        },
+        {
+          "case": "inconsistent-checkpoint-prefix",
+          "expectedPass": false,
+          "verifierPass": false,
+          "auditorPass": false,
+          "verifierGapCount": 8,
+          "auditorIssueCount": 5
+        }
+      ],
+      "allDispositionsMatched": true,
+      "retainedBundle": "evidence/qualification/e00-v5/run-e00-qualified-05"
+    }
+  ],
+  "restoreExtensionQualification": {
+    "passed": true,
+    "testFiles": [
+      "packages/ops/__tests__/snapshot.test.ts",
+      "packages/evidence/__tests__/recovery.test.ts"
+    ],
+    "interpretation": "First-party recovery, prefix, corruption, and post-restore sequence-extension checks passed on the execution commit."
+  },
+  "allDispositionsMatched": true,
+  "claimBoundary": "E00 integrity qualification only; this is not an agent-language outcome, public-chain result, independent replication, or independent human review."
+}

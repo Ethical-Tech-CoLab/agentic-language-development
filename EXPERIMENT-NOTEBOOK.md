@@ -184,7 +184,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
-| E00 | Ledger integrity and simulated commitment | None | V5 committed; execution pending | V2/v4 failures preserved |
+| E00 | Ledger integrity and simulated commitment | None | Qualified (software) | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Not started | — |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** V5 repository-registered and simulation-committed; execution pending
+**Status:** Completed—v5 prospectively registered software qualification passed
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -217,29 +217,29 @@ pre-registered mutation of a committed ledger or transcript.
 
 ### Preparation
 
-- [ ] Implement local hash chains and Ed25519 signatures.
-- [ ] Implement ordered Merkle checkpoints.
-- [ ] Implement standalone verifier.
-- [ ] Bind `anchorClass: "simulated"` and configure the deterministic transport.
-- [ ] Pre-register checkpoint frequency and finality rule.
-- [ ] Seal protocol commit and configuration hashes.
+- [x] Implement local hash chains and Ed25519 signatures.
+- [x] Implement ordered Merkle checkpoints.
+- [x] Implement standalone verifier.
+- [x] Bind `anchorClass: "simulated"` and configure the deterministic transport.
+- [x] Pre-register checkpoint frequency and finality rule.
+- [x] Seal protocol commit and configuration hashes.
 
 ### Procedure
 
-- [ ] Create a synthetic run with at least 100 events in each Baby ledger.
-- [ ] Produce at least three checkpoints.
-- [ ] Commit each checkpoint through the deterministic simulation transport.
-- [ ] Verify the unchanged bundle through both independent verifier implementations.
-- [ ] Relabel a simulated receipt as public-chain evidence and verify rejection.
-- [ ] Modify one event payload and verify rejection.
-- [ ] Delete a middle event and verify rejection.
-- [ ] Insert an event and verify rejection.
-- [ ] Reorder two events and verify rejection.
-- [ ] Replace a signature and verify rejection.
-- [ ] Modify a Merkle proof and verify rejection.
-- [ ] Present a checkpoint from the wrong chain and verify rejection.
-- [ ] Add an unanchored tail and verify that it is reported.
-- [ ] Restore from checkpoint and append new events without reusing a sequence number.
+- [x] Create a synthetic run with at least 100 events in each Baby ledger.
+- [x] Produce at least three checkpoints.
+- [x] Commit each checkpoint through the deterministic simulation transport.
+- [x] Verify the unchanged bundle through both independent verifier implementations.
+- [x] Relabel a simulated receipt as public-chain evidence and verify rejection.
+- [x] Modify one event payload and verify rejection.
+- [x] Delete a middle event and verify rejection.
+- [x] Insert an event and verify rejection.
+- [x] Reorder two events and verify rejection.
+- [x] Replace a signature and verify rejection.
+- [x] Modify a Merkle proof and verify rejection.
+- [x] Present a checkpoint from the wrong chain and verify rejection.
+- [x] Add an unanchored tail and verify that it is reported.
+- [x] Restore from checkpoint and append new events without reusing a sequence number.
 
 ### Acceptance Criteria
 
@@ -253,15 +253,15 @@ pre-registered mutation of a committed ledger or transcript.
 
 | Metric | Planned | Observed |
 |---|---:|---:|
-| Valid bundle accepted | 100% | 6/6 across v2 and v4 accepted by both verifiers |
-| Mutation cases detected | 100% | 55/61 across v2 and v4 rejected by both; one v2 proof and five v4 receipt-class mutations exposed Rust coverage gaps |
-| Simulated anchor receipts verified | 100% | 5/5 v4 slots anchored with checkpoint-hash payloads |
-| Private content found in simulated commitments | 0 | 0/5 v4 slots had a non-hash commitment payload |
+| Valid bundle accepted | 100% | v5: 5/5 accepted by both verifiers |
+| Mutation cases detected | 100% | v5: 55/55 rejected by both verifiers |
+| Simulated anchor receipts verified | 100% | v5: 5/5 slots anchored with checkpoint-hash payloads |
+| Private content found in simulated commitments | 0 | v5: 0/5 slots had a non-hash commitment payload |
 
-- [ ] Integrity acceptance criteria met
-- [ ] Evidence review complete
-- [ ] Simulated commitment verified
-- [ ] Result committed
+- [x] Integrity acceptance criteria met
+- [x] Evidence review complete
+- [x] Simulated commitment verified
+- [x] Result committed
 
 **Result summary:** v2 slot 1 stopped at the first dual-verifier disagreement. Slots
 2-5 were not attempted and slot 1 will not be rerun into success. The Rust auditor
@@ -287,6 +287,16 @@ rerun into success. V5 binds the repaired anchor-class comparison and a fresh se
 domain before another attempt. Its immutable packet is registered at commit
 `8cef99cb07daf130c38f93968e5ba24845af49e3` and has a matching confirmed
 deterministic simulated commitment before execution.
+
+V5 executed once on exact clean commit
+`6a3faa8e85cb9f7a9fe7847445897c6e98ee56cb`. Both independent implementations
+accepted all five unchanged bundles and rejected all 55 registered mutation
+instances. Each slot contains 100 events in each Baby ledger and four checkpoints;
+all commitment payloads are 32-byte hashes. First-party recovery and post-restore
+extension tests passed. The receipt is
+`reports/research/e00-integrity-qualification-receipt.json`, and the five retained
+bundles are under `evidence/qualification/e00-v5/`. This qualifies E00 software only;
+it is not evidence for emergent communication or any other behavioral hypothesis.
 
 ---
 

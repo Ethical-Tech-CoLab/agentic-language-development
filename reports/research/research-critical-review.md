@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.92
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.93
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -27,18 +27,17 @@ received independent verification.
 | Numerical and status accuracy | 0 / 8 | Eight principal claim groups were reconciled to the acceptance, data/claim, registration, campaign, seed/resource, statistics, audit-cost, and causal-runtime artifacts after correcting stale E16 language. |
 | Within-chart agreement | N/A | The manuscript intentionally contains no empirical chart. Future result figures remain prohibited until eligible data exist. |
 | Complete source details | 0 / 50 | All 50 bibliography entries have a locator and recorded inspection depth. Only the priority subset was inspected in full text; that declared limitation prevents a stronger verification claim. |
-| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and causal-runtime receipt now agree that software is qualified but registration and experiments are not. |
-| Data-quality controls | 19 / 19 | Every planned experiment lacks an eligible input dataset. The manuscript correctly excludes all 111 local bundles, but none of the 19 result units can yet be validated. |
+| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and E00 receipt agree that E00 is software-qualified while the behavioral campaign remains unregistered and unexecuted. |
+| Data-quality controls | 18 / 18 | Every behavioral experiment lacks an eligible input dataset. E00 now has qualified software evidence but no behavioral estimand; none of the 18 agent-language result units can yet be validated. |
 | Conclusion support | 0 / 4 | The four current conclusions—pre-results status, substantial software qualification, zero eligible empirical bundles, and not-registration-ready disposition—match the retained evidence. No scientific hypothesis is presented as supported. |
 
 ## Prioritized problems and required fixes
 
-1. **P0 — The central research questions have no eligible observations.** All 19
-   E00 has two registered failed qualification attempts and one outcome-free
-   superseded amendment; 18 experiments remain
-   `Not started`; zero bundles are research-included, zero
-   three E00 prospective simulated commitments are preserved, and only the E00 qualification
-   packet compiles. **Fix (required):**
+1. **P0 — The central research questions have no eligible observations.** E00 v5
+   passed as software qualification after two preserved failures and one outcome-free
+   amendment, but the 18 behavioral experiments remain `Not started`; zero bundles
+   are research-included. Three E00 prospective simulated commitments are preserved,
+   and only the E00 qualification packet compiles. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
    any Results claim.

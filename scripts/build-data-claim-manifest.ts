@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 const outputPath = 'reports/research/data-claim-manifest.json';
@@ -24,6 +24,22 @@ function collection(path: string): { id: string; evidenceClass: string; verifica
       evidenceClass: 'historical-software-qualification',
       verificationBasis: 'historical verifier pass; current intervention-tree declaration is incompatible and the immutable export was not rewritten',
       supportingReceipt: 'reports/research/integrity-challenge-receipt.json',
+    };
+  }
+  if (path.startsWith('evidence/qualification/e00-v4/')) {
+    return {
+      id: 'e00-v4-failed-qualification',
+      evidenceClass: 'failed-or-superseded-diagnostic',
+      verificationBasis: 'registered five-slot failure retained without rerun',
+      supportingReceipt: 'reports/research/e00-integrity-qualification-attempt-2.json',
+    };
+  }
+  if (path.startsWith('evidence/qualification/e00-v5/')) {
+    return {
+      id: 'e00-v5-software-qualification',
+      evidenceClass: 'software-qualification',
+      verificationBasis: 'prospective repository registration, simulated pre-run commitment, and dual-verifier receipt',
+      supportingReceipt: 'reports/research/e00-integrity-qualification-receipt.json',
     };
   }
   const mappings: Array<[string, string, string]> = [
@@ -52,18 +68,28 @@ function summarizeBundle(manifestPath: string) {
   const bundleRoot = dirname(manifestPath);
   const manifestBytes = readFileSync(manifestPath);
   const manifest = JSON.parse(manifestBytes.toString('utf8')) as Record<string, unknown>;
+  const grouping = collection(manifestPath);
   const verificationPath = join(bundleRoot, 'verification-report.json');
-  const verificationBytes = readFileSync(verificationPath);
-  const verification = JSON.parse(verificationBytes.toString('utf8')) as {
+  const verificationBytes = existsSync(verificationPath) ? readFileSync(verificationPath) : null;
+  const verification = verificationBytes === null ? null : JSON.parse(verificationBytes.toString('utf8')) as {
     exitCode?: number;
     verifierVersion?: string;
     checks?: Record<string, boolean>;
   };
   const files = filesUnder(bundleRoot);
   const treeLines = files.map((path) => `${hash(readFileSync(path))}  ${relative(bundleRoot, path)}`);
-  const grouping = collection(manifestPath);
+  const receiptVerifierPass = verification === null && grouping.supportingReceipt !== null
+    ? (JSON.parse(readFileSync(grouping.supportingReceipt, 'utf8')) as {
+      slots?: Array<{ runId?: string; cases?: Array<{ case?: string; verifierPass?: boolean }> }>;
+    }).slots?.find((slot) => slot.runId === manifest['runId'])?.cases
+      ?.find((entry) => entry.case === 'unchanged-export')?.verifierPass
+    : undefined;
   const preRegistrationHash = manifest['preRegistrationHash'];
-  const recordedAnchorConfirmed = verification.checks?.['anchorTxConfirmed'] === true;
+  const anchorReceipts = JSON.parse(
+    readFileSync(join(bundleRoot, 'anchors/base-receipts.json'), 'utf8'),
+  ) as Array<{ status?: string }>;
+  const recordedAnchorConfirmed = verification?.checks?.['anchorTxConfirmed'] === true ||
+    anchorReceipts.some((receipt) => receipt.status === 'confirmed');
   return {
     collection: grouping.id,
     evidenceClass: grouping.evidenceClass,
@@ -75,9 +101,9 @@ function summarizeBundle(manifestPath: string) {
     preRegistrationHash: typeof preRegistrationHash === 'string' ? preRegistrationHash : null,
     bundlePath: bundleRoot,
     manifestSha256: hash(manifestBytes),
-    verificationReportSha256: hash(verificationBytes),
-    verifierVersion: verification.verifierVersion ?? null,
-    verifierExitCode: verification.exitCode ?? null,
+    verificationReportSha256: verificationBytes === null ? null : hash(verificationBytes),
+    verifierVersion: verification?.verifierVersion ?? (receiptVerifierPass === true ? 'integrity-challenge-v2' : null),
+    verifierExitCode: verification?.exitCode ?? (receiptVerifierPass === true ? 0 : null),
     recordedAnchorConfirmed,
     publicChainAnchorConfirmed: false,
     files: files.length,

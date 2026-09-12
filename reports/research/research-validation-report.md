@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.92 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.93 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -87,17 +87,18 @@ Report status: in progress
   branch protection. The exact v0.1.79 pull-request workflow is `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
-- The complete local data/claim snapshot resolves and hash-binds 115 exported bundles
-  in 17 collections. All are excluded from empirical estimates; 67 local fake-chain
+- The complete local data/claim snapshot resolves and hash-binds 125 exported bundles
+  in 19 collections. All are excluded from empirical estimates; 77 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
   actual signed streams, and 20,650,214 verifier-input bytes. Both implementations
   account for 12/12 prior mutation challenges; public-anchor cost remains unmeasured.
-- This does not answer the research questions. The experiment notebook records two
-  failed E00 registered software-qualification attempts, one outcome-free superseded
-  amendment, and the other 18
-  experiments remain `Not started`; the only retained behavioral corpus contains
+- E00 v5 is a successful prospectively registered software qualification: both
+  implementations accepted 5/5 unchanged bundles and rejected 55/55 registered
+  mutation instances. This does not answer the agent-language research questions.
+  The notebook preserves two failed E00 attempts and one outcome-free amendment;
+  the other 18 experiments remain `Not started`. The only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
 - The current host can support software validation and bounded CPU pilots and now
@@ -147,17 +148,17 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 115 bundles,
-17 collections, and 224,305,479 bundle bytes. It records content-tree, manifest, and
-verification-report hashes without copying raw events or private ledger content.
-Thirty-six bundles have tracked exact/current bounded software-qualification support,
-33 are historical qualification exports, and 42 are failed or superseded diagnostic
+exported bundle present in ignored local evidence storage at the cutoff: 125 bundles,
+19 collections, and 228,577,459 bundle bytes. It records content-tree, manifest, and
+available verification-report hashes without copying raw events or private ledger content.
+Forty-one bundles have tracked exact/current bounded software-qualification support,
+33 are historical qualification exports, and 51 are failed or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-All 115 have a recorded verifier exit code of zero. The 33 historical exports remain
+All 125 have a recorded verifier exit code of zero. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Sixty-three reports record anchor confirmation, but those historical
+verifier status. Seventy-seven bundle records show anchor confirmation, but those
 receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
 zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
 class relabeling so a simulated commitment cannot silently become a public-chain
@@ -795,8 +796,8 @@ claim map.
 The current [critical review](research-critical-review.md) and machine-readable
 [manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
 eight-perspective internal pass. They correct cross-document status and rendering
-defects but return `needs-revision`: E00 has two failed qualification attempts and
-one outcome-free superseded amendment, while 18
-experiments remain unstarted, all 115 local
+defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
+and one outcome-free superseded amendment, while 18 experiments remain unstarted,
+all 125 local
 bundles remain research-excluded, 180 registration bindings remain unresolved, and
 independent review is absent.
