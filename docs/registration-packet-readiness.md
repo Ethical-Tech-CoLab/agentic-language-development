@@ -1,6 +1,6 @@
 # Canonical Registration Packet Readiness
 
-Status: B11 in progress; zero experiment packets compile  
+Status: B11 in progress; E00 compiles and 18 experiment packets remain incomplete
 Evidence class: outcome-blind design inventory  
 Machine inventory: `reports/research/registration-packet-readiness.json`
 
@@ -33,26 +33,28 @@ a completed commitment, public anchoring, or independent review.
 
 ## Current inventory
 
-All 19 protocol cards resolve and receive stable card hashes. The remaining ten
-bindings per experiment are deliberately unresolved: 190 unresolved bindings in
-total. Therefore:
+All 19 protocol cards resolve and receive stable card hashes. E00 resolves all eleven
+bindings and reproduces its canonical hash. The remaining ten bindings for each of
+18 experiments are deliberately unresolved: 180 unresolved bindings in total.
+Therefore:
 
-- registration-ready experiments: 0/19;
-- compiled canonical packets: 0/19;
-- pre-registration hashes emitted by this inventory: 0; and
-- immutable repository registration and matching simulated pre-run commitments: 0.
+- registration-ready experiments: 1/19;
+- compiled canonical packets: 1/19;
+- pre-registration hashes emitted by this inventory: 1; and
+- immutable repository registration and matching simulated pre-run commitments:
+  pending the commit that freezes the E00 packet.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently
 treated as final exact values. In particular, N=100 is still a resource-planning
 value rather than a pilot-selected seed prefix.
 
-## External steps after compilation
+## Activation steps after compilation
 
-A complete packet must still receive authentic governance approval, external
-registration of the identical canonical hash, independent verification of the same
-pre-run simulated commitment, and independent methods review. These are recorded as external
-steps, not fields that local code can declare satisfied.
+A complete packet must be committed unchanged to Git, verified from that historical
+path, and bound to the same pre-run simulated commitment. Governance is already
+approved for the local synthetic profile. Third-party registration and independent
+methods review remain optional credibility enhancements and are not claimed.
 
 ## Verification
 

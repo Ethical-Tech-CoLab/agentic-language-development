@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.82",
+  "version": "0.1.83",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -39,6 +39,7 @@
     "qualify:carrier-side-features": "tsx scripts/check-carrier-side-feature-qualification.ts --write --live-evidence",
     "audit:carrier-side-features": "tsx scripts/check-carrier-side-feature-qualification.ts",
     "build:registration-readiness": "tsx scripts/build-registration-packet-readiness.ts --write",
+    "build:registration-e00": "tsx scripts/build-e00-registration.ts --write",
     "audit:registration-readiness": "tsx scripts/build-registration-packet-readiness.ts",
     "build:seed-resource-ledger": "tsx scripts/check-seed-resource-allocation.ts --write",
     "audit:seed-resource": "tsx scripts/check-seed-resource-allocation.ts",
