@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.90
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.91
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -34,7 +34,7 @@ received independent verification.
 ## Prioritized problems and required fixes
 
 1. **P0 — The central research questions have no eligible observations.** All 19
-   E00 has one registered failed qualification attempt and one outcome-free
+   E00 has two registered failed qualification attempts and one outcome-free
    superseded amendment; 18 experiments remain
    `Not started`; zero bundles are research-included, zero
    one prospective simulated commitment is confirmed, and only the E00 qualification

@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.90 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.91 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -41,8 +41,9 @@ Report status: in progress
   nested document-renderer build stage retains two known high-severity dev-toolchain
   advisories, so no hardened supply-chain claim is made.
 - The bounded source audit and novelty challenge are complete; E00 v2 failed closed
-  on independent inclusion-proof coverage, v3 produced no outcomes and was
-  prospectively superseded after a source-binding cycle was found, and the other 18 experiments
+  on independent inclusion-proof coverage, v3 produced no outcomes, and v4 completed
+  five slots but failed because the Rust auditor accepted five receipt-class relabels;
+  the other 18 experiments
   now have frozen question/estimand/outcome-class cards. H2 tests a causal receiver
   effect; H4 separately tests held-out ledger prediction beyond non-ledger baselines.
 - The numeric referential design now has an executable 12-type train/validation and
@@ -93,8 +94,8 @@ Report status: in progress
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
   actual signed streams, and 20,650,214 verifier-input bytes. Both implementations
   account for 12/12 prior mutation challenges; public-anchor cost remains unmeasured.
-- This does not answer the research questions. The experiment notebook records one
-  failed E00 registered software-qualification attempt, one outcome-free superseded
+- This does not answer the research questions. The experiment notebook records two
+  failed E00 registered software-qualification attempts, one outcome-free superseded
   amendment, and the other 18
   experiments remain `Not started`; the only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
@@ -794,7 +795,7 @@ claim map.
 The current [critical review](research-critical-review.md) and machine-readable
 [manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
 eight-perspective internal pass. They correct cross-document status and rendering
-defects but return `needs-revision`: E00 has one failed qualification attempt and
+defects but return `needs-revision`: E00 has two failed qualification attempts and
 one outcome-free superseded amendment, while 18
 experiments remain unstarted, all 115 local
 bundles remain research-excluded, 180 registration bindings remain unresolved, and

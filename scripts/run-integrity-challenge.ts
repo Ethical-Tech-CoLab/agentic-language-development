@@ -59,9 +59,9 @@ interface RegisteredAnalysisVersion {
   protocolSha256: string;
 }
 
-const REGISTRATION_PATH = 'protocols/e00-registration.v4.json';
-const BINDING_PATH = 'protocols/e00-registration-binding.v3.json';
-const EVIDENCE_ROOT = 'evidence/qualification/e00-v4';
+const REGISTRATION_PATH = 'protocols/e00-registration.v5.json';
+const BINDING_PATH = 'protocols/e00-registration-binding.v4.json';
+const EVIDENCE_ROOT = 'evidence/qualification/e00-v5';
 const DEFAULT_OUTPUT = 'reports/research/e00-integrity-qualification-receipt.json';
 const MUTATION_CASES = [
   'event-content',
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
   )?.content as { mutationCases?: string[]; retainedEvidencePath?: string } | undefined;
   if (
     JSON.stringify(policy?.mutationCases) !== JSON.stringify(MUTATION_CASES) ||
-    policy?.retainedEvidencePath !== 'evidence/qualification/e00-v4/<runId>'
+    policy?.retainedEvidencePath !== 'evidence/qualification/e00-v5/<runId>'
   ) {
     throw new Error('registered E00 mutation or evidence-retention policy is mismatched');
   }

@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
 
-const outputPath = 'protocols/e00-registration.v4.json';
-const protocolBaseCommit = '4426162dbd73a63ec7bcc64f25d81596302e3940';
+const outputPath = 'protocols/e00-registration.v5.json';
+const protocolBaseCommit = '4897ad0d66e719ed5314932e89d7e646c65239fe';
 const read = (path: string): Buffer => readFileSync(path);
 const sha256 = (value: Buffer | string): string =>
   createHash('sha256').update(value).digest('hex');
@@ -34,7 +34,7 @@ if (card === undefined || allocationRow === undefined) {
   throw new Error('E00 protocol card or allocation is missing');
 }
 
-const seedRoot = 'ald-seed-allocation-e00-v4';
+const seedRoot = 'ald-seed-allocation-e00-v5';
 const primary = Array.from({ length: 5 }, (_, index) => {
   const slot = index + 1;
   return {
@@ -74,10 +74,10 @@ const bindings = {
   runConfigurations: [{
     protocolBaseCommit,
     supersededRegistration: {
-      path: 'protocols/e00-registration.v3.json',
-      preRegistrationHash: 'sha256:f2233b2012feb9475858daf1ac01aa773da202b7d15cf4783cb7f4fb85dc16bd',
-      priorFailedAttempt: 'reports/research/e00-integrity-qualification-attempt-1.json',
-      reason: 'V3 produced no outcomes and was superseded because hashing a wrapper that must change registration paths created a source-binding cycle. V4 binds the frozen scientific protocol and records exact implementation identity at execution.',
+      path: 'protocols/e00-registration.v4.json',
+      preRegistrationHash: 'sha256:28307be527bc7434eb6954e0a33445fc158c2d37795742a9be73b9c035ded506',
+      priorFailedAttempt: 'reports/research/e00-integrity-qualification-attempt-2.json',
+      reason: 'V4 completed all five registered slots but failed because the independent Rust auditor accepted simulated-to-public-chain receipt relabeling. V5 binds the repaired auditor through its exact clean execution commit and uses a fresh seed domain.',
     },
     experimentId: 'E00',
     stage: 'software-qualification',
@@ -117,7 +117,7 @@ const bindings = {
     derivation: {
       ...allocation.seedDerivation,
       root: seedRoot,
-      amendment: 'Fresh E00-only root after the v2 failure and outcome-free v3 source-binding amendment.',
+      amendment: 'Fresh E00-only root after the v4 five-slot anchor-class verification failure.',
     },
     stage: 'software-qualification',
     condition: 'integrity-suite',
@@ -157,7 +157,7 @@ const bindings = {
     compatibilityChainId: 84532,
     requiredConfirmations: 3,
     verifierImplementations: ['typescript-production-verifier', 'rust-independent-integrity-auditor'],
-    retainedEvidencePath: 'evidence/qualification/e00-v4/<runId>',
+    retainedEvidencePath: 'evidence/qualification/e00-v5/<runId>',
     retainedEvidencePolicy: 'retain each unchanged signed evidence bundle for every attempted registered slot',
     mutationCases: [
       'event-content',

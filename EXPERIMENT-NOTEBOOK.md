@@ -184,7 +184,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
-| E00 | Ledger integrity and simulated commitment | None | V4 committed; execution pending | V2 failed; v3 outcome-free superseded |
+| E00 | Ledger integrity and simulated commitment | None | V4 failed; v5 pending | Rust anchor-class coverage gap found |
 | E01 | Channel isolation and side-channel red team | E00 | Not started | — |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** V4 repository-registered and simulation-committed; execution pending
+**Status:** Registered qualification attempts v2 and v4 failed closed; v5 amendment pending
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -245,7 +245,7 @@ pre-registered mutation of a committed ledger or transcript.
 
 - unchanged evidence passes;
 - every mutation case fails verification;
-- the final checkpoint hash matches Base calldata or the anchor event;
+- the final checkpoint hash matches the simulated-chain calldata or anchor event;
 - restart produces a consistent extension proof;
 - no private ledger content appears on-chain.
 
@@ -253,14 +253,14 @@ pre-registered mutation of a committed ledger or transcript.
 
 | Metric | Planned | Observed |
 |---|---:|---:|
-| Valid bundle accepted | 100% | 1/1 attempted unchanged bundle accepted by both verifiers before fail-closed stop |
-| Mutation cases detected | 100% | 5/6 attempted cases rejected by both; modified inclusion proof rejected by TypeScript but accepted by Rust |
-| Anchor receipts verified | 100% | `TBD` |
-| Private content found on-chain | 0 | `TBD` |
+| Valid bundle accepted | 100% | 6/6 across v2 and v4 accepted by both verifiers |
+| Mutation cases detected | 100% | 55/61 across v2 and v4 rejected by both; one v2 proof and five v4 receipt-class mutations exposed Rust coverage gaps |
+| Simulated anchor receipts verified | 100% | 5/5 v4 slots anchored with checkpoint-hash payloads |
+| Private content found in simulated commitments | 0 | 0/5 v4 slots had a non-hash commitment payload |
 
 - [ ] Integrity acceptance criteria met
 - [ ] Evidence review complete
-- [ ] Base anchor verified
+- [ ] Simulated commitment verified
 - [ ] Result committed
 
 **Result summary:** v2 slot 1 stopped at the first dual-verifier disagreement. Slots
@@ -276,6 +276,15 @@ The v4 packet is immutable at commit
 in-memory-chain commitment is confirmed before outcome execution. This establishes
 prospective local byte binding, not an independently witnessed timestamp or public
 chain transaction.
+
+V4 then completed all five registered slots. Both verifiers accepted all five
+unchanged bundles and rejected 50/55 registered mutation instances. The TypeScript
+verifier rejected all five simulated-to-public-chain relabels, while the Rust
+auditor accepted them. The complete failure receipt is retained at
+`reports/research/e00-integrity-qualification-attempt-2.json`, all five unchanged
+signed bundles remain under `evidence/qualification/e00-v4/`, and no v4 seed will be
+rerun into success. V5 binds the repaired anchor-class comparison and a fresh seed
+domain before another attempt.
 
 ---
 

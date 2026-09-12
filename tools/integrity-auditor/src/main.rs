@@ -104,6 +104,7 @@ struct Auditor {
     checkpoints: BTreeMap<u64, Value>,
     event_count: usize,
     attachment_count: usize,
+    configured_anchor_class: Option<String>,
 }
 
 fn sha256(parts: &[&[u8]]) -> [u8; 32] {
@@ -282,6 +283,16 @@ fn canonical_file(path: &Path) -> Result<Value, String> {
     Ok(value)
 }
 
+fn verify_anchor_class(receipt: &Value, configured: &str) -> Result<(), String> {
+    let actual = string_field(receipt, "anchorClass")?;
+    if actual != configured {
+        return Err(format!(
+            "anchorClass {actual} differs from run configuration {configured}"
+        ));
+    }
+    Ok(())
+}
+
 impl Auditor {
     fn new(root: PathBuf) -> Self {
         Self {
@@ -292,6 +303,7 @@ impl Auditor {
             checkpoints: BTreeMap::new(),
             event_count: 0,
             attachment_count: 0,
+            configured_anchor_class: None,
         }
     }
 
@@ -361,6 +373,16 @@ impl Auditor {
                 "configuration/run-config.json",
                 "runId differs from manifest",
             );
+        }
+        match string_field(&config, "anchorClass") {
+            Ok(actual @ ("simulated" | "public-chain")) => {
+                self.configured_anchor_class = Some(actual.to_string());
+            }
+            Ok(actual) => self.issue(
+                "configuration/run-config.json",
+                format!("unsupported anchorClass {actual}"),
+            ),
+            Err(error) => self.issue("configuration/run-config.json", error),
         }
         for field in ["parentRunId", "derivedFromCheckpointHash"] {
             if manifest.get(field) != config.get(field) {
@@ -759,6 +781,14 @@ impl Auditor {
         let mut latest_confirmed = None;
         for (index, receipt) in receipts.iter().enumerate() {
             let location = format!("anchors/base-receipts.json[{index}]");
+            match self.configured_anchor_class.as_deref() {
+                Some(configured) => {
+                    if let Err(error) = verify_anchor_class(receipt, configured) {
+                        self.issue(&location, error);
+                    }
+                }
+                None => self.issue(&location, "run configuration anchorClass is unavailable"),
+            }
             let Ok(sequence) = u64_field(receipt, "checkpointSequence") else {
                 self.issue(&location, "missing checkpointSequence");
                 continue;
@@ -1012,5 +1042,12 @@ mod tests {
         assert!(verify_inclusion(&leaves[0], 0, 3, &valid_path, &root).unwrap());
         let mutated_path = vec![json!(encoded_hash(sha256(&[b"mutated"]))), json!(leaves[2])];
         assert!(!verify_inclusion(&leaves[0], 0, 3, &mutated_path, &root).unwrap());
+    }
+
+    #[test]
+    fn independent_anchor_verifier_rejects_a_class_relabel() {
+        let receipt = json!({ "anchorClass": "public-chain" });
+        assert!(verify_anchor_class(&receipt, "simulated").is_err());
+        assert!(verify_anchor_class(&receipt, "public-chain").is_ok());
     }
 }

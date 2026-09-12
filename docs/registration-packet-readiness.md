@@ -41,7 +41,9 @@ fresh E00-only seed domain, and both prior dispositions. It requires a new prosp
 commitment before execution. A later dry-run found that activating v3 necessarily
 changed the wrapper source it had hashed; v3 therefore produced no outcomes. V4
 removes that self-reference, binds the scientific protocol, records the exact clean
-execution commit in its receipt, and uses another fresh seed domain.
+execution commit in its receipt, and uses another fresh seed domain. V4 completed all
+five slots but failed when the Rust auditor accepted receipt-class relabeling. V5
+prospectively binds that repair and another fresh seed domain.
 
 ## Current inventory
 
@@ -54,8 +56,8 @@ Therefore:
 - compiled canonical packets: 1/19;
 - pre-registration hashes emitted by this inventory: 1; and
 - immutable repository registration and matching simulated pre-run commitments:
-  v2 is complete but failed; v3 is superseded without outcomes; v4 is committed and
-  has a confirmed deterministic simulated commitment before execution.
+  v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5
+  awaits repository registration and a deterministic simulated commitment.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently
