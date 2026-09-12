@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.85",
+  "version": "0.1.86",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -67,7 +67,8 @@
     "lint:native-builds": "node scripts/check-native-builds.mjs",
     "lint:api-docs": "node scripts/check-api-docs.mjs",
     "test:integrity-auditor": "CARGO_TARGET_DIR=.artifacts/cargo-target cargo test --locked --manifest-path tools/integrity-auditor/Cargo.toml && CARGO_TARGET_DIR=.artifacts/cargo-target cargo clippy --locked --manifest-path tools/integrity-auditor/Cargo.toml -- -D warnings",
-    "challenge:integrity": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && tsx scripts/run-integrity-challenge.ts"
+    "challenge:integrity": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && tsx scripts/run-integrity-challenge.ts",
+    "qualify:e00": "pnpm run audit:registration-e00 && pnpm run challenge:integrity"
   },
   "devDependencies": {
     "@ald/analysis": "workspace:*",

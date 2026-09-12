@@ -164,10 +164,17 @@ function proofSequences(treeSize: number): number[] {
 /** Builds the fixture bundle in a fresh temp directory. */
 export async function buildFixtureBundle(options: {
   attachment?: boolean;
+  turns?: number;
+  runId?: string;
+  randomSeed?: string;
 } = {}): Promise<BuiltBundle> {
   const workDir = await mkdtemp(join(tmpdir(), 'ald-verifier-fixture-'));
   const bundleDir = join(workDir, 'bundle');
-  const runId = 'run-e00-verifier-fixture';
+  const fixtureTurns = options.turns ?? FIXTURE_TURNS;
+  if (!Number.isInteger(fixtureTurns) || fixtureTurns < 4 || fixtureTurns % 2 !== 0) {
+    throw new Error('fixture turns must be an even integer of at least four');
+  }
+  const runId = options.runId ?? 'run-e00-verifier-fixture';
   const clock = new StepClock();
   const signers = InMemorySignerRegistry.generate(runId);
   const database = openEvidenceDatabase(join(workDir, 'evidence.sqlite'));
@@ -181,7 +188,7 @@ export async function buildFixtureBundle(options: {
   const config = buildRunConfig({
     runId,
     experimentId: 'E00',
-    randomSeed: 'seed-e00-fixture',
+    randomSeed: options.randomSeed ?? 'seed-e00-fixture',
     deploymentMode: 'prototype',
     babyA: { track: 'no-learning' },
     babyB: { track: 'no-learning' },
@@ -230,7 +237,7 @@ export async function buildFixtureBundle(options: {
 
   await createCheckpoint('run-initialized');
 
-  for (let turn = 1; turn <= FIXTURE_TURNS; turn += 1) {
+  for (let turn = 1; turn <= fixtureTurns; turn += 1) {
     const sender: BabyRole = turn % 2 === 1 ? 'baby-a' : 'baby-b';
     const recipient = otherRole(sender);
     const publicArtifact = { symbols: ['S01'] };
@@ -299,7 +306,7 @@ export async function buildFixtureBundle(options: {
       });
     }
 
-    if (turn === FIXTURE_TURNS / 2 || turn === FIXTURE_TURNS) {
+    if (turn === fixtureTurns / 2 || turn === fixtureTurns) {
       await createCheckpoint('event-interval');
     }
   }
