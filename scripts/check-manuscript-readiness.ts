@@ -56,13 +56,13 @@ if (uniqueCitations.join('|') !== definedReferences.join('|')) {
 if (sources.existingReferences.length !== 50 || sources.updatedSearch.length !== 5) {
   throw new Error('source register counts differ from the manuscript audit scope');
 }
-if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 18 || campaign.experiments.length !== 19) {
-  throw new Error('experiment inventory must contain 19 not-started experiments');
+if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 17 || campaign.experiments.length !== 19) {
+  throw new Error('experiment inventory must contain 19 experiments with 17 not started');
 }
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');
 }
-if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 8) {
+if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 9) {
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');

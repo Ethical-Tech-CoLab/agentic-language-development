@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.96
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.97
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -27,7 +27,7 @@ received independent verification.
 | Numerical and status accuracy | 0 / 8 | Eight principal claim groups were reconciled to the acceptance, data/claim, registration, campaign, seed/resource, statistics, audit-cost, and causal-runtime artifacts after correcting stale E16 language. |
 | Within-chart agreement | N/A | The manuscript intentionally contains no empirical chart. Future result figures remain prohibited until eligible data exist. |
 | Complete source details | 0 / 50 | All 50 bibliography entries have a locator and recorded inspection depth. Only the priority subset was inspected in full text; that declared limitation prevents a stronger verification claim. |
-| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and E00 receipt agree that E00 is software-qualified while the behavioral campaign remains unregistered and unexecuted. |
+| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and qualification receipts agree that E00 is software-qualified and E01 v1 passed only its bounded category/topology gate while the behavioral campaign remains unexecuted. |
 | Data-quality controls | 18 / 18 | Every behavioral experiment lacks an eligible input dataset. E00 now has qualified software evidence but no behavioral estimand; none of the 18 agent-language result units can yet be validated. |
 | Conclusion support | 0 / 4 | The four current conclusions—pre-results status, substantial software qualification, zero eligible empirical bundles, and not-registration-ready disposition—match the retained evidence. No scientific hypothesis is presented as supported. |
 
@@ -35,20 +35,21 @@ received independent verification.
 
 1. **P0 — The central research questions have no eligible observations.** E00 v5
    passed as software qualification after two preserved failures and one outcome-free
-   amendment, but the 18 behavioral experiments remain `Not started`; zero bundles
-   are research-included. Three E00 prospective simulated commitments are preserved,
-   and the E00 and E01 qualification packets compile; E01 is activated by a matching
-   simulated commitment but remains unexecuted. **Fix (required):**
+   amendment. E01 v1 passed five registered topology/category slots, but its full
+   explicit variant corpus and attempt-level signed evidence remain open under B15;
+   the other 17 experiments remain `Not started`, and zero bundles are research-included.
+   Three E00 prospective simulated commitments are preserved, and the E00 and E01
+   qualification packets compile. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
    any Results claim.
 
 2. **P0 — Local experiment packets and independent evidence remain incomplete.** The
-   machine review has eight open blockers and no independent human review. Scoped
+   machine review has nine open blockers and no independent human review. Scoped
    governance is approved and the external-dependency ledger is ready at 1/1;
    O02-O06 are non-applicable to local collection. Exact packet compilation, pilots,
    resource selection, and final-topology qualifications remain substantive local
-   blockers. **Fix (required):** resolve B07-B12 in dependency order and keep B13-B14
+   blockers. **Fix (required):** resolve B07-B12 and B15 in dependency order and keep B13-B14
    as publication-readiness limitations until authentic independent work exists.
 
 3. **P1 — Simulation removes monetary dependency but weakens the timestamp trust

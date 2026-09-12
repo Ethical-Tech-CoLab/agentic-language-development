@@ -45,7 +45,7 @@ for (const finding of review.blockingFindings) {
     throw new Error(`${finding.id} lacks an evidence-bearing finding or closure test`);
   }
 }
-for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14']) {
+for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14','B15']) {
   if (!findingIds.has(required)) throw new Error(`campaign review omits ${required}`);
 }
 const resolvedIds = new Set(review.resolvedFindings.map((finding) => finding.id));

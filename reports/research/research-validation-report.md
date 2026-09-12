@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.96 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.97 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -98,7 +98,10 @@ Report status: in progress
   implementations accepted 5/5 unchanged bundles and rejected 55/55 registered
   mutation instances. This does not answer the agent-language research questions.
   The notebook preserves two failed E00 attempts and one outcome-free amendment;
-  the other 18 experiments remain `Not started`. The only retained behavioral corpus contains
+  E01 v1 also passed five prospectively registered local topology/category slots,
+  but internal review keeps E01 `In progress` because the explicit notebook variant
+  corpus and attempt-level signed evidence remain absent. The other 17 experiments
+  remain `Not started`. The only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
 - The current host can support software validation and bounded CPU pilots and now
@@ -726,7 +729,7 @@ bundles.
 ## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
-experiment cards and identifies eight open blockers with explicit closure tests. It does not
+experiment cards and identifies nine open blockers with explicit closure tests. It does not
 claim independent review. No experiment is registration-ready, and the fail-closed
 machine audit rejects any ready flag while the recorded campaign decision is negative.
 
@@ -739,8 +742,8 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
 2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
    to be produced before D08 can freeze registration-ready configurations.
    The fail-closed packet inventory currently resolves all eleven bindings for E00
-   and E01, leaves 170 exact experiment bindings unresolved, and has activated but
-   not yet executed E01.
+   and E01 and leaves 170 exact experiment bindings unresolved. E01 v1 executed and
+   passed its bounded category/topology gate, but B15 prevents full E01 completion.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
@@ -798,7 +801,8 @@ The current [critical review](research-critical-review.md) and machine-readable
 [manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
 eight-perspective internal pass. They correct cross-document status and rendering
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
-and one outcome-free superseded amendment, while 18 experiments remain unstarted,
+and one outcome-free superseded amendment. E01 v1 passed its bounded registered
+topology/category suite but remains in progress under B15, while 17 experiments remain unstarted,
 all 125 local
 bundles remain research-excluded, 170 registration bindings remain unresolved, and
 independent review is absent.

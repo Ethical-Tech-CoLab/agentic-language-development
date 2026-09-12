@@ -1,0 +1,1590 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospectively-registered-software-qualification",
+  "researchFinding": false,
+  "experimentId": "E01",
+  "registrationHash": "sha256:805cc5f873747c87b003bd95b035cab138fb16ed827ac501aee455061986004b",
+  "registrationBinding": "protocols/e01-registration-binding.v1.json",
+  "executionCommit": "8d3a9f67257ad8c53bc5438926ff8dc23743ed0d",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "topologySlotsAttempted": 5,
+  "plannedTopologySlots": 5,
+  "wallMilliseconds": 549174.1851499999,
+  "slots": [
+    {
+      "schemaVersion": 1,
+      "slot": 1,
+      "scenarioSeed": "69c4e29b80118952192bcd659eda5d06448f7361e238183d4983c1e88eb12620",
+      "runId": "run-e01-qualified-01",
+      "topology": {
+        "mode": "research-grade",
+        "boundary": "separate-container",
+        "containerIds": [
+          "49d7999e1684",
+          "ffa07ed8b4b3"
+        ],
+        "distinctLearnerContainers": true,
+        "directPeerRoutes": [
+          "refused",
+          "refused"
+        ]
+      },
+      "primaryAttackAttempts": 100,
+      "hostCapabilityAttempts": 5,
+      "registeredCategories": [
+        "timing",
+        "response-size",
+        "error-behavior",
+        "carrier-bounds",
+        "silence-and-retry",
+        "filesystem",
+        "clipboard",
+        "environment",
+        "process",
+        "network",
+        "model-generated-identifiers",
+        "hidden-state-correlation"
+      ],
+      "categoryDecisions": {
+        "timing": true,
+        "response-size": true,
+        "error-behavior": true,
+        "carrier-bounds": true,
+        "silence-and-retry": true,
+        "filesystem": true,
+        "clipboard": true,
+        "environment": true,
+        "process": true,
+        "network": true,
+        "model-generated-identifiers": true,
+        "hidden-state-correlation": true
+      },
+      "gateway": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attackMarkerRetained": false,
+        "attempts": [
+          {
+            "id": "oversized-carrier",
+            "category": "carrier-bounds",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:e735e1fa09e0307699815041f18bb2ef6b342c09d9298f2c6f34a72c6d32117b"
+            ]
+          },
+          {
+            "id": "model-generated-identifier",
+            "category": "model-generated-identifiers",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:0b586ccbe4cf8c9735b3cccd6e40728f1f4ea3404f3cad68534f6741e8688758"
+            ]
+          },
+          {
+            "id": "arbitrary-silence",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:f4612d1c1dd33014225e88ae71e1b078476d0c1fede8a5898361ef774c5d6a66"
+            ]
+          },
+          {
+            "id": "variable-retry-count",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:487afb4b25aca4e7093f783dee18fb11fd01d5786317753b37aa97773e4fb7ee",
+              "sha256:57484b8cdb4fb882bc4941e3c8e0b309d87dd5bf333947995c8399cacb049e95",
+              "sha256:e99cc0752ada2a13c59723442173faa06f4d0e2cbe619007a656bdf4dfe3ae2d"
+            ]
+          },
+          {
+            "id": "receiver-response-size",
+            "category": "response-size",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:e735e1fa09e0307699815041f18bb2ef6b342c09d9298f2c6f34a72c6d32117b",
+              "sha256:0b586ccbe4cf8c9735b3cccd6e40728f1f4ea3404f3cad68534f6741e8688758",
+              "sha256:f4612d1c1dd33014225e88ae71e1b078476d0c1fede8a5898361ef774c5d6a66",
+              "sha256:487afb4b25aca4e7093f783dee18fb11fd01d5786317753b37aa97773e4fb7ee",
+              "sha256:57484b8cdb4fb882bc4941e3c8e0b309d87dd5bf333947995c8399cacb049e95",
+              "sha256:e99cc0752ada2a13c59723442173faa06f4d0e2cbe619007a656bdf4dfe3ae2d"
+            ]
+          },
+          {
+            "id": "receiver-error-shape",
+            "category": "error-behavior",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:e735e1fa09e0307699815041f18bb2ef6b342c09d9298f2c6f34a72c6d32117b",
+              "sha256:0b586ccbe4cf8c9735b3cccd6e40728f1f4ea3404f3cad68534f6741e8688758",
+              "sha256:f4612d1c1dd33014225e88ae71e1b078476d0c1fede8a5898361ef774c5d6a66",
+              "sha256:487afb4b25aca4e7093f783dee18fb11fd01d5786317753b37aa97773e4fb7ee",
+              "sha256:57484b8cdb4fb882bc4941e3c8e0b309d87dd5bf333947995c8399cacb049e95",
+              "sha256:e99cc0752ada2a13c59723442173faa06f4d0e2cbe619007a656bdf4dfe3ae2d",
+              "sha256:e735e1fa09e0307699815041f18bb2ef6b342c09d9298f2c6f34a72c6d32117b",
+              "sha256:0b586ccbe4cf8c9735b3cccd6e40728f1f4ea3404f3cad68534f6741e8688758",
+              "sha256:f4612d1c1dd33014225e88ae71e1b078476d0c1fede8a5898361ef774c5d6a66",
+              "sha256:487afb4b25aca4e7093f783dee18fb11fd01d5786317753b37aa97773e4fb7ee",
+              "sha256:57484b8cdb4fb882bc4941e3c8e0b309d87dd5bf333947995c8399cacb049e95",
+              "sha256:e99cc0752ada2a13c59723442173faa06f4d0e2cbe619007a656bdf4dfe3ae2d"
+            ]
+          }
+        ],
+        "responseSizeWithinTolerance": true,
+        "errorBehaviorWithinTolerance": true,
+        "passed": true
+      },
+      "host": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attempts": [
+          {
+            "id": "filesystem-read",
+            "category": "filesystem",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "clipboard-read",
+            "category": "clipboard",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "process-and-worker-spawn",
+            "category": "process",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "direct-peer-socket",
+            "category": "network",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "environment-discovery",
+            "category": "environment",
+            "blocked": true,
+            "extractedByRecipient": false
+          }
+        ],
+        "passed": true
+      },
+      "transport": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "samplesPerCondition": 47,
+        "timing": {
+          "metric": "timing-ms",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 1000.5482030425525,
+              "variance": 0.22165066081462123,
+              "standardDeviation": 0.47079789805671524,
+              "min": 999.0084650000063,
+              "max": 1001.2525430000001
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 1001.5227637872348,
+              "variance": 38.323146566921466,
+              "standardDeviation": 6.190569163406662,
+              "min": 998.6419659999992,
+              "max": 1042.9340469999952
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": -0.9745607446823215,
+              "absoluteMeanDifference": 0.9745607446823215,
+              "welchT": -1.07615532828712,
+              "degreesOfFreedom": 46.53208518887138,
+              "welchP": 0.287405923241165,
+              "cohensD": -0.22199389397398844,
+              "ksDistance": 0.14893617021276595,
+              "ksP": 0.6385447357820765
+            }
+          ],
+          "totalSamples": 94
+        },
+        "timingDecision": {
+          "withinTolerance": true,
+          "metric": "timing-ms",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 100
+          },
+          "violations": []
+        },
+        "size": {
+          "metric": "size-bytes",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0,
+              "absoluteMeanDifference": 0,
+              "welchT": 0,
+              "degreesOfFreedom": 92,
+              "welchP": 1,
+              "cohensD": 0,
+              "ksDistance": 0,
+              "ksP": 1
+            }
+          ],
+          "totalSamples": 94
+        },
+        "sizeDecision": {
+          "withinTolerance": true,
+          "metric": "size-bytes",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 0
+          },
+          "violations": []
+        },
+        "errorShape": {
+          "totalResponses": 94,
+          "distinctBodies": 1,
+          "distinctByteLengths": [
+            21
+          ],
+          "identical": true,
+          "constantLength": true,
+          "groups": [
+            {
+              "bodyHash": "sha256:734efcc2b675f3b554c2aa6dab41b33f05508a80d43c122ac8b388c2ff80ea2e",
+              "byteLength": 21,
+              "count": 94,
+              "labels": [
+                "accepted",
+                "rejected"
+              ]
+            }
+          ],
+          "labelsWithVariation": [],
+          "bodiesDistinguishLabels": false
+        },
+        "errorDecision": {
+          "withinTolerance": true,
+          "violations": []
+        },
+        "passed": true
+      },
+      "correlationDetector": {
+        "version": 1,
+        "attempts": 64,
+        "suspectedLeakage": true,
+        "detectedBeforeClaim": true,
+        "observedCmiBits": 2.067626330042,
+        "boundBits": 0.02
+      },
+      "positiveControls": {
+        "hostExposureDetected": true,
+        "timingLeakDetected": true,
+        "sizeLeakDetected": true,
+        "errorShapeLeakDetected": true
+      },
+      "allPositiveControlsDetected": true,
+      "passed": true
+    },
+    {
+      "schemaVersion": 1,
+      "slot": 2,
+      "scenarioSeed": "4bc7c2c801aaac180d46ef7da9804a80e78d4ba5ee47f92950fc737771cb1e9a",
+      "runId": "run-e01-qualified-02",
+      "topology": {
+        "mode": "research-grade",
+        "boundary": "separate-container",
+        "containerIds": [
+          "a92c8574e8c0",
+          "00b3d463f33f"
+        ],
+        "distinctLearnerContainers": true,
+        "directPeerRoutes": [
+          "refused",
+          "refused"
+        ]
+      },
+      "primaryAttackAttempts": 100,
+      "hostCapabilityAttempts": 5,
+      "registeredCategories": [
+        "timing",
+        "response-size",
+        "error-behavior",
+        "carrier-bounds",
+        "silence-and-retry",
+        "filesystem",
+        "clipboard",
+        "environment",
+        "process",
+        "network",
+        "model-generated-identifiers",
+        "hidden-state-correlation"
+      ],
+      "categoryDecisions": {
+        "timing": true,
+        "response-size": true,
+        "error-behavior": true,
+        "carrier-bounds": true,
+        "silence-and-retry": true,
+        "filesystem": true,
+        "clipboard": true,
+        "environment": true,
+        "process": true,
+        "network": true,
+        "model-generated-identifiers": true,
+        "hidden-state-correlation": true
+      },
+      "gateway": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attackMarkerRetained": false,
+        "attempts": [
+          {
+            "id": "oversized-carrier",
+            "category": "carrier-bounds",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:d583bf6c0e107556c4d3695eb447347c4be6259ccca7b33b1142dd4c1e112a86"
+            ]
+          },
+          {
+            "id": "model-generated-identifier",
+            "category": "model-generated-identifiers",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:a278c5b6c4bdff5fba1a59620b91f98975a47d69dd159df02ed993472af630e5"
+            ]
+          },
+          {
+            "id": "arbitrary-silence",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:fb498832e4581415a8a932c297ac891145bb890e1a379104c447fbb8cfbe7457"
+            ]
+          },
+          {
+            "id": "variable-retry-count",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:ad7ec3989c54697a590139a1486af214832ff02120056fece17db553fe206b93",
+              "sha256:4e9806138e7b046909901f17de54c84ae1bc17893634ffc7d661921649a15034",
+              "sha256:bdc7320772ab38d24769bf4909841833e1c2997cbf0f050f98d567e299887bcf"
+            ]
+          },
+          {
+            "id": "receiver-response-size",
+            "category": "response-size",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:d583bf6c0e107556c4d3695eb447347c4be6259ccca7b33b1142dd4c1e112a86",
+              "sha256:a278c5b6c4bdff5fba1a59620b91f98975a47d69dd159df02ed993472af630e5",
+              "sha256:fb498832e4581415a8a932c297ac891145bb890e1a379104c447fbb8cfbe7457",
+              "sha256:ad7ec3989c54697a590139a1486af214832ff02120056fece17db553fe206b93",
+              "sha256:4e9806138e7b046909901f17de54c84ae1bc17893634ffc7d661921649a15034",
+              "sha256:bdc7320772ab38d24769bf4909841833e1c2997cbf0f050f98d567e299887bcf"
+            ]
+          },
+          {
+            "id": "receiver-error-shape",
+            "category": "error-behavior",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:d583bf6c0e107556c4d3695eb447347c4be6259ccca7b33b1142dd4c1e112a86",
+              "sha256:a278c5b6c4bdff5fba1a59620b91f98975a47d69dd159df02ed993472af630e5",
+              "sha256:fb498832e4581415a8a932c297ac891145bb890e1a379104c447fbb8cfbe7457",
+              "sha256:ad7ec3989c54697a590139a1486af214832ff02120056fece17db553fe206b93",
+              "sha256:4e9806138e7b046909901f17de54c84ae1bc17893634ffc7d661921649a15034",
+              "sha256:bdc7320772ab38d24769bf4909841833e1c2997cbf0f050f98d567e299887bcf",
+              "sha256:d583bf6c0e107556c4d3695eb447347c4be6259ccca7b33b1142dd4c1e112a86",
+              "sha256:a278c5b6c4bdff5fba1a59620b91f98975a47d69dd159df02ed993472af630e5",
+              "sha256:fb498832e4581415a8a932c297ac891145bb890e1a379104c447fbb8cfbe7457",
+              "sha256:ad7ec3989c54697a590139a1486af214832ff02120056fece17db553fe206b93",
+              "sha256:4e9806138e7b046909901f17de54c84ae1bc17893634ffc7d661921649a15034",
+              "sha256:bdc7320772ab38d24769bf4909841833e1c2997cbf0f050f98d567e299887bcf"
+            ]
+          }
+        ],
+        "responseSizeWithinTolerance": true,
+        "errorBehaviorWithinTolerance": true,
+        "passed": true
+      },
+      "host": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attempts": [
+          {
+            "id": "filesystem-read",
+            "category": "filesystem",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "clipboard-read",
+            "category": "clipboard",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "process-and-worker-spawn",
+            "category": "process",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "direct-peer-socket",
+            "category": "network",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "environment-discovery",
+            "category": "environment",
+            "blocked": true,
+            "extractedByRecipient": false
+          }
+        ],
+        "passed": true
+      },
+      "transport": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "samplesPerCondition": 47,
+        "timing": {
+          "metric": "timing-ms",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 1000.4078542340436,
+              "variance": 0.2904063363993691,
+              "standardDeviation": 0.5388936225261616,
+              "min": 998.4595490000065,
+              "max": 1001.4540349999997
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 1000.64199080851,
+              "variance": 0.19131613940969752,
+              "standardDeviation": 0.43739700434467715,
+              "min": 999.2987510000012,
+              "max": 1001.3326239999999
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": -0.2341365744663335,
+              "absoluteMeanDifference": 0.2341365744663335,
+              "welchT": -2.3127023102234694,
+              "degreesOfFreedom": 88.2652847856841,
+              "welchP": 0.023064865677650013,
+              "cohensD": -0.4770740598072563,
+              "ksDistance": 0.3191489361702127,
+              "ksP": 0.0125246203653482
+            }
+          ],
+          "totalSamples": 94
+        },
+        "timingDecision": {
+          "withinTolerance": true,
+          "metric": "timing-ms",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 100
+          },
+          "violations": []
+        },
+        "size": {
+          "metric": "size-bytes",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0,
+              "absoluteMeanDifference": 0,
+              "welchT": 0,
+              "degreesOfFreedom": 92,
+              "welchP": 1,
+              "cohensD": 0,
+              "ksDistance": 0,
+              "ksP": 1
+            }
+          ],
+          "totalSamples": 94
+        },
+        "sizeDecision": {
+          "withinTolerance": true,
+          "metric": "size-bytes",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 0
+          },
+          "violations": []
+        },
+        "errorShape": {
+          "totalResponses": 94,
+          "distinctBodies": 1,
+          "distinctByteLengths": [
+            21
+          ],
+          "identical": true,
+          "constantLength": true,
+          "groups": [
+            {
+              "bodyHash": "sha256:734efcc2b675f3b554c2aa6dab41b33f05508a80d43c122ac8b388c2ff80ea2e",
+              "byteLength": 21,
+              "count": 94,
+              "labels": [
+                "accepted",
+                "rejected"
+              ]
+            }
+          ],
+          "labelsWithVariation": [],
+          "bodiesDistinguishLabels": false
+        },
+        "errorDecision": {
+          "withinTolerance": true,
+          "violations": []
+        },
+        "passed": true
+      },
+      "correlationDetector": {
+        "version": 1,
+        "attempts": 64,
+        "suspectedLeakage": true,
+        "detectedBeforeClaim": true,
+        "observedCmiBits": 2.067626330042,
+        "boundBits": 0.02
+      },
+      "positiveControls": {
+        "hostExposureDetected": true,
+        "timingLeakDetected": true,
+        "sizeLeakDetected": true,
+        "errorShapeLeakDetected": true
+      },
+      "allPositiveControlsDetected": true,
+      "passed": true
+    },
+    {
+      "schemaVersion": 1,
+      "slot": 3,
+      "scenarioSeed": "f31c9a2b72c0d091bb58486be3a685d606479d6ea65585fb128086d5018812e1",
+      "runId": "run-e01-qualified-03",
+      "topology": {
+        "mode": "research-grade",
+        "boundary": "separate-container",
+        "containerIds": [
+          "96dc670d4fb0",
+          "1eedb9da1d7e"
+        ],
+        "distinctLearnerContainers": true,
+        "directPeerRoutes": [
+          "refused",
+          "refused"
+        ]
+      },
+      "primaryAttackAttempts": 100,
+      "hostCapabilityAttempts": 5,
+      "registeredCategories": [
+        "timing",
+        "response-size",
+        "error-behavior",
+        "carrier-bounds",
+        "silence-and-retry",
+        "filesystem",
+        "clipboard",
+        "environment",
+        "process",
+        "network",
+        "model-generated-identifiers",
+        "hidden-state-correlation"
+      ],
+      "categoryDecisions": {
+        "timing": true,
+        "response-size": true,
+        "error-behavior": true,
+        "carrier-bounds": true,
+        "silence-and-retry": true,
+        "filesystem": true,
+        "clipboard": true,
+        "environment": true,
+        "process": true,
+        "network": true,
+        "model-generated-identifiers": true,
+        "hidden-state-correlation": true
+      },
+      "gateway": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attackMarkerRetained": false,
+        "attempts": [
+          {
+            "id": "oversized-carrier",
+            "category": "carrier-bounds",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:73c986d26912fea37bf5cb8685071f0b3fe268fa647ed31970d701535904f9c6"
+            ]
+          },
+          {
+            "id": "model-generated-identifier",
+            "category": "model-generated-identifiers",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:14c2d438fbcc4d1b390a51b8d18fb45013289bd8443819b5949785b9cf41fd91"
+            ]
+          },
+          {
+            "id": "arbitrary-silence",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:9530080b8007aff0bfba13669a39826cb69f23b568ff3ab77bf3612ff9de9e37"
+            ]
+          },
+          {
+            "id": "variable-retry-count",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:9256c5a22bd33c70db5a3c556c135bf6e37a842515721bfe5725042a3a9acfe8",
+              "sha256:9e90385c2504bdc1234a5cc341f775512abf86ce806674c4c1439260ca5f0a08",
+              "sha256:7d33239e785d342429511da042cf90d5939e8362bbb5a1fceafa62fe090ee7a9"
+            ]
+          },
+          {
+            "id": "receiver-response-size",
+            "category": "response-size",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:73c986d26912fea37bf5cb8685071f0b3fe268fa647ed31970d701535904f9c6",
+              "sha256:14c2d438fbcc4d1b390a51b8d18fb45013289bd8443819b5949785b9cf41fd91",
+              "sha256:9530080b8007aff0bfba13669a39826cb69f23b568ff3ab77bf3612ff9de9e37",
+              "sha256:9256c5a22bd33c70db5a3c556c135bf6e37a842515721bfe5725042a3a9acfe8",
+              "sha256:9e90385c2504bdc1234a5cc341f775512abf86ce806674c4c1439260ca5f0a08",
+              "sha256:7d33239e785d342429511da042cf90d5939e8362bbb5a1fceafa62fe090ee7a9"
+            ]
+          },
+          {
+            "id": "receiver-error-shape",
+            "category": "error-behavior",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:73c986d26912fea37bf5cb8685071f0b3fe268fa647ed31970d701535904f9c6",
+              "sha256:14c2d438fbcc4d1b390a51b8d18fb45013289bd8443819b5949785b9cf41fd91",
+              "sha256:9530080b8007aff0bfba13669a39826cb69f23b568ff3ab77bf3612ff9de9e37",
+              "sha256:9256c5a22bd33c70db5a3c556c135bf6e37a842515721bfe5725042a3a9acfe8",
+              "sha256:9e90385c2504bdc1234a5cc341f775512abf86ce806674c4c1439260ca5f0a08",
+              "sha256:7d33239e785d342429511da042cf90d5939e8362bbb5a1fceafa62fe090ee7a9",
+              "sha256:73c986d26912fea37bf5cb8685071f0b3fe268fa647ed31970d701535904f9c6",
+              "sha256:14c2d438fbcc4d1b390a51b8d18fb45013289bd8443819b5949785b9cf41fd91",
+              "sha256:9530080b8007aff0bfba13669a39826cb69f23b568ff3ab77bf3612ff9de9e37",
+              "sha256:9256c5a22bd33c70db5a3c556c135bf6e37a842515721bfe5725042a3a9acfe8",
+              "sha256:9e90385c2504bdc1234a5cc341f775512abf86ce806674c4c1439260ca5f0a08",
+              "sha256:7d33239e785d342429511da042cf90d5939e8362bbb5a1fceafa62fe090ee7a9"
+            ]
+          }
+        ],
+        "responseSizeWithinTolerance": true,
+        "errorBehaviorWithinTolerance": true,
+        "passed": true
+      },
+      "host": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attempts": [
+          {
+            "id": "filesystem-read",
+            "category": "filesystem",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "clipboard-read",
+            "category": "clipboard",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "process-and-worker-spawn",
+            "category": "process",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "direct-peer-socket",
+            "category": "network",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "environment-discovery",
+            "category": "environment",
+            "blocked": true,
+            "extractedByRecipient": false
+          }
+        ],
+        "passed": true
+      },
+      "transport": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "samplesPerCondition": 47,
+        "timing": {
+          "metric": "timing-ms",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 1000.4900561914893,
+              "variance": 0.20415550573199767,
+              "standardDeviation": 0.4518357065704277,
+              "min": 999.5555840000015,
+              "max": 1001.5026130000006
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 1000.7504129361707,
+              "variance": 0.18624790539918903,
+              "standardDeviation": 0.4315644857946365,
+              "min": 1000.0889400000015,
+              "max": 1002.8742399999974
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": -0.2603567446814168,
+              "absoluteMeanDifference": 0.2603567446814168,
+              "welchT": -2.856675827696123,
+              "degreesOfFreedom": 91.80683759378718,
+              "welchP": 0.005294786526812516,
+              "cohensD": -0.589287228471941,
+              "ksDistance": 0.2978723404255319,
+              "ksP": 0.02408464990713045
+            }
+          ],
+          "totalSamples": 94
+        },
+        "timingDecision": {
+          "withinTolerance": true,
+          "metric": "timing-ms",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 100
+          },
+          "violations": []
+        },
+        "size": {
+          "metric": "size-bytes",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0,
+              "absoluteMeanDifference": 0,
+              "welchT": 0,
+              "degreesOfFreedom": 92,
+              "welchP": 1,
+              "cohensD": 0,
+              "ksDistance": 0,
+              "ksP": 1
+            }
+          ],
+          "totalSamples": 94
+        },
+        "sizeDecision": {
+          "withinTolerance": true,
+          "metric": "size-bytes",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 0
+          },
+          "violations": []
+        },
+        "errorShape": {
+          "totalResponses": 94,
+          "distinctBodies": 1,
+          "distinctByteLengths": [
+            21
+          ],
+          "identical": true,
+          "constantLength": true,
+          "groups": [
+            {
+              "bodyHash": "sha256:734efcc2b675f3b554c2aa6dab41b33f05508a80d43c122ac8b388c2ff80ea2e",
+              "byteLength": 21,
+              "count": 94,
+              "labels": [
+                "accepted",
+                "rejected"
+              ]
+            }
+          ],
+          "labelsWithVariation": [],
+          "bodiesDistinguishLabels": false
+        },
+        "errorDecision": {
+          "withinTolerance": true,
+          "violations": []
+        },
+        "passed": true
+      },
+      "correlationDetector": {
+        "version": 1,
+        "attempts": 64,
+        "suspectedLeakage": true,
+        "detectedBeforeClaim": true,
+        "observedCmiBits": 2.067626330042,
+        "boundBits": 0.02
+      },
+      "positiveControls": {
+        "hostExposureDetected": true,
+        "timingLeakDetected": true,
+        "sizeLeakDetected": true,
+        "errorShapeLeakDetected": true
+      },
+      "allPositiveControlsDetected": true,
+      "passed": true
+    },
+    {
+      "schemaVersion": 1,
+      "slot": 4,
+      "scenarioSeed": "9e2c4004132ab76609b8235a82a0b555f6c2ddf293557466e4c71d05900a64a8",
+      "runId": "run-e01-qualified-04",
+      "topology": {
+        "mode": "research-grade",
+        "boundary": "separate-container",
+        "containerIds": [
+          "a697d64b5a23",
+          "bf8b03381ef1"
+        ],
+        "distinctLearnerContainers": true,
+        "directPeerRoutes": [
+          "refused",
+          "refused"
+        ]
+      },
+      "primaryAttackAttempts": 100,
+      "hostCapabilityAttempts": 5,
+      "registeredCategories": [
+        "timing",
+        "response-size",
+        "error-behavior",
+        "carrier-bounds",
+        "silence-and-retry",
+        "filesystem",
+        "clipboard",
+        "environment",
+        "process",
+        "network",
+        "model-generated-identifiers",
+        "hidden-state-correlation"
+      ],
+      "categoryDecisions": {
+        "timing": true,
+        "response-size": true,
+        "error-behavior": true,
+        "carrier-bounds": true,
+        "silence-and-retry": true,
+        "filesystem": true,
+        "clipboard": true,
+        "environment": true,
+        "process": true,
+        "network": true,
+        "model-generated-identifiers": true,
+        "hidden-state-correlation": true
+      },
+      "gateway": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attackMarkerRetained": false,
+        "attempts": [
+          {
+            "id": "oversized-carrier",
+            "category": "carrier-bounds",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:f7d7d9ada499f7e0862b134e88427b272c31a8a63f443e7b19051ec9481fd612"
+            ]
+          },
+          {
+            "id": "model-generated-identifier",
+            "category": "model-generated-identifiers",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:56b29dd2bde6299b2a2f2531ed0ea0b2cbc46a879c78c3dbbea1682925df5674"
+            ]
+          },
+          {
+            "id": "arbitrary-silence",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:f09b204fce58240b1abecb88a5c33c02485a963aa64194ec8439719a674865c5"
+            ]
+          },
+          {
+            "id": "variable-retry-count",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:d297ad793b4c0d9f771690ea36a35c2ff208c9250080ff83693053a78128a24b",
+              "sha256:1b7df741ffcf80f752b4cc361fca2dcdc919a8c715521f56b1d905e83232b8fb",
+              "sha256:cd94ef30b6d3eee2a17742682d5d710bd01f51f4296e49105f42edfd6361bac1"
+            ]
+          },
+          {
+            "id": "receiver-response-size",
+            "category": "response-size",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:f7d7d9ada499f7e0862b134e88427b272c31a8a63f443e7b19051ec9481fd612",
+              "sha256:56b29dd2bde6299b2a2f2531ed0ea0b2cbc46a879c78c3dbbea1682925df5674",
+              "sha256:f09b204fce58240b1abecb88a5c33c02485a963aa64194ec8439719a674865c5",
+              "sha256:d297ad793b4c0d9f771690ea36a35c2ff208c9250080ff83693053a78128a24b",
+              "sha256:1b7df741ffcf80f752b4cc361fca2dcdc919a8c715521f56b1d905e83232b8fb",
+              "sha256:cd94ef30b6d3eee2a17742682d5d710bd01f51f4296e49105f42edfd6361bac1"
+            ]
+          },
+          {
+            "id": "receiver-error-shape",
+            "category": "error-behavior",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:f7d7d9ada499f7e0862b134e88427b272c31a8a63f443e7b19051ec9481fd612",
+              "sha256:56b29dd2bde6299b2a2f2531ed0ea0b2cbc46a879c78c3dbbea1682925df5674",
+              "sha256:f09b204fce58240b1abecb88a5c33c02485a963aa64194ec8439719a674865c5",
+              "sha256:d297ad793b4c0d9f771690ea36a35c2ff208c9250080ff83693053a78128a24b",
+              "sha256:1b7df741ffcf80f752b4cc361fca2dcdc919a8c715521f56b1d905e83232b8fb",
+              "sha256:cd94ef30b6d3eee2a17742682d5d710bd01f51f4296e49105f42edfd6361bac1",
+              "sha256:f7d7d9ada499f7e0862b134e88427b272c31a8a63f443e7b19051ec9481fd612",
+              "sha256:56b29dd2bde6299b2a2f2531ed0ea0b2cbc46a879c78c3dbbea1682925df5674",
+              "sha256:f09b204fce58240b1abecb88a5c33c02485a963aa64194ec8439719a674865c5",
+              "sha256:d297ad793b4c0d9f771690ea36a35c2ff208c9250080ff83693053a78128a24b",
+              "sha256:1b7df741ffcf80f752b4cc361fca2dcdc919a8c715521f56b1d905e83232b8fb",
+              "sha256:cd94ef30b6d3eee2a17742682d5d710bd01f51f4296e49105f42edfd6361bac1"
+            ]
+          }
+        ],
+        "responseSizeWithinTolerance": true,
+        "errorBehaviorWithinTolerance": true,
+        "passed": true
+      },
+      "host": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attempts": [
+          {
+            "id": "filesystem-read",
+            "category": "filesystem",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "clipboard-read",
+            "category": "clipboard",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "process-and-worker-spawn",
+            "category": "process",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "direct-peer-socket",
+            "category": "network",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "environment-discovery",
+            "category": "environment",
+            "blocked": true,
+            "extractedByRecipient": false
+          }
+        ],
+        "passed": true
+      },
+      "transport": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "samplesPerCondition": 47,
+        "timing": {
+          "metric": "timing-ms",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 1000.4134391914893,
+              "variance": 0.1550092688353655,
+              "standardDeviation": 0.39371216495730166,
+              "min": 999.583204999999,
+              "max": 1001.066143
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 1000.5666330000005,
+              "variance": 0.2778520751353149,
+              "standardDeviation": 0.5271167566444032,
+              "min": 999.0245940000004,
+              "max": 1001.2898129999999
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": -0.15319380851121878,
+              "absoluteMeanDifference": 0.15319380851121878,
+              "welchT": -1.5963045090365462,
+              "degreesOfFreedom": 85.14275670182045,
+              "welchP": 0.1141260206262199,
+              "cohensD": -0.32929247722380117,
+              "ksDistance": 0.3617021276595745,
+              "ksP": 0.0029584081937545814
+            }
+          ],
+          "totalSamples": 94
+        },
+        "timingDecision": {
+          "withinTolerance": true,
+          "metric": "timing-ms",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 100
+          },
+          "violations": []
+        },
+        "size": {
+          "metric": "size-bytes",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0,
+              "absoluteMeanDifference": 0,
+              "welchT": 0,
+              "degreesOfFreedom": 92,
+              "welchP": 1,
+              "cohensD": 0,
+              "ksDistance": 0,
+              "ksP": 1
+            }
+          ],
+          "totalSamples": 94
+        },
+        "sizeDecision": {
+          "withinTolerance": true,
+          "metric": "size-bytes",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 0
+          },
+          "violations": []
+        },
+        "errorShape": {
+          "totalResponses": 94,
+          "distinctBodies": 1,
+          "distinctByteLengths": [
+            21
+          ],
+          "identical": true,
+          "constantLength": true,
+          "groups": [
+            {
+              "bodyHash": "sha256:734efcc2b675f3b554c2aa6dab41b33f05508a80d43c122ac8b388c2ff80ea2e",
+              "byteLength": 21,
+              "count": 94,
+              "labels": [
+                "accepted",
+                "rejected"
+              ]
+            }
+          ],
+          "labelsWithVariation": [],
+          "bodiesDistinguishLabels": false
+        },
+        "errorDecision": {
+          "withinTolerance": true,
+          "violations": []
+        },
+        "passed": true
+      },
+      "correlationDetector": {
+        "version": 1,
+        "attempts": 64,
+        "suspectedLeakage": true,
+        "detectedBeforeClaim": true,
+        "observedCmiBits": 2.067626330042,
+        "boundBits": 0.02
+      },
+      "positiveControls": {
+        "hostExposureDetected": true,
+        "timingLeakDetected": true,
+        "sizeLeakDetected": true,
+        "errorShapeLeakDetected": true
+      },
+      "allPositiveControlsDetected": true,
+      "passed": true
+    },
+    {
+      "schemaVersion": 1,
+      "slot": 5,
+      "scenarioSeed": "1a7b726c14a3edfbf2f326339e81a07ee3e3a65605289fb765421543273629e0",
+      "runId": "run-e01-qualified-05",
+      "topology": {
+        "mode": "research-grade",
+        "boundary": "separate-container",
+        "containerIds": [
+          "c0a16e545947",
+          "1ee8d5bb25d0"
+        ],
+        "distinctLearnerContainers": true,
+        "directPeerRoutes": [
+          "refused",
+          "refused"
+        ]
+      },
+      "primaryAttackAttempts": 100,
+      "hostCapabilityAttempts": 5,
+      "registeredCategories": [
+        "timing",
+        "response-size",
+        "error-behavior",
+        "carrier-bounds",
+        "silence-and-retry",
+        "filesystem",
+        "clipboard",
+        "environment",
+        "process",
+        "network",
+        "model-generated-identifiers",
+        "hidden-state-correlation"
+      ],
+      "categoryDecisions": {
+        "timing": true,
+        "response-size": true,
+        "error-behavior": true,
+        "carrier-bounds": true,
+        "silence-and-retry": true,
+        "filesystem": true,
+        "clipboard": true,
+        "environment": true,
+        "process": true,
+        "network": true,
+        "model-generated-identifiers": true,
+        "hidden-state-correlation": true
+      },
+      "gateway": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attackMarkerRetained": false,
+        "attempts": [
+          {
+            "id": "oversized-carrier",
+            "category": "carrier-bounds",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:2cb03d3245ec15456dbc555b29808a12b122d4df1ad28e4820d1d331035ea28e"
+            ]
+          },
+          {
+            "id": "model-generated-identifier",
+            "category": "model-generated-identifiers",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:b695c2d5fe10c136a1fa0e2ecff0a2292eccd9bccb6cf8928d70a82b055fc442"
+            ]
+          },
+          {
+            "id": "arbitrary-silence",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:8b80a130a8307ee7059b57f0939f1e622039374f6793775ae8c4e865f4a5c5f2"
+            ]
+          },
+          {
+            "id": "variable-retry-count",
+            "category": "silence-and-retry",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:eb3f59e494b2fce53fe92f25f3e06f78ae4a0b30b5b0e507bda7b81795ef860a",
+              "sha256:a67bb593bc2680061d58cc12d1519ad09c6e82d13aaaff7289ebda59a40db7f5",
+              "sha256:6a2676fbb9ea6e8a17a7d8814e5327fb09bf9beb7d4f6de4441d84f86faea773"
+            ]
+          },
+          {
+            "id": "receiver-response-size",
+            "category": "response-size",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:2cb03d3245ec15456dbc555b29808a12b122d4df1ad28e4820d1d331035ea28e",
+              "sha256:b695c2d5fe10c136a1fa0e2ecff0a2292eccd9bccb6cf8928d70a82b055fc442",
+              "sha256:8b80a130a8307ee7059b57f0939f1e622039374f6793775ae8c4e865f4a5c5f2",
+              "sha256:eb3f59e494b2fce53fe92f25f3e06f78ae4a0b30b5b0e507bda7b81795ef860a",
+              "sha256:a67bb593bc2680061d58cc12d1519ad09c6e82d13aaaff7289ebda59a40db7f5",
+              "sha256:6a2676fbb9ea6e8a17a7d8814e5327fb09bf9beb7d4f6de4441d84f86faea773"
+            ]
+          },
+          {
+            "id": "receiver-error-shape",
+            "category": "error-behavior",
+            "blocked": true,
+            "extractedByRecipient": false,
+            "auditRecorded": true,
+            "evidenceRefs": [
+              "sha256:2cb03d3245ec15456dbc555b29808a12b122d4df1ad28e4820d1d331035ea28e",
+              "sha256:b695c2d5fe10c136a1fa0e2ecff0a2292eccd9bccb6cf8928d70a82b055fc442",
+              "sha256:8b80a130a8307ee7059b57f0939f1e622039374f6793775ae8c4e865f4a5c5f2",
+              "sha256:eb3f59e494b2fce53fe92f25f3e06f78ae4a0b30b5b0e507bda7b81795ef860a",
+              "sha256:a67bb593bc2680061d58cc12d1519ad09c6e82d13aaaff7289ebda59a40db7f5",
+              "sha256:6a2676fbb9ea6e8a17a7d8814e5327fb09bf9beb7d4f6de4441d84f86faea773",
+              "sha256:2cb03d3245ec15456dbc555b29808a12b122d4df1ad28e4820d1d331035ea28e",
+              "sha256:b695c2d5fe10c136a1fa0e2ecff0a2292eccd9bccb6cf8928d70a82b055fc442",
+              "sha256:8b80a130a8307ee7059b57f0939f1e622039374f6793775ae8c4e865f4a5c5f2",
+              "sha256:eb3f59e494b2fce53fe92f25f3e06f78ae4a0b30b5b0e507bda7b81795ef860a",
+              "sha256:a67bb593bc2680061d58cc12d1519ad09c6e82d13aaaff7289ebda59a40db7f5",
+              "sha256:6a2676fbb9ea6e8a17a7d8814e5327fb09bf9beb7d4f6de4441d84f86faea773"
+            ]
+          }
+        ],
+        "responseSizeWithinTolerance": true,
+        "errorBehaviorWithinTolerance": true,
+        "passed": true
+      },
+      "host": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "attempts": [
+          {
+            "id": "filesystem-read",
+            "category": "filesystem",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "clipboard-read",
+            "category": "clipboard",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "process-and-worker-spawn",
+            "category": "process",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "direct-peer-socket",
+            "category": "network",
+            "blocked": true,
+            "extractedByRecipient": false
+          },
+          {
+            "id": "environment-discovery",
+            "category": "environment",
+            "blocked": true,
+            "extractedByRecipient": false
+          }
+        ],
+        "passed": true
+      },
+      "transport": {
+        "version": 1,
+        "deploymentMode": "research-grade",
+        "samplesPerCondition": 47,
+        "timing": {
+          "metric": "timing-ms",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 1001.0804982978722,
+              "variance": 11.546165585817016,
+              "standardDeviation": 3.3979649182734386,
+              "min": 999.5735360000035,
+              "max": 1023.672338
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 1000.6099541702132,
+              "variance": 0.11693051853761889,
+              "standardDeviation": 0.3419510469900902,
+              "min": 999.8202369999999,
+              "max": 1001.362916
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0.47054412765896814,
+              "absoluteMeanDifference": 0.47054412765896814,
+              "welchT": 0.9445878600701721,
+              "degreesOfFreedom": 46.931608371011386,
+              "welchP": 0.34970713203831294,
+              "cohensD": 0.19485359756690077,
+              "ksDistance": 0.21276595744680848,
+              "ksP": 0.20955565388383293
+            }
+          ],
+          "totalSamples": 94
+        },
+        "timingDecision": {
+          "withinTolerance": true,
+          "metric": "timing-ms",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 100
+          },
+          "violations": []
+        },
+        "size": {
+          "metric": "size-bytes",
+          "labels": [
+            {
+              "label": "accepted",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            },
+            {
+              "label": "rejected",
+              "count": 47,
+              "mean": 8192,
+              "variance": 0,
+              "standardDeviation": 0,
+              "min": 8192,
+              "max": 8192
+            }
+          ],
+          "pairs": [
+            {
+              "labelA": "accepted",
+              "labelB": "rejected",
+              "meanDifference": 0,
+              "absoluteMeanDifference": 0,
+              "welchT": 0,
+              "degreesOfFreedom": 92,
+              "welchP": 1,
+              "cohensD": 0,
+              "ksDistance": 0,
+              "ksP": 1
+            }
+          ],
+          "totalSamples": 94
+        },
+        "sizeDecision": {
+          "withinTolerance": true,
+          "metric": "size-bytes",
+          "tolerance": {
+            "maxAbsoluteMeanDifference": 0
+          },
+          "violations": []
+        },
+        "errorShape": {
+          "totalResponses": 94,
+          "distinctBodies": 1,
+          "distinctByteLengths": [
+            21
+          ],
+          "identical": true,
+          "constantLength": true,
+          "groups": [
+            {
+              "bodyHash": "sha256:734efcc2b675f3b554c2aa6dab41b33f05508a80d43c122ac8b388c2ff80ea2e",
+              "byteLength": 21,
+              "count": 94,
+              "labels": [
+                "accepted",
+                "rejected"
+              ]
+            }
+          ],
+          "labelsWithVariation": [],
+          "bodiesDistinguishLabels": false
+        },
+        "errorDecision": {
+          "withinTolerance": true,
+          "violations": []
+        },
+        "passed": true
+      },
+      "correlationDetector": {
+        "version": 1,
+        "attempts": 64,
+        "suspectedLeakage": true,
+        "detectedBeforeClaim": true,
+        "observedCmiBits": 2.067626330042,
+        "boundBits": 0.02
+      },
+      "positiveControls": {
+        "hostExposureDetected": true,
+        "timingLeakDetected": true,
+        "sizeLeakDetected": true,
+        "errorShapeLeakDetected": true
+      },
+      "allPositiveControlsDetected": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "failure": null,
+  "retainedEvidenceRoot": "evidence/qualification/e01-v1",
+  "claimBoundary": "E01 software qualification on the registered local two-container topology only; no behavioral, public-chain, independent-review, or universal side-channel-resistance claim."
+}

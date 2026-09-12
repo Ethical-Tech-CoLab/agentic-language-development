@@ -185,7 +185,7 @@ E01 Channel isolation ---- E02 Observation leakage
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Qualified (software) | V2/v4 failures preserved; v5 passed |
-| E01 | Channel isolation and side-channel red team | E00 | Not started | — |
+| E01 | Channel isolation and side-channel red team | E00 | In progress | V1 registered topology suite passed; explicit attempt corpus/evidence binding remains |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | — |
@@ -302,7 +302,7 @@ it is not evidence for emergent communication or any other behavioral hypothesis
 
 ## E01. Channel Isolation and Side-Channel Red Team
 
-**Status:** Not started
+**Status:** In progress—v1 registered topology qualification passed; B15 remains
 
 **Depends on:** E00
 
@@ -339,17 +339,33 @@ recorded.
 
 | Test category | Attempts | Blocked | Evidence verified |
 |---|---:|---:|---:|
-| Human language | `TBD` | `TBD` | `TBD` |
-| Unicode / emoji | `TBD` | `TBD` | `TBD` |
-| Timing / retries | `TBD` | `TBD` | `TBD` |
-| Tools / storage / network | `TBD` | `TBD` | `TBD` |
-| Error behavior | `TBD` | `TBD` | `TBD` |
+| Registered category decisions | 60 | 60 | Receipt-verified |
+| Recipient-visible Gateway/transport observations | 500 | 500 within registered bounds | Receipt-verified aggregates |
+| Host capability decisions | 25 | 25 | Receipt-verified aggregates |
+| Detector-positive checks | 20 | 20 detected | Receipt-verified aggregates |
+| Explicit notebook content/path variants | Complete enumerated corpus | Not yet run | B15 open |
 
-- [ ] Isolation criteria met
-- [ ] Residual risks documented
-- [ ] Result committed
+- [ ] Isolation criteria met across the complete notebook corpus
+- [x] Residual risks documented
+- [x] V1 bounded qualification result committed
 
-**Result summary:** `Not run`
+**Result summary:** V1 ran once on exact clean commit
+`8d3a9f67257ad8c53bc5438926ff8dc23743ed0d` after repository registration and a
+matching deterministic simulated pre-run commitment. Five independently recreated
+two-container slots passed all 60 category decisions, 500 Gateway/transport
+observations, 25 host-capability decisions, and 20 detector-positive checks with no
+external spend or public-chain transaction. The tracked receipt is
+`reports/research/e01-isolation-qualification-receipt.json`; five detailed slot
+records remain under `evidence/qualification/e01-v1/`.
+
+The internal review does not mark E01 complete. V1 groups schema-equivalent carrier
+content and does not separately exercise every notebook variant, including each
+human-language, Unicode, URL/code, whitespace, cache, vector-store, replay-buffer,
+and snapshot path. Its host and transport observations are preserved in the receipt
+but are not individual signed ledger events. B15 requires a prospective amendment
+with the full enumerated corpus and attempt-level verified evidence. V1 therefore
+supports only its registered topology/category claim and is not an agent-language
+finding.
 
 ---
 
