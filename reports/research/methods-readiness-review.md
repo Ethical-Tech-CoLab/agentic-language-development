@@ -10,7 +10,7 @@ Independent human review: not performed
 All 19 experiment cards are covered, but none is ready for outcome collection. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
-software qualifications do not substitute for external registration, prospective
+software qualifications do not substitute for repository registration, prospective
 commitments, selected sample sizes, adequate resources, or independent review. The
 scoped governance and simulation-only funding decision is now complete.
 
@@ -21,13 +21,11 @@ to relabel any existing fixture as a pilot.
 
 ## Critical blockers
 
-1. No confirmatory protocol has an authentic external registration and identical
-   independently verified pre-run simulated commitment.
-2. No independent human restore, methods/statistics review, reproduction review, or
-   citation audit exists.
-3. No blinded pilot has supplied the variance and feasibility inputs needed to select
+1. No confirmatory protocol has a complete canonical packet, immutable repository
+   registration, and identical verified pre-run simulated commitment.
+2. No blinded pilot has supplied the variance and feasibility inputs needed to select
    exact confirmatory seed prefixes. N=100 is planning-only.
-4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
+3. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
 
@@ -51,29 +49,29 @@ to relabel any existing fixture as a pilot.
 - A fail-closed canonical packet compiler now rejects missing, extra, empty, and
   placeholder operational fields. The 19-card inventory still has 190 unresolved
   exact bindings and therefore compiles zero registration packets.
-- Upstream required-check enforcement and load-bearing citation re-review remain
-  external evidence gaps. Public-chain authority is non-applicable under the approved
-  simulation-only campaign.
+- Independent restore, methods/statistics review, reproduction review, hosted
+  enforcement, and load-bearing citation re-review remain optional external evidence
+  gaps. They do not block local collection, and no corresponding independent claim is made.
 
 ## Per-experiment disposition
 
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
-| E00 | No | upstream enforcement and exact packet |
+| E00 | No | exact packet |
 | E01/E02 | No | E00 plus topology/packet-specific leakage evidence |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |
-| E30-E32 | No | upstream experimental chain, resources, registration, independent review |
-| E40 | No | E32, resources, exact packet, external review |
-| E50 | No | completed designated studies plus distinct operator/deployment, registration, restore, resources, citation and methods review |
+| E30-E32 | No | upstream experimental chain, resources, and repository registration |
+| E40 | No | E32, resources, and exact packet |
+| E50 | No | completed designated studies plus repository registration and resources |
 
 ## Safe continuation boundary
 
 Local work may build the historical data/claim inventory, anonymous report and
 registration templates, missing synthetic detector/comparator qualifications, and
 additional bounded software evidence. It may not collect confirmatory outcomes,
-spend externally, transact on mainnet, invent approval/registration/review receipts,
+spend externally, transact on mainnet, invent approval/third-party-registration/review receipts,
 or present qualification output as a research finding.
 
 This decision remains open rather than “resolved by prose.” Each blocker has a

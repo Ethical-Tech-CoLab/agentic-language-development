@@ -927,7 +927,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `EXPERIMENT-NOTEBOOK.md` [§4. Study Metadata](EXPERIMENT-NOTEBOOK.md#4-study-metadata)
 - **Scope:** Bind a notebook experiment and sealed hypothesis/parameters to RunConfig, create append-only versioned Experiment Records, and export `experiment-record.json` with disposition/checkpoint/anchor/verifier/deviation references.
 - **Acceptance criteria:**
-  - [x] A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run commitment receipt whose simulated/public class matches the run configuration.
+  - [x] A confirmatory run cannot start without a bound experiment ID, protocol commit, complete repository-native or external registration, canonical pre-registration hash, and matching pre-run commitment receipt whose simulated/public class matches the run configuration.
   - [x] Pre-registration creates Experiment Record version `1`; later disposition/evidence changes append higher versions without updating prior rows.
   - [x] Every evidence bundle contains the latest record plus its version history and references resolvable by an independent reviewer.
 
@@ -1052,8 +1052,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), [§7.2 Experiment Record](SPECIFICATION.md#72-experiment-record)
 - **Scope:** Check the immutable software, configuration, isolation, seed, registration, and pre-run commitment bindings before confirmatory collection and report every blocker together.
 - **Acceptance criteria:**
-  - [x] Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable commit, seed count, external registration, and confirmed matching pre-run commitment.
-  - [x] A missing external registration, mismatched binding, or absent/incorrect anchor blocks confirmatory readiness.
+  - [x] Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable ancestral commits, seed count, complete registration, and confirmed matching pre-run commitment.
+  - [x] A missing repository-native/external registration, mismatched binding, or absent/incorrect commitment blocks confirmatory readiness.
   - [x] A passing preflight explicitly does not claim public-chain verification or scientific validity.
 
 #### ALD-085 — Real open-weight frozen-model qualification

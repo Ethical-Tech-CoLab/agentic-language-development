@@ -135,7 +135,7 @@ const receipt = {
     blocker: 'B10',
     status: 'open',
     completed: 'exact production chronology, immutable provider-identity and eligibility binding, fail-closed creation/recovery, and source-bound per-turn scores',
-    remains: 'external registration of the exact validation corpus and eligible E16 configuration, prospective study execution, untouched aggregate scoring, and independent review'
+    remains: 'repository registration of the exact validation corpus and eligible E16 configuration, prospective study execution, untouched aggregate scoring, and independent review'
   },
   boundary: protocol.boundary
 };

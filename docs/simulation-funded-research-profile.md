@@ -28,13 +28,15 @@ fabricated scientific results.
 
 ## Integrity and registration
 
-External prospective registration remains required for confirmatory work. Before
-collection, the canonical registration hash is committed through the deterministic
-simulation transport and recorded with `anchorClass: "simulated"`. This proves that
-the run consumed the registered bytes and makes later changes detectable within the
-evidence bundle. It does not provide public timestamping, decentralized persistence,
-economic finality, or third-party chain availability. The external registration
-timestamp and immutable Git commit provide the independent time/order evidence.
+Repository-native prospective registration is required for confirmatory work. Before
+collection, the complete canonical packet is committed unchanged to Git and its
+registration commit must be ancestral to the execution commit. Preflight loads the
+packet bytes from that commit and reproduces the registered hash. The same hash is
+then committed through the deterministic simulation transport and recorded with
+`anchorClass: "simulated"`. This proves exact local consumption and makes later
+changes detectable. It does not provide an independent timestamp, third-party
+custody, public persistence, economic finality, or third-party chain availability.
+External registration or archival timestamping remains an optional enhancement.
 
 Public-chain support remains an optional software capability and may be tested with
 mocks. It is outside the approved research profile. Activating it requires a new

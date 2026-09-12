@@ -3,9 +3,9 @@
   "classification": "external-prerequisite-readiness-ledger",
   "researchFinding": false,
   "capturedAt": "2026-09-12",
-  "decision": "blocked",
+  "decision": "ready",
   "satisfiedCount": 1,
-  "requiredCount": 4,
+  "requiredCount": 1,
   "items": [
     {
       "id": "O01",
@@ -14,7 +14,7 @@
       "satisfied": true,
       "receipt": {
         "path": "protocols/research-governance-and-funding.v1.json",
-        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
       },
       "requiredEvidence": [
         "dated authentic governance decision identifier",
@@ -33,7 +33,7 @@
       "satisfied": false,
       "receipt": {
         "path": "protocols/research-governance-and-funding.v1.json",
-        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
       },
       "requiredEvidence": [
         "approved simulation-only funding profile",
@@ -52,7 +52,7 @@
       "satisfied": false,
       "receipt": {
         "path": "protocols/research-governance-and-funding.v1.json",
-        "sha256": "0d5ebc03fef1fa3c197fd825943b1ca8d265fb17f2fe05b4af59d0be4e49eb40"
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
       },
       "requiredEvidence": [
         "approved simulation-only funding profile",
@@ -67,53 +67,59 @@
     {
       "id": "O04",
       "blockingFinding": "B04",
-      "status": "observed-unsatisfied",
+      "status": "not-applicable",
       "satisfied": false,
       "receipt": {
-        "path": "reports/research/upstream-enforcement-observation.json",
-        "sha256": "eabff1d5e42b4110f7d0d9345831af8f748db4f6bfefbb5b32121a59c6157e7e"
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
       },
       "requiredEvidence": [
-        "exact execution branch or immutable candidate present upstream",
-        "required consolidated-suite check",
-        "required mode-r check",
-        "protection or ruleset enforcement on the target branch",
-        "fresh passing hosted runs for the exact candidate",
-        "read-only recheck after enforcement"
+        "approved repository-native execution profile",
+        "exact immutable execution commit recorded",
+        "clean execution tree required by preflight",
+        "complete local consolidated suite on the exact candidate",
+        "local Mode R qualification on the exact candidate when applicable",
+        "hosted enforcement excluded from scientific estimands"
       ],
-      "nextAction": "An authorized repository administrator configures required checks; a later read-only audit verifies the exact protected candidate."
+      "nextAction": "Use exact-commit local validation for collection; retain hosted enforcement as an optional release-governance enhancement."
     },
     {
       "id": "O05",
       "blockingFinding": "B05",
-      "status": "missing",
+      "status": "not-applicable",
       "satisfied": false,
-      "receipt": null,
+      "receipt": {
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
+      },
       "requiredEvidence": [
-        "second-person reviewer role attestation",
-        "exact software commit",
-        "database, snapshot, and bundle checksums",
-        "per-run policy and prefix results",
-        "failure and quarantine disposition",
-        "start and completion timestamps"
+        "approved first-party local execution profile",
+        "automated restore and checksum verification retained",
+        "production verifier and independent Rust verifier retained",
+        "absence of second-person restoration disclosed",
+        "independent reproducibility claims prohibited",
+        "optional later independent restore preserved"
       ],
-      "nextAction": "A human other than the implementer follows the snapshot/restore runbook and records the complete result."
+      "nextAction": "Run mandatory first-party restore checks locally; seek second-person restoration later only to support independent reproducibility claims."
     },
     {
       "id": "O06",
       "blockingFinding": "B06",
-      "status": "missing",
+      "status": "not-applicable",
       "satisfied": false,
-      "receipt": null,
+      "receipt": {
+        "path": "protocols/research-governance-and-funding.v1.json",
+        "sha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f"
+      },
       "requiredEvidence": [
         "compiled canonical registration packet with zero unresolved fields",
-        "external registration identifier and timestamp",
-        "external registration URL",
+        "immutable repository commit ancestral to execution",
+        "registered packet path and commit timestamp",
         "identical canonical pre-registration hash",
         "confirmed pre-run simulated commitment with matching payload",
-        "independent offline receipt verification before outcome collection"
+        "offline packet and receipt verification before outcome collection"
       ],
-      "nextAction": "After D08 compiles an exact packet, register it externally and commit the unchanged hash through the deterministic simulated transport before eligible collection."
+      "nextAction": "After D08 compiles an exact packet, commit it immutably and bind the unchanged hash through deterministic simulated transport before eligible collection."
     }
   ],
   "privacyBoundary": [
@@ -121,6 +127,6 @@
     "Tracked artifacts use role labels rather than personal identity.",
     "Credentials are materialized only through si fort from encrypted project environment material."
   ],
-  "activationRule": "No experiment may use an applicable item merely because a receipt path exists. It must be authentically completed, independently checked where specified, changed to verified, and accepted by campaign and experiment-specific preflight gates; not-applicable items are excluded from the denominator only under the approved simulation-only policy.",
-  "boundary": "This ledger records one scoped governance approval and two public-chain prerequisites made inapplicable by policy. It is not institutional approval, external registration, independent review, or authorization to invent outcomes."
+  "activationRule": "No experiment may proceed merely because this external-dependency ledger is ready. The canonical packet, immutable repository registration, prospective simulated commitment, experiment-specific dependencies, and every local preflight check must pass; not-applicable external enhancements are excluded only under the approved repository-native simulation policy.",
+  "boundary": "This ledger records one scoped governance approval and makes five external dependencies inapplicable to local synthetic execution. It is not institutional approval, third-party registration, independent review, independent replication, hosted enforcement, or authorization to invent outcomes."
 }

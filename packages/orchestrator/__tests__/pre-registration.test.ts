@@ -33,6 +33,7 @@ describe('confirmatory pre-registration binding (ALD-071)', () => {
     const inputData = `0x${config.preRegistrationHash.replace(/^sha256:/u, '')}`;
     const binding: PreRegistrationBinding = {
       registrationClass: 'confirmatory',
+      registrationAuthority: 'external',
       preRegistrationHash: config.preRegistrationHash as Sha256Hash,
       externalRegistrationUrl: 'https://osf.io/ald03',
       externalRegistrationId: 'osf:ald03-v1',
@@ -50,13 +51,13 @@ describe('confirmatory pre-registration binding (ALD-071)', () => {
     };
 
     await expect(harness.runtime.createRun(config)).rejects.toThrow(
-      /require a bound external pre-registration/u,
+      /require a bound pre-registration/u,
     );
     await expect(
       harness.runtime.createRun(config, {
         preRegistration: { ...binding, externalRegistrationUrl: undefined },
       }),
-    ).rejects.toThrow(/external registration URL/u);
+    ).rejects.toThrow(/external binding requires a registration URL/u);
     await expect(
       harness.runtime.createRun(config, {
         preRegistration: {
@@ -77,5 +78,22 @@ describe('confirmatory pre-registration binding (ALD-071)', () => {
       preRegistrationHash: config.preRegistrationHash,
       preRegistration: binding,
     });
+
+    const repositoryBinding: PreRegistrationBinding = {
+      ...binding,
+      registrationAuthority: 'repository-native',
+      externalRegistrationUrl: undefined,
+      externalRegistrationId: undefined,
+      registeredAt: undefined,
+      repositoryRegistration: {
+        commit: '1'.repeat(40),
+        path: 'protocols/e03-registration.v1.json',
+        artifactSha256: config.preRegistrationHash as Sha256Hash,
+        committedAt: '2026-09-01T00:00:00.000Z',
+      },
+      label: 'confirmatory: repository-registered before run start',
+    };
+    const secondConfig = { ...config, runId: 'repository-native-binding' };
+    await harness.runtime.createRun(secondConfig, { preRegistration: repositoryBinding });
   });
 });

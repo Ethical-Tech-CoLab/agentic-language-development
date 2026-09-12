@@ -8,6 +8,8 @@ import {
   evaluateResearchPreflight,
   formatResearchPreflight,
 } from '@ald/ops';
+import { hashCanonical } from '@ald/hashing';
+import { HASH_DOMAINS } from '@ald/types';
 
 const { values } = parseArgs({
   options: {
@@ -32,15 +34,54 @@ const binding =
 const headCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
   encoding: 'utf8',
 }).trim();
+const isAncestor = (commit) => {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', commit, headCommit]);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const clean =
   execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()
     .length === 0;
+const registrationRecordMatches = () => {
+  if (binding?.registrationAuthority === 'external') return true;
+  const registration = binding?.repositoryRegistration;
+  if (registration === undefined || !isAncestor(registration.commit)) return false;
+  try {
+    const committed = JSON.parse(
+      execFileSync('git', ['show', `${registration.commit}:${registration.path}`], {
+        encoding: 'utf8',
+      }),
+    );
+    const artifact = committed.artifact ?? committed;
+    const committedAt = execFileSync(
+      'git',
+      ['show', '-s', '--format=%cI', registration.commit],
+      { encoding: 'utf8' },
+    ).trim();
+    return (
+      hashCanonical(HASH_DOMAINS.preRegistration, artifact) ===
+        registration.artifactSha256 &&
+      registration.artifactSha256 === compiled.preRegistrationHash &&
+      Date.parse(committedAt) === Date.parse(registration.committedAt)
+    );
+  } catch {
+    return false;
+  }
+};
 const report = evaluateResearchPreflight({
   config: firstRun.config,
   artifact: compiled.artifact,
   preRegistrationHash: compiled.preRegistrationHash,
   binding,
-  repository: { headCommit, clean },
+  repository: {
+    headCommit,
+    clean,
+    protocolCommitIsAncestor: isAncestor(firstRun.config.protocolGitCommit),
+    registrationRecordMatches: registrationRecordMatches(),
+  },
 });
 
 process.stdout.write(

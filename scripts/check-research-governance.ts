@@ -29,6 +29,19 @@ const policy = JSON.parse(readFileSync(path, 'utf8')) as {
     transport: string;
     rule: string;
   };
+  registrationPolicy: {
+    profile: string;
+    externalRegistrationRequired: boolean;
+    requirements: string[];
+    claimBoundary: string;
+  };
+  externalDependencyPolicy: {
+    upstreamProtectionRequiredForExecution: boolean;
+    independentHumanRestoreRequiredForExecution: boolean;
+    externalRegistrationRequiredForExecution: boolean;
+    optionalEnhancements: string[];
+    rule: string;
+  };
   retentionPolicy: Record<string, string>;
   claimBoundary: string;
 };
@@ -70,6 +83,24 @@ if (
   policy.fundingPolicy.rule.length < 60
 ) {
   throw new Error('research funding profile is not unambiguously simulation-only');
+}
+if (
+  policy.registrationPolicy.profile !== 'repository-native' ||
+  policy.registrationPolicy.externalRegistrationRequired ||
+  policy.registrationPolicy.requirements.length < 6 ||
+  policy.registrationPolicy.requirements.some((requirement) => requirement.length < 30) ||
+  policy.registrationPolicy.claimBoundary.length < 180
+) {
+  throw new Error('repository-native registration policy is incomplete or overclaims independence');
+}
+if (
+  policy.externalDependencyPolicy.upstreamProtectionRequiredForExecution ||
+  policy.externalDependencyPolicy.independentHumanRestoreRequiredForExecution ||
+  policy.externalDependencyPolicy.externalRegistrationRequiredForExecution ||
+  policy.externalDependencyPolicy.optionalEnhancements.length < 4 ||
+  policy.externalDependencyPolicy.rule.length < 150
+) {
+  throw new Error('external-dependency applicability policy is incomplete');
 }
 for (const role of ['projectOperator', 'researchOperator', 'integrityVerifier', 'dataSteward', 'independentReviewer']) {
   if ((policy.responsibleRoles[role]?.length ?? 0) < 20) throw new Error(`role ${role} is not assigned`);

@@ -160,7 +160,7 @@ its signer's public key listed in `signers`.
   `confirmatory`), the `preRegistrationHash` it binds, the external
   registration URL/id when one exists, the pre-run commitment of that hash when one
   exists, its `anchorClass` (`simulated` or `public-chain`), and a verbatim `label`.
-  A `confirmatory` binding MUST carry both the external registration and a
+  A `confirmatory` binding MUST carry a complete repository-native or external registration and a
   `confirmed` pre-run commitment; a verifier that finds
   a `confirmatory` binding without them MUST fail the run. A bundle without this
   field is a run created before ALD-071 completed and is read as

@@ -46,7 +46,7 @@ scan, and the dependency audit. A deterministic 40-row fit, 20-row selection, an
 task-history signal, and passed seven negative controls. The perfect native prediction
 was constructed from fixture labels and is therefore only an oracle-like scoring
 positive control. A separate exact runtime qualification now establishes production
-chronology and evidence binding; eligible external registration, execution, aggregate
+chronology and evidence binding; eligible repository registration, execution, aggregate
 analysis, and independent review remain required before blocker B10 can close.
 
 ## Leakage decision principle

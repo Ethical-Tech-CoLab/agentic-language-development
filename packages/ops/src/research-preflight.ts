@@ -35,7 +35,7 @@ export type ResearchPreflightCheckId =
   | 'artifact-protocol-matches'
   | 'confirmatory-class'
   | 'binding-valid'
-  | 'external-registration-complete'
+  | 'registration-complete'
   | 'binding-hash-matches'
   | 'pre-run-anchor-confirmed'
   | 'pre-run-anchor-network'
@@ -55,6 +55,8 @@ export interface ResearchPreflightInput {
   readonly repository: {
     readonly headCommit: string;
     readonly clean: boolean;
+    readonly protocolCommitIsAncestor: boolean;
+    readonly registrationRecordMatches: boolean;
   };
 }
 
@@ -147,9 +149,9 @@ export function evaluateResearchPreflight(
       'protocol-commit-immutable',
       parsedConfig.success &&
         COMMIT_PATTERN.test(config.protocolGitCommit) &&
-        config.protocolGitCommit === input.repository.headCommit,
-      'RunConfig identifies the exact immutable execution commit.',
-      'RunConfig.protocolGitCommit must equal the current 40-hex Git HEAD.',
+        input.repository.protocolCommitIsAncestor,
+      'RunConfig identifies an immutable protocol commit ancestral to execution.',
+      'RunConfig.protocolGitCommit must be a 40-hex ancestor of the current Git HEAD.',
     ),
     check(
       'artifact-valid',
@@ -185,22 +187,26 @@ export function evaluateResearchPreflight(
     check(
       'binding-valid',
       parsedBinding?.success === true,
-      'External registration binding satisfies its schema.',
-      'A valid external registration binding is required.',
+      'Registration binding satisfies its schema.',
+      'A valid registration binding is required.',
     ),
     check(
-      'external-registration-complete',
-      binding?.externalRegistrationUrl !== undefined &&
-        binding.externalRegistrationId !== undefined &&
-        binding.registeredAt !== undefined,
-      'External registration URL, ID, and timestamp are recorded.',
-      'External registration URL, ID, and timestamp are required.',
+      'registration-complete',
+      binding?.registrationAuthority === 'repository-native'
+        ? binding.repositoryRegistration !== undefined &&
+          binding.repositoryRegistration.artifactSha256 === input.preRegistrationHash &&
+          input.repository.registrationRecordMatches
+        : binding?.externalRegistrationUrl !== undefined &&
+          binding.externalRegistrationId !== undefined &&
+          binding.registeredAt !== undefined,
+      'A complete ancestral repository-native or external registration is recorded.',
+      'A complete ancestral repository-native or external registration is required.',
     ),
     check(
       'binding-hash-matches',
       binding?.preRegistrationHash === input.preRegistrationHash,
-      'External binding carries the compiled artifact hash.',
-      'External binding hash does not match the compiled artifact.',
+      'Registration binding carries the compiled artifact hash.',
+      'Registration binding hash does not match the compiled artifact.',
     ),
     check(
       'pre-run-anchor-confirmed',

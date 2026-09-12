@@ -21,8 +21,8 @@ import { AnalysisError } from './errors.js';
 
 export const E03_REGISTRATION_COMPILER_VERSION = 2;
 export const E03_REGISTRATION_CLAIM_BOUNDARY =
-  'Draft artifact only: external registration, governance review, and a ' +
-  'confirmed pre-run Base anchor are still required before confirmatory collection.';
+  'Draft artifact only: immutable repository registration, governance review, and a ' +
+  'confirmed pre-run simulated commitment are still required before confirmatory collection.';
 
 const VOLATILE_PARAMETER_KEYS = new Set([
   'runId',

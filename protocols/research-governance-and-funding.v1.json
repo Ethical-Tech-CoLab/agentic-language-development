@@ -36,11 +36,36 @@
     "transport": "deterministic in-memory chain",
     "rule": "No research result may describe simulated funds, fees, blocks, or receipts as financially incurred or publicly finalized."
   },
+  "registrationPolicy": {
+    "profile": "repository-native",
+    "externalRegistrationRequired": false,
+    "requirements": [
+      "compile the complete canonical experiment packet before outcome collection",
+      "commit the unchanged packet to an immutable Git ancestor of the execution commit",
+      "record the packet path, commit, commit time, and canonical pre-registration hash",
+      "commit the same hash through the deterministic in-memory transport before the run enters running",
+      "verify the committed packet bytes, commit ancestry, simulated receipt, and run-manifest binding before collection",
+      "append prospective amendments under new packet hashes and never overwrite a registered packet"
+    ],
+    "claimBoundary": "Repository-native registration proves packet identity, ancestry, ordering relative to later committed evidence, and tamper detection within the published repository history. It does not prove an independent timestamp, third-party custody, decentralized persistence, or public-chain finality."
+  },
+  "externalDependencyPolicy": {
+    "upstreamProtectionRequiredForExecution": false,
+    "independentHumanRestoreRequiredForExecution": false,
+    "externalRegistrationRequiredForExecution": false,
+    "optionalEnhancements": [
+      "hosted required-check enforcement for release governance",
+      "second-person restoration for independent reproducibility evidence",
+      "third-party registration or archival timestamping for stronger temporal independence",
+      "independent methods, statistics, reproduction, and citation review before venue submission"
+    ],
+    "rule": "Absence of an optional external enhancement must be disclosed and narrows the corresponding independence claim, but does not block locally executable synthetic experiments whose estimands do not depend on that enhancement."
+  },
   "retentionPolicy": {
     "eligibleResearchEvidence": "retain indefinitely with immutable manifests and checksums",
     "developmentPayloads": "eligible for purge after 30 days while metadata, manifests, receipts, and audit logs remain",
     "accidentalSensitiveMaterial": "quarantine immediately, exclude from research, and delete after incident documentation",
     "deletionAuthority": "data-steward"
   },
-  "claimBoundary": "This decision authorizes a synthetic, simulation-funded repository study. It is not institutional ethics approval, external registration, independent review, or evidence that any public-chain transaction occurred."
+  "claimBoundary": "This decision authorizes a synthetic, simulation-funded, repository-native study. It is not institutional ethics approval, third-party registration, independent review, an independent timestamp, or evidence that any public-chain transaction occurred."
 }

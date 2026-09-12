@@ -68,13 +68,16 @@ const report = {
     compiledPackets: packets.filter((packet) => packet.preRegistrationHash !== null).length,
   },
   packets,
-  externalStepsNotRepresentedAsBindings: [
+  activationStepsNotRepresentedAsBindings: [
     'authentic governance approval',
-    'external registration receipt for the compiled packet hash',
-    'independently verified matching pre-run simulated commitment',
-    'independent methods review',
+    'immutable repository registration of the compiled packet hash',
+    'matching pre-run simulated commitment verified offline',
   ],
-  boundary: 'This inventory is deliberately incomplete. It is not a registration, a completed simulated commitment, governance approval, or permission to collect outcomes.',
+  optionalExternalEnhancements: [
+    'third-party registration or archival timestamp',
+    'independent methods and reproduction review',
+  ],
+  boundary: 'This inventory is deliberately incomplete. It is not a repository registration, a completed simulated commitment, governance approval, or permission to collect outcomes.',
 };
 
 if (report.totals.registrationReady !== 0 || report.totals.compiledPackets !== 0) throw new Error('inventory fabricates a ready or compiled packet');

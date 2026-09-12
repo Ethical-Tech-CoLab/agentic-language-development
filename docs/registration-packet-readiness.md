@@ -27,8 +27,8 @@ undefined, empty, non-finite, and placeholder values such as `TBD`, `unknown`, o
 binding set is then canonicalized and hashed under the repository's pre-registration
 domain. Any change to any bound content changes the packet hash.
 
-The emitted claim boundary is `draft-until-externally-registered-and-pre-run-committed`.
-Compilation alone cannot establish external registration, governance approval,
+The emitted claim boundary is `draft-until-repository-registered-and-pre-run-committed`.
+Compilation alone cannot establish immutable repository registration, governance approval,
 a completed commitment, public anchoring, or independent review.
 
 ## Current inventory
@@ -40,7 +40,7 @@ total. Therefore:
 - registration-ready experiments: 0/19;
 - compiled canonical packets: 0/19;
 - pre-registration hashes emitted by this inventory: 0; and
-- authentic external registration and matching simulated pre-run commitments: 0.
+- immutable repository registration and matching simulated pre-run commitments: 0.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

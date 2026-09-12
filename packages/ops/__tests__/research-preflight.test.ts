@@ -43,6 +43,7 @@ function passingInput() {
   const compiled = registration();
   const binding: PreRegistrationBinding = {
     registrationClass: 'confirmatory',
+    registrationAuthority: 'external',
     preRegistrationHash: compiled.preRegistrationHash,
     externalRegistrationUrl: 'https://osf.io/example',
     externalRegistrationId: 'osf:e03-v1',
@@ -63,12 +64,17 @@ function passingInput() {
     artifact: compiled.artifact,
     preRegistrationHash: compiled.preRegistrationHash,
     binding,
-    repository: { headCommit: COMMIT, clean: true },
+    repository: {
+      headCommit: COMMIT,
+      clean: true,
+      protocolCommitIsAncestor: true,
+      registrationRecordMatches: true,
+    },
   };
 }
 
 describe('confirmatory research preflight', () => {
-  it('passes only when every immutable input and external binding agrees', () => {
+  it('passes only when every immutable input and registration binding agrees', () => {
     const report = evaluateResearchPreflight(passingInput());
     expect(report.ready).toBe(true);
     expect(report.blockers).toEqual([]);
@@ -76,14 +82,14 @@ describe('confirmatory research preflight', () => {
     expect(formatResearchPreflight(report)).toContain('Research preflight: READY');
   });
 
-  it('reports every missing external prerequisite instead of stopping at the first', () => {
+  it('reports every missing registration prerequisite instead of stopping at the first', () => {
     const input = passingInput();
     const report = evaluateResearchPreflight({ ...input, binding: undefined });
     expect(report.ready).toBe(false);
     expect(report.blockers).toEqual(
       expect.arrayContaining([
         'binding-valid',
-        'external-registration-complete',
+        'registration-complete',
         'binding-hash-matches',
         'pre-run-anchor-confirmed',
         'pre-run-anchor-network',
@@ -100,7 +106,7 @@ describe('confirmatory research preflight', () => {
     })],
     ['protocol-commit-immutable', (input: ReturnType<typeof passingInput>) => ({
       ...input,
-      repository: { ...input.repository, headCommit: '3'.repeat(40) },
+      repository: { ...input.repository, protocolCommitIsAncestor: false },
     })],
     ['artifact-hash-matches', (input: ReturnType<typeof passingInput>) => ({
       ...input,
@@ -122,5 +128,48 @@ describe('confirmatory research preflight', () => {
     })],
   ] as const)('fails the %s check independently', (id, mutate) => {
     expect(evaluateResearchPreflight(mutate(passingInput())).blockers).toContain(id);
+  });
+
+  it('accepts a matching ancestral repository-native registration', () => {
+    const input = passingInput();
+    const report = evaluateResearchPreflight({
+      ...input,
+      binding: {
+        registrationClass: 'confirmatory',
+        registrationAuthority: 'repository-native',
+        preRegistrationHash: input.preRegistrationHash,
+        repositoryRegistration: {
+          commit: COMMIT,
+          path: 'protocols/e03-registration.v1.json',
+          artifactSha256: input.preRegistrationHash,
+          committedAt: '2026-09-09T00:00:00.000Z',
+        },
+        preRunAnchor: input.binding.preRunAnchor,
+        label: 'confirmatory: repository-registered before run start',
+      },
+    });
+    expect(report.ready).toBe(true);
+  });
+
+  it('rejects a repository registration whose historical record does not match', () => {
+    const input = passingInput();
+    const report = evaluateResearchPreflight({
+      ...input,
+      binding: {
+        registrationClass: 'confirmatory',
+        registrationAuthority: 'repository-native',
+        preRegistrationHash: input.preRegistrationHash,
+        repositoryRegistration: {
+          commit: COMMIT,
+          path: 'protocols/e03-registration.v1.json',
+          artifactSha256: input.preRegistrationHash,
+          committedAt: '2026-09-09T00:00:00.000Z',
+        },
+        preRunAnchor: input.binding.preRunAnchor,
+        label: 'confirmatory: repository-registered before run start',
+      },
+      repository: { ...input.repository, registrationRecordMatches: false },
+    });
+    expect(report.blockers).toContain('registration-complete');
   });
 });

@@ -1432,15 +1432,17 @@ A run MAY NOT enter `preregistered` (§7.1) until:
   LEDGER-INTEGRITY-DESIGN.md).
 
 For a confirmatory or publication-facing run, the canonical pre-registration
-artifact MUST also be registered with an external timestamping/registration service
-(OSF Registries is the default) and its `preRegistrationHash` MUST be committed
-before the run enters `running`. The external registration URL and pre-run commitment
-receipt are included in the run manifest. Under the approved simulation-only
-profile, that receipt MUST declare `anchorClass: "simulated"`; the external
-registration timestamp and immutable Git commit provide the independent time/order
-evidence, while the deterministic receipt proves exact local consumption and
-tamper detection. Qualification-only development runs MAY omit external registration
-but MUST be labeled non-confirmatory.
+artifact MUST be committed unchanged in the repository before outcome collection.
+Its binding records the packet path, canonical hash, commit, and commit time; the
+registration commit MUST be ancestral to the execution commit, and preflight MUST
+load the artifact bytes from that commit and reproduce the registered hash. The same
+`preRegistrationHash` MUST be committed before the run enters `running`. Under the
+approved simulation-only profile, that receipt MUST declare
+`anchorClass: "simulated"`; the deterministic receipt proves exact local consumption
+and tamper detection. An external registration or archival timestamp MAY be added
+as an independently hosted enhancement but is not required for local synthetic
+execution. Repository-native registration does not prove an independent timestamp,
+third-party custody, decentralized persistence, or economic finality.
 
 The run's `ExperimentRecord.disposition` and the matching EXPERIMENT-NOTEBOOK.md
 run record MUST agree; the Verifier's `VerificationReport` is authoritative for

@@ -91,7 +91,7 @@ function summarizeBundle(manifestPath: string) {
         : 'failure-history-only',
     exclusionReasons: [
       'not collected under the D07 confirmatory or replication seed domain',
-      'no authentic external registration binding',
+      'no eligible prospective repository registration binding',
       recordedAnchorConfirmed
         ? 'recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor'
         : 'no recorded anchor confirmation and no confirmed public-chain anchor',

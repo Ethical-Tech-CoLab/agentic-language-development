@@ -120,14 +120,23 @@ export const PreRegistrationArtifactSchema = z.object({
 
 /**
  * How a run's pre-registration was bound (SPEC §15.1; ALD-071). Recorded in
- * the run manifest. A `confirmatory` binding MUST carry the external
- * registration and a confirmed pre-run commitment of `preRegistrationHash`,
- * including its simulated/public receipt class; a `qualification` binding is
+ * the run manifest. A `confirmatory` binding MUST carry either an immutable
+ * repository-native registration or an external registration, plus a confirmed
+ * pre-run commitment of `preRegistrationHash`. A `qualification` binding is
  * labeled non-confirmatory.
  */
 export const PreRegistrationBindingSchema = z.object({
   registrationClass: z.enum(['qualification', 'confirmatory']),
+  registrationAuthority: z.enum(['repository-native', 'external']),
   preRegistrationHash: strictHash,
+  repositoryRegistration: z
+    .object({
+      commit: z.string().regex(/^[a-f0-9]{40}$/u),
+      path: nonEmptyString,
+      artifactSha256: strictHash,
+      committedAt: isoDateTime,
+    })
+    .optional(),
   externalRegistrationUrl: z.string().url().optional(),
   externalRegistrationId: nonEmptyString.optional(),
   registeredAt: isoDateTime.optional(),

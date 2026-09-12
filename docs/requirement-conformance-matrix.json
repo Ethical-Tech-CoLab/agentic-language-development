@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.81"
+    "version": "0.1.82"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -976,8 +976,10 @@
     },
     "packages/ops/__tests__/research-preflight.test.ts": {
       "selectors": [
-        "passes only when every immutable input and external binding agrees",
-        "reports every missing external prerequisite instead of stopping at the first"
+        "passes only when every immutable input and registration binding agrees",
+        "reports every missing registration prerequisite instead of stopping at the first",
+        "accepts a matching ancestral repository-native registration",
+        "rejects a repository registration whose historical record does not match"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/ops/__tests__/research-preflight.test.ts"
     },
@@ -3936,7 +3938,7 @@
     {
       "id": "ALD-071.1",
       "checked": true,
-      "statement": "A confirmatory run cannot start without a bound experiment ID, protocol commit, external registration URL, canonical pre-registration hash, and matching pre-run commitment receipt whose simulated/public class matches the run configuration.",
+      "statement": "A confirmatory run cannot start without a bound experiment ID, protocol commit, complete repository-native or external registration, canonical pre-registration hash, and matching pre-run commitment receipt whose simulated/public class matches the run configuration.",
       "itemId": "ALD-071",
       "itemTitle": "Pre-registration binding and Experiment Record writer",
       "disposition": "provisional-mapped",
@@ -4389,7 +4391,7 @@
     {
       "id": "ALD-084.1",
       "checked": true,
-      "statement": "Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable commit, seed count, external registration, and confirmed matching pre-run commitment.",
+      "statement": "Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable ancestral commits, seed count, complete registration, and confirmed matching pre-run commitment.",
       "itemId": "ALD-084",
       "itemTitle": "Fail-closed research preflight",
       "disposition": "provisional-mapped",
@@ -4400,7 +4402,7 @@
     {
       "id": "ALD-084.2",
       "checked": true,
-      "statement": "A missing external registration, mismatched binding, or absent/incorrect anchor blocks confirmatory readiness.",
+      "statement": "A missing repository-native/external registration, mismatched binding, or absent/incorrect commitment blocks confirmatory readiness.",
       "itemId": "ALD-084",
       "itemTitle": "Fail-closed research preflight",
       "disposition": "provisional-mapped",
@@ -6717,7 +6719,7 @@
       "id": "SPEC-MUST-L1435",
       "source": "SPECIFICATION.md:1435",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST be committed unchanged in the repository before outcome collection. Its binding records the packet path, canonical hash, commit, and commit time; the registration commit MUST be ancestral to the execution commit, and preflight MUST load the artifact bytes from that commit and reproduce the registered hash. The same `preRegistrationHash` MUST be committed before the run enters `running`. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the deterministic receipt proves exact local consumption and tamper detection. An external registration or archival timestamp MAY be added as an independently hosted enhancement but is not required for local synthetic execution. Repository-native registration does not prove an independent timestamp, third-party custody, decentralized persistence, or economic finality.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6739,10 +6741,10 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1436",
-      "source": "SPECIFICATION.md:1436",
+      "id": "SPEC-MUST-L1437",
+      "source": "SPECIFICATION.md:1437",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST be committed unchanged in the repository before outcome collection. Its binding records the packet path, canonical hash, commit, and commit time; the registration commit MUST be ancestral to the execution commit, and preflight MUST load the artifact bytes from that commit and reproduce the registered hash. The same `preRegistrationHash` MUST be committed before the run enters `running`. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the deterministic receipt proves exact local consumption and tamper detection. An external registration or archival timestamp MAY be added as an independently hosted enhancement but is not required for local synthetic execution. Repository-native registration does not prove an independent timestamp, third-party custody, decentralized persistence, or economic finality.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6767,7 +6769,7 @@
       "id": "SPEC-MUST-L1439",
       "source": "SPECIFICATION.md:1439",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST be committed unchanged in the repository before outcome collection. Its binding records the packet path, canonical hash, commit, and commit time; the registration commit MUST be ancestral to the execution commit, and preflight MUST load the artifact bytes from that commit and reproduce the registered hash. The same `preRegistrationHash` MUST be committed before the run enters `running`. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the deterministic receipt proves exact local consumption and tamper detection. An external registration or archival timestamp MAY be added as an independently hosted enhancement but is not required for local synthetic execution. Repository-native registration does not prove an independent timestamp, third-party custody, decentralized persistence, or economic finality.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6789,10 +6791,10 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1443",
-      "source": "SPECIFICATION.md:1443",
+      "id": "SPEC-MUST-L1440",
+      "source": "SPECIFICATION.md:1440",
       "section": 15,
-      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST also be registered with an external timestamping/registration service (OSF Registries is the default) and its `preRegistrationHash` MUST be committed before the run enters `running`. The external registration URL and pre-run commitment receipt are included in the run manifest. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the external registration timestamp and immutable Git commit provide the independent time/order evidence, while the deterministic receipt proves exact local consumption and tamper detection. Qualification-only development runs MAY omit external registration but MUST be labeled non-confirmatory.",
+      "statement": "For a confirmatory or publication-facing run, the canonical pre-registration artifact MUST be committed unchanged in the repository before outcome collection. Its binding records the packet path, canonical hash, commit, and commit time; the registration commit MUST be ancestral to the execution commit, and preflight MUST load the artifact bytes from that commit and reproduce the registered hash. The same `preRegistrationHash` MUST be committed before the run enters `running`. Under the approved simulation-only profile, that receipt MUST declare `anchorClass: \"simulated\"`; the deterministic receipt proves exact local consumption and tamper detection. An external registration or archival timestamp MAY be added as an independently hosted enhancement but is not required for local synthetic execution. Repository-native registration does not prove an independent timestamp, third-party custody, decentralized persistence, or economic finality.",
       "applicable": true,
       "backlogItems": [
         "ALD-041",
@@ -6814,8 +6816,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1446",
-      "source": "SPECIFICATION.md:1446",
+      "id": "SPEC-MUST-L1448",
+      "source": "SPECIFICATION.md:1448",
       "section": 15,
       "statement": "The run's `ExperimentRecord.disposition` and the matching EXPERIMENT-NOTEBOOK.md run record MUST agree; the Verifier's `VerificationReport` is authoritative for **integrity** (did the evidence chain hold), while the notebook is authoritative for **scientific interpretation status** (is the run valid/invalid/replicated). This resolves Q29.",
       "applicable": true,
@@ -6839,8 +6841,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1453",
-      "source": "SPECIFICATION.md:1453",
+      "id": "SPEC-MUST-L1455",
+      "source": "SPECIFICATION.md:1455",
       "section": 15,
       "statement": "Ledger meanings MUST be validated behaviorally, not accepted from ledger prose alone (resolves Q14). The mandatory suite, run during `evaluating`:",
       "applicable": true,
@@ -6864,8 +6866,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1464",
-      "source": "SPECIFICATION.md:1464",
+      "id": "SPEC-MUST-L1466",
+      "source": "SPECIFICATION.md:1466",
       "section": 15,
       "statement": "Default descriptive readiness threshold: within each run, ledger-predicted direction matches observed behavior change in at least 70% of probed instances. This is not an inferential test. Confirmatory inference MUST account for probe clustering within run/seed using a hierarchical Bernoulli model or a pre-registered seed-level equivalent against the E03 chance baseline at alpha = 0.05.",
       "applicable": true,
@@ -6889,8 +6891,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1482",
-      "source": "SPECIFICATION.md:1482",
+      "id": "SPEC-MUST-L1484",
+      "source": "SPECIFICATION.md:1484",
       "section": 15,
       "statement": "Any conclusion that performance is equivalent to chance or that leakage is absent MUST use a pre-registered equivalence/non-inferiority bound or Bayes-factor criterion with power or sensitivity analysis. A non-significant difference alone cannot satisfy a no-leakage or at-chance acceptance criterion.",
       "applicable": true,
@@ -6914,8 +6916,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1501",
-      "source": "SPECIFICATION.md:1501",
+      "id": "SPEC-MUST-L1503",
+      "source": "SPECIFICATION.md:1503",
       "section": 15,
       "statement": "A nonce, salt, unique artifact hash, or low recovery rate against one Eve model MUST NOT change the third field. Learned encodings MUST NOT be imported into the production hashing, signing, anchoring, authentication, or key-management packages. This formalizes Q17 and the `cipherThreatModel` variable in §18.",
       "applicable": true,
@@ -6939,8 +6941,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1502",
-      "source": "SPECIFICATION.md:1502",
+      "id": "SPEC-MUST-L1504",
+      "source": "SPECIFICATION.md:1504",
       "section": 15,
       "statement": "A nonce, salt, unique artifact hash, or low recovery rate against one Eve model MUST NOT change the third field. Learned encodings MUST NOT be imported into the production hashing, signing, anchoring, authentication, or key-management packages. This formalizes Q17 and the `cipherThreatModel` variable in §18.",
       "applicable": true,
@@ -6964,8 +6966,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1529",
-      "source": "SPECIFICATION.md:1529",
+      "id": "SPEC-MUST-L1531",
+      "source": "SPECIFICATION.md:1531",
       "section": 16,
       "statement": "- run configuration and pre-registration status; - live transcript view (public artifacts only, never a Baby's private ledger content exposed to the other Baby's view, even in the human console's own layout — the console MUST render Baby A's and Baby B's perspectives as clearly separated panels, never merged); - ledger convergence comparison (read-only, side-by-side, never fed back into a live run); - checkpoint/anchor status with links to the independent chain explorer; - pause/resume/abort controls gated to `researcher-operator`; - verification-report status (pass/fail, last-run timestamp).",
       "applicable": true,
@@ -6982,8 +6984,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1555",
-      "source": "SPECIFICATION.md:1555",
+      "id": "SPEC-MUST-L1557",
+      "source": "SPECIFICATION.md:1557",
       "section": 16,
       "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
       "applicable": true,
@@ -7000,8 +7002,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1556",
-      "source": "SPECIFICATION.md:1556",
+      "id": "SPEC-MUST-L1558",
+      "source": "SPECIFICATION.md:1558",
       "section": 16,
       "statement": "Caucuses, coalition rooms, direct delegation-to-delegation side links, and any other secondary communication route from the Diplomacy Table MUST NOT be reintroduced (resolves Q20). The console MUST NOT provide any control that lets a human relay content from one Baby's panel into the other Baby's observation feed during an active run outside of an explicitly logged, pre-registered human-in-the-loop experimental condition.",
       "applicable": true,
@@ -7018,8 +7020,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1567",
-      "source": "SPECIFICATION.md:1567",
+      "id": "SPEC-MUST-L1569",
+      "source": "SPECIFICATION.md:1569",
       "section": 17,
       "statement": "- every applicable MUST in this document is satisfied and demonstrated by an automated test where feasible; - the Verifier (§11.10) passes on a synthetic evidence bundle and correctly rejects every mutation case enumerated in LEDGER-INTEGRITY-DESIGN.md §17; - the Replay Fidelity Test (§14.3) passes on at least one evaluation-phase run; - Mode P and Mode R claim-boundary sentences (§5.1/§5.2) are reproduced verbatim in generated reports; - the Intervention Test Suite (§15.2) is wired into the evaluation pipeline, even if a given experiment's results are still pending.",
       "applicable": true,
@@ -7044,8 +7046,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1667",
-      "source": "SPECIFICATION.md:1667",
+      "id": "SPEC-MUST-L1669",
+      "source": "SPECIFICATION.md:1669",
       "section": 19,
       "statement": "| ADR-01 | Exact Base RPC provider(s) for submission and independent verification | Vendor/account/SLA choice outside this specification's authority | Any RPC provider satisfying: chain-ID confirmation, calldata/event retrieval, and block/finality-tag reporting; the Verifier MUST be provider-agnostic |",
       "applicable": true,
@@ -7058,8 +7060,8 @@
       ]
     },
     {
-      "id": "SPEC-MUST-L1711",
-      "source": "SPECIFICATION.md:1711",
+      "id": "SPEC-MUST-L1713",
+      "source": "SPECIFICATION.md:1713",
       "section": 20,
       "statement": "This specification is implementation-ready for Phase 0 (§17.3) as of the date of its commit. Amendments MUST follow the same protocol-amendment discipline as EXPERIMENT-NOTEBOOK.md §3: record the change, apply it to new runs, and never silently reinterpret an already-sealed run's evidence.",
       "applicable": true,

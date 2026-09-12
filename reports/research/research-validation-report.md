@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.81 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.82 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -70,21 +70,22 @@ Report status: in progress
   development iterations. A fresh five-run benchmark supplies measured CPU, memory,
   time, byte, and file rates rather than an assumed cost model.
 - An internal adversarial readiness review covers every experiment and returns
-  `not-registration-ready`. Eleven evidence-linked blockers include registration,
+  `not-registration-ready`. Eight evidence-linked blockers include packet completion,
   resources, pilot-selected N, final detector/comparator qualification, exact packets,
   independent review, and citation re-review. Three former blockers are prospectively
-  resolved by the approved synthetic-only, simulation-funded profile.
-- The machine-checked external-prerequisite ledger is blocked at 1/4 applicable
-  items. O01 is verified by the scoped governance decision. O02 and O03 are excluded
-  from the denominator because external spend is zero and public-chain transactions
-  are prohibited. The earlier Fort qualification remains credential-path and Mode R
-  evidence, but its unfunded wallet is not a campaign dependency or research result.
+  resolved by the approved synthetic-only, simulation-funded profile; three more are
+  resolved by the repository-native execution policy.
+- The machine-checked external-dependency ledger is ready at 1/1 applicable item.
+  O01 is verified by the scoped governance decision. O02-O06 are excluded from the
+  denominator because real funds, public chains, hosted enforcement, second-person
+  restoration, and third-party registration are not required for local synthetic
+  execution. Their stronger claims remain unavailable unless later evidenced.
 - A fresh read-only upstream observation found no repository ruleset or demonstrated
   branch protection. The exact v0.1.79 pull-request workflow is `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
-  strengthens rather than closes O04.
-- The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
-  in 16 collections. All are excluded from empirical estimates; 63 local fake-chain
+  remains historical evidence that hosted enforcement is not demonstrated.
+- The complete local data/claim snapshot resolves and hash-binds 115 exported bundles
+  in 17 collections. All are excluded from empirical estimates; 67 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
@@ -141,15 +142,15 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 111 bundles,
-16 collections, and 219,742,662 bundle bytes. It records content-tree, manifest, and
+exported bundle present in ignored local evidence storage at the cutoff: 115 bundles,
+17 collections, and 224,305,479 bundle bytes. It records content-tree, manifest, and
 verification-report hashes without copying raw events or private ledger content.
 Thirty-six bundles have tracked exact/current bounded software-qualification support,
 33 are historical qualification exports, and 42 are failed or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-All 111 have a recorded verifier exit code of zero. The 33 historical exports remain
+All 115 have a recorded verifier exit code of zero. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
 verifier status. Sixty-three reports record anchor confirmation, but those historical
 receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
@@ -719,7 +720,7 @@ bundles.
 ## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
-experiment cards and identifies 11 open blockers with explicit closure tests. It does not
+experiment cards and identifies eight open blockers with explicit closure tests. It does not
 claim independent review. No experiment is registration-ready, and the fail-closed
 machine audit rejects any ready flag while the recorded campaign decision is negative.
 
@@ -753,18 +754,18 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    and native prediction-function version, freezes accepted evaluation deliveries as
    the eligibility rule, and fails closed on restart. Exact detached production
    qualification passed; eligible runs still need to bind the exact validation corpus
-   into external registration and complete the registered aggregate analysis.
+   into repository-native registration and complete the registered aggregate analysis.
 6. Frozen-model functionality and serialized role-state isolation are now qualified,
    but concurrent capacity and the normal study latency budget are not; those require
    a larger execution host and the actual study topology.
 7. The bounded full topology, recurrent models, governance profile, and deterministic
-   commitment path are qualified, but external registration, final-topology evidence,
+   commitment path are qualified, but complete repository registration, final-topology evidence,
    independent restore, and independent replication records do not exist.
 8. The external-prerequisite handoff now defines privacy-safe closure evidence for
-   O01–O06 and rejects receipt-path-only readiness. Its current ledger has 1/4
-   applicable items satisfied: O01 is verified, O02 and O03 are non-applicable under
-   the zero-spend policy, and O04–O06 remain missing or observed-unsatisfied. No
-   experiment activation follows from governance alone.
+   O01–O06 and rejects receipt-path-only readiness. Its current ledger has 1/1
+   applicable item satisfied: O01 is verified and O02-O06 are non-applicable under
+   the zero-spend repository-native policy. No experiment activation follows from
+   governance alone; exact packet and local scientific gates remain mandatory.
 
 ## 21. Current scientific and publication conclusion
 
@@ -789,6 +790,6 @@ claim map.
 The current [critical review](research-critical-review.md) and machine-readable
 [manuscript-readiness audit](manuscript-readiness-audit.json) now record the first
 eight-perspective internal pass. They correct cross-document status and rendering
-defects but return `needs-revision`: 19 experiments remain unstarted, all 111 local
+defects but return `needs-revision`: 19 experiments remain unstarted, all 115 local
 bundles remain research-excluded, 190 registration bindings remain unresolved, and
 independent review is absent.

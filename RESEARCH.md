@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.81 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.82 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1094,7 +1094,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.81 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.82 · 254/258 backlog acceptance criteria verified.
 
 As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1151,27 +1151,24 @@ Implemented:
 - automated lint, build, test, dependency-audit, secret-scan, acceptance-coverage,
   API-documentation, project-status, clean-clone, hosted CI, and Mode R checks.
 
-Not yet externally evidenced or empirically executed:
+Not yet empirically executed or independently evidenced:
 
-- upstream required-check enforcement and independent-human restore validation;
-- external registration of complete packets and matching prospective simulated commitments;
 - final-topology/pilot resource qualification; and
 - confirmatory experiments E00-E50 or any scientific results.
 
-The external-prerequisite ledger is blocked at 1/4 applicable items. O01 is verified
-by the scoped synthetic-only governance decision; O02 and O03 are non-applicable
-because the approved study authorizes zero external spend and prohibits public-chain
-transactions. The read-only upstream observation found no repository ruleset and did not demonstrate
-branch protection. The exact v0.1.79 candidate is published as an upstream
-pull-request head, but its workflow is `action_required` and started zero jobs; the
-latest relevant default-branch workflow also failed. These observations strengthen the O04 blocker;
-they do not constitute permission to change remote policy or execute a study.
+The external-dependency ledger is ready at 1/1 applicable item: O01 is verified by
+the scoped synthetic-only governance decision, while O02-O06 are non-applicable to
+local execution. Public funding, public-chain transactions, hosted enforcement,
+second-person restoration, and third-party registration remain optional claim-
+strengthening activities. Their absence is disclosed and prohibits claims of public
+finality, hosted enforcement, independent restoration, or third-party registration;
+it does not answer or alter the agent-language estimands.
 
-The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 111
-exported bundles across 16 collections by path and content hash. Thirty-six have
+The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 115
+exported bundles across 17 collections by path and content hash. Thirty-six have
 tracked bounded software-qualification support, 33 are historical qualification
-exports, and 42 are failed or superseded diagnostics. All 111 are excluded from
-empirical estimates. Sixty-three recorded anchor confirmations are historical local
+exports, and 46 are failed or superseded diagnostics. All 115 are excluded from
+empirical estimates. Sixty-seven recorded anchor confirmations are historical local
 fake-chain receipts; prospective receipts now bind an explicit class that the
 verifier refuses to relabel. Confirmed public-chain anchors, pilot bundles, confirmatory
 bundles, replication bundles, and research-included bundles are all zero.
@@ -1308,12 +1305,14 @@ and analysis plan before execution. The run configuration stores the protocol co
 and pre-registration hash. Changes create appended amendments rather than rewriting
 the original record.
 
-No external registration record exists yet. Before the first confirmatory run, the
-team intends to create a dated OSF registration and anchor the same canonical
-`preRegistrationHash` before the run enters `running`. A Git commit in an
-author-controlled repository is retained as a development record but is not, by
-itself, treated as third-party preregistration. Appendix D supplies a numerically
-complete worked E03 registration for review.
+No complete experiment packet has yet been repository-registered. Before each
+confirmatory run, its canonical packet will be committed unchanged in a Git ancestor
+of the execution commit. Preflight will load those historical bytes, reproduce the
+`preRegistrationHash`, and require a matching deterministic simulated commitment
+before the run enters `running`. This establishes exact local identity, ancestry,
+ordering against later committed evidence, and tamper detection; it is not described
+as third-party registration or an independent timestamp. Appendix D supplies a
+numerically complete worked E03 registration for review.
 
 ---
 

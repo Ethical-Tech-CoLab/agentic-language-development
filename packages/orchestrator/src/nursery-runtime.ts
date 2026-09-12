@@ -3798,7 +3798,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         throw new RunConfigurationError([
           {
             path: 'preRegistration',
-            message: 'confirmatory runs require a bound external pre-registration',
+            message: 'confirmatory runs require a bound pre-registration',
           },
         ]);
       }
@@ -3828,17 +3828,30 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       });
     }
     if (binding.registrationClass === 'confirmatory') {
-      if (binding.externalRegistrationUrl === undefined) {
-        errors.push({
-          path: 'preRegistration.externalRegistrationUrl',
-          message: 'confirmatory binding requires an external registration URL',
-        });
-      }
-      if (binding.registeredAt === undefined) {
-        errors.push({
-          path: 'preRegistration.registeredAt',
-          message: 'confirmatory binding requires a registration timestamp',
-        });
+      if (binding.registrationAuthority === 'repository-native') {
+        if (
+          binding.repositoryRegistration === undefined ||
+          strictHash(binding.repositoryRegistration.artifactSha256) !==
+            strictHash(binding.preRegistrationHash)
+        ) {
+          errors.push({
+            path: 'preRegistration.repositoryRegistration',
+            message: 'repository-native binding requires a matching immutable registration record',
+          });
+        }
+      } else {
+        if (binding.externalRegistrationUrl === undefined) {
+          errors.push({
+            path: 'preRegistration.externalRegistrationUrl',
+            message: 'external binding requires a registration URL',
+          });
+        }
+        if (binding.registeredAt === undefined) {
+          errors.push({
+            path: 'preRegistration.registeredAt',
+            message: 'external binding requires a registration timestamp',
+          });
+        }
       }
       const anchor = binding.preRunAnchor;
       const expectedChainId = config.anchorNetwork === 'base-mainnet' ? 8453 : 84532;

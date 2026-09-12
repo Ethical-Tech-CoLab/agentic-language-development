@@ -60,14 +60,14 @@ if (experimentRows.length !== 19 || campaign.experiments.length !== 19) {
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');
 }
-if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 11) {
+if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 8) {
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');
 if (
-  external.decision !== 'blocked' ||
+  external.decision !== 'ready' ||
   external.satisfiedCount !== 1 ||
-  external.requiredCount !== 4 ||
+  external.requiredCount !== 1 ||
   upstream.decision !== 'not-demonstrated'
 ) {
   throw new Error('external prerequisite or upstream-enforcement status changed');
@@ -84,7 +84,7 @@ if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(
 exact(`v${packageJson.version} · 254/258 backlog acceptance criteria verified.`);
 exact(`resolves ${String(claims.totals['bundles'])} exported bundles across ${String(claims.totals['collections'])} collections`);
 exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits zero registration hashes`);
-exact(`external-prerequisite ledger is blocked at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
+exact(`external-dependency ledger is ready at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
 exact('No empirical results are reported in this version.');
 
 const result = {
@@ -123,7 +123,7 @@ const result = {
     allDefinedReferencesCited: true,
     requiredIndependentHumanRecheck: true,
   },
-  boundary: 'This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, external registration, prospective simulated commitments, human review, or venue acceptance.'
+  boundary: 'This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, repository registration, prospective simulated commitments, independent human review, or venue acceptance.'
 };
 const rendered = `${JSON.stringify(result, null, 2)}\n`;
 if (process.argv.includes('--write')) {

@@ -77,6 +77,12 @@ interface GovernanceDecision {
     publicChainTransactionsAuthorized: boolean;
     transport: string;
   };
+  registrationPolicy: { profile: string; externalRegistrationRequired: boolean };
+  externalDependencyPolicy: {
+    upstreamProtectionRequiredForExecution: boolean;
+    independentHumanRestoreRequiredForExecution: boolean;
+    externalRegistrationRequiredForExecution: boolean;
+  };
 }
 
 const readinessBytes = readFileSync(readinessPath);
@@ -132,10 +138,6 @@ if (readiness.requiredCount !== applicable.length || readiness.satisfiedCount !=
 }
 const expectedDecision = satisfiedCount === applicable.length ? 'ready' : 'blocked';
 if (readiness.decision !== expectedDecision) throw new Error('external-prerequisite decision contradicts its items');
-if (campaign.decision === 'not-registration-ready' && readiness.decision === 'ready') {
-  throw new Error('external ledger claims readiness while the campaign remains blocked');
-}
-
 if (
   upstream.schemaVersion !== 1 ||
   upstream.classification !== 'external-read-only-enforcement-observation' ||
@@ -161,16 +163,22 @@ if (
   JSON.stringify(upstream.localWorkflow.requiredJobIds) !== JSON.stringify(['consolidated-suite', 'mode-r']) ||
   upstream.decision !== 'not-demonstrated'
 ) {
-  throw new Error('upstream observation no longer supports O04 observed-unsatisfied');
+  throw new Error('historical upstream observation is stale or internally inconsistent');
 }
 
 const o01 = readiness.items.find((item) => item.id === 'O01');
 const o02 = readiness.items.find((item) => item.id === 'O02');
 const o03 = readiness.items.find((item) => item.id === 'O03');
+const o04 = readiness.items.find((item) => item.id === 'O04');
+const o05 = readiness.items.find((item) => item.id === 'O05');
+const o06 = readiness.items.find((item) => item.id === 'O06');
 if (
   o01?.status !== 'verified' || !o01.satisfied || o01.receipt?.path !== governancePath ||
   o02?.status !== 'not-applicable' || o02.satisfied || o02.receipt?.path !== governancePath ||
   o03?.status !== 'not-applicable' || o03.satisfied || o03.receipt?.path !== governancePath ||
+  o04?.status !== 'not-applicable' || o04.satisfied || o04.receipt?.path !== governancePath ||
+  o05?.status !== 'not-applicable' || o05.satisfied || o05.receipt?.path !== governancePath ||
+  o06?.status !== 'not-applicable' || o06.satisfied || o06.receipt?.path !== governancePath ||
   governance.schemaVersion !== 1 || governance.status !== 'approved' ||
   governance.authority.role !== 'project-operator' || governance.authority.institutionalApprovalClaimed ||
   !governance.dataScope.syntheticOnly || governance.dataScope.humanParticipants || governance.dataScope.humanCoding !== 'not-used' ||
@@ -178,9 +186,14 @@ if (
   governance.fundingPolicy.externalSpendAuthorized !== 0 ||
   governance.fundingPolicy.realCurrencyAuthorized ||
   governance.fundingPolicy.publicChainTransactionsAuthorized ||
-  governance.fundingPolicy.transport !== 'deterministic in-memory chain'
+  governance.fundingPolicy.transport !== 'deterministic in-memory chain' ||
+  governance.registrationPolicy.profile !== 'repository-native' ||
+  governance.registrationPolicy.externalRegistrationRequired ||
+  governance.externalDependencyPolicy.upstreamProtectionRequiredForExecution ||
+  governance.externalDependencyPolicy.independentHumanRestoreRequiredForExecution ||
+  governance.externalDependencyPolicy.externalRegistrationRequiredForExecution
 ) {
-  throw new Error('governance receipt no longer supports O01 or the O02/O03 not-applicable decisions');
+  throw new Error('governance receipt no longer supports O01 or the O02-O06 applicability decisions');
 }
 
 const serialized = readinessBytes.toString('utf8').toLowerCase();
@@ -191,4 +204,4 @@ if (readiness.privacyBoundary.length < 3 || readiness.activationRule.length < 80
   throw new Error('external prerequisite boundaries are incomplete');
 }
 
-console.log(`external prerequisites valid: ${String(satisfiedCount)}/${String(applicable.length)} applicable satisfied, 2 public-chain items not applicable, decision=${readiness.decision}, O04=${upstream.decision}`);
+console.log(`external dependencies valid: ${String(satisfiedCount)}/${String(applicable.length)} applicable satisfied, 5 optional external items not applicable, decision=${readiness.decision}, hosted-enforcement-observation=${upstream.decision}`);

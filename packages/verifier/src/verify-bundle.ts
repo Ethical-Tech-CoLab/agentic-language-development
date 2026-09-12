@@ -366,9 +366,15 @@ async function verifyManifestAndConfiguration(
         config.data.anchorNetwork === 'base-mainnet' ? 8453 : 84532;
       const expectedInput = `0x${(normalizeHash(config.data.preRegistrationHash) ?? '').slice(7)}`;
       const anchor = binding.preRunAnchor;
+      const registrationComplete =
+        binding.registrationAuthority === 'repository-native'
+          ? binding.repositoryRegistration !== undefined &&
+            normalizeHash(binding.repositoryRegistration.artifactSha256) ===
+              normalizeHash(binding.preRegistrationHash)
+          : binding.externalRegistrationUrl !== undefined &&
+            binding.registeredAt !== undefined;
       if (
-        binding.externalRegistrationUrl === undefined ||
-        binding.registeredAt === undefined ||
+        !registrationComplete ||
         anchor === undefined ||
         anchor.status !== 'confirmed' ||
         anchor.blockNumber === null ||
@@ -379,7 +385,7 @@ async function verifyManifestAndConfiguration(
       ) {
         accumulator.failStructural(
           'pre-registration-binding-invalid',
-          'confirmatory pre-registration lacks a matching external registration and confirmed pre-run anchor',
+          'confirmatory pre-registration lacks a matching repository/external registration and confirmed pre-run commitment',
         );
       }
     }

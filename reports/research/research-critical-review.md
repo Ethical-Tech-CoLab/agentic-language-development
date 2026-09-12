@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.81
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.82
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -37,29 +37,25 @@ received independent verification.
    experiments remain `Not started`; zero bundles are research-included, zero
    prospective simulated commitments are confirmed, and zero registration packets
    compile. **Fix (required):**
-   close the external gates, register an exact experiment, run the dependency-ordered
+   close the local gates, repository-register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
    any Results claim.
 
-2. **P0 — Registration and independent operating evidence remain incomplete.** The
-   machine review has 11 open blockers and no independent human review. Scoped
-   governance is now approved; the campaign is simulation-only, so Sepolia funding
-   and mainnet custody are not applicable. Required-check enforcement, restore
-   witnessing, exact packet compilation, and external registration still cannot be
-   manufactured from repository work. **Fix (required):** complete the applicable
-   O04–O06 evidence and rerun the fail-closed readiness compiler. The
-   external-prerequisite ledger remains blocked at 1/4 applicable items. Its read-only O04
-   observation found no ruleset or demonstrated branch protection. The exact v0.1.78
-   pull-request workflow requires approval and started zero jobs, while the latest
-   relevant default-branch workflow failed.
+2. **P0 — Local experiment packets and independent evidence remain incomplete.** The
+   machine review has eight open blockers and no independent human review. Scoped
+   governance is approved and the external-dependency ledger is ready at 1/1;
+   O02-O06 are non-applicable to local collection. Exact packet compilation, pilots,
+   resource selection, and final-topology qualifications remain substantive local
+   blockers. **Fix (required):** resolve B07-B12 in dependency order and keep B13-B14
+   as publication-readiness limitations until authentic independent work exists.
 
 3. **P1 — Simulation removes monetary dependency but weakens the timestamp trust
    model.** A deterministic commitment proves byte binding and mutation detection,
    not that an independent public network observed the bytes at a given time.
-   **Fix (required):** retain authentic external registration before collection,
-   bind the exact registration hash and immutable Git commit, disclose that the
-   simulated block/fee/finality fields are non-monetary, and make no decentralized
-   persistence or economic-finality claim.
+   **Fix (required):** bind each exact packet hash to an ancestral immutable Git
+   commit and matching pre-run simulated commitment, disclose that commit times and
+   simulated block/fee/finality fields are not independently witnessed, and make no
+   third-party-registration, decentralized-persistence, or economic-finality claim.
 
 4. **P1 — The current paper is not a defensible 2027 learning-conference
    submission.** The current ICLR call includes relevant learning, causal-reasoning,

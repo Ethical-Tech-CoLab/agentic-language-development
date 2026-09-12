@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.81 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.82 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -192,17 +192,19 @@ The E01/E02 software-readiness outputs have a hashed attachment path linked from
 the append-only Experiment Record and independently checked against their evidence
 event and committed prefix. The approved prospective research profile uses no real
 funds or public-chain transactions; those remain optional capability tests outside
-the study. Remaining external evidence includes upstream required-check enforcement,
-a restore performed by a second human operator, and external registration before
-confirmatory collection. The retention job is implemented
+the study. Repository-native preregistration and deterministic simulated commitments
+are the sole experiment activation path. Hosted enforcement, a restore performed by
+a second human, and third-party registration remain optional evidence-strengthening
+activities and are never claimed unless actually completed. The retention job is implemented
 and covered against real exported bundles and evidence-store rows.
 
 The [external-prerequisite handoff](docs/external-prerequisite-handoff.md) and its
 machine-readable ledger make O01–O06 auditable without recording secrets or personal
-identity. The current ledger is blocked at 1/4 applicable prerequisites: O01 is
-verified, while O02 and O03 are non-applicable under the simulation-only, zero-spend
-policy. A fresh read-only upstream observation confirms that required-check
-enforcement is not yet demonstrated.
+identity. The ledger is ready at 1/1 applicable prerequisite: O01 is verified, while
+O02-O06 are non-applicable to local synthetic execution under the zero-spend,
+repository-native policy. A read-only upstream observation remains as historical
+evidence that hosted required-check enforcement is not demonstrated, not as an
+experiment blocker.
 
 No experiment results are claimed.
 
@@ -274,11 +276,11 @@ pnpm run design:e03
 pnpm run registration:e03 --out evidence/preregistration/e03-v1-draft.json
 pnpm run preflight:research \
   --registration evidence/preregistration/e03-v1-draft.json \
-  --binding /absolute/path/external-registration-and-anchor-binding.json
+  --binding /absolute/path/repository-registration-and-commitment-binding.json
 ```
 
-The preflight is expected to fail until the external registration and confirmed
-matching pre-run simulated commitment are supplied in the binding file.
+The preflight fails until the packet exists unchanged in an ancestral Git commit and
+a confirmed matching pre-run simulated commitment is supplied in the binding.
 
 Run the Prototype Mode qualification harness and verify a bundle independently:
 

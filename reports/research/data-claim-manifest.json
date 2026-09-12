@@ -5,11 +5,11 @@
   "researchFinding": false,
   "scope": "Every locally present exported run bundle at capture; raw events and private ledger content are represented only by hashes and counts.",
   "totals": {
-    "bundles": 111,
-    "collections": 16,
-    "bytes": 219742662,
-    "recordedVerifierExitZero": 111,
-    "recordedAnchorConfirmations": 63,
+    "bundles": 115,
+    "collections": 17,
+    "bytes": 224305479,
+    "recordedVerifierExitZero": 115,
+    "recordedAnchorConfirmations": 67,
     "confirmedPublicChainAnchors": 0,
     "pilotIncluded": 0,
     "confirmatoryIncluded": 0,
@@ -79,6 +79,17 @@
       "bytes": 3255827,
       "allRecordedVerifierExitZero": true,
       "recordedAnchorConfirmations": 7,
+      "confirmedPublicChainAnchors": 0,
+      "researchIncludedBundles": 0,
+      "supportingReceipt": null
+    },
+    {
+      "id": "diagnostic-mode-r-study-2322234",
+      "evidenceClass": "failed-or-superseded-diagnostic",
+      "bundles": 4,
+      "bytes": 4562817,
+      "allRecordedVerifierExitZero": true,
+      "recordedAnchorConfirmations": 4,
       "confirmedPublicChainAnchors": 0,
       "researchIncludedBundles": 0,
       "supportingReceipt": null
@@ -218,7 +229,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -246,7 +257,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -274,7 +285,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -302,7 +313,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -330,7 +341,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -358,7 +369,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -386,7 +397,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -414,7 +425,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -442,7 +453,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -470,7 +481,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -498,7 +509,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -526,7 +537,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -554,7 +565,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -582,7 +593,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -610,7 +621,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -638,7 +649,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -666,7 +677,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -694,7 +705,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -722,7 +733,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -750,7 +761,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -778,7 +789,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -806,7 +817,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -834,7 +845,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -862,7 +873,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -890,7 +901,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -918,7 +929,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -946,7 +957,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -974,7 +985,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1002,7 +1013,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1030,7 +1041,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1058,7 +1069,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1086,7 +1097,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1114,7 +1125,7 @@
       "allowedClaimUse": "historical-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1142,7 +1153,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1170,7 +1181,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1198,7 +1209,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1226,7 +1237,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1254,7 +1265,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1282,7 +1293,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1310,7 +1321,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1338,7 +1349,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1366,7 +1377,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1394,7 +1405,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1422,7 +1433,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1450,7 +1461,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1478,7 +1489,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1506,7 +1517,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1534,7 +1545,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1562,7 +1573,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1590,7 +1601,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1618,7 +1629,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1646,7 +1657,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1674,7 +1685,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1702,7 +1713,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1730,7 +1741,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1758,7 +1769,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1786,7 +1797,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1814,7 +1825,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1842,7 +1853,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1870,7 +1881,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1898,7 +1909,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1926,7 +1937,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1954,7 +1965,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -1982,7 +1993,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "no recorded anchor confirmation and no confirmed public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2010,7 +2021,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2038,7 +2049,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2066,7 +2077,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2094,7 +2105,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2122,7 +2133,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2150,7 +2161,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2178,7 +2189,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2206,7 +2217,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2234,7 +2245,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2262,7 +2273,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2290,7 +2301,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2318,7 +2329,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2346,7 +2357,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2374,7 +2385,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2402,7 +2413,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2430,7 +2441,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2458,7 +2469,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2486,7 +2497,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2514,7 +2525,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2542,7 +2553,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2570,7 +2581,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2598,7 +2609,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2626,7 +2637,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2654,7 +2665,7 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2682,7 +2693,119 @@
       "allowedClaimUse": "bounded-software-qualification-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
+        "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
+        "not eligible for empirical hypothesis estimates"
+      ]
+    },
+    {
+      "collection": "diagnostic-mode-r-study-2322234",
+      "evidenceClass": "failed-or-superseded-diagnostic",
+      "runId": "mode-r-study-hybrid",
+      "experimentId": "E03",
+      "deploymentMode": "research-grade",
+      "softwareCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "protocolGitCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "preRegistrationHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "bundlePath": "evidence/validation/mode-r-study-2322234/bundles/runs/mode-r-study-hybrid",
+      "manifestSha256": "b674202fb74b04fbb1d6ed167c02751837f42b75ecbacce5368183573f7f0be0",
+      "verificationReportSha256": "0a119f1f113e4a5e0041a45f16cbcb48bfb3671f3c647d1baee92dbc87f00717",
+      "verifierVersion": "0.1.0",
+      "verifierExitCode": 0,
+      "recordedAnchorConfirmed": true,
+      "publicChainAnchorConfirmed": false,
+      "files": 650,
+      "bytes": 1033650,
+      "relativePathContentManifestSha256": "4cdd59efdeddcfc69e13b3b19eb9e4cd74fee1137def96a325d7198b15d118f5",
+      "researchInclusion": "excluded",
+      "allowedClaimUse": "failure-history-only",
+      "exclusionReasons": [
+        "not collected under the D07 confirmatory or replication seed domain",
+        "no eligible prospective repository registration binding",
+        "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
+        "not eligible for empirical hypothesis estimates"
+      ]
+    },
+    {
+      "collection": "diagnostic-mode-r-study-2322234",
+      "evidenceClass": "failed-or-superseded-diagnostic",
+      "runId": "mode-r-study-no-learning",
+      "experimentId": "E03",
+      "deploymentMode": "research-grade",
+      "softwareCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "protocolGitCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "preRegistrationHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "bundlePath": "evidence/validation/mode-r-study-2322234/bundles/runs/mode-r-study-no-learning",
+      "manifestSha256": "8408667d0988e7fbfbed1dce7e993ce3d97ff956332f9f0ea19d8abaae70f77e",
+      "verificationReportSha256": "8bf4dc4fbbed18c28fd15d27f8a0e21e5a4c9dae698868c8f18da9f2223517f9",
+      "verifierVersion": "0.1.0",
+      "verifierExitCode": 0,
+      "recordedAnchorConfirmed": true,
+      "publicChainAnchorConfirmed": false,
+      "files": 380,
+      "bytes": 308998,
+      "relativePathContentManifestSha256": "d2cfd699e580b55264dc21eb71e1135fdb2f317ee1f3f814fe0793b0d3e4bc26",
+      "researchInclusion": "excluded",
+      "allowedClaimUse": "failure-history-only",
+      "exclusionReasons": [
+        "not collected under the D07 confirmatory or replication seed domain",
+        "no eligible prospective repository registration binding",
+        "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
+        "not eligible for empirical hypothesis estimates"
+      ]
+    },
+    {
+      "collection": "diagnostic-mode-r-study-2322234",
+      "evidenceClass": "failed-or-superseded-diagnostic",
+      "runId": "mode-r-study-scratch-rl",
+      "experimentId": "E03",
+      "deploymentMode": "research-grade",
+      "softwareCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "protocolGitCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "preRegistrationHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "bundlePath": "evidence/validation/mode-r-study-2322234/bundles/runs/mode-r-study-scratch-rl",
+      "manifestSha256": "f47e1e3a7f5d6bc1c08eeeb7ae8b2a4e24075e6ff6f4d9edd7c175b6afdca75e",
+      "verificationReportSha256": "a0c566e0b8ccd6db64dd93033821a319a9fce581ee0c66ccf3267cc6d62d3b99",
+      "verifierVersion": "0.1.0",
+      "verifierExitCode": 0,
+      "recordedAnchorConfirmed": true,
+      "publicChainAnchorConfirmed": false,
+      "files": 642,
+      "bytes": 1629735,
+      "relativePathContentManifestSha256": "a77b4a06ee1174cf7075598d89f8c655cf7dddb7a67ac25d64a1543a717ae14b",
+      "researchInclusion": "excluded",
+      "allowedClaimUse": "failure-history-only",
+      "exclusionReasons": [
+        "not collected under the D07 confirmatory or replication seed domain",
+        "no eligible prospective repository registration binding",
+        "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
+        "not eligible for empirical hypothesis estimates"
+      ]
+    },
+    {
+      "collection": "diagnostic-mode-r-study-2322234",
+      "evidenceClass": "failed-or-superseded-diagnostic",
+      "runId": "mode-r-study-self-supervised",
+      "experimentId": "E11",
+      "deploymentMode": "research-grade",
+      "softwareCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "protocolGitCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+      "preRegistrationHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "bundlePath": "evidence/validation/mode-r-study-2322234/bundles/runs/mode-r-study-self-supervised",
+      "manifestSha256": "94a7bf4a52c5ff3aeb0b3a6d252bc990869b2d0271fca2ad740498fa8511f6c4",
+      "verificationReportSha256": "e50e8cc5c2a443d14441010e63d8398116ccbc891684e572a89338db8e5628b0",
+      "verifierVersion": "0.1.0",
+      "verifierExitCode": 0,
+      "recordedAnchorConfirmed": true,
+      "publicChainAnchorConfirmed": false,
+      "files": 654,
+      "bytes": 1590434,
+      "relativePathContentManifestSha256": "e5c5d2b0708c0a7d40713b09190ce34a9551448e0ec457276393035934ee35c1",
+      "researchInclusion": "excluded",
+      "allowedClaimUse": "failure-history-only",
+      "exclusionReasons": [
+        "not collected under the D07 confirmatory or replication seed domain",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2710,7 +2833,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2738,7 +2861,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2766,7 +2889,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2794,7 +2917,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2822,7 +2945,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2850,7 +2973,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2878,7 +3001,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2906,7 +3029,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2934,7 +3057,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2962,7 +3085,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -2990,7 +3113,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3018,7 +3141,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3046,7 +3169,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3074,7 +3197,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3102,7 +3225,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3130,7 +3253,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3158,7 +3281,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3186,7 +3309,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3214,7 +3337,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3242,7 +3365,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3270,7 +3393,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]
@@ -3298,7 +3421,7 @@
       "allowedClaimUse": "failure-history-only",
       "exclusionReasons": [
         "not collected under the D07 confirmatory or replication seed domain",
-        "no authentic external registration binding",
+        "no eligible prospective repository registration binding",
         "recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor",
         "not eligible for empirical hypothesis estimates"
       ]

@@ -80,5 +80,5 @@ or research result.
   access, or effective optimization difficulty. The experiment protocol must match and
   report those quantities.
 - The recurrent qualification uses bounded turns. Publication-facing E11/E12 require
-  disjoint seeds, locked scenarios and analyses, required external registration, full
+  disjoint seeds, locked scenarios and analyses, required repository registration, full
   sample accounting, and independent repetition.

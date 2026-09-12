@@ -42,12 +42,12 @@ for (const finding of review.blockingFindings) {
     throw new Error(`${finding.id} lacks an evidence-bearing finding or closure test`);
   }
 }
-for (const required of ['B04','B05','B06','B07','B08','B09','B10','B11','B12','B13','B14']) {
+for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14']) {
   if (!findingIds.has(required)) throw new Error(`campaign review omits ${required}`);
 }
 const resolvedIds = new Set(review.resolvedFindings.map((finding) => finding.id));
-if (JSON.stringify([...resolvedIds].sort()) !== JSON.stringify(['B01', 'B02', 'B03'])) {
-  throw new Error('campaign review must record B01-B03 as the three prospectively resolved findings');
+if (JSON.stringify([...resolvedIds].sort()) !== JSON.stringify(['B01', 'B02', 'B03', 'B04', 'B05', 'B06'])) {
+  throw new Error('campaign review must record B01-B06 as the six prospectively resolved findings');
 }
 if (review.resolvedFindings.some((finding) => finding.resolution.length < 40 || finding.boundary.length < 40)) {
   throw new Error('a resolved finding lacks a complete resolution or claim boundary');
