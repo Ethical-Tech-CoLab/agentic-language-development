@@ -8,6 +8,7 @@ import { hashCanonical } from '@ald/hashing';
 
 const cardsPath = 'protocols/research-protocol-cards.v1.json';
 const e00Path = 'protocols/e00-registration.v5.json';
+const e01Path = 'protocols/e01-registration.v1.json';
 const outputPath = 'reports/research/registration-packet-readiness.json';
 const hash = (value: Buffer | string): string => createHash('sha256').update(value).digest('hex');
 
@@ -33,6 +34,7 @@ const e00 = JSON.parse(readFileSync(e00Path, 'utf8')) as {
   artifact: { experimentId: string; registrationClass: string; bindings: Array<{ key: string; sha256: string; content: unknown }> };
   preRegistrationHash: string;
 };
+const e01 = JSON.parse(readFileSync(e01Path, 'utf8')) as typeof e00;
 const e00Bindings = Object.fromEntries(
   e00.artifact.bindings.map((binding) => [binding.key, binding.content]),
 ) as Record<(typeof REGISTRATION_BINDING_KEYS)[number], unknown>;
@@ -47,21 +49,37 @@ if (
 ) {
   throw new Error('E00 registration packet does not reproduce from its bound content');
 }
+const e01Bindings = Object.fromEntries(
+  e01.artifact.bindings.map((binding) => [binding.key, binding.content]),
+) as Record<(typeof REGISTRATION_BINDING_KEYS)[number], unknown>;
+const verifiedE01 = compileRegistrationPacket({
+  experimentId: e01.artifact.experimentId,
+  registrationClass: e01.artifact.registrationClass,
+  bindings: e01Bindings,
+});
+if (
+  verifiedE01.preRegistrationHash !== e01.preRegistrationHash ||
+  JSON.stringify(verifiedE01.artifact) !== JSON.stringify(e01.artifact)
+) {
+  throw new Error('E01 registration packet does not reproduce from its bound content');
+}
 
 const packets = source.cards.map((card) => {
-  if (card.id === 'E00') {
+  if (card.id === 'E00' || card.id === 'E01') {
+    const packet = card.id === 'E00' ? e00 : e01;
+    const packetPath = card.id === 'E00' ? e00Path : e01Path;
     return {
       experimentId: card.id,
       registrationClass: card.class,
       registrationReady: true,
-      resolvedBindings: e00.artifact.bindings.map((binding) => ({
+      resolvedBindings: packet.artifact.bindings.map((binding) => ({
         key: binding.key,
         sha256: binding.sha256,
-        source: e00Path,
+        source: packetPath,
       })),
       unresolvedBindings: [],
       compileAttempt: 'compiled-and-hash-reproduced',
-      preRegistrationHash: e00.preRegistrationHash,
+      preRegistrationHash: packet.preRegistrationHash,
     };
   }
   return {
@@ -116,9 +134,9 @@ const report = {
   boundary: 'This inventory is deliberately incomplete. It is not a repository registration, a completed simulated commitment, governance approval, or permission to collect outcomes.',
 };
 
-if (report.totals.registrationReady !== 1 || report.totals.compiledPackets !== 1) throw new Error('inventory must contain exactly the verified E00 packet');
-if (report.totals.resolvedBindings !== 29 || report.totals.unresolvedBindings !== 180) throw new Error('binding totals do not reconcile');
-if (report.packets.some((packet) => packet.experimentId !== 'E00' && (packet.preRegistrationHash !== null || packet.unresolvedBindings.length !== 10))) throw new Error('an incomplete packet escaped fail-closed inventory');
+if (report.totals.registrationReady !== 2 || report.totals.compiledPackets !== 2) throw new Error('inventory must contain exactly the verified E00 and E01 packets');
+if (report.totals.resolvedBindings !== 39 || report.totals.unresolvedBindings !== 170) throw new Error('binding totals do not reconcile');
+if (report.packets.some((packet) => !['E00', 'E01'].includes(packet.experimentId) && (packet.preRegistrationHash !== null || packet.unresolvedBindings.length !== 10))) throw new Error('an incomplete packet escaped fail-closed inventory');
 
 const rendered = `${JSON.stringify(report, null, 2)}\n`;
 if (process.argv.includes('--write')) {

@@ -47,8 +47,8 @@ to relabel any existing fixture as a pilot.
   two-container reference topology, but have not been measured on the final selected
   registered topology with the eventual learners, carriers, sample counts, and bounds.
 - A fail-closed canonical packet compiler rejects missing, extra, empty, and
-  placeholder operational fields. E00 has all eleven bindings and compiles one exact
-  packet; the remaining 18 cards have 180 unresolved exact bindings.
+  placeholder operational fields. E00 and E01 each have all eleven bindings and
+  compile exact packets; the remaining 17 cards have 170 unresolved exact bindings.
 - Independent restore, methods/statistics review, reproduction review, hosted
   enforcement, and load-bearing citation re-review remain optional external evidence
   gaps. They do not block local collection, and no corresponding independent claim is made.
@@ -57,8 +57,9 @@ to relabel any existing fixture as a pilot.
 
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
-| E00 | No | v2 failed on independent proof coverage; repaired v3 awaits its prospective packet commit and simulated commitment |
-| E01/E02 | No | E00 plus topology/packet-specific leakage evidence |
+| E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
+| E01 | No | Exact packet compiled; matching simulated pre-run commitment and five registered topology slots remain |
+| E02 | No | Exact packet and prospectively registered semantic-leakage evidence remain |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |

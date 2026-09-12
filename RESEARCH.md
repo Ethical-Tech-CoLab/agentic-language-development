@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.94 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.95 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1094,7 +1094,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.94 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.95 · 254/258 backlog acceptance criteria verified.
 
 As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1123,7 +1123,7 @@ Implemented:
   full 1,808-test repository gate;
 - a general fail-closed registration-packet compiler requiring eleven exact binding
   classes; the current all-experiment inventory resolves only the 19 protocol cards,
-  leaves 180 experiment-specific bindings open, and emits one E00 registration hash;
+  leaves 170 experiment-specific bindings open, and emits E00 and E01 registration hashes;
 - grammar-valid bitmap, translation-tolerant canvas, and graded tone distances with
   deterministic nearest-prototype evaluation; this is a handcrafted E13 diagnostic,
   not evidence that a learner learned the metric or generalized to novel forms; an

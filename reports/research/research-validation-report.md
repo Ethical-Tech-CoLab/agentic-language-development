@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.94 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.95 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -738,8 +738,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    or selected-topology side-feature bounds.
 2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
    to be produced before D08 can freeze registration-ready configurations.
-   The fail-closed packet inventory currently resolves 19 protocol-card bindings but
-   leaves 180 exact experiment bindings unresolved and compiles the E00 packet only.
+   The fail-closed packet inventory currently resolves all eleven bindings for E00
+   and E01, leaves 170 exact experiment bindings unresolved, and has not yet activated
+   or executed E01.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
@@ -799,5 +800,5 @@ eight-perspective internal pass. They correct cross-document status and renderin
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment, while 18 experiments remain unstarted,
 all 125 local
-bundles remain research-excluded, 180 registration bindings remain unresolved, and
+bundles remain research-excluded, 170 registration bindings remain unresolved, and
 independent review is absent.

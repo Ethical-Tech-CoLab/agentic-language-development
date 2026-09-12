@@ -1,6 +1,6 @@
 # Canonical Registration Packet Readiness
 
-Status: B11 in progress; E00 compiles and 18 experiment packets remain incomplete
+Status: B11 in progress; E00 and E01 compile and 17 experiment packets remain incomplete
 Evidence class: outcome-blind design inventory  
 Machine inventory: `reports/research/registration-packet-readiness.json`
 
@@ -47,17 +47,19 @@ prospectively binds that repair and another fresh seed domain.
 
 ## Current inventory
 
-All 19 protocol cards resolve and receive stable card hashes. E00 resolves all eleven
-bindings and reproduces its canonical hash. The remaining ten bindings for each of
-18 experiments are deliberately unresolved: 180 unresolved bindings in total.
+All 19 protocol cards resolve and receive stable card hashes. E00 and E01 each
+resolve all eleven bindings and reproduce their canonical hashes. The remaining ten
+bindings for each of 17 experiments are deliberately unresolved: 170 unresolved
+bindings in total.
 Therefore:
 
-- registration-ready experiments: 1/19;
-- compiled canonical packets: 1/19;
-- pre-registration hashes emitted by this inventory: 1; and
+- registration-ready packet drafts: 2/19;
+- compiled canonical packets: 2/19;
+- pre-registration hashes emitted by this inventory: 2 (E00 and E01); and
 - immutable repository registration and matching simulated pre-run commitments:
   v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5 is
-  repository-registered and has a deterministic simulated commitment before execution.
+  repository-registered and has a deterministic simulated commitment before execution;
+  E01 is repository-registered but still requires its matching simulated commitment.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

@@ -20,10 +20,10 @@
   ],
   "totals": {
     "experiments": 19,
-    "registrationReady": 1,
-    "resolvedBindings": 29,
-    "unresolvedBindings": 180,
-    "compiledPackets": 1
+    "registrationReady": 2,
+    "resolvedBindings": 39,
+    "unresolvedBindings": 170,
+    "compiledPackets": 2
   },
   "packets": [
     {
@@ -94,58 +94,67 @@
     {
       "experimentId": "E01",
       "registrationClass": "qualification",
-      "registrationReady": false,
+      "registrationReady": true,
       "resolvedBindings": [
         {
           "key": "protocolCard",
-          "sha256": "sha256:99049406e32d0a59f0de5271b40d1e540ad203e13a5dde0afff8d200f2ac8d13",
-          "source": "protocols/research-protocol-cards.v1.json"
-        }
-      ],
-      "unresolvedBindings": [
+          "sha256": "sha256:937d0f405caf595b4edc1adbafda13ec3f4343beb027914868f6d2fb96600658",
+          "source": "protocols/e01-registration.v1.json"
+        },
         {
           "key": "runConfigurations",
-          "reason": "No final experiment-specific runConfigurations artifact is bound."
+          "sha256": "sha256:d741ebfdb82a1e92b57cab80b8c4b2b02bd2d9ae9c10dfd6ca119d912f83f943",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "practicalMargins",
-          "reason": "No final experiment-specific practicalMargins artifact is bound."
+          "sha256": "sha256:c740705dec909900f52ef1dadb7a3dc9247401b55baf252710564f9cbcb158e2",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "analysisVersions",
-          "reason": "No final experiment-specific analysisVersions artifact is bound."
+          "sha256": "sha256:3f4654f6155a8708ba4de19184f6c687516d066116e730524edd8a309213222d",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "modelAssets",
-          "reason": "No final experiment-specific modelAssets artifact is bound."
+          "sha256": "sha256:fa696b3a9823c5b983780b52a4824299ea7a69c8a763bf7941579973a54ec4e3",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "selectedSeedPrefix",
-          "reason": "Blinded pilot and complete-family power simulation have not selected a primary/reserve prefix."
+          "sha256": "sha256:e099b8dae1a6b657cebecbc0f8e1282669ec13a87b64092fa10bb548dbfded2f",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "executionHost",
-          "reason": "No approved study execution host and exact environment-manifest hash are bound."
+          "sha256": "sha256:039ed96cb4850acefafceed4bc13f9424b45908b89a93127d73dfcf4f3ac72cc",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "scenarioBundle",
-          "reason": "No final experiment-specific scenarioBundle artifact is bound."
+          "sha256": "sha256:e066f321b680e582100b0b85cd4002b5d0e9e826989c69e07764c2665dfd9174",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "exclusionRules",
-          "reason": "No final experiment-specific exclusionRules artifact is bound."
+          "sha256": "sha256:fa17235a7bfbfeddda88c4da54f7b25d1b15499d0000c9a16ca70ea736c5c8ed",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "stoppingRules",
-          "reason": "No final experiment-specific stoppingRules artifact is bound."
+          "sha256": "sha256:35f5c4629879e64614aaac5d5a7bff00afbfdf23cf2796c8869b018cf9f5781d",
+          "source": "protocols/e01-registration.v1.json"
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "reason": "No experiment-specific simulated commitment and verification policy is bound."
+          "sha256": "sha256:a25dcc2a1a0a38a05b8ca04e312a5ce29ee020f46369dd037e64e70c49410b9c",
+          "source": "protocols/e01-registration.v1.json"
         }
       ],
-      "compileAttempt": "blocked-before-compiler",
-      "preRegistrationHash": null
+      "unresolvedBindings": [],
+      "compileAttempt": "compiled-and-hash-reproduced",
+      "preRegistrationHash": "sha256:805cc5f873747c87b003bd95b035cab138fb16ed827ac501aee455061986004b"
     },
     {
       "experimentId": "E02",
