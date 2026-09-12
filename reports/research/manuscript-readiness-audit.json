@@ -2,17 +2,17 @@
   "schemaVersion": 1,
   "classification": "manuscript-readiness-audit",
   "researchFinding": false,
-  "capturedAt": "2026-09-11",
+  "capturedAt": "2026-09-12",
   "decision": "needs-revision",
   "manuscript": {
     "path": "RESEARCH.md",
-    "sha256": "52673f7afe30ac5227d2742294e5722290fab86da48ed04643f08f6a70d8ca29",
-    "version": "0.1.79",
+    "sha256": "7b4208f8a9b23ef8c91ca6d7438bb636633041eb741b7b881e779639acba74ec",
+    "version": "0.1.80",
     "majorSections": 25,
     "referencesDefined": 50,
     "referencesCited": 50,
     "renderedPages": 51,
-    "renderedSourceSha256": "52673f7afe30ac5227d2742294e5722290fab86da48ed04643f08f6a70d8ca29"
+    "renderedSourceSha256": "7b4208f8a9b23ef8c91ca6d7438bb636633041eb741b7b881e779639acba74ec"
   },
   "evidenceState": {
     "experiments": 19,

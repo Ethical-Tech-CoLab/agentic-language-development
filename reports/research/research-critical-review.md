@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
-Review date: 2026-09-11  
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.79
+Review date: 2026-09-12
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.80
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -45,7 +45,10 @@ received independent verification.
    public anchoring, required-check enforcement, restore witnessing, and external
    registration cannot be manufactured from repository work. **Fix (required):**
    obtain authentic records for O01–O06 and rerun the fail-closed readiness compiler.
-   The new external-prerequisite ledger remains blocked at 0/6; its read-only O04
+   The external-prerequisite ledger remains blocked at 0/6. O02 now has a valid
+   encrypted Fort scope, a public Base Sepolia address, two chain-ID checks, and a
+   successful four-track signer-boundary run, but both RPCs report 0 wei and no
+   public receipt exists. Its read-only O04
    observation found no ruleset or demonstrated branch protection. The exact v0.1.78
    pull-request workflow requires approval and started zero jobs, while the latest
    relevant default-branch workflow failed.

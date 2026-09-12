@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.79 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.80 · 254/258 backlog acceptance criteria verified.
 
 The repository's locally executable **verifiable core and research-execution
 readiness path are complete**. The evidence integrity spine, communication MVP,
@@ -108,8 +108,9 @@ implemented and tested:
   atomic SQLite Evidence Writer with fork detection, recovery, bundle export, and
   analysis attachments atomically bound to witness-committed intervention events.
 - `@ald/checkpoint`, `@ald/anchor`, `@ald/verifier`: signed checkpoint manifests and
-  proof files, the Base anchor publisher (fake chain and viem transports; no funded
-  wallet is configured here), and the standalone `ald-verify` CLI that re-derives
+  proof files, the Base anchor publisher (fake chain and viem transports; the
+  Fort-provisioned Base Sepolia wallet remains unfunded), and the standalone
+  `ald-verify` CLI that re-derives
   every hash, signature, root, proof, binding, and anchor from a bundle alone.
   A separate read-only Rust auditor independently rebuilds canonical event hashes,
   signatures, Merkle prefixes, checkpoint chains, receipt bindings, and attachment
@@ -198,8 +199,10 @@ and covered against real exported bundles and evidence-store rows.
 
 The [external-prerequisite handoff](docs/external-prerequisite-handoff.md) and its
 machine-readable ledger make O01–O06 auditable without recording secrets or personal
-identity. The current ledger is blocked at 0/6; a fresh read-only upstream observation
-also confirms that required-check enforcement is not yet demonstrated.
+identity. The current ledger is blocked at 0/6. O02 is provisioned-unfunded after an
+authenticated Fort-backed four-track Mode R qualification and two matching Base
+Sepolia chain checks; a fresh read-only upstream observation also confirms that
+required-check enforcement is not yet demonstrated.
 
 No experiment results are claimed.
 

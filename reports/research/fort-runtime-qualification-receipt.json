@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "classification": "fort-runtime-and-sepolia-readiness-qualification",
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "capturedAt": "2026-09-12",
+  "candidates": {
+    "researchSoftwareCommit": "7c300180c988e19ee175118992ab6fefdbabca33",
+    "researchSoftwareVersion": "0.1.79",
+    "fortCommit": "b2ab08f1f728d5bb3d160796c22439e90868def5",
+    "fortVersion": "0.2.28",
+    "safeCommit": "c27cb746f6ef69522f56fb51332a9251d0345d94",
+    "safeVersion": "0.2.35"
+  },
+  "fortDeployment": {
+    "releaseId": "20260912t095932005677157-1a2f36bc",
+    "container": "viva-fort-prod-api",
+    "image": "viva-fort-prod-api:20260912t095932005677157-1a2f36bc",
+    "status": "healthy",
+    "publicHealthStatus": 200,
+    "publicReadyStatus": 200
+  },
+  "scopeProvisioning": {
+    "repo": "agentic-language-development",
+    "env": "dev",
+    "authenticatedAdminOperation": true,
+    "created": true,
+    "idempotentRecheckCreated": false,
+    "auditDecisions": [
+      "allow:created",
+      "allow:exists"
+    ],
+    "keyringMode": "0600",
+    "canonicalKeyMaterialReused": true,
+    "keyMaterialReturned": false
+  },
+  "encryptedMaterial": {
+    "safePath": "agentic-language-development/.env.dev",
+    "safeFileSha256": "28f3bc5a7f6f80123522ecd05917e235c9f0b06247213cf34120039d00295a5c",
+    "directoryMode": "0700",
+    "fileMode": "0600",
+    "ciphertextPrefixCheck": "4/4",
+    "vaultCheck": "pass",
+    "credentialNames": [
+      "ALD_ANCHOR_KEY",
+      "ALD_BASE_RPC_URL",
+      "ALD_BASE_VERIFY_RPC_URL",
+      "ALD_RUN_SIGNER_SEEDS_JSON"
+    ]
+  },
+  "baseSepoliaReadiness": {
+    "status": "provisioned-unfunded",
+    "chainId": 84532,
+    "address": "0x9a45c73d4ecC015433D6CeEB94D0a1f931Bd5faD",
+    "primaryRpc": {
+      "endpoint": "https://sepolia.base.org",
+      "observedChainId": 84532,
+      "balanceWei": "0"
+    },
+    "independentRpc": {
+      "endpoint": "https://base-sepolia-rpc.publicnode.com",
+      "observedChainId": 84532,
+      "balanceWei": "0"
+    },
+    "faucetDisposition": "The official programmatic faucet requires a signed CDP credential that is not present in Fort; no unauthenticated or substitute funding action was attempted.",
+    "transactionHash": null,
+    "confirmedBlock": null,
+    "independentReceiptVerification": null,
+    "o02Satisfied": false
+  },
+  "modeRQualification": {
+    "command": "si fort run --repo agentic-language-development --env dev --keys ALD_RUN_SIGNER_SEEDS_JSON --mode files -- /home/linuxbrew/.linuxbrew/bin/pnpm run test:mode-r-study",
+    "fortSession": {
+      "openedAt": "2026-09-12T10:05:45.228446758Z",
+      "materializedAt": "2026-09-12T10:05:45.321437991Z",
+      "closedAt": "2026-09-12T10:14:33.896358912Z",
+      "allDecisions": "allow"
+    },
+    "exitCode": 0,
+    "fortComposeBoundaryVerified": true,
+    "recurrentCapacityMatched": true,
+    "allSealedAndProductionVerified": true,
+    "runCount": 4,
+    "totalEventsIncludingInterventions": 297,
+    "totalCheckpoints": 49,
+    "ignoredEvidence": {
+      "directory": "evidence/validation/mode-r-study-2322234",
+      "gitTracked": false,
+      "fileCount": 2339,
+      "bytes": 6062519
+    },
+    "runs": [
+      {
+        "runId": "mode-r-study-no-learning",
+        "track": "no-learning",
+        "state": "sealed",
+        "trainingTurns": 4,
+        "evaluationTurns": 4,
+        "primaryEvents": 58,
+        "eventsIncludingInterventions": 59,
+        "checkpoints": 10,
+        "productionVerifierExitCode": 0,
+        "summarySha256": "534ee2ad89992ecb68b124d6f3fdf5f66f9221b9588edef13576bd4cba2b0eb8",
+        "independentAuditSha256": "33b8daf76468efd64b007de3255815471fd35db10a9f592197ad16a0d88bef2c"
+      },
+      {
+        "runId": "mode-r-study-scratch-rl",
+        "track": "scratch-rl",
+        "state": "sealed",
+        "trainingTurns": 4,
+        "evaluationTurns": 4,
+        "primaryEvents": 76,
+        "eventsIncludingInterventions": 77,
+        "checkpoints": 13,
+        "productionVerifierExitCode": 0,
+        "summarySha256": "e5df318e18d0083a5421709abf7dd1dcd1d481eb84f8575aab2bf8fff5190fa7",
+        "independentAuditSha256": "347e350b718a305990ffbbbe765468de6e188d41c2d83b7fb533999ada1a9e00"
+      },
+      {
+        "runId": "mode-r-study-self-supervised",
+        "track": "self-supervised",
+        "state": "sealed",
+        "trainingTurns": 4,
+        "evaluationTurns": 4,
+        "primaryEvents": 80,
+        "eventsIncludingInterventions": 81,
+        "checkpoints": 13,
+        "productionVerifierExitCode": 0,
+        "summarySha256": "03bd8fda6d61028e72bddf85915bf205c032503039ef09a1b7647d2306c4a52f",
+        "independentAuditSha256": "3e3d949548ead6cf32d599a5db20fe7cefa97c4a293b598d7b0d05dcd625d02a"
+      },
+      {
+        "runId": "mode-r-study-hybrid",
+        "track": "hybrid",
+        "state": "sealed",
+        "trainingTurns": 4,
+        "evaluationTurns": 4,
+        "primaryEvents": 79,
+        "eventsIncludingInterventions": 80,
+        "checkpoints": 13,
+        "productionVerifierExitCode": 0,
+        "summarySha256": "b44bbf62c978c8f20f87caffa42bacf118d467d3c476d9e6cb5c9472974e7901",
+        "independentAuditSha256": "d159e0ebe88314fa632a889c23d1e41f750363d50f15f348267669829b7e9d1b"
+      }
+    ],
+    "independentAudit": {
+      "implementation": "ald-integrity-auditor-rust-v1",
+      "passCount": 4,
+      "bundleCount": 4,
+      "issueCount": 0,
+      "allLocalQualificationReceiptBindingsPresent": true
+    }
+  },
+  "limitations": [
+    "The Mode R runs are bounded software/topology qualifications, not registered study observations.",
+    "Their local fake-chain receipts exercise binding and verification but are not public-chain transactions.",
+    "The Base Sepolia wallet has zero balance, so no transaction receipt or independently confirmed block exists.",
+    "The Fort-backed run proves credential materialization and exact run authorization; it does not satisfy governance, registration, independent-human review, or upstream-enforcement gates.",
+    "No mainnet action is authorized without a separate explicit numeric balance, fee, custody, and finality policy."
+  ]
+}

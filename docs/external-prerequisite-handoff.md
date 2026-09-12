@@ -15,11 +15,18 @@ the campaign and experiment-specific preflight gates.
 | Item | State | Decisive closure evidence |
 |---|---|---|
 | O01 governance | Missing | Dated scoped decision, responsible roles, retention/deletion policy, human-coding determination, authenticity check |
-| O02 Sepolia authority | Missing | Fort-mediated signer/RPC provisioning and an independently confirmed privacy-minimized Base Sepolia transaction |
+| O02 Sepolia authority | Provisioned, unfunded | Fort-mediated signer/RPC provisioning passes, but the recorded address has 0 wei; an independently confirmed privacy-minimized Base Sepolia transaction is still required |
 | O03 mainnet authority | Missing | Explicit spending/custody/finality policy and bounded public signer authority; until then mainnet remains prohibited |
 | O04 upstream enforcement | Observed unsatisfied | Exact candidate upstream, required `consolidated-suite` and `mode-r` checks, enforced protection/ruleset, fresh passing hosted receipts |
 | O05 independent restore | Missing | A second human completes the authoritative restore runbook with checksums and every policy/prefix result |
 | O06 external registration | Missing | Zero-field-gap packet, external registration, identical hash, and independently verified matching pre-run public anchor |
+
+The 2026-09-12 Fort runtime receipt records an authenticated, encrypted project
+scope, two endpoints that independently report Base Sepolia chain ID 84532, and a
+four-track Fort-backed Mode R qualification. Both endpoints report 0 wei for the
+public signer address, so O02 remains unsatisfied and no public-chain claim follows.
+The receipt is stored in
+`reports/research/fort-runtime-qualification-receipt.json`.
 
 The 2026-09-11 read-only O04 observation found no repository ruleset and could not
 demonstrate branch protection. The exact v0.1.78 candidate is published as the head of

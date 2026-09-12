@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.79 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.80 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1087,9 +1087,9 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.79 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.80 · 254/258 backlog acceptance criteria verified.
 
-As of September 11, 2026, 82 of 86 backlog items satisfy all of their acceptance
+As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
 
 Implemented:
@@ -1123,6 +1123,11 @@ Implemented:
   exact clean-candidate qualification covers three carriers and six rejection paths;
 - a Base anchor client with confirmation/recovery handling and explicit mainnet
   gating, tested without claiming a funded public transaction;
+- an authenticated Fort boundary that stores the project signer envelope, anchor
+  key, and two Base Sepolia endpoints only as encrypted Safe material; a four-track
+  files-mode Mode R run sealed and production-verified every bounded qualification
+  bundle, and both endpoints independently reported chain ID 84532 and 0 wei for the
+  public address;
 - deterministic scenarios, the tool-only Gateway, all declared carrier controls,
   five learner tracks, DTSF twin routes, and the complete turn lifecycle;
 - process/container Mode R isolation, training separation, active side-channel and
@@ -1145,11 +1150,13 @@ Not yet externally evidenced or empirically executed:
 - external registration/governance approval; and
 - confirmatory experiments E00-E50 or any scientific results.
 
-The external-prerequisite ledger is blocked at 0/6. Its read-only upstream
-observation found no repository ruleset and did not demonstrate branch protection.
-The exact v0.1.78 candidate is published as an upstream pull-request head, but its
-workflow is `action_required` and started zero jobs; the latest relevant
-default-branch workflow also failed. These observations strengthen the O04 blocker;
+The external-prerequisite ledger is blocked at 0/6. O02 is now
+provisioned-unfunded: its Fort scope and credential path are qualified, but no
+transaction hash, confirmed block, or independent public receipt exists. Its
+read-only upstream observation found no repository ruleset and did not demonstrate
+branch protection. The exact v0.1.79 candidate is published as an upstream
+pull-request head, but its workflow is `action_required` and started zero jobs; the
+latest relevant default-branch workflow also failed. These observations strengthen the O04 blocker;
 they do not constitute permission to change remote policy or execute a study.
 
 The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 111

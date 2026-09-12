@@ -91,7 +91,7 @@ const result = {
   schemaVersion: 1,
   classification: 'manuscript-readiness-audit',
   researchFinding: false,
-  capturedAt: '2026-09-11',
+  capturedAt: '2026-09-12',
   decision: 'needs-revision',
   manuscript: {
     path: 'RESEARCH.md',

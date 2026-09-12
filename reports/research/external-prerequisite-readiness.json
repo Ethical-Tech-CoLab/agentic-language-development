@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "external-prerequisite-readiness-ledger",
   "researchFinding": false,
-  "capturedAt": "2026-09-11",
+  "capturedAt": "2026-09-12",
   "decision": "blocked",
   "satisfiedCount": 0,
   "requiredCount": 6,
@@ -26,9 +26,12 @@
     {
       "id": "O02",
       "blockingFinding": "B02",
-      "status": "missing",
+      "status": "observed-unsatisfied",
       "satisfied": false,
-      "receipt": null,
+      "receipt": {
+        "path": "reports/research/fort-runtime-qualification-receipt.json",
+        "sha256": "c023f6e94fb18285c9c66e0fd4d979ff27e265730016969fcfbbaddb17fb3a99"
+      },
       "requiredEvidence": [
         "Fort-mediated files-mode provisioning receipt",
         "Base Sepolia chain ID 84532",
@@ -37,7 +40,7 @@
         "privacy-minimized transaction hash and confirmed block",
         "independent receipt verification timestamp"
       ],
-      "nextAction": "An authorized operator provisions the signer and RPC only through si fort and records public receipt metadata without secret material."
+      "nextAction": "Fund the recorded Base Sepolia address through an authorized faucet credential, submit one privacy-minimized transaction, and independently verify its confirmed receipt."
     },
     {
       "id": "O03",

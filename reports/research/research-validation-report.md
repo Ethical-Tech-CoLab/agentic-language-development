@@ -1,8 +1,8 @@
 # The System Is Software-Qualified, but the Research Questions Remain Open
 
 Working research-validation report  
-Evidence cutoff: 2026-09-11  
-Latest tracked research-design candidate: v0.1.79 (D08 and A03 in progress; A01 snapshot complete)
+Evidence cutoff: 2026-09-12
+Latest tracked research-design candidate: v0.1.80 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -74,8 +74,14 @@ Report status: in progress
   anchors/registration, resources, pilot-selected N, final detector/comparator
   qualification, exact packets, independent review, and citation re-review.
 - The machine-checked external-prerequisite ledger is blocked at 0/6. A fresh
-  read-only upstream observation found no repository ruleset or demonstrated branch
-  protection. The exact v0.1.78 pull-request workflow is `action_required` with zero
+  authenticated Fort deployment now provisions the project scope, four encrypted
+  values, and a dedicated Base Sepolia address. Two independent RPCs agree on chain
+  ID 84532 and a balance of 0 wei, so O02 is observed but unsatisfied. The same Fort
+  boundary completed all four Mode R qualification tracks and closed its ephemeral
+  materialization session normally; this is credential-path evidence, not a public
+  transaction or study result.
+- A fresh read-only upstream observation found no repository ruleset or demonstrated
+  branch protection. The exact v0.1.79 pull-request workflow is `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   strengthens rather than closes O04.
 - The complete local data/claim snapshot resolves and hash-binds 111 exported bundles
@@ -260,13 +266,22 @@ receipt binding. The run consumed 525.17 seconds wall time and the observed host
 process peaked at 55,424 KiB; those memory figures exclude Docker daemon, image-build,
 and container consumption.
 
-The signer path now refuses direct secret-bearing environment values and plaintext
-key directories. Public-study signer material must enter as a mode-0600 regular,
+The signer path refuses direct secret-bearing environment values and plaintext key
+directories. Public-study signer material must enter as a mode-0600 regular,
 non-symlink file materialized by `si fort`, with exact run authorization. Compose
 rendering and tests verify that only the Nursery receives the file mount and that
-neither learner receives its path or contents. No authorized Fort runtime session
-was available, so the persistent path was checked with non-secret fixtures rather
-than real credentials.
+neither learner receives its path or contents. On 2026-09-12, the
+[Fort runtime receipt](fort-runtime-qualification-receipt.json) exercised that exact
+boundary with an encrypted four-run/six-domain envelope. All four runs sealed and
+passed the production verifier; a separately rebuilt Rust auditor accepted all 297
+events, 49 checkpoints, and local receipt bindings with zero issues. The Fort audit
+records an allowed open, materialization, and close spanning the run. No credential
+value appears in the tracked receipt.
+
+The same receipt validates the dedicated Base Sepolia public address through two
+RPC providers, both reporting chain ID 84532 and 0 wei. The official programmatic
+faucet requires a credential not present in Fort, so no transaction was attempted.
+This advances O02 from missing to provisioned-unfunded but does not satisfy it.
 
 The anchor transport was an explicitly labeled local fake chain. Therefore this
 qualification demonstrates orchestration and evidence integrity only: it is not a
@@ -747,7 +762,9 @@ machine audit rejects any ready flag while the recorded campaign decision is neg
    replication records do not exist.
 8. The external-prerequisite handoff now defines privacy-safe closure evidence for
    O01–O06 and rejects receipt-path-only readiness. Its current ledger has 0/6
-   satisfied, so no experiment activation follows from this documentation work.
+   satisfied. O02 is now provisioned-unfunded with an authenticated Fort receipt;
+   the other five gates remain missing or observed-unsatisfied, so no experiment
+   activation follows from this qualification work.
 
 ## 21. Current scientific and publication conclusion
 

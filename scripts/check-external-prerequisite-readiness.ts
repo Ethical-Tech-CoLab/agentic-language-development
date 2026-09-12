@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 const readinessPath = 'reports/research/external-prerequisite-readiness.json';
 const campaignPath = 'protocols/campaign-readiness-review.v1.json';
 const upstreamPath = 'reports/research/upstream-enforcement-observation.json';
+const fortRuntimePath = 'reports/research/fort-runtime-qualification-receipt.json';
 const sha256 = (bytes: Buffer | string): string => createHash('sha256').update(bytes).digest('hex');
 
 interface ReceiptReference {
@@ -62,11 +63,44 @@ interface UpstreamObservation {
   decision: string;
 }
 
+interface FortRuntimeQualification {
+  schemaVersion: number;
+  classification: string;
+  researchFinding: boolean;
+  publicChainTransaction: boolean;
+  scopeProvisioning: {
+    authenticatedAdminOperation: boolean;
+    canonicalKeyMaterialReused: boolean;
+    keyMaterialReturned: boolean;
+  };
+  encryptedMaterial: { ciphertextPrefixCheck: string; vaultCheck: string };
+  baseSepoliaReadiness: {
+    status: string;
+    chainId: number;
+    primaryRpc: { observedChainId: number; balanceWei: string };
+    independentRpc: { observedChainId: number; balanceWei: string };
+    transactionHash: string | null;
+    confirmedBlock: number | null;
+    independentReceiptVerification: string | null;
+    o02Satisfied: boolean;
+  };
+  modeRQualification: {
+    exitCode: number;
+    fortComposeBoundaryVerified: boolean;
+    allSealedAndProductionVerified: boolean;
+    runCount: number;
+    totalEventsIncludingInterventions: number;
+    totalCheckpoints: number;
+    independentAudit: { passCount: number; bundleCount: number; issueCount: number };
+  };
+}
+
 const readinessBytes = readFileSync(readinessPath);
 const readiness = JSON.parse(readinessBytes.toString('utf8')) as ReadinessLedger;
 const campaign = JSON.parse(readFileSync(campaignPath, 'utf8')) as CampaignReview;
 const upstreamBytes = readFileSync(upstreamPath);
 const upstream = JSON.parse(upstreamBytes.toString('utf8')) as UpstreamObservation;
+const fortRuntime = JSON.parse(readFileSync(fortRuntimePath, 'utf8')) as FortRuntimeQualification;
 
 if (
   readiness.schemaVersion !== 1 ||
@@ -143,6 +177,43 @@ if (
   upstream.decision !== 'not-demonstrated'
 ) {
   throw new Error('upstream observation no longer supports O04 observed-unsatisfied');
+}
+
+const o02 = readiness.items.find((item) => item.id === 'O02');
+if (
+  o02?.status !== 'observed-unsatisfied' ||
+  o02.satisfied ||
+  o02.receipt?.path !== fortRuntimePath ||
+  fortRuntime.schemaVersion !== 1 ||
+  fortRuntime.classification !== 'fort-runtime-and-sepolia-readiness-qualification' ||
+  fortRuntime.researchFinding ||
+  fortRuntime.publicChainTransaction ||
+  !fortRuntime.scopeProvisioning.authenticatedAdminOperation ||
+  !fortRuntime.scopeProvisioning.canonicalKeyMaterialReused ||
+  fortRuntime.scopeProvisioning.keyMaterialReturned ||
+  fortRuntime.encryptedMaterial.ciphertextPrefixCheck !== '4/4' ||
+  fortRuntime.encryptedMaterial.vaultCheck !== 'pass' ||
+  fortRuntime.baseSepoliaReadiness.status !== 'provisioned-unfunded' ||
+  fortRuntime.baseSepoliaReadiness.chainId !== 84532 ||
+  fortRuntime.baseSepoliaReadiness.primaryRpc.observedChainId !== 84532 ||
+  fortRuntime.baseSepoliaReadiness.independentRpc.observedChainId !== 84532 ||
+  fortRuntime.baseSepoliaReadiness.primaryRpc.balanceWei !== '0' ||
+  fortRuntime.baseSepoliaReadiness.independentRpc.balanceWei !== '0' ||
+  fortRuntime.baseSepoliaReadiness.transactionHash !== null ||
+  fortRuntime.baseSepoliaReadiness.confirmedBlock !== null ||
+  fortRuntime.baseSepoliaReadiness.independentReceiptVerification !== null ||
+  fortRuntime.baseSepoliaReadiness.o02Satisfied ||
+  fortRuntime.modeRQualification.exitCode !== 0 ||
+  !fortRuntime.modeRQualification.fortComposeBoundaryVerified ||
+  !fortRuntime.modeRQualification.allSealedAndProductionVerified ||
+  fortRuntime.modeRQualification.runCount !== 4 ||
+  fortRuntime.modeRQualification.totalEventsIncludingInterventions !== 297 ||
+  fortRuntime.modeRQualification.totalCheckpoints !== 49 ||
+  fortRuntime.modeRQualification.independentAudit.passCount !== 4 ||
+  fortRuntime.modeRQualification.independentAudit.bundleCount !== 4 ||
+  fortRuntime.modeRQualification.independentAudit.issueCount !== 0
+) {
+  throw new Error('Fort runtime receipt no longer supports O02 observed-unsatisfied');
 }
 
 const serialized = readinessBytes.toString('utf8').toLowerCase();
