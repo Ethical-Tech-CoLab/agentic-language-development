@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.83
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.84
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,

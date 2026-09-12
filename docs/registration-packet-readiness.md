@@ -31,6 +31,11 @@ The emitted claim boundary is `draft-until-repository-registered-and-pre-run-com
 Compilation alone cannot establish immutable repository registration, governance approval,
 a completed commitment, public anchoring, or independent review.
 
+E00 packet v1 was committed without outcomes, then superseded prospectively because
+its environment manifest included mutable package metadata and would have forced the
+execution commit to contradict the registered environment. Packet v2 removes that
+cycle, records the v1 hash and reason, and is the only eligible E00 packet.
+
 ## Current inventory
 
 All 19 protocol cards resolve and receive stable card hashes. E00 resolves all eleven

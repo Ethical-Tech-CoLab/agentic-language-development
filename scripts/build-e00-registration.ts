@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
 
-const outputPath = 'protocols/e00-registration.v1.json';
-const protocolBaseCommit = 'c37e375ad555f99155c251c6fbd352fff493b99d';
+const outputPath = 'protocols/e00-registration.v2.json';
+const protocolBaseCommit = '59cd60d26937e1b595d645c95c8155758b091312';
 const read = (path: string): Buffer => readFileSync(path);
 const sha256 = (value: Buffer | string): string =>
   createHash('sha256').update(value).digest('hex');
@@ -47,7 +47,6 @@ const primary = Array.from({ length: 5 }, (_, index) => {
   };
 });
 const environmentManifest = {
-  packageJsonSha256: sha256(read('package.json')),
   pnpmLockSha256: sha256(read('pnpm-lock.yaml')),
   rustLockSha256: sha256(read('tools/integrity-auditor/Cargo.lock')),
   nodeMajor: Number(process.versions.node.split('.')[0]),
@@ -74,6 +73,11 @@ const bindings = {
   },
   runConfigurations: [{
     protocolBaseCommit,
+    supersededRegistration: {
+      path: 'protocols/e00-registration.v1.json',
+      preRegistrationHash: 'sha256:be3c156fe34abb19b9adc71f7cccfc8237d813b37cd09033dffceb80c391bc36',
+      reason: 'The v1 environment manifest bound mutable package metadata, creating a registration/execution commit cycle; no outcomes were collected.',
+    },
     experimentId: 'E00',
     stage: 'software-qualification',
     deploymentMode: 'prototype',
