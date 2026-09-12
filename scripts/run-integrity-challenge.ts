@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { access, cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
@@ -53,6 +54,46 @@ interface RegisteredSlot {
   scenario: string;
 }
 
+interface RegisteredAnalysisVersion {
+  protocolPath: string;
+  protocolSha256: string;
+}
+
+const REGISTRATION_PATH = 'protocols/e00-registration.v4.json';
+const BINDING_PATH = 'protocols/e00-registration-binding.v3.json';
+const EVIDENCE_ROOT = 'evidence/qualification/e00-v4';
+const DEFAULT_OUTPUT = 'reports/research/e00-integrity-qualification-receipt.json';
+const MUTATION_CASES = [
+  'event-content',
+  'deleted-middle-event',
+  'inserted-event',
+  'reordered-events',
+  'foreign-writer-signature',
+  'modified-merkle-proof',
+  'wrong-chain',
+  'simulated-class-relabel',
+  'false-receipt-payload',
+  'unanchored-tail',
+  'inconsistent-checkpoint-prefix',
+] as const;
+
+async function assertAbsent(path: string, label: string): Promise<void> {
+  try {
+    await access(path);
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return;
+    }
+    throw error;
+  }
+  throw new Error(`${label} already exists at ${path}; refusing to overwrite a prior attempt`);
+}
+
 async function rustAudit(bundleDir: string): Promise<RustReport> {
   try {
     const { stdout } = await execFileAsync(AUDITOR, [bundleDir], {
@@ -89,14 +130,6 @@ async function inspectCase(
     verifierGapCount: verifier.gaps.length,
     auditorIssueCount: auditor.issues.length,
   };
-  if (
-    result.verifierPass !== expectedPass ||
-    result.auditorPass !== expectedPass
-  ) {
-    throw new Error(
-      `unexpected challenge disposition: ${JSON.stringify({ result, auditorIssues: auditor.issues, verifierGaps: verifier.gaps })}`,
-    );
-  }
   return result;
 }
 
@@ -115,14 +148,18 @@ async function mutateCase(
 }
 
 async function main(): Promise<void> {
+  const status = await execFileAsync('git', ['status', '--porcelain']);
+  if (status.stdout.trim() !== '') {
+    throw new Error('E00 qualification requires an exact clean execution commit');
+  }
   const registration = JSON.parse(
-    await readFile('protocols/e00-registration.v3.json', 'utf8'),
+    await readFile(REGISTRATION_PATH, 'utf8'),
   ) as {
     preRegistrationHash: string;
     artifact: { bindings: Array<{ key: string; content: unknown }> };
   };
   const binding = JSON.parse(
-    await readFile('protocols/e00-registration-binding.v2.json', 'utf8'),
+    await readFile(BINDING_PATH, 'utf8'),
   ) as {
     preRegistrationHash: string;
     preRunAnchor?: { anchorClass: string; inputData: string; status: string };
@@ -140,6 +177,32 @@ async function main(): Promise<void> {
   )?.content as { primary?: RegisteredSlot[] } | undefined;
   const slots = seedBinding?.primary;
   if (slots?.length !== 5) throw new Error('E00 registration must contain five slots');
+  const analysisVersions = registration.artifact.bindings.find(
+    (entry) => entry.key === 'analysisVersions',
+  )?.content as RegisteredAnalysisVersion[] | undefined;
+  if (analysisVersions === undefined || analysisVersions.length !== 2) {
+    throw new Error('E00 registration must bind both verifier protocols');
+  }
+  for (const version of analysisVersions) {
+    const protocol = await readFile(version.protocolPath);
+    const actual = createHash('sha256').update(protocol).digest('hex');
+    if (actual !== version.protocolSha256) {
+      throw new Error(`registered protocol changed: ${version.protocolPath}`);
+    }
+  }
+  const policy = registration.artifact.bindings.find(
+    (entry) => entry.key === 'evidenceAndAnchorPolicy',
+  )?.content as { mutationCases?: string[]; retainedEvidencePath?: string } | undefined;
+  if (
+    JSON.stringify(policy?.mutationCases) !== JSON.stringify(MUTATION_CASES) ||
+    policy?.retainedEvidencePath !== 'evidence/qualification/e00-v4/<runId>'
+  ) {
+    throw new Error('registered E00 mutation or evidence-retention policy is mismatched');
+  }
+  const outputPath = process.env['ALD_INTEGRITY_CHALLENGE_OUTPUT'] ?? DEFAULT_OUTPUT;
+  await assertAbsent(EVIDENCE_ROOT, 'E00 retained-evidence root');
+  await assertAbsent(outputPath, 'E00 qualification receipt');
+  await mkdir(EVIDENCE_ROOT, { recursive: true });
   const executionCommit = await execFileAsync('git', ['rev-parse', 'HEAD']);
   const slotResults: Array<{
     slot: number;
@@ -153,6 +216,7 @@ async function main(): Promise<void> {
     wallMilliseconds: number;
     cases: ChallengeResult[];
     allDispositionsMatched: boolean;
+    retainedBundle: string;
   }> = [];
   for (const registeredSlot of slots) {
     const started = performance.now();
@@ -162,6 +226,7 @@ async function main(): Promise<void> {
       runId: `run-e00-qualified-${String(registeredSlot.slot).padStart(2, '0')}`,
       randomSeed: registeredSlot.scenario,
     });
+    const retainedBundle = join(EVIDENCE_ROOT, fixture.runId);
     try {
       const results: ChallengeResult[] = [];
       results.push(await inspectCase('unchanged-export', fixture.bundleDir, true));
@@ -305,6 +370,11 @@ async function main(): Promise<void> {
       }),
     );
 
+      const observedMutationCases = results.slice(1).map((result) => result.case);
+      if (JSON.stringify(observedMutationCases) !== JSON.stringify(MUTATION_CASES)) {
+        throw new Error('executed mutation cases differ from the registered order');
+      }
+
       const [fixtureAudit, babyAEvents, babyBEvents, receipts] = await Promise.all([
         rustAudit(fixture.bundleDir),
         readJsonl(join(fixture.bundleDir, 'baby-a-ledger.jsonl')),
@@ -331,9 +401,18 @@ async function main(): Promise<void> {
             result.verifierPass === result.expectedPass &&
             result.auditorPass === result.expectedPass,
         ),
+        retainedBundle,
       });
     } finally {
-      await fixture.cleanup();
+      try {
+        await cp(fixture.bundleDir, retainedBundle, {
+          recursive: true,
+          errorOnExist: true,
+          force: false,
+        });
+      } finally {
+        await fixture.cleanup();
+      }
     }
   }
   await execFileAsync(
@@ -353,7 +432,7 @@ async function main(): Promise<void> {
       researchFinding: false,
       experimentId: 'E00',
       registrationHash: registration.preRegistrationHash,
-      registrationBinding: 'protocols/e00-registration-binding.v2.json',
+      registrationBinding: BINDING_PATH,
       executionCommit: executionCommit.stdout.trim(),
       fixture: {
         slots: slotResults.length,
@@ -378,11 +457,11 @@ async function main(): Promise<void> {
       claimBoundary: 'E00 integrity qualification only; this is not an agent-language outcome, public-chain result, independent replication, or independent human review.',
     };
     const serialized = `${JSON.stringify(output, null, 2)}\n`;
-    const outputPath = process.env['ALD_INTEGRITY_CHALLENGE_OUTPUT'];
-    if (outputPath !== undefined) {
-      await writeFile(outputPath, serialized, 'utf8');
-    }
+    await writeFile(outputPath, serialized, 'utf8');
     process.stdout.write(serialized);
+    if (!output.allDispositionsMatched) {
+      throw new Error(`E00 qualification failed; receipt retained at ${outputPath}`);
+    }
 }
 
 await main();

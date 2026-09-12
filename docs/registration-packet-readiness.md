@@ -38,7 +38,10 @@ cycle and records the v1 hash and reason. Packet v2 was committed and simulation
 committed, but its first slot failed closed when the Rust auditor accepted a modified
 inclusion proof. Packet v3 binds the repaired Rust and TypeScript source hashes, a
 fresh E00-only seed domain, and both prior dispositions. It requires a new prospective
-commitment before execution.
+commitment before execution. A later dry-run found that activating v3 necessarily
+changed the wrapper source it had hashed; v3 therefore produced no outcomes. V4
+removes that self-reference, binds the scientific protocol, records the exact clean
+execution commit in its receipt, and uses another fresh seed domain.
 
 ## Current inventory
 
@@ -51,7 +54,7 @@ Therefore:
 - compiled canonical packets: 1/19;
 - pre-registration hashes emitted by this inventory: 1; and
 - immutable repository registration and matching simulated pre-run commitments:
-  v2 is complete but failed; v3 is complete and ready for its first attempt.
+  v2 is complete but failed; v3 is superseded without outcomes; v4 awaits commit and commitment.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

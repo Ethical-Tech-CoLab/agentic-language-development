@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** Registered qualification attempt v2 failed closed; v3 amendment pending
+**Status:** Registered qualification attempt v2 failed closed; outcome-free v3 superseded; v4 amendment pending
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -266,8 +266,10 @@ pre-registered mutation of a committed ledger or transcript.
 **Result summary:** v2 slot 1 stopped at the first dual-verifier disagreement. Slots
 2-5 were not attempted and slot 1 will not be rerun into success. The Rust auditor
 did not inspect inclusion-proof files; the failed receipt is retained at
-`reports/research/e00-integrity-qualification-attempt-1.json`. V3 binds the repaired
-auditor and a fresh seed domain before any further attempt.
+`reports/research/e00-integrity-qualification-attempt-1.json`. V3 was superseded
+without execution after a source-binding cycle was found. V4 binds the frozen
+scientific protocol, records exact implementation identity at execution, and uses a
+fresh seed domain before any further attempt.
 
 ---
 

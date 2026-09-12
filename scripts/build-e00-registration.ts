@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
 
-const outputPath = 'protocols/e00-registration.v3.json';
-const protocolBaseCommit = '6ac2b199ba5f0dcec1a7a78229f3405ead52956c';
+const outputPath = 'protocols/e00-registration.v4.json';
+const protocolBaseCommit = '4426162dbd73a63ec7bcc64f25d81596302e3940';
 const read = (path: string): Buffer => readFileSync(path);
 const sha256 = (value: Buffer | string): string =>
   createHash('sha256').update(value).digest('hex');
@@ -34,7 +34,7 @@ if (card === undefined || allocationRow === undefined) {
   throw new Error('E00 protocol card or allocation is missing');
 }
 
-const seedRoot = 'ald-seed-allocation-e00-v3';
+const seedRoot = 'ald-seed-allocation-e00-v4';
 const primary = Array.from({ length: 5 }, (_, index) => {
   const slot = index + 1;
   return {
@@ -74,10 +74,10 @@ const bindings = {
   runConfigurations: [{
     protocolBaseCommit,
     supersededRegistration: {
-      path: 'protocols/e00-registration.v2.json',
-      preRegistrationHash: 'sha256:92ba98556ea7c166017457b42f41cde78da00b7fe9e654698434c53305c2ed78',
-      failedAttempt: 'reports/research/e00-integrity-qualification-attempt-1.json',
-      reason: 'Slot 1 failed because the independent Rust auditor did not verify inclusion-proof files; slots 2-5 were not attempted and no v2 slot may be rerun into success.',
+      path: 'protocols/e00-registration.v3.json',
+      preRegistrationHash: 'sha256:f2233b2012feb9475858daf1ac01aa773da202b7d15cf4783cb7f4fb85dc16bd',
+      priorFailedAttempt: 'reports/research/e00-integrity-qualification-attempt-1.json',
+      reason: 'V3 produced no outcomes and was superseded because hashing a wrapper that must change registration paths created a source-binding cycle. V4 binds the frozen scientific protocol and records exact implementation identity at execution.',
     },
     experimentId: 'E00',
     stage: 'software-qualification',
@@ -96,13 +96,15 @@ const bindings = {
   analysisVersions: [
     {
       implementation: 'typescript-production-verifier@integrity-challenge-v2',
-      path: 'scripts/run-integrity-challenge.ts',
-      sha256: sha256(read('scripts/run-integrity-challenge.ts')),
+      protocolPath: 'LEDGER-INTEGRITY-DESIGN.md',
+      protocolSha256: sha256(read('LEDGER-INTEGRITY-DESIGN.md')),
+      implementationIdentity: 'exact clean execution commit recorded in the qualification receipt',
     },
     {
       implementation: 'rust-independent-integrity-auditor@0.1.0',
-      path: 'tools/integrity-auditor/src/main.rs',
-      sha256: sha256(read('tools/integrity-auditor/src/main.rs')),
+      protocolPath: 'docs/evidence-bundle-format.md',
+      protocolSha256: sha256(read('docs/evidence-bundle-format.md')),
+      implementationIdentity: 'exact clean execution commit recorded in the qualification receipt',
     },
   ],
   modelAssets: [{
@@ -115,7 +117,7 @@ const bindings = {
     derivation: {
       ...allocation.seedDerivation,
       root: seedRoot,
-      amendment: 'Fresh E00-only root after the registered v2 verifier-coverage failure.',
+      amendment: 'Fresh E00-only root after the v2 failure and outcome-free v3 source-binding amendment.',
     },
     stage: 'software-qualification',
     condition: 'integrity-suite',
@@ -155,6 +157,8 @@ const bindings = {
     compatibilityChainId: 84532,
     requiredConfirmations: 3,
     verifierImplementations: ['typescript-production-verifier', 'rust-independent-integrity-auditor'],
+    retainedEvidencePath: 'evidence/qualification/e00-v4/<runId>',
+    retainedEvidencePolicy: 'retain each unchanged signed evidence bundle for every attempted registered slot',
     mutationCases: [
       'event-content',
       'deleted-middle-event',

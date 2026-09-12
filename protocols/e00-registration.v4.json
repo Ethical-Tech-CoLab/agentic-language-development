@@ -1,0 +1,259 @@
+{
+  "artifact": {
+    "schemaVersion": 1,
+    "compilerVersion": 1,
+    "experimentId": "E00",
+    "registrationClass": "qualification",
+    "bindings": [
+      {
+        "key": "protocolCard",
+        "sha256": "sha256:c227857394800bc06e393dc78e824014acda10d0fcff6e42ee65fed1c474bfd8",
+        "content": {
+          "source": "protocols/research-protocol-cards.v1.json",
+          "sourceSha256": "8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d",
+          "cardSha256": "sha256:c88631610ba327368574819ff10d0e4ea2f437e1c14220ad32b6b4015f041a32",
+          "id": "E00",
+          "class": "qualification",
+          "question": "Does unchanged evidence verify while every registered mutation, wrong-chain receipt, uncommitted tail, class relabel, and corrupt recovery is rejected?",
+          "unit": "synthetic run bundle",
+          "exposure": "registered mutation class",
+          "comparator": "unchanged bundle",
+          "primaryOutcome": "binary verifier disposition plus deterministic simulated-commitment match",
+          "estimand": "detection proportion by mutation class and unchanged-bundle acceptance",
+          "secondary": [
+            "verification latency",
+            "bundle size",
+            "simulated-commitment overhead"
+          ],
+          "exploratory": "none registered",
+          "dependencies": "none",
+          "nextDesignOwner": "D06"
+        }
+      },
+      {
+        "key": "runConfigurations",
+        "sha256": "sha256:e15e6f69aaa6a7bba38297e6224b01dd309692495c8c5b0cfe92c391d53050b6",
+        "content": [
+          {
+            "protocolBaseCommit": "4426162dbd73a63ec7bcc64f25d81596302e3940",
+            "supersededRegistration": {
+              "path": "protocols/e00-registration.v3.json",
+              "preRegistrationHash": "sha256:f2233b2012feb9475858daf1ac01aa773da202b7d15cf4783cb7f4fb85dc16bd",
+              "priorFailedAttempt": "reports/research/e00-integrity-qualification-attempt-1.json",
+              "reason": "V3 produced no outcomes and was superseded because hashing a wrapper that must change registration paths created a source-binding cycle. V4 binds the frozen scientific protocol and records exact implementation identity at execution."
+            },
+            "experimentId": "E00",
+            "stage": "software-qualification",
+            "deploymentMode": "prototype",
+            "communicationCondition": "normal",
+            "learnerTrack": "no-learning",
+            "turnsPerRun": 100,
+            "slots": 5
+          }
+        ]
+      },
+      {
+        "key": "practicalMargins",
+        "sha256": "sha256:baf40eb5e36e4506eb5744244b2f59afd78f53429e52ba63e23137c381aee6f6",
+        "content": {
+          "unchangedBundleAcceptance": 1,
+          "mutationDetectionByClass": 1,
+          "simulatedReceiptVerification": 1,
+          "permittedPrivateContentInCommitment": 0
+        }
+      },
+      {
+        "key": "analysisVersions",
+        "sha256": "sha256:56af8c81eeff51dca7d10564f1b010f173380dbcf5198510c52ca2679936d195",
+        "content": [
+          {
+            "implementation": "typescript-production-verifier@integrity-challenge-v2",
+            "protocolPath": "LEDGER-INTEGRITY-DESIGN.md",
+            "protocolSha256": "9e89da7eb81ebe3a4f883178665b17fcf7cb131c8bbf34ab7c0c6471b1e45b66",
+            "implementationIdentity": "exact clean execution commit recorded in the qualification receipt"
+          },
+          {
+            "implementation": "rust-independent-integrity-auditor@0.1.0",
+            "protocolPath": "docs/evidence-bundle-format.md",
+            "protocolSha256": "db657a591de5575c434227cf70cc05828f560c9dfae2bf11b28cad17abaac8ef",
+            "implementationIdentity": "exact clean execution commit recorded in the qualification receipt"
+          }
+        ]
+      },
+      {
+        "key": "modelAssets",
+        "sha256": "sha256:4a1aab9799dfc4a309fff24e6c7081b76292b084b8c25e49fa29b38f088fc8fe",
+        "content": [
+          {
+            "role": "both-agents",
+            "model": "no-learning deterministic fixture",
+            "contractPath": "contracts/learner-contract.no-learning.v1.md",
+            "contractSha256": "f3c342372c3d2571324d6980bdfa54bed8df6185768d2d21ef03741516b0dcf1"
+          }
+        ]
+      },
+      {
+        "key": "selectedSeedPrefix",
+        "sha256": "sha256:cb56dfb2cf2b84c29ce4a4b3e7adb22b9205d0329f03669f977600b4ef650936",
+        "content": {
+          "derivation": {
+            "algorithm": "SHA-256 UTF-8 domain strings separated by one NUL byte",
+            "root": "ald-seed-allocation-e00-v4",
+            "stageDomains": [
+              "software-qualification",
+              "blinded-pilot",
+              "confirmatory",
+              "replication"
+            ],
+            "scenario": "root || NUL || stage || NUL || experiment || NUL || slot || NUL || scenario",
+            "learner": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || role || NUL || learner",
+            "gateway": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || gateway",
+            "analysis": "root || NUL || stage || NUL || experiment || NUL || condition || NUL || slot || NUL || analysis",
+            "pairingRule": "Conditions in a paired comparison share the scenario seed at a stage/experiment/slot but have distinct learner, Gateway, and analysis seeds.",
+            "roleRule": "baby-a and baby-b always receive distinct learner seeds.",
+            "encoding": "lowercase 64-character hexadecimal digest",
+            "amendment": "Fresh E00-only root after the v2 failure and outcome-free v3 source-binding amendment."
+          },
+          "stage": "software-qualification",
+          "condition": "integrity-suite",
+          "primary": [
+            {
+              "slot": 1,
+              "scenario": "bfb24df7d2b1bc7635caf02669fe46b0681e33645f0125410a471295a49d697c",
+              "babyA": "01520db2a300aaf76dbd64777f292ed50d9b4a8651f8105a04f07789d5363226",
+              "babyB": "e5e9e0234a416c3daed0f5cb2cdba8630b76169977f010574a70b476e2cd92d8",
+              "gateway": "50c2d88b263daf271b312e32050e3212327ffdb31883c301ced5d5e7dcef0b2e",
+              "analysis": "5a90049ce8f291a773dfced538911f6dee5829a12a3439ea3cbf15a570ee75a2"
+            },
+            {
+              "slot": 2,
+              "scenario": "0a9516fea07f200ee6c56fc8e1ba1005e672e8a0ac4e375010cffaee4f11d3fd",
+              "babyA": "97f9e1bcda9acd1d0354bec9586d53723cac75fe224579a82d1f9e945669ac31",
+              "babyB": "6407926c546fea55fb027d2bb023aa69fd7a3385aa8db1410af4575db8a24820",
+              "gateway": "f56c4f2501e03c943d76826d8369ba157d982ea1b08e847c59a4f871cce325c5",
+              "analysis": "52ffd697179e894de59276e0805bfea7c1afa51123c9ac3d09e73d3b6cec2998"
+            },
+            {
+              "slot": 3,
+              "scenario": "df420a47de7dcce4591e530d97f673b5b0317466a19cc20cfc4f69b1a9086a89",
+              "babyA": "993fa387c7868416c8105312b501a7d0df69331908c4fc744dd2cec03c6ccdb2",
+              "babyB": "0f920d9cc084d7bf45b77eff866d1f0fc2f81441f1e7db58206b63bbf42bfb1e",
+              "gateway": "2a6e97341e68f486ce5a3c4c0d8bcad664e6c69012b4c8c41d5d6567a035b1f0",
+              "analysis": "6d0e7301d447b2a9a7195200c5219082ed3cc5a93af587cbfc2c91c5d55eda53"
+            },
+            {
+              "slot": 4,
+              "scenario": "665607209f8d15bbe3957ae6926da2d108df263f3f54271710a5d38333495592",
+              "babyA": "1d5cc45cd2fe0351071406ca6e7976b375383b87fcf472a8b1bcb9913c973b0a",
+              "babyB": "e5397b755b5e52556840a12ee4f1fd0c9f9e1cd855acc9508543901b9725ece1",
+              "gateway": "212642368a6c0255b5a581dfaa30015bfe15ea8b04c4ba9e78a40e1da78f5711",
+              "analysis": "26cd9a6cd561368b1686201347b841d0f0b99717a0297fc98f85c58961b747e9"
+            },
+            {
+              "slot": 5,
+              "scenario": "d0870d2edda825b2df2c62bbcfd880ef9ce9268c469c9dce56384956266f28ba",
+              "babyA": "87ae5672d8d13500bb50fad229c90e1a9e5ed0efe25cc293e40487fa4b9f7d22",
+              "babyB": "1c6257bb6b97828d5f7a24c3f05bc1689f32b9ec3c94c9b6ebb492ae2f82e911",
+              "gateway": "ea36dd8ebaaef798102eb52a717dfb7c98b3fccf161563286f167a891bf3e713",
+              "analysis": "7dbcaeea0e96bb6d9df558ac6e332750cd231a2b1fab3ffc07616d9037989beb"
+            }
+          ],
+          "reserves": "zero-reserve qualification allocation"
+        }
+      },
+      {
+        "key": "executionHost",
+        "sha256": "sha256:33200349ccc015bf9ff0e90d7d871be0c0a69dfae18c162e8003a2985e9b1862",
+        "content": {
+          "topology": "single-host isolated temporary evidence stores",
+          "environmentManifest": {
+            "pnpmLockSha256": "4f3ac462c69f589142700554c9273a5fdda04436ed52f1588c3f95c8ba137a93",
+            "rustLockSha256": "6ee9d38a686d8ad75e43a99ecbd6ca6e7b0a01127e037d3b81196fcb4e6c1fe4",
+            "nodeMajor": 24,
+            "platform": "linux",
+            "architecture": "x64"
+          },
+          "environmentManifestSha256": "sha256:52a8639ab9b367b5d5423ff3354080ab6adcd3b3a0092107795142444d2b7626",
+          "localCeiling": {
+            "cpuHours": 72,
+            "workingStorageGiB": 25,
+            "maximumResidentGiB": 6,
+            "frozenModelConcurrency": 1,
+            "externalSpend": 0,
+            "allowed": "software qualification, protocol checks, and explicitly labeled outcome-blind or non-confirmatory pilots that fit the ceiling",
+            "forbidden": "claiming the ceiling can execute the complete confirmatory plus replication campaign, starting paid compute, or spending chain funds"
+          },
+          "externalSpend": 0
+        }
+      },
+      {
+        "key": "scenarioBundle",
+        "sha256": "sha256:c85423e3493856977167dc8246b60ee8ab4817b952a07d9b71de89054d547f19",
+        "content": {
+          "generator": "signed-evidence-fixture-v2",
+          "turnsPerRun": 100,
+          "minimumBabyLedgerEvents": 100,
+          "minimumCheckpoints": 3,
+          "syntheticOnly": true
+        }
+      },
+      {
+        "key": "exclusionRules",
+        "sha256": "sha256:0ccc674a8cffe521b865aba89bb1166d9b0020eff37c54c3f38455b3e77746f3",
+        "content": [
+          "retain every attempted slot and disposition; no outcome-dependent exclusion",
+          "infrastructure aborts remain indexed and do not become replacement successes"
+        ]
+      },
+      {
+        "key": "stoppingRules",
+        "sha256": "sha256:d258e2b8aa253341b19477aef8487f55c696dba79dd12a97d682181b913f8eac",
+        "content": {
+          "outcomeDependent": false,
+          "plannedSlots": 5,
+          "turnsPerSlot": 100,
+          "stopOnlyAfterAllRegisteredCasesOrInfrastructureAbort": true
+        }
+      },
+      {
+        "key": "evidenceAndAnchorPolicy",
+        "sha256": "sha256:037279a6dd0e4f93a57e9456e82add67b017a8e22dbb0d58c086ba3841bcd083",
+        "content": {
+          "governancePath": "protocols/research-governance-and-funding.v1.json",
+          "governanceSha256": "dc8f2d8ad165d4e3db218e85f35f8cf7c5c43eab026920a1296f923f5f73ba1f",
+          "anchorClass": "simulated",
+          "transport": "deterministic in-memory chain",
+          "compatibilityNetwork": "base-sepolia",
+          "compatibilityChainId": 84532,
+          "requiredConfirmations": 3,
+          "verifierImplementations": [
+            "typescript-production-verifier",
+            "rust-independent-integrity-auditor"
+          ],
+          "retainedEvidencePath": "evidence/qualification/e00-v4/<runId>",
+          "retainedEvidencePolicy": "retain each unchanged signed evidence bundle for every attempted registered slot",
+          "mutationCases": [
+            "event-content",
+            "deleted-middle-event",
+            "inserted-event",
+            "reordered-events",
+            "foreign-writer-signature",
+            "modified-merkle-proof",
+            "wrong-chain",
+            "simulated-class-relabel",
+            "false-receipt-payload",
+            "unanchored-tail",
+            "inconsistent-checkpoint-prefix"
+          ],
+          "privateContentPermittedInCommitment": false
+        }
+      }
+    ]
+  },
+  "preRegistrationHash": "sha256:28307be527bc7434eb6954e0a33445fc158c2d37795742a9be73b9c035ded506",
+  "claimBoundary": "draft-until-repository-registered-and-pre-run-committed",
+  "registrationProfile": "repository-native",
+  "protocolBaseCommit": "4426162dbd73a63ec7bcc64f25d81596302e3940",
+  "registrationState": "compiled-for-repository-registration",
+  "researchFinding": false
+}
