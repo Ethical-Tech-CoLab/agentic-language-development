@@ -7,9 +7,9 @@ import { FakeChainTransport } from '@ald/anchor';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { PreRegistrationBindingSchema } from '@ald/types';
 
-const registrationCommit = '81fd0438ee46dc35a4044c8c5be964a97a6e2809';
-const registrationPath = 'protocols/e00-registration.v3.json';
-const outputPath = 'protocols/e00-registration-binding.v2.json';
+const registrationCommit = '60cc54da47fc0ad8b49dfddc418e7839c8d9d409';
+const registrationPath = 'protocols/e00-registration.v4.json';
+const outputPath = 'protocols/e00-registration-binding.v3.json';
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 execFileSync('git', ['merge-base', '--is-ancestor', registrationCommit, head]);
 const committedBytes = execFileSync(

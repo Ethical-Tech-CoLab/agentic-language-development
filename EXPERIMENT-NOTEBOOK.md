@@ -184,7 +184,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
-| E00 | Ledger integrity and simulated commitment | None | Failed qualification; v3 pending | Rust proof-coverage gap found |
+| E00 | Ledger integrity and simulated commitment | None | V4 committed; execution pending | V2 failed; v3 outcome-free superseded |
 | E01 | Channel isolation and side-channel red team | E00 | Not started | — |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
@@ -208,7 +208,7 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## E00. Ledger Integrity and Simulated Commitment
 
-**Status:** Registered qualification attempt v2 failed closed; outcome-free v3 superseded; v4 amendment pending
+**Status:** V4 repository-registered and simulation-committed; execution pending
 
 **Purpose:** Qualify the evidence system before collecting behavioral data.
 
@@ -270,6 +270,12 @@ did not inspect inclusion-proof files; the failed receipt is retained at
 without execution after a source-binding cycle was found. V4 binds the frozen
 scientific protocol, records exact implementation identity at execution, and uses a
 fresh seed domain before any further attempt.
+
+The v4 packet is immutable at commit
+`60cc54da47fc0ad8b49dfddc418e7839c8d9d409`, and its matching deterministic
+in-memory-chain commitment is confirmed before outcome execution. This establishes
+prospective local byte binding, not an independently witnessed timestamp or public
+chain transaction.
 
 ---
 

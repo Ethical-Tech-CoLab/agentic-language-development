@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.89
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.90
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -37,7 +37,7 @@ received independent verification.
    E00 has one registered failed qualification attempt and one outcome-free
    superseded amendment; 18 experiments remain
    `Not started`; zero bundles are research-included, zero
-   prospective simulated commitments are confirmed, and only the E00 qualification
+   one prospective simulated commitment is confirmed, and only the E00 qualification
    packet compiles. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
@@ -108,7 +108,7 @@ received independent verification.
 | Statistics | Critical | Nominal significance could arise from seed dependence, multiplicity, invalid-run selection, or underpowered gates | Blinded pilot, frozen sample-size rule, seed-clustered inference, and complete family decision | Numerical routines and operating characteristics are qualified | Pilot variance and selected N are absent |
 | Communication | Critical | Task success could be a holistic code, observation leakage, or receiver indifference | Disabled/shuffled/constant controls, receiver-side interventions, held-out composition, and leakage bounds | Controls and measurement code exist | No learned protocol has been evaluated |
 | Ledger | Major | The native ledger may merely restate policy or transcript information | Pre-outcome native prediction versus five validation-selected non-ledger baselines on untouched cases | Synthetic and production chronology are exactly qualified | Incremental empirical value is unknown |
-| Isolation and integrity | Critical | Reference-topology controls may fail on final learners/carriers, or an operator may omit pre-commit data | Final-topology detector-positive attacks, registered simulated pre-run commitment, complete run accounting, independent restore | Current topology and mutation qualifications pass within bounds; simulated/public receipt-class relabeling is rejected | Final topology, prospective commitments, and independent witness are absent |
+| Isolation and integrity | Critical | Reference-topology controls may fail on final learners/carriers, or an operator may omit pre-commit data | Final-topology detector-positive attacks, registered simulated pre-run commitment, complete run accounting, independent restore | Current topology and mutation qualifications pass within bounds; E00 v4 has a prospective simulated commitment; simulated/public receipt-class relabeling is rejected | Final topology, commitments for later experiments, and an independent witness are absent |
 | Literature | Major | Closest prior work may already contain the substantive contribution | Independent full-text claim audit and freeze-date update search | Fifty sources and five updates are mapped; priority full texts were checked | Single-screener and human recheck limitations remain |
 | Reproduction | Critical | Results may depend on ignored local assets, private interpretation, or unavailable credentials | Fresh authorized operator reproduces primary analyses from immutable public artifacts | Detached software candidates and an independent auditor pass | Study data, public artifacts, and second-operator replay do not exist |
 | Venue | Critical | The draft may be a broad platform description rather than significant new knowledge | One completed result-driven argument assessed against the selected cycle's rules | Topic fit is plausible and current format rules are recorded | Contribution type cannot be selected before results |
