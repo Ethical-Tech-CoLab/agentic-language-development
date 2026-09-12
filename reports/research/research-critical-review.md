@@ -1,7 +1,7 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.95
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.96
 Decision: **Needs revision before submission**  
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
@@ -37,8 +37,8 @@ received independent verification.
    passed as software qualification after two preserved failures and one outcome-free
    amendment, but the 18 behavioral experiments remain `Not started`; zero bundles
    are research-included. Three E00 prospective simulated commitments are preserved,
-   and the E00 and E01 qualification packets compile; E01 is not yet activated or
-   executed. **Fix (required):**
+   and the E00 and E01 qualification packets compile; E01 is activated by a matching
+   simulated commitment but remains unexecuted. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered
    campaign, and preserve null, failed, excluded, and replacement runs before writing
    any Results claim.

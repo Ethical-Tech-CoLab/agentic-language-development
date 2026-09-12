@@ -59,7 +59,8 @@ Therefore:
 - immutable repository registration and matching simulated pre-run commitments:
   v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5 is
   repository-registered and has a deterministic simulated commitment before execution;
-  E01 is repository-registered but still requires its matching simulated commitment.
+  E01 is repository-registered with a matching deterministic simulated commitment
+  and remains unexecuted.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

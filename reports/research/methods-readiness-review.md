@@ -58,7 +58,7 @@ to relabel any existing fixture as a pilot.
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
-| E01 | No | Exact packet compiled; matching simulated pre-run commitment and five registered topology slots remain |
+| E01 | No | Exact packet and matching simulated pre-run commitment exist; five registered topology slots remain |
 | E02 | No | Exact packet and prospectively registered semantic-leakage evidence remain |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
