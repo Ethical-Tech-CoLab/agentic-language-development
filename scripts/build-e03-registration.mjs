@@ -20,6 +20,14 @@ const { values } = parseArgs({
     stage: { type: 'string', default: 'pilot' },
     'primary-seeds': { type: 'string', default: '20' },
     'sample-size-decision': { type: 'string' },
+    'e02-receipt': {
+      type: 'string',
+      default: 'reports/research/e02-v3-qualification-receipt.json',
+    },
+    'resource-allocation': {
+      type: 'string',
+      default: 'protocols/seed-and-resource-allocation.v1.json',
+    },
   },
 });
 const stage = values.stage === 'pilot'
@@ -44,6 +52,83 @@ const sampleSizeDecisionSource = values['sample-size-decision'] === undefined
   ? undefined
   : await readJson(values['sample-size-decision']);
 const sampleSizeDecision = sampleSizeDecisionSource?.value;
+const e02ReceiptPath = values['e02-receipt'];
+const resourceAllocationPath = values['resource-allocation'];
+const e02ReceiptSource = await readJson(e02ReceiptPath);
+const resourceAllocationSource = await readJson(resourceAllocationPath);
+if (
+  e02ReceiptSource.value.experimentId !== 'E02' ||
+  e02ReceiptSource.value.passed !== true ||
+  e02ReceiptSource.value.researchFinding !== false ||
+  e02ReceiptSource.value.externalSpend !== 0 ||
+  e02ReceiptSource.value.publicChainTransaction !== false
+) {
+  throw new Error('E03 registration requires a passing zero-spend E02 v3 qualification receipt');
+}
+if (
+  resourceAllocationSource.value.schemaVersion !== 1 ||
+  resourceAllocationSource.value.externalSpend !== 0 ||
+  resourceAllocationSource.value.publicChainTransaction !== false
+) {
+  throw new Error('E03 registration requires the zero-spend resource allocation policy');
+}
+const bindingSourcePaths = [
+  'packages/analysis/src/e03-design.ts',
+  'packages/analysis/src/e03-pilot.ts',
+  'packages/analysis/src/e03-registration.ts',
+  'packages/ops/src/research-preflight.ts',
+  'packages/orchestrator/src/index.ts',
+  'scripts/build-e03-registration.mjs',
+  'scripts/run-e03-power-selection.mjs',
+  'scripts/e03-power-selection.R',
+];
+const sourceFiles = await Promise.all(bindingSourcePaths.map(async (path) => ({
+  path,
+  sha256: sha256(await readFile(resolve(path))),
+})));
+const executionBinding = {
+  version: 1,
+  sourceFiles,
+  rootBuildInputs: {
+    packageJson: sha256(await readFile('package.json')),
+    lockfile: sha256(await readFile('pnpm-lock.yaml')),
+    buildCommand: 'pnpm build',
+  },
+  topology: {
+    mode: 'research-grade',
+    learnerContainersPerSlot: 2,
+    nurseryContainersPerSlot: 1,
+    maximumParallelSlots: 1,
+    adapterTransport: 'container-tcp',
+    adapterTiming: 'normalized',
+    adapterDeadlineMs: 2_000,
+    learnerTrack: 'no-learning',
+  },
+  signing: {
+    provider: 'si-fort-files',
+    exactRunAuthorization: true,
+    learnerAccess: false,
+  },
+  dependency: {
+    experimentId: 'E02',
+    disposition: 'software-qualified',
+    receiptPath: e02ReceiptPath,
+    receiptSha256: sha256(e02ReceiptSource.bytes),
+    registrationHash: e02ReceiptSource.value.registrationHash,
+  },
+  resourceAllocation: {
+    path: resourceAllocationPath,
+    sha256: sha256(resourceAllocationSource.bytes),
+    externalSpend: 0,
+    publicChainTransaction: false,
+  },
+  evidencePolicy: {
+    anchorClass: 'simulated',
+    publicTimestamp: false,
+    originalEvidenceImmutable: true,
+    pilotResearchFinding: false,
+  },
+};
 
 if (stage === 'full-qualification') {
   if (sampleSizeDecision === undefined) {
@@ -142,6 +227,7 @@ const result = compileE03Registration({
   baseConfig,
   stage,
   primarySeeds,
+  executionBinding,
   ...(sampleSizeDecision === undefined ? {} : { sampleSizeDecision }),
   hypothesis:
     stage === 'blinded-pilot'
