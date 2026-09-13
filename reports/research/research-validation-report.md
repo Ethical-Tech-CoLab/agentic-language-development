@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.119 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.120 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -62,6 +62,10 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   A fresh v3 packet with five seeds disjoint from v1/v2 is now repository-registered
   under `sha256:d35e6b1…f979f248`. Its matching simulated commitment records three
   confirmations and zero currency. All v3 execution evidence remains absent.
+  Exact v0.1.119 subsequently passed 1,963 tests, the registered release-auditor
+  hash check, and ordinary two-container Mode R preflight. The hash-bound
+  [execution gate](e02-v3-execution-gate-receipt.json) permits one sequential
+  five-slot attempt; its seeds remain unused.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

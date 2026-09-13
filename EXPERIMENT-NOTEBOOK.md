@@ -186,7 +186,7 @@ E01 Channel isolation ---- E02 Observation leakage
 |---|---|---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Completed | Not tested | Qualification complete | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Completed | Not tested | Qualification complete | V2 passed five registered slots with 560 signed records and both verifiers |
-| E02 | Observation and metadata leakage audit | E00 | Not started | Not tested | Qualification blocked (B16) | V1/v2 failures retained; v3 packet and simulated commitment active, exact preflight pending |
+| E02 | Observation and metadata leakage audit | E00 | Not started | Not tested | Qualification ready | V1/v2 failures retained; exact v3 packet, simulated commitment, and preflight pass; one sequential attempt authorized |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Qualification blocked | — |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E11 | From-scratch RL Naming Game | E03 | Not started | Not tested | Confirmatory blocked | — |

@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.119 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.120 · 254/258 backlog acceptance criteria verified.
 
 Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
 
@@ -114,8 +114,9 @@ gate; its [pre-registration receipt](reports/research/e02-v3-readiness-qualifica
 binds the source, fault cases, raw logs, results, and limitations. Prospective v3
 packet and five fresh seed identifiers are repository-registered under hash
 `sha256:d35e6b1…f979f248`. Its matching deterministic simulated commitment has three
-confirmations and zero currency; the seeds remain unused until the exact clean
-execution gate passes. The remaining
+confirmations and zero currency. Exact v0.1.119 passed the clean 1,963-test and
+real-container execution gates, so one sequential v3 qualification attempt is ready;
+the five seeds remain unused. The remaining
 research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785

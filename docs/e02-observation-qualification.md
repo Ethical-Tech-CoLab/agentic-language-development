@@ -16,7 +16,10 @@ The v3 packet is repository-registered under
 `sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248`.
 Its five identifiers and seeds are disjoint from v1/v2. A matching deterministic
 simulated commitment records three confirmations and zero currency. The seeds remain
-unused pending the exact clean execution gate.
+unused. Exact v0.1.119 passed the full 1,963-test gate, release-auditor hash check,
+and ordinary two-container Mode R preflight. The
+[execution-gate receipt](../reports/research/e02-v3-execution-gate.md) authorizes one
+sequential v3 attempt.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode

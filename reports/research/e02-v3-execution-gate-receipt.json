@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "attemptVersion": "v3",
+  "stage": "qualification",
+  "classification": "pre-execution-admission-gate",
+  "decision": "ready",
+  "registeredExecutionStarted": false,
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "qualifiedAt": "2026-09-13T20:42:15Z",
+  "candidate": {
+    "version": "0.1.119",
+    "commit": "d1d065bf7b8de63ff0b39eccea07bfa73b420f12",
+    "tree": "accd908b664c9c1dd4105aaf7aa24c11be117570",
+    "committedAt": "2026-09-13T20:36:24+00:00",
+    "clean": true
+  },
+  "registration": {
+    "hash": "sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248",
+    "packetCommit": "a55d049235b31109da3af1d3b843b389dce46a9e",
+    "packet": {
+      "path": "protocols/e02-registration.v3.json",
+      "bytes": 68462,
+      "sha256": "eaef00298ec39d80343dff8a13ae32f45f7b36ebba2cb00d3eacaa39408d55d8"
+    },
+    "binding": {
+      "path": "protocols/e02-registration-binding.v3.json",
+      "bytes": 928,
+      "sha256": "5bec2f4a669bf822bfa687f69b4b8988d0ff9a7f224b2e35dcda5e8972fe9cab"
+    },
+    "seedCount": 5,
+    "disjointFromV1V2": true,
+    "simulatedConfirmations": 3,
+    "externalSpend": 0,
+    "publicChainTransaction": false
+  },
+  "softwareReadiness": {
+    "receipt": {
+      "path": "reports/research/e02-v3-readiness-qualification-receipt.json",
+      "bytes": 4447,
+      "sha256": "cc40a97aba53a99a39e62ea1bbc03cee9622e06aabe7a44c452475f3f7987c4d"
+    },
+    "passed": true,
+    "allTurnPaths": true,
+    "remoteTimeoutQuarantine": true,
+    "abortOnlyAfterQuarantine": true
+  },
+  "fullCheck": {
+    "artifact": {
+      "path": "evidence/qualification/e02-v3-preflight/full-check.log",
+      "bytes": 9634,
+      "sha256": "90c8cda2f78dbaa3e2376aea76d5c89d783e206534dcb8ca67974308bad5d166"
+    },
+    "testFilesPassed": 154,
+    "testsPassed": 1963,
+    "rustTestsPassed": 5,
+    "secretScanFiles": 770,
+    "dependencyAudit": "no-known-vulnerabilities",
+    "wallTime": "3:14.78",
+    "maximumResidentSetKiB": 697808,
+    "exitStatus": 0
+  },
+  "modeR": {
+    "artifact": {
+      "path": "evidence/qualification/e02-v3-preflight/mode-r.log",
+      "bytes": 18913,
+      "sha256": "3f6fd0456fe5ef5f06c91ca1da5854892186e7c9402ae78915cb281164e0063b"
+    },
+    "passed": true,
+    "transportSamples": 6,
+    "sideChannelCategories": 12,
+    "crashSurvival": true,
+    "privateUpdateTracks": 3,
+    "wallTime": "1:36.46",
+    "maximumResidentSetKiB": 62324,
+    "exitStatus": 0
+  },
+  "resources": {
+    "envelope": {
+      "path": "reports/research/e02-resource-envelope.json",
+      "bytes": 2729,
+      "sha256": "98ff2864cb444a9a684845543c3fa4c4bead53227627715c6f3e77e97672f020"
+    },
+    "maximumParallelSlots": 1,
+    "plannedMaximumWallHoursPerSlot": 10,
+    "plannedFiveSlotEvidenceGiB": 3,
+    "primaryProcessCpuReservationHours": 20,
+    "additionalBuildAndAuditSubprocessAllowanceHours": 2,
+    "availableFilesystemBytesAtGate": 168842756096,
+    "minimumFilesystemBytesAtLaunch": 10737418240,
+    "externalSpend": 0
+  },
+  "releaseAuditor": {
+    "path": ".artifacts/cargo-target/release/ald-integrity-auditor",
+    "bytes": 1004296,
+    "sha256": "2a81ee950998c91a14801d7d9adde514b5856aa3ad4f6da594f273bf060f307c"
+  },
+  "launchChecks": [
+    "clean execution commit",
+    "packet and binding ancestry",
+    "all 313 packet-bound source hashes",
+    "root build inputs",
+    "release auditor hash",
+    "R runtime availability",
+    "unused evidence root",
+    "at least 10 GiB free storage",
+    "single sequential five-slot attempt"
+  ],
+  "limitations": {
+    "rendererBuildAdvisory": "Mode R again reported two high-severity advisories in the temporary read-as-book build installation before production pruning; hardened build-chain qualification is not claimed.",
+    "resourceProjection": "The five-slot duration and storage figures are planning projections, not completed-run measurements or a whole-campaign resource authorization.",
+    "independence": "The packet, simulated commitment, preflight, and forthcoming execution use the existing operator and do not establish independent review or public timestamping."
+  },
+  "claimBoundary": "This receipt authorizes one sequential v3 software-qualification attempt. It records no used seed, experimental observation, completed slot, restore, probe report, behavioral result, or hypothesis decision."
+}
