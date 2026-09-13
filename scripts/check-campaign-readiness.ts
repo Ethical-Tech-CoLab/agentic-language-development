@@ -35,8 +35,8 @@ if (JSON.stringify(actual) !== JSON.stringify(expected)) {
 if (review.experiments.some((entry) => entry.ready !== (entry.blockers.length === 0))) {
   throw new Error('an experiment readiness flag contradicts its blocker list');
 }
-if (review.experiments.filter((entry) => entry.ready).map((entry) => entry.id).join(',') !== 'E00,E01') {
-  throw new Error('only the prospectively committed E00 v5 and E01 v2 qualifications may be ready');
+if (review.experiments.filter((entry) => entry.ready).map((entry) => entry.id).join(',') !== 'E00,E01,E02') {
+  throw new Error('only E00/E01 qualifications and prospectively activated E02 may be execution-ready');
 }
 const findingIds = new Set(review.blockingFindings.map((finding) => finding.id));
 if (findingIds.size !== review.blockingFindings.length) throw new Error('blocking-finding IDs are not unique');

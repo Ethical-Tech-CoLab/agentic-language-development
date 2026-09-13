@@ -1,0 +1,21 @@
+{
+  "registrationClass": "qualification",
+  "registrationAuthority": "repository-native",
+  "preRegistrationHash": "sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413",
+  "repositoryRegistration": {
+    "commit": "4d7068b5ccc1c8259239923d88ebff10fb85a3b1",
+    "path": "protocols/e02-registration.v1.json",
+    "artifactSha256": "sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413",
+    "committedAt": "2026-09-13T14:08:37+00:00"
+  },
+  "preRunAnchor": {
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "transactionHash": "0x2350643040b21c242dbfebd752cbf97919442ef9f040413c03f111bbd14a1581",
+    "inputData": "0xb59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413",
+    "blockNumber": 1,
+    "status": "confirmed"
+  },
+  "label": "E02 numeric observation software qualification; simulation is not independent public timestamping"
+}

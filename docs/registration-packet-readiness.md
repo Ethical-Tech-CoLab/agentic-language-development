@@ -1,6 +1,6 @@
 # Canonical Registration Packet Readiness
 
-Status: B11 in progress; E00 and E01 compile and 17 experiment packets remain incomplete
+Status: B11 in progress; E00, E01 and E02 compile and 16 experiment packets remain incomplete
 Evidence class: outcome-blind design inventory  
 Machine inventory: `reports/research/registration-packet-readiness.json`
 
@@ -47,20 +47,20 @@ prospectively binds that repair and another fresh seed domain.
 
 ## Current inventory
 
-All 19 protocol cards resolve and receive stable card hashes. E00 and E01 each
+All 19 protocol cards resolve and receive stable card hashes. E00, E01 and E02 each
 resolve all eleven bindings and reproduce their canonical hashes. The remaining ten
-bindings for each of 17 experiments are deliberately unresolved: 170 unresolved
+bindings for each of 16 experiments are deliberately unresolved: 160 unresolved
 bindings in total.
 Therefore:
 
-- registration-ready packet drafts: 2/19;
-- compiled canonical packets: 2/19;
-- pre-registration hashes emitted by this inventory: 2 (E00 and E01); and
+- registration-ready packet drafts: 3/19;
+- compiled canonical packets: 3/19;
+- pre-registration hashes emitted by this inventory: 3 (E00, E01 and E02); and
 - immutable repository registration and matching simulated pre-run commitments:
-  v2 and v4 are complete failed attempts; v3 is superseded without outcomes; v5 is
-  repository-registered and has a deterministic simulated commitment before execution;
-  E01 is repository-registered with a matching deterministic simulated commitment
-  and remains unexecuted.
+  E00 v2 and v4 are complete failed attempts; v3 is superseded without outcomes;
+  v5 passed all five registered slots. E01 v1 passed its bounded category gate and
+  v2 passed the explicit signed corpus. E02 has a committed v1 packet and matching
+  simulated activation; its five-slot qualification remains unexecuted.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

@@ -1,6 +1,6 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: exact prospective packet compiled; activation and execution pending. E02 is not qualified.
+Status: exact prospective packet and simulated activation committed; execution pending. E02 is not qualified.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -185,3 +185,8 @@ The v1 packet binds all eleven classes to implementation commit
 Its canonical hash is
 `sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413`.
 Compilation alone does not establish committed activation or a passing slot.
+
+The packet commit is `4d7068b5ccc1c8259239923d88ebff10fb85a3b1`. The matching
+repository-native binding records a successful local simulated commitment, not
+a public transaction. Execution may begin only from a clean descendant containing
+the committed binding and after the full consolidated suite passes.

@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.105 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.106 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -47,7 +47,7 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   A separate no-observation startup check confirmed the new CPU-time limits.
   The resource envelope projects 7.972 hours per complete slot including a linear
   analysis/replay allowance; this is not a measured full registered result.
-  The exact E02 packet is compiled; committed activation and five-slot execution remain pending.
+  The exact E02 packet and matching simulated activation are committed; five-slot execution remains pending.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

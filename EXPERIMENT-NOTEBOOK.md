@@ -387,11 +387,22 @@ agent-language finding. Final selected study topologies still require B12's chec
 
 **Depends on:** E00
 
-**Purpose:** Prove that observations do not silently supply human labels or target
-answers.
+**Purpose:** Test whether the declared numeric observation and metadata surface
+leaks hidden target information within the registered probe family.
 
-**Hypothesis:** A classifier using only prohibited metadata cannot predict target
-identity above the pre-registered chance interval.
+**Hypothesis:** Every frozen linear metadata, identifier and timing probe has a
+one-sided 95% upper accuracy advantage at most 0.10 over the held-out majority
+baseline; its planted one-hot control has lower advantage at least 0.20.
+
+**Registration:** E02 v1 is repository-registered at
+`4d7068b5ccc1c8259239923d88ebff10fb85a3b1`, with canonical hash
+`sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413`
+and the matching simulated commitment in `protocols/e02-registration-binding.v1.json`.
+The five fresh slots collect 2,016 observations per role before and after a real
+runtime restore, with at least 501 held-out rows per probe. All 60 slot/role/stage/probe
+decisions remain separate. Development evidence is excluded; no run result exists yet.
+The asset-free numeric baseline has no image or text-aligned encoder surface;
+the separate retained OCR diagnostic does not qualify future image observations.
 
 ### Procedure
 
