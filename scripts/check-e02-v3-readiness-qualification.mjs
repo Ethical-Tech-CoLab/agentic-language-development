@@ -72,12 +72,12 @@ export function validateE02V3ReadinessReceipt(receipt) {
 export function validateE02V3ReadinessPortable(root = process.cwd()) {
   const receipt = read(resolve(root, 'reports/research/e02-v3-readiness-qualification-receipt.json'));
   validateE02V3ReadinessReceipt(receipt);
-  for (const artifact of receipt.sourceArtifacts) validateArtifact(root, artifact);
   return receipt;
 }
 
 export function validateE02V3ReadinessLive(root = process.cwd()) {
   const receipt = validateE02V3ReadinessPortable(root);
+  for (const artifact of receipt.sourceArtifacts) validateArtifact(root, artifact);
   validateArtifact(root, receipt.fullCheck.artifact);
   validateArtifact(root, receipt.modeR.artifact);
 
