@@ -2,12 +2,12 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.107 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.108 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
 
-Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open campaign blockers.
+Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
 
 - The 2026-09-13 maintenance audit reproduced 18 malformed E00/E01 receipts that
   permissive checks accepted, plus two failures caused by absent ignored evidence.
@@ -47,7 +47,9 @@ Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open c
   A separate no-observation startup check confirmed the new CPU-time limits.
   The resource envelope projects 7.972 hours per complete slot including a linear
   analysis/replay allowance; this is not a measured full registered result.
-  The exact E02 packet and matching simulated activation are committed; the five-slot execution is in progress.
+  The exact E02 packet and matching simulated activation were committed. Its first
+  slot later stopped at the registered safety pause after 465 turns; no restore or
+  probe analysis completed, and slots 2–5 were not attempted.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -142,7 +144,8 @@ Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open c
   The notebook preserves two failed E00 attempts and one outcome-free amendment;
   E01 v1 also passed five prospectively registered local topology/category slots,
   and E01 v2 subsequently closed the explicit corpus and signed-attempt gap with
-  five registered slots and dual-verifier acceptance. E02 is now in progress;
+  five registered slots and dual-verifier acceptance. E02 v1 has an unsuccessful
+  retained attempt;
   16 experiments remain `Not started`. The historical 33-run Prototype qualification
   corpus remains unregistered, unanchored, and invalid
   for confirmatory inference by construction.
@@ -773,7 +776,7 @@ bundles.
 ## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
-experiment cards and identifies eight open blockers with explicit closure tests. It does not
+experiment cards and identifies nine open blockers with explicit closure tests. It does not
 claim independent review. E00 has completed its registered software qualification;
 E01 v2 closed B15 with the complete registered explicit corpus and signed evidence. The campaign
 decision stays negative while the remaining scientific prerequisites are open.
@@ -847,7 +850,8 @@ The current [critical review](research-critical-review.md) and machine-readable
 eight-perspective internal pass. They correct cross-document status and rendering
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
-topology/category suite; v2 completed the signed explicit corpus. E02 is in progress and sixteen experiments remain unstarted,
+topology/category suite; v2 completed the signed explicit corpus. E02 v1 failed before
+analysis and sixteen experiments remain unstarted,
 all 138 local
 bundles remain research-excluded, 160 registration bindings remain unresolved, and
 independent review is absent.

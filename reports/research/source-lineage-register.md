@@ -1,7 +1,8 @@
 # Source Lineage and Requirement-Origin Register
 
-Status: complete for the repository history through `355391f`; external citation
-lineage remains a separate literature-verification task.
+Status: complete for the phase-one repository history through the September 13
+qualification attempts; external citation lineage remains a separate
+literature-verification task.
 
 ## Purpose and method
 
@@ -41,6 +42,8 @@ classification of historical qualification evidence.
 | 2026-09-08 to 2026-09-09 | `3157d4f` through `0a4ba4d` | Phase-E implementation and readiness gates | Adds extension mechanisms, leakage checks, isolation, interventions, attachment lineage, operations, and executable readiness checks |
 | 2026-09-09 | `5f22202` through `d1b4eab` | Hosted checks and research-execution preparation | Adds consolidated checks, historical hosted receipts, design simulation, registration compilation, preflight, and frozen-model qualification; experiments remain unstarted |
 | 2026-09-11 | `355391f` | Homebrew/pnpm validation migration | Reconciles current workspace tooling, preserves direct dependency versions, and fixes strict dependency-resolution defects discovered by clean execution |
+| 2026-09-11 | `97a33be` through `b2b119c` | Bound software qualifications | Qualifies the Mode R topology, recurrent baseline, carrier mechanisms, frozen-model boundary, study controls, and integrated candidate without promoting them to experiment results |
+| 2026-09-12 to 2026-09-13 | `6a3faa8`, `4ba1f27`, and `895d59a` | Registered qualification attempts | E00 and E01 v2 pass their finite software scopes; E02 v1 stops at its safety pause before restore or analysis and remains failed evidence |
 
 ## Requirement-to-origin map
 
@@ -54,7 +57,7 @@ classification of historical qualification evidence.
 | Reinforcement and reward-free mechanisms must be separated | `ae23c89` amendment | E12/E21 and learner contracts | Reference adapters exist; matched recurrent scientific comparison remains open |
 | Hash-chained, signed, checkpointed, independently verifiable evidence | Ledger design, `490ef05` | Specification, evidence bundle format, verifier, anchor package | Local integrity core implemented; fresh mutation-matrix qualification and real chain evidence remain open |
 | Anchoring is evidence binding, not semantic truth | Ledger design, `490ef05` | Specification claim boundaries and preflight | Preserved; historical runs are unanchored and cannot become confirmatory retrospectively |
-| Experiments have ordered prerequisites and explicit status | Experiment notebook, `490ef05` | Backlog gates and registration compiler | E00 v2 failed closed; 18 experiments remain `Not started` |
+| Experiments have ordered prerequisites and explicit status | Experiment notebook, `490ef05` | Backlog gates and registration compiler | E00 and E01 are software-qualified; E02 has a retained failed qualification attempt; 16 experiments remain `Not started` |
 | Human interpretation is delayed external analysis | Concept and notebook | Audit-ledger implementation and manuscript | Implemented as a separate stream; no completed human study evidence |
 | Learned encodings are not production cryptography | Concept and ledger design | Cryptographic separation policy and E40 boundary lint | Enforced in software; E40 and external cryptographic review are open |
 | Failed, invalid, aborted, and null runs remain accounted for | Ledger design and notebook | Lifecycle, verifier, reports, and analysis plan | Implemented in schemas and qualification artifacts; confirmatory run index does not yet exist |

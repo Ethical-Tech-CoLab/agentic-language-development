@@ -1,5 +1,12 @@
 # Reports
 
+Start with [`phase-one-research-update.md`](phase-one-research-update.md) for the
+September 4–13 progress account. Its
+[`phase-one-evidence-appendix.md`](phase-one-evidence-appendix.md) maps headline
+claims to commits, receipts, retained evidence, and commands. The larger files under
+`reports/research/` are supporting research and qualification records, not the first
+reading path for a progress review.
+
 ## `reports/research/`
 
 The living research-validation report, source-lineage register, source-verification
@@ -26,8 +33,8 @@ closure checks. Its read-only upstream observation records that required-check
 enforcement is not demonstrated; the zero-spend profile ledger is ready at 1/1
 applicable item and does not treat a receipt path as external approval.
 The data/claim manifest inventories every locally captured export by content hash and
-claim boundary. Its live audit resolves 125 bundles while keeping all 125 excluded
-from empirical use and distinguishing 77 local fake-chain confirmations from zero
+claim boundary. Its frozen cutoff resolves 138 bundles while keeping all 138 excluded
+from empirical use and distinguishing 90 local simulated confirmations from zero
 confirmed public-chain anchors.
 The audit-cost/utility protocol and receipt compare a declared ordinary-log proxy,
 actual signed streams, integrity structures, policy state, whole-input hashing, and

@@ -4,7 +4,7 @@ import { compileRegistrationPacket, REGISTRATION_BINDING_KEYS } from '@ald/analy
 // @ts-expect-error The container boundary is executable ESM.
 import { e02RootBuildInputs, validateE02SlotContract } from '../../deploy/mode-r/e02-slot-contract.mjs';
 // @ts-expect-error The shared collector is executable ESM.
-import { collectE02Observations } from '../../deploy/mode-r/collect-e02-observations.mjs';
+import { collectE02Observations, e02ProbeEvaluation } from '../../deploy/mode-r/collect-e02-observations.mjs';
 
 // Synthetic contract fixtures only. No observations, receipts or registrations
 // produced by this test are eligible as qualification evidence.
@@ -28,6 +28,12 @@ function fixture() {
 }
 
 describe('E02 prospective container contract', () => {
+  it('derives probe status from completed reports rather than the requested profile', () => {
+    expect(e02ProbeEvaluation('smoke', 0)).toBe('not-run-short-transport-smoke');
+    expect(e02ProbeEvaluation('registered', 0)).toBe('not-reached');
+    expect(e02ProbeEvaluation('registered', 5)).toBe('incomplete');
+    expect(e02ProbeEvaluation('registered', 12)).toBe('completed');
+  });
   it('binds root installation/build inputs while allowing commit-scoped version bumps', () => {
     const root = JSON.parse(readFileSync('package.json', 'utf8'));
     expect(e02RootBuildInputs({ ...root, version: '999.0.1' })).toEqual(e02RootBuildInputs(root));

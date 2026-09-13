@@ -7,8 +7,9 @@ The machine-readable source is
 present under local ignored evidence storage at the v0.1.104 cutoff on 2026-09-13 without copying raw events,
 messages, observations, native ledgers, or secrets into Git.
 
-This frozen inventory predates registered E02 collection. The running attempt is
-tracked separately until its evidence and disposition can be reconciled. New
+This frozen inventory predates the registered E02 v1 attempt. That attempt later
+failed before analysis and is tracked separately until its partial evidence and
+disposition can be reconciled. New
 exports can make the live whole-tree comparison report a stale snapshot; the
 portable check continues to validate the frozen cutoff, not newly collected data.
 

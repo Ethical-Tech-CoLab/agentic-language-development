@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "researchFinding": false,
+  "classification": "prospectively-registered-software-qualification",
+  "registrationHash": "sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413",
+  "executionCommit": "895d59a90b66cf74603d58f1962c58f98e29dfb9",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "slots": [],
+  "failure": "AssertionError: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'RunNotAcceptingTurnsError: run \"registered-e02-1\" does not accept turns in state \"paused\" (SPECIFICATION.md §7.1, §7.3)'\n- null\n",
+  "wallMilliseconds": 3108444.4739289996,
+  "passed": false,
+  "claimBoundary": "Asset-free numeric scratch-learner topology and registered linear feature probes only. No behavioral finding, image encoder qualification, independent operator review, or public timestamp."
+}

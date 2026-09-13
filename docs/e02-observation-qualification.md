@@ -1,6 +1,6 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: registered five-slot execution in progress. E02 is not yet qualified.
+Status: registered v1 attempt failed before restore and probe evaluation. E02 is not qualified.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -61,8 +61,30 @@ The prospective implementation therefore uses 2,016 observations per role per st
 yielding at least 501 held-out rows after four-class rounding. Neither margin nor
 feature membership changes. The turn-index feature is normalized by twice the
 declared per-stage sample count. The measured development resource envelope is
-recorded, and the registered five-slot execution has started.
-Historical development uses 816 rows and the original normalization.
+recorded. The registered five-slot execution was attempted; historical development
+uses 816 rows and the original normalization.
+
+### Registered v1 attempt disposition
+
+The attempt started from exact clean commit `895d59a90b66cf74603d58f1962c58f98e29dfb9`.
+Slot 1 retained 465 turn records and 930 delivered adapter-entry observations. At
+turns 460–464, five consecutive learner response timeouts triggered the configured
+safety pause. The next turn was correctly refused because a paused run does not
+accept turns. No snapshot/restore or leakage probe report was produced, and slots
+2–5 were never attempted.
+
+The terminal receipt is tracked; the partial database, bundle, and log remain under
+ignored evidence storage. The raw slot summary's historical `probeEvaluation` value
+said `executed`, but its empty `reports` array and absent restore record establish
+that evaluation was not reached. Future summaries derive that field from completed
+reports. The failed seed set remains consumed.
+
+Before another registered attempt, reproduce the timing boundary without study
+seeds. The current Mode R proxy pads turn-path calls to the 1,000 ms normalization
+deadline while the Nursery independently races the same call against a 1,000 ms
+response deadline. Any correction must preserve both the normalization requirement
+and the five-rejection safety pause. It requires a new prospective packet, binding,
+run identifiers, and seed root.
 
 ### Reproducible design calculation
 
@@ -163,8 +185,7 @@ These estimates do not resolve the whole campaign's resource-allocation blocker.
 No response deadline is shortened to make the run cheaper.
 
 The resource envelope has a portable arithmetic/source check and an explicit live
-comparison with retained development evidence. Once the exact implementation is
-committed and its consolidated validation passes, the remaining sequence is:
+comparison with retained development evidence. The historical v1 sequence was:
 
 ```text
 pnpm run audit:e02-resources:live
@@ -176,9 +197,9 @@ pnpm run qualify:e02
 pnpm run audit:qualification-e02:live
 ```
 
-The five registered slots must not start before both commits exist. A source fix
-after activation requires an explicit prospective amendment, never relabeling an
-observed slot or rerunning its seed to obtain a pass.
+That sequence is no longer executable for v1 because the attempt consumed its seed
+set and failed. A source fix requires an explicit prospective amendment, never
+relabeling an observed slot or rerunning its seed to obtain a pass.
 
 The v1 packet binds all eleven classes to implementation commit
 `0fdcdb0ede7a332e7e82546e569e55e0bb17f155`, including the exact Rust binary.
@@ -191,21 +212,21 @@ repository-native binding records a successful local simulated commitment, not
 a public transaction. Execution may begin only from a clean descendant containing
 the committed binding and after the full consolidated suite passes.
 
-## Active execution
+## Registered v1 execution record
 
 The original attempt started at 2026-09-13 14:16:52 UTC on clean execution commit
 `895d59a90b66cf74603d58f1962c58f98e29dfb9`. That exact commit passed 1,933 tests,
 Rust tests/clippy, a 747-file secret scan and the complete consolidated suite.
-The first slot has reached actual observation collection. This is not a passing
-qualification or a behavioral result.
+The first slot recorded 465 turns before the safety pause and then terminated. This
+is a failed qualification attempt, not a behavioral result.
 
 The bounded user service `ald-e02-qualification-v1.service` has no automatic
 restart, a 55-hour outer runtime limit and a five-minute cleanup allowance.
-Its controller runs and audits the five slots serially and writes the terminal
-receipt to `reports/research/e02-qualification-receipt.json`. Individual evidence
+Its controller was designed to run and audit the five slots serially and wrote the
+terminal receipt to `reports/research/e02-qualification-receipt.json`. Individual evidence
 and logs remain under `evidence/qualification/e02-v1`. The user manager is
-session-bound: logout, reboot or infrastructure failure can interrupt it. Never
-restart a failed attempt into the same reserved seed set.
+session-bound; it is now stopped with exit status 1. Never restart this attempt into
+the same reserved seed set.
 
 Read-only monitoring:
 

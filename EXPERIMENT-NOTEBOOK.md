@@ -186,7 +186,7 @@ E01 Channel isolation ---- E02 Observation leakage
 |---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Qualified (software) | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Qualified (software) | V2 passed five registered slots with 560 signed records and both verifiers |
-| E02 | Observation and metadata leakage audit | E00 | In progress | Registered v1 collection |
+| E02 | Observation and metadata leakage audit | E00 | Failed qualification attempt | Registered v1 stopped at its safety pause; evidence retained |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | — |
 | E11 | From-scratch RL Naming Game | E03 | Not started | — |
@@ -383,7 +383,7 @@ agent-language finding. Final selected study topologies still require B12's chec
 
 ## E02. Observation and Metadata Leakage Audit
 
-**Status:** In progress
+**Status:** Failed qualification attempt
 
 **Depends on:** E00
 
@@ -400,16 +400,18 @@ baseline; its planted one-hot control has lower advantage at least 0.20.
 and the matching simulated commitment in `protocols/e02-registration-binding.v1.json`.
 The five fresh slots collect 2,016 observations per role before and after a real
 runtime restore, with at least 501 held-out rows per probe. All 60 slot/role/stage/probe
-decisions remain separate. Development evidence is excluded; no completed qualification result exists yet.
+decisions remain separate. Development evidence is excluded; no completed qualification result exists.
 The asset-free numeric baseline has no image or text-aligned encoder surface;
 the separate retained OCR diagnostic does not qualify future image observations.
 
 **Execution:** The original five-slot attempt started on 2026-09-13 at 14:16:52 UTC
 from clean commit `895d59a90b66cf74603d58f1962c58f98e29dfb9` after all 1,933 tests
-and consolidated gates passed. The first slot has reached actual turn collection.
-The supervised serial run retains its attempt and per-slot records under
-`evidence/qualification/e02-v1`; the final receipt will be written only when the
-attempt terminates. Failures are retained, not restarted into passing seeds.
+and consolidated gates passed. Slot 1 recorded 465 turns and 930 delivered
+observations before five consecutive timeout rejections triggered the registered
+safety pause. The collector then stopped when it attempted turn 466 against the
+paused run. Snapshot/restore and probe evaluation were not reached; slots 2–5 were
+not attempted. The terminal receipt, attempt, partial database, bundle, and log are
+retained. This seed set will not be restarted or relabeled as passing evidence.
 
 ### Procedure
 
@@ -435,15 +437,16 @@ attempt terminates. Failures are retained, not restarted into passing seeds.
 
 | Probe | Chance | Observed | 95% CI | Decision |
 |---|---:|---:|---|---|
-| Metadata-only target prediction | `TBD` | `TBD` | `TBD` | `In progress` |
-| Identifier-only prediction | `TBD` | `TBD` | `TBD` | `In progress` |
-| Timing-only prediction | `TBD` | `TBD` | `TBD` | `In progress` |
+| Metadata-only target prediction | `TBD` | — | — | `Not reached` |
+| Identifier-only prediction | `TBD` | — | — | `Not reached` |
+| Timing-only prediction | `TBD` | — | — | `Not reached` |
 
 - [ ] Observation hygiene criteria met
 - [ ] Encoder provenance recorded
 - [ ] Result committed
 
-**Result summary:** Registered qualification in progress; no completed result.
+**Result summary:** The registered v1 attempt failed before analysis. No leakage
+decision or behavioral result was produced.
 
 ---
 

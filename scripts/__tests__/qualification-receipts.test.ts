@@ -112,6 +112,8 @@ describe('current project status', () => {
     for (const path of [
       'package.json', 'pnpm-lock.yaml', 'BACKLOG.md', 'README.md', 'RESEARCH.md',
       'EXPERIMENT-NOTEBOOK.md', 'protocols/campaign-readiness-review.v1.json',
+      'reports/research/e02-qualification-receipt.json',
+      'reports/phase-one-research-update.md',
       'reports/research/research-validation-report.md',
       'reports/research/research-critical-review.md',
       'reports/research/methods-readiness-review.md',
@@ -139,6 +141,17 @@ describe('current project status', () => {
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain(path);
+  });
+
+  it('rejects an E02 notebook status that contradicts the terminal receipt', () => {
+    const directory = statusFixture();
+    const target = join(directory, 'EXPERIMENT-NOTEBOOK.md');
+    const original = readFileSync(target, 'utf8');
+    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Failed qualification attempt |',
+      '| E02 | Observation and metadata leakage audit | E00 | In progress |'));
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('terminal receipt requires Failed qualification attempt');
   });
 });
 

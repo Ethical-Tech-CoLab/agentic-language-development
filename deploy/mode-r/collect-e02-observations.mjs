@@ -13,6 +13,13 @@ import { ReferentialScenarioEngine, ScenarioBundleRegistry, registerGeneratorCon
 import { E02_ANALYSIS_VERSION, E02_LABELS, E02_PROBES, E02_ROWS_PER_STAGE,
   E02_REGISTERED_ROWS_PER_STAGE, E02_REGISTERED_ANALYSIS_VERSION, auditE02Rows, evaluateE02Probe } from './e02-observation-analysis.mjs';
 
+export function e02ProbeEvaluation(profile, reportCount) {
+  if (profile === 'smoke') return 'not-run-short-transport-smoke';
+  if (reportCount === 12) return 'completed';
+  if (reportCount === 0) return 'not-reached';
+  return 'incomplete';
+}
+
 export async function collectE02Observations({ directory, seed, mode, profile, softwareCommit, registration, slot }) {
   const registered = profile === 'registered';
   assert.ok(['full', 'smoke', 'registered'].includes(profile));
@@ -211,11 +218,12 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
   finally {
     if (production) production.close();
     for (const factory of factories) await factory.dispose();
+    const probeEvaluation = e02ProbeEvaluation(profile, reports.length);
     await writeFile(join(root, registered ? 'slot.json' : 'development.json'), JSON.stringify({ classification, researchFinding: false,
       runId, seed, mode, profile, sampleCount, softwareCommit, controllerSources,
       ...(registered ? { slot, registrationHash: registration.preRegistrationHash } : {}),
       sourceBoundary: registered ? 'Frozen sources checked by the registered host runner' : 'Unregistered development source; base commit does not assert a clean execution tree',
-      probeEvaluation: profile !== 'smoke' ? 'executed' : 'not-run-short-transport-smoke',
+      probeEvaluation,
       captured: [...captured.values()], reports, restoreRecord, topology, failure,
       passed: failure === null && reports.length === (profile !== 'smoke' ? 12 : 0) && reports.every((report) => report.passed),
       wallMilliseconds: performance.now() - started, resourceUsage: process.resourceUsage(), containerResourceUsage }, null, 2));

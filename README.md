@@ -95,14 +95,15 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.107 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.108 · 254/258 backlog acceptance criteria verified.
 
-Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open campaign blockers.
+Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
 
 The verifiable core, communication runtime, Mode R isolation, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00 and E01 have
-qualified within their registered software scope. E02's registered observation-leakage
-qualification is running under a bounded local supervisor. Its completion
+qualified within their registered software scope. E02's first registered
+observation-leakage attempt stopped at its safety pause after 465 turns; it produced
+no probe result and will not be restarted. A prospectively amended qualification
 and the remaining research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
@@ -218,6 +219,9 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 
 | Document | Purpose |
 |---|---|
+| [Phase-one research update](reports/phase-one-research-update.md) | Concise September 4–13 progress account, current evidence, failure disclosure, and next milestone |
+| [Phase-one evidence appendix](reports/phase-one-evidence-appendix.md) | Claim-to-commit, receipt, evidence-availability, and verification-command map |
+| [Phase-one demonstration guide](docs/phase-one-demonstration-guide.md) | Short, evidence-preserving walkthrough for a research review |
 | [CONCEPT-IDEA.md](CONCEPT-IDEA.md) | Research premise, architecture, literature, safeguards, experiments, and open decisions |
 | [LEDGER-INTEGRITY-DESIGN.md](LEDGER-INTEGRITY-DESIGN.md) | Hash-chain, ordered-Merkle, signature, Base-anchor, verifier, and recovery design |
 | [EXPERIMENT-NOTEBOOK.md](EXPERIMENT-NOTEBOOK.md) | Ordered experiment protocols, checklists, result tables, deviations, and publication review |
