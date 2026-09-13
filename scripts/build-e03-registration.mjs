@@ -48,12 +48,21 @@ const readJson = async (path) => {
   const bytes = await readFile(resolve(path));
   return { bytes, value: JSON.parse(bytes.toString('utf8')) };
 };
+const repositoryPath = (path, label) => {
+  if (path.startsWith('/') || path.split('/').includes('..')) {
+    throw new Error(`${label} must be a repository-relative path`);
+  }
+  return path;
+};
 const sampleSizeDecisionSource = values['sample-size-decision'] === undefined
   ? undefined
   : await readJson(values['sample-size-decision']);
 const sampleSizeDecision = sampleSizeDecisionSource?.value;
-const e02ReceiptPath = values['e02-receipt'];
-const resourceAllocationPath = values['resource-allocation'];
+const e02ReceiptPath = repositoryPath(values['e02-receipt'], '--e02-receipt');
+const resourceAllocationPath = repositoryPath(
+  values['resource-allocation'],
+  '--resource-allocation',
+);
 const e02ReceiptSource = await readJson(e02ReceiptPath);
 const resourceAllocationSource = await readJson(resourceAllocationPath);
 if (
