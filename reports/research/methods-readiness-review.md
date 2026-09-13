@@ -7,11 +7,11 @@ Independent human review: not performed
 
 ## Decision
 
-Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
+Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open campaign blockers.
 
 All 19 experiment cards are covered. E00 completed its registered software
 qualification, E01 v2 closed B15 with signed explicit-corpus evidence, and E02 now has
-an activated exact local packet; 16 other experiments await prerequisites. The
+an activated exact local packet and collection in progress; 16 other experiments await prerequisites. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
 software qualifications do not substitute for repository registration, prospective
@@ -67,7 +67,7 @@ to relabel any existing fixture as a pilot.
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
 | E02 | Yes, to execute | Exact packet and simulated activation are bound; no qualification result is claimed |
-| E03 | No | E01/E02, blinded pilot, selected N, exact packet |
+| E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |
 | E30-E32 | No | upstream experimental chain, resources, and repository registration |

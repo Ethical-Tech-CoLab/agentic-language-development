@@ -132,7 +132,10 @@ describe('current project status', () => {
   it.each(['README.md', 'reports/research/methods-readiness-review.md'])('rejects stale counts in %s', (path) => {
     const directory = statusFixture();
     const target = join(directory, path);
-    writeFileSync(target, readFileSync(target, 'utf8').replace('17 not started;', '19 not started;'));
+    const original = readFileSync(target, 'utf8');
+    const changed = original.replace(/\d+ not started;/u, '99 not started;');
+    expect(changed).not.toBe(original);
+    writeFileSync(target, changed);
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain(path);

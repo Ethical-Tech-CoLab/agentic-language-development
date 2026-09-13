@@ -4,8 +4,13 @@ Status: A01 evidence-cutoff inventory complete; no research result
 
 The machine-readable source is
 `reports/research/data-claim-manifest.json`. It captures every exported run bundle
-present under local ignored evidence storage through 2026-09-13 without copying raw events,
+present under local ignored evidence storage at the v0.1.104 cutoff on 2026-09-13 without copying raw events,
 messages, observations, native ledgers, or secrets into Git.
+
+This frozen inventory predates registered E02 collection. The running attempt is
+tracked separately until its evidence and disposition can be reconciled. New
+exports can make the live whole-tree comparison report a stale snapshot; the
+portable check continues to validate the frozen cutoff, not newly collected data.
 
 ## Inventory result
 

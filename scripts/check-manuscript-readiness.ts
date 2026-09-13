@@ -56,8 +56,8 @@ if (uniqueCitations.join('|') !== definedReferences.join('|')) {
 if (sources.existingReferences.length !== 50 || sources.updatedSearch.length !== 5) {
   throw new Error('source register counts differ from the manuscript audit scope');
 }
-if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 17 || campaign.experiments.length !== 19) {
-  throw new Error('experiment inventory must contain 19 experiments with 17 not started');
+if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 16 || campaign.experiments.length !== 19) {
+  throw new Error('experiment inventory must contain 19 experiments with 16 not started');
 }
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');

@@ -1,6 +1,6 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: exact prospective packet and simulated activation committed; execution pending. E02 is not qualified.
+Status: registered five-slot execution in progress. E02 is not yet qualified.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -61,8 +61,8 @@ The prospective implementation therefore uses 2,016 observations per role per st
 yielding at least 501 held-out rows after four-class rounding. Neither margin nor
 feature membership changes. The turn-index feature is normalized by twice the
 declared per-stage sample count. The measured development resource envelope is
-recorded, and the exact packet is compiled; no registered E02 run has
-started. Historical development uses 816 rows and the original normalization.
+recorded, and the registered five-slot execution has started.
+Historical development uses 816 rows and the original normalization.
 
 ### Reproducible design calculation
 
@@ -190,3 +190,26 @@ The packet commit is `4d7068b5ccc1c8259239923d88ebff10fb85a3b1`. The matching
 repository-native binding records a successful local simulated commitment, not
 a public transaction. Execution may begin only from a clean descendant containing
 the committed binding and after the full consolidated suite passes.
+
+## Active execution
+
+The original attempt started at 2026-09-13 14:16:52 UTC on clean execution commit
+`895d59a90b66cf74603d58f1962c58f98e29dfb9`. That exact commit passed 1,933 tests,
+Rust tests/clippy, a 747-file secret scan and the complete consolidated suite.
+The first slot has reached actual observation collection. This is not a passing
+qualification or a behavioral result.
+
+The bounded user service `ald-e02-qualification-v1.service` has no automatic
+restart, a 55-hour outer runtime limit and a five-minute cleanup allowance.
+Its controller runs and audits the five slots serially and writes the terminal
+receipt to `reports/research/e02-qualification-receipt.json`. Individual evidence
+and logs remain under `evidence/qualification/e02-v1`. The user manager is
+session-bound: logout, reboot or infrastructure failure can interrupt it. Never
+restart a failed attempt into the same reserved seed set.
+
+Read-only monitoring:
+
+```text
+systemctl --user status ald-e02-qualification-v1.service
+journalctl --user -u ald-e02-qualification-v1.service --no-pager -n 30
+```

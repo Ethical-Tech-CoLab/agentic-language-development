@@ -60,7 +60,7 @@ Therefore:
   E00 v2 and v4 are complete failed attempts; v3 is superseded without outcomes;
   v5 passed all five registered slots. E01 v1 passed its bounded category gate and
   v2 passed the explicit signed corpus. E02 has a committed v1 packet and matching
-  simulated activation; its five-slot qualification remains unexecuted.
+  simulated activation; its five-slot qualification is in progress with no final result.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

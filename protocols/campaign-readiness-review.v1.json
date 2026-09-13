@@ -28,7 +28,7 @@
     {"id":"E00","ready":true,"blockers":[]},
     {"id":"E01","ready":true,"blockers":[]},
     {"id":"E02","ready":true,"blockers":[]},
-    {"id":"E03","ready":false,"blockers":["E01","E02","B08","B11"]},
+    {"id":"E03","ready":false,"blockers":["E02","B08","B11"]},
     {"id":"E10","ready":false,"blockers":["E03","B07","B11"]},
     {"id":"E11","ready":false,"blockers":["E03","B07","B08","B11"]},
     {"id":"E12","ready":false,"blockers":["E11-infrastructure","B07","B11"]},

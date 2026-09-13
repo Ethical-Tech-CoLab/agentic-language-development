@@ -95,13 +95,14 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.106 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.107 · 254/258 backlog acceptance criteria verified.
 
-Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
+Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open campaign blockers.
 
 The verifiable core, communication runtime, Mode R isolation, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00 and E01 have
-qualified within their registered software scope. E02 observation-leakage checks
+qualified within their registered software scope. E02's registered observation-leakage
+qualification is running under a bounded local supervisor. Its completion
 and the remaining research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785

@@ -1,9 +1,9 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-13
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.106
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.107
 Decision: **Needs revision before submission**  
-Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
+Research status: 2 qualified (software), 1 in progress, 16 not started; 8 open campaign blockers.
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
 AI-assistance disclosure, and rendered-page overlap were corrected.
@@ -29,7 +29,7 @@ received independent verification.
 | Within-chart agreement | N/A | The manuscript intentionally contains no empirical chart. Future result figures remain prohibited until eligible data exist. |
 | Complete source details | 0 / 50 | All 50 bibliography entries have a locator and recorded inspection depth. Only the priority subset was inspected in full text; that declared limitation prevents a stronger verification claim. |
 | Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and qualification receipts agree that E00 and E01 v2 are software-qualified within their registered bounds while the behavioral campaign remains unexecuted. |
-| Data-quality controls | 17 / 17 | Every remaining experiment lacks its eligible registered dataset. E00 and E01 provide bounded software qualification, not behavioral estimates; the remaining units cannot yet be validated. |
+| Data-quality controls | 17 / 17 | Every remaining experiment lacks a complete eligible registered dataset. E02 collection is in progress. E00 and E01 provide bounded software qualification, not behavioral estimates; incomplete units cannot yet be validated. |
 | Conclusion support | 0 / 4 | The four current conclusions—pre-results status, substantial software qualification, zero eligible empirical bundles, and not-registration-ready disposition—match the retained evidence. No scientific hypothesis is presented as supported. |
 
 ## Prioritized problems and required fixes
@@ -38,7 +38,7 @@ received independent verification.
    passed as software qualification after two preserved failures and one outcome-free
    amendment. E01 v2 passed five registered topology slots with 560 signed records,
    closing B15's explicit-corpus and evidence-binding gap;
-   the other 17 experiments remain `Not started`, and zero bundles are research-included.
+   E02 collection is in progress, 16 experiments remain `Not started`, and zero bundles are research-included.
    Three E00 prospective simulated commitments are preserved, and the E00, E01 and E02
    qualification packets compile. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered
