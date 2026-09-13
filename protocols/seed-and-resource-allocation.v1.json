@@ -48,7 +48,7 @@
   "allocations": [
     {"experiment":"E00","class":"qualification","conditions":["integrity-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":100},
     {"experiment":"E01","class":"qualification","conditions":["isolation-attack-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":100},
-    {"experiment":"E02","class":"qualification","conditions":["semantic-leakage-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":800},
+    {"experiment":"E02","class":"qualification","conditions":["semantic-leakage-suite"],"stage":"software-qualification","slots":5,"reserves":0,"turnsPerRun":4034},
     {"experiment":"E03","class":"qualification","conditions":["disabled","constant","random","shuffled","normal-no-learning","oracle"],"stage":"blinded-pilot","slots":20,"reserves":0,"turnsPerRun":200},
     {"experiment":"E03","class":"qualification","conditions":["disabled","constant","random","shuffled","normal-no-learning","oracle"],"stage":"confirmatory","slots":300,"reserves":30,"turnsPerRun":200,"allocationRule":"Only the prefix selected from the E03 variance bands is attempted; 300+30 is the pre-materialized maximum pool."},
     {"experiment":"E10","class":"secondary-benchmark","conditions":["normal","disabled","constant","random","shuffled"],"stage":"confirmatory","slots":30,"reserves":3,"turnsPerRun":140},
@@ -112,9 +112,9 @@
   },
   "planningAccounting": {
     "maximumMaterializedBundlesIncludingReplication": 9171,
-    "maximumMaterializedTurns": 9358100,
-    "projectedUncompressedGiBAtMeasuredRate": 855.8688616329947,
-    "projectedSingleCoreHoursAtMeasuredRate": 375.7237158119658,
+    "maximumMaterializedTurns": 9374270,
+    "projectedUncompressedGiBAtMeasuredRate": 857.3477301525238,
+    "projectedSingleCoreHoursAtMeasuredRate": 376.37293440170936,
     "interpretation": "The maximum seed pools are identifiers, not authorization to execute every slot. The full campaign exceeds the local storage and CPU ceilings before frozen-model overhead; public-chain spend is excluded by policy. D08 must bind selected prefixes and an approved execution environment before registration."
   }
 }

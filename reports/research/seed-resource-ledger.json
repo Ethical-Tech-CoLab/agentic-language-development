@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "outcome-blind-design-evidence",
   "researchFinding": false,
-  "protocolSha256": "c823c8fd221bafedac568ae73eb4270989ad09f15973fe41c01e8a902f20c427",
+  "protocolSha256": "647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082",
   "seedAlgorithm": "sha256-nul-separated-v1",
   "distinctDerivedSeeds": 27190,
   "collisions": 0,
@@ -34,7 +34,7 @@
       "primarySlots": 5,
       "reserveSlots": 0,
       "bundles": 5,
-      "turns": 4000,
+      "turns": 20170,
       "allocationCommitment": "a6f9359bb45d9fba67f0f49450c0aacb82320a4e55ca7821afed19faa3b6acc7"
     },
     {
@@ -272,11 +272,11 @@
     "nonReplicationBundles": 6421,
     "replicationBundles": 2750,
     "maximumMaterializedBundles": 9171,
-    "nonReplicationTurns": 6030600,
+    "nonReplicationTurns": 6046770,
     "replicationTurns": 3327500,
-    "maximumMaterializedTurns": 9358100,
-    "projectedUncompressedGiBAtMeasuredRate": 855.8688616329947,
-    "projectedSingleCoreHoursAtMeasuredRate": 375.7237158119658,
+    "maximumMaterializedTurns": 9374270,
+    "projectedUncompressedGiBAtMeasuredRate": 857.3477301525238,
+    "projectedSingleCoreHoursAtMeasuredRate": 376.37293440170936,
     "fitsLocalWorkingStorageCeiling": false,
     "fitsLocalCpuCeiling": false
   },

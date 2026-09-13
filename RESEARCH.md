@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.121 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.122 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -899,7 +899,7 @@ of at least 0.90. N=100 is a planning value, not a selected result.
 
 A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
 At that measured uncompressed rate, maximum materialized pools including replication
-project to 9,171 bundles, 9.36 million turns, 855.9 GiB, and 375.7 single-core hours.
+project to 9,171 bundles, 9.37 million turns, 857.3 GiB, and 376.4 single-core hours.
 The present local ceiling is 72 CPU-hours, 25 GiB, one frozen-model process, and zero
 external spend. It supports bounded qualification and pilots, not the full campaign;
 confirmatory registration requires an exact selected prefix and an approved execution

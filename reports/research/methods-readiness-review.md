@@ -44,7 +44,7 @@ to relabel any existing fixture as a pilot.
    1,963-test, release-auditor, and real-container preflight gates; the single
    sequential attempt started on exact commit `9ec08ec`; slot 1 is running and no
    completion or result is claimed.
-4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
+4. Maximum pools project to 857.3 GiB and 376.4 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
 

@@ -743,8 +743,8 @@ the affected study remains unregistered rather than widening its margin.
 
 A fresh five-carrier/260-turn qualification took 37.58 wall seconds at about one CPU,
 peaked at 264,896 KiB RSS, and wrote 25,532,466 bytes across 15,695 files. Scaling the
-maximum seed pools at this recurrent-run rate yields 9,171 bundles, 9,358,100 turns,
-855.9 GiB uncompressed, and 375.7 single-core hours. Frozen-model cost is not included
+maximum seed pools at this recurrent-run rate yields 9,171 bundles, 9,374,270 turns,
+857.3 GiB uncompressed, and 376.4 single-core hours. Frozen-model cost is not included
 and can only raise requirements; public-chain cost is excluded by policy. The authorized local ceiling
 is 72 CPU-hours, 25 GiB, 6 GiB process memory, one frozen-model process, and zero
 external spend. Local qualification and bounded pilots fit; the complete campaign

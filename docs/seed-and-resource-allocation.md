@@ -50,12 +50,16 @@ short run. This measurement includes build startup, local fake-chain work, and
 verification; it does not estimate frozen-model latency or any prohibited public-chain latency or
 distributed throughput.
 
-The maximum materialized pools contain 9,171 bundles and 9,358,100 turns, including
+The maximum materialized pools contain 9,171 bundles and 9,374,270 turns, including
 2,750 provisional replication bundles. Linear projection at the measured recurrent
-rate is 855.9 GiB uncompressed and 375.7 single-core hours. These are upper-pool
+rate is 857.3 GiB uncompressed and 376.4 single-core hours. These are upper-pool
 planning figures, not instructions to execute unused seed suffixes. Selected E03 and
 confirmatory prefixes will reduce them, while real frozen-model and external-service
 costs can increase them.
+
+E02 uses 4,034 turns per registered slot: 2,016 rows per role in each of two
+stages plus two excluded sealing turns. The earlier 800-turn planning value did not
+describe any registered packet and is not used in these totals.
 
 The current local authorization ceiling is 72 CPU-hours, 25 GiB working storage,
 6 GiB peak process memory, one frozen-model process, and zero external spend. It is
