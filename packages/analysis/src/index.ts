@@ -119,12 +119,14 @@ export {
   E03_DESIGN_ROWS,
   E03_DESIGN_SEED,
   E03_DESIGN_SIMULATION_VERSION,
-  E03_SEED_LABEL,
+  E03_SEED_ROOT,
   buildE03SeedManifest,
   simulateE03DesignPower,
   type E03DesignPowerRow,
   type E03DesignSimulation,
   type E03DesignSimulationOptions,
+  type E03CommunicationCondition,
+  type E03RegistrationStage,
   type E03SeedManifest,
   type E03SeedManifestEntry,
 } from './e03-design.js';
@@ -135,6 +137,7 @@ export {
   type CompileE03RegistrationInput,
   type CompiledE03Registration,
   type E03RegisteredRun,
+  type E03SampleSizeDecision,
 } from './e03-registration.js';
 export {
   E03_CHANCE_RATE,

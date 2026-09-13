@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  E03_COMMUNICATION_CONDITIONS,
   E03_DESIGN_ROWS,
+  E03_SEED_ROOT,
   buildE03SeedManifest,
   simulateE03DesignPower,
 } from '../src/e03-design.js';
+import { deriveSeedHex } from '@ald/hashing';
 
 describe('E03 outcome-blind design simulation', () => {
   it('reproduces all four component rows above the 90% power floor', () => {
@@ -39,25 +42,61 @@ describe('E03 outcome-blind design simulation', () => {
 });
 
 describe('E03 primary and reserve seed manifest', () => {
-  it('derives the registered slots and ten-percent reserve deterministically', () => {
-    const manifest = buildE03SeedManifest(75);
+  it('derives a zero-reserve twenty-slot pilot in the global stage domain', () => {
+    const manifest = buildE03SeedManifest('blinded-pilot', 20);
+    expect(manifest).toMatchObject({
+      version: 2,
+      claimBoundary: 'prospective-seed-allocation-only',
+      seedRoot: E03_SEED_ROOT,
+      stage: 'blinded-pilot',
+      seedDomain: 'blinded-pilot',
+      primarySeeds: 20,
+      reserveSeeds: 0,
+    });
+    expect(manifest.entries).toHaveLength(20);
+    expect(manifest.entries.every((entry) => entry.use === 'primary')).toBe(true);
+  });
+
+  it('derives full component bindings and ten-percent ordered reserves', () => {
+    const manifest = buildE03SeedManifest('full-qualification', 75);
     expect(manifest.primarySeeds).toBe(75);
     expect(manifest.reserveSeeds).toBe(8);
     expect(manifest.entries).toHaveLength(83);
-    expect(manifest.entries[0]).toEqual({
-      slot: 1,
-      use: 'primary',
-      scenarioSeed:
-        '5a64e3d3b490b4d5f4dbb89d7f8801a3ec53f8815c6731a8bce7cb691474eadd',
-      gatewaySeeds: {
-        random:
-          'd3b41fe5c9ea0807e97d589b561d11f0b91a83c65485f29f83d0b7f7b1e28563',
-        shuffled:
-          'bc4976f8f3111d97be5fc80badb0632b241e4204b78d04b863e630215d860423',
-      },
-    });
+    const first = manifest.entries[0]!;
+    expect(first.scenarioSeed).toBe(
+      deriveSeedHex(E03_SEED_ROOT, 'confirmatory', 'E03', '1', 'scenario'),
+    );
+    expect(Object.keys(first.conditionSeeds)).toEqual(E03_COMMUNICATION_CONDITIONS);
+    expect(first.conditionSeeds.normal.babyA).toBe(
+      deriveSeedHex(
+        E03_SEED_ROOT,
+        'confirmatory',
+        'E03',
+        'normal-no-learning',
+        '1',
+        'baby-a',
+        'learner',
+      ),
+    );
+    const allSeeds = [
+      first.scenarioSeed,
+      ...Object.values(first.conditionSeeds).flatMap(Object.values),
+    ];
+    expect(new Set(allSeeds).size).toBe(allSeeds.length);
     expect(manifest.entries[74]?.use).toBe('primary');
     expect(manifest.entries[75]?.use).toBe('reserve');
-    expect(buildE03SeedManifest(75)).toEqual(manifest);
+    expect(buildE03SeedManifest('full-qualification', 75)).toEqual(manifest);
+  });
+
+  it('keeps pilot and full-qualification seed domains disjoint', () => {
+    const pilot = buildE03SeedManifest('blinded-pilot', 20);
+    const full = buildE03SeedManifest('full-qualification', 25);
+    const flatten = (manifest: typeof pilot) => manifest.entries.flatMap((entry) => [
+      entry.scenarioSeed,
+      ...Object.values(entry.conditionSeeds).flatMap(Object.values),
+    ]);
+    const pilotSeeds = new Set(flatten(pilot));
+    expect(flatten(full).every((seed) => !pilotSeeds.has(seed))).toBe(true);
+    expect(() => buildE03SeedManifest('blinded-pilot', 19)).toThrow(/exactly 20/u);
   });
 });

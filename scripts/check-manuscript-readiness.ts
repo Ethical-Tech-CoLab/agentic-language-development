@@ -9,6 +9,7 @@ const sha256 = (value: string): string => createHash('sha256').update(value).dig
 const manuscript = read('RESEARCH.md');
 const compactManuscript = manuscript.replace(/\s+/gu, ' ');
 const notebook = read('EXPERIMENT-NOTEBOOK.md');
+const backlog = read('BACKLOG.md');
 const packageJson = JSON.parse(read('package.json')) as { version: string };
 const claims = JSON.parse(read('reports/research/data-claim-manifest.json')) as {
   totals: Record<string, number>;
@@ -46,6 +47,10 @@ const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|.*
 const exact = (needle: string): void => {
   if (!compactManuscript.includes(needle)) throw new Error(`manuscript lacks exact audited claim: ${needle}`);
 };
+const backlogCriteria = [...backlog.matchAll(/^  - \[(x| )\]/gmu)];
+const checkedBacklogCriteria = backlogCriteria.filter(
+  (criterion) => criterion[1] === 'x',
+).length;
 
 if (definedReferences.length !== 50 || definedReferences.some((value, index) => value !== index + 1)) {
   throw new Error('reference definitions are not the complete ordered range 1..50');
@@ -83,7 +88,10 @@ if (claims.totals['researchIncluded'] !== 0 || claims.totals['confirmedPublicCha
 if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(/\r\n?/gu, '\n'))) {
   throw new Error('rendered research book is missing pages or does not bind the current manuscript');
 }
-exact(`v${packageJson.version} · 254/258 backlog acceptance criteria verified.`);
+exact(
+  `v${packageJson.version} · ${String(checkedBacklogCriteria)}/${String(backlogCriteria.length)} ` +
+    'backlog acceptance criteria verified.',
+);
 exact(`resolves ${String(claims.totals['bundles'])} exported bundles across ${String(claims.totals['collections'])} collections`);
 exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits E00, E01 and E02 registration hashes`);
 exact(`external-dependency ledger is ready at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
@@ -104,6 +112,8 @@ const result = {
     referencesCited: uniqueCitations.length,
     renderedPages: book.pages.length,
     renderedSourceSha256: book.sourceSha256,
+    backlogCriteria: backlogCriteria.length,
+    checkedBacklogCriteria,
   },
   evidenceState: {
     experiments: experimentRows.length,

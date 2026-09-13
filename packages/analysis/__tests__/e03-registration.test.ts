@@ -14,7 +14,7 @@ function baseConfig(primarySeeds = 3) {
     experimentId: 'E03',
     randomSeed: 'unrealized-seed',
     deploymentMode: 'research-grade',
-    registrationClass: 'confirmatory',
+    registrationClass: 'qualification',
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     learningSignal: 'none',
@@ -29,10 +29,26 @@ function baseConfig(primarySeeds = 3) {
 }
 
 const input = {
-  baseConfig: baseConfig(),
-  hypothesis: 'E03 controls are equivalent to registered chance bounds.',
-  analysisPlan: 'Apply Appendix D §D.6-§D.10 without outcome-dependent changes.',
-  primarySeeds: 3,
+  baseConfig: baseConfig(20),
+  stage: 'blinded-pilot',
+  hypothesis: 'Estimate E03 variance without testing the qualification claim.',
+  analysisPlan: 'Use pilot outcomes only for the frozen sample-size rule.',
+  primarySeeds: 20,
+} as const;
+
+const sampleSizeDecision = {
+  version: 1,
+  classification: 'outcome-blind-pilot-sample-size-selection',
+  pilotRegistrationHash: hash('pilot-registration'),
+  pilotReceiptPath: 'evidence/pilots/e03-v1/pilot-receipt.json',
+  pilotReceiptSha256: hash('pilot-receipt'),
+  powerReceiptPath: 'evidence/pilots/e03-v1/power-receipt.json',
+  powerReceiptSha256: hash('power-receipt'),
+  largestLatentPilotSd: 0.05,
+  selectedPrimarySeeds: 25,
+  monteCarloRepetitions: 30_000,
+  monteCarloLower95: 0.91,
+  decisionRule: 'e03-bounded-complete-numeric-rule-v1',
 } as const;
 
 describe('E03 pre-registration compiler', () => {
@@ -42,11 +58,19 @@ describe('E03 pre-registration compiler', () => {
     expect(result.preRegistrationHash).toBe(
       hashCanonical(HASH_DOMAINS.preRegistration, result.artifact),
     );
-    expect(result.runs).toHaveLength(24);
+    expect(result.runs).toHaveLength(120);
     expect(new Set(result.runs.map((run) => run.config.preRegistrationHash))).toEqual(
       new Set([result.preRegistrationHash]),
     );
     expect(new Set(result.runs.map((run) => run.condition)).size).toBe(6);
+    expect(result.artifact.registrationClass).toBe('qualification');
+    expect(result.seedManifest.reserveSeeds).toBe(0);
+    const firstSlot = result.runs.filter((run) => run.slot === 1);
+    expect(new Set(firstSlot.map((run) => run.config.randomSeed)).size).toBe(1);
+    expect(new Set(firstSlot.flatMap((run) => {
+      const seeds = run.config.seedBindings!;
+      return [seeds.babyA, seeds.babyB, seeds.gateway, seeds.analysis];
+    })).size).toBe(24);
   });
 
   it('is byte-identical on repeat and changes hash when a registered field changes', () => {
@@ -85,8 +109,54 @@ describe('E03 pre-registration compiler', () => {
         baseConfig: { ...baseConfig(), deploymentMode: 'prototype' },
       }),
     ).toThrow(/research-grade/u);
-    expect(() => compileE03Registration({ ...input, primarySeeds: 4 })).toThrow(
+    expect(() => compileE03Registration({ ...input, baseConfig: baseConfig(19) })).toThrow(
       /must equal primarySeeds/u,
     );
+  });
+
+  it('requires a qualifying pilot decision before full qualification', () => {
+    const full = compileE03Registration({
+      ...input,
+      stage: 'full-qualification',
+      baseConfig: baseConfig(25),
+      primarySeeds: 25,
+      sampleSizeDecision,
+    });
+    expect(full.runs).toHaveLength(168);
+    expect(full.seedManifest.reserveSeeds).toBe(3);
+    expect(full.artifact.parameters['sampleSizeDecision']).toEqual(sampleSizeDecision);
+    expect(() => compileE03Registration({
+      ...input,
+      stage: 'full-qualification',
+      baseConfig: baseConfig(25),
+      primarySeeds: 25,
+    })).toThrow(/requires a pilot sample-size decision/u);
+    expect(() => compileE03Registration({
+      ...input,
+      stage: 'full-qualification',
+      baseConfig: baseConfig(25),
+      primarySeeds: 25,
+      sampleSizeDecision: { ...sampleSizeDecision, monteCarloLower95: 0.89 },
+    })).toThrow(/frozen rule/u);
+    expect(() => compileE03Registration({
+      ...input,
+      stage: 'full-qualification',
+      baseConfig: baseConfig(25),
+      primarySeeds: 25,
+      sampleSizeDecision: {
+        ...sampleSizeDecision,
+        largestLatentPilotSd: 0.1,
+      },
+    })).toThrow(/frozen rule/u);
+    expect(() => compileE03Registration({
+      ...input,
+      stage: 'full-qualification',
+      baseConfig: baseConfig(25),
+      primarySeeds: 25,
+      sampleSizeDecision: {
+        ...sampleSizeDecision,
+        pilotReceiptPath: '../unretained.json',
+      },
+    })).toThrow(/frozen rule/u);
   });
 });

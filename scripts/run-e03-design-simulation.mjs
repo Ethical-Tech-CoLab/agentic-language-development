@@ -15,9 +15,19 @@ const { values } = parseArgs({
       type: 'string',
       default: 'docs/e03-seed-manifest.json',
     },
-    'primary-seeds': { type: 'string', default: '75' },
+    stage: { type: 'string', default: 'pilot' },
+    'primary-seeds': { type: 'string', default: '20' },
   },
 });
+
+const stage = values.stage === 'pilot'
+  ? 'blinded-pilot'
+  : values.stage === 'full'
+    ? 'full-qualification'
+    : undefined;
+if (stage === undefined) {
+  throw new Error('--stage must be pilot or full');
+}
 
 const primarySeeds = Number(values['primary-seeds']);
 if (!Number.isInteger(primarySeeds) || primarySeeds < 1) {
@@ -30,7 +40,7 @@ const design = simulateE03DesignPower();
 if (!design.passes) {
   throw new Error('E03 design does not meet the registered minimum power');
 }
-const manifest = buildE03SeedManifest(primarySeeds);
+const manifest = buildE03SeedManifest(stage, primarySeeds);
 
 await Promise.all([
   mkdir(dirname(designPath), { recursive: true }),

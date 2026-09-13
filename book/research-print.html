@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.123 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.124 · 256/260 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -963,6 +963,10 @@ SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway
 analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
 complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
 of at least 0.90. N=100 is a planning value, not a selected result.</p>
+<p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
+E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
+numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
+nor contributes confirmatory-family alpha.</p>
 <p>A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
 At that measured uncompressed rate, maximum materialized pools including replication
 project to 9,171 bundles, 9.37 million turns, 857.3 GiB, and 376.4 single-core hours.
@@ -2055,15 +2059,20 @@ meaningful learned communication and establish an oracle upper bound.</p>
 </tr>
 </tbody></table>
 <h3>D.4 Seed Generation</h3>
-<p>For slot <code>i</code>, the shared scenario seed is the hexadecimal SHA-256 digest of:</p>
-<pre><code class="language-text">ald-e03-v1 || 0x00 || decimal(i)
+<p>For stage <code>s</code> and slot <code>i</code>, the shared scenario seed is the hexadecimal SHA-256
+digest of:</p>
+<pre><code class="language-text">ald-seed-allocation-v1 || 0x00 || s || 0x00 || E03 || 0x00 || decimal(i) || 0x00 || scenario
 </code></pre>
-<p>Slots <code>1</code> through registered <code>N</code> are primary. The next <code>ceil(0.10 * N)</code> slots are
-ordered reserves. Every condition uses the same scenario seed for a given slot.
-Condition-specific gateway randomness for <code>random</code> and <code>shuffled</code> is derived from:</p>
-<pre><code class="language-text">scenarioSeed || 0x00 || communicationCondition
+<p>Here <code>s</code> is <code>blinded-pilot</code> or <code>confirmatory</code>. The pilot has exactly 20 primary
+slots and no reserves. Full qualification uses slots <code>1</code> through selected <code>N</code> as
+primary and the next <code>ceil(0.10 * N)</code> as ordered reserves. Every condition uses
+the same scenario seed for a given stage and slot. Each condition has distinct
+Baby A, Baby B, Gateway, and analysis seeds derived from:</p>
+<pre><code class="language-text">ald-seed-allocation-v1 || 0x00 || s || 0x00 || E03 || 0x00 || condition || 0x00 || decimal(i) || 0x00 || component-domain
 </code></pre>
-<p>The complete scenario and gateway seed manifest is part of the registration.</p>
+<p>The <code>normal</code> condition uses <code>normal-no-learning</code> in that derivation. The complete
+component seed manifest is part of the registration, and no seed binding is visible
+to either learner.</p>
 <h3>D.5 Conditions</h3>
 <ol>
 <li><strong>Disabled:</strong> no artifact is delivered.</li>

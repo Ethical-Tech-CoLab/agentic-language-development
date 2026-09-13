@@ -19,13 +19,13 @@ function registration() {
     experimentId: 'E03',
     randomSeed: 'unrealized',
     deploymentMode: 'research-grade',
-    registrationClass: 'confirmatory',
+    registrationClass: 'qualification',
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     learningSignal: 'none',
     maxTurnsPerRun: 1,
     evaluationTurns: 200,
-    evaluationSeeds: 3,
+    evaluationSeeds: 20,
     scenarioBundleHash: hashed('scenario'),
     promptBundleHash: hashed('prompt'),
     protocolGitCommit: COMMIT,
@@ -33,16 +33,17 @@ function registration() {
   });
   return compileE03Registration({
     baseConfig,
-    hypothesis: 'Registered E03 hypothesis.',
-    analysisPlan: 'Registered E03 analysis.',
-    primarySeeds: 3,
+    stage: 'blinded-pilot',
+    hypothesis: 'Registered E03 pilot question.',
+    analysisPlan: 'Pilot outcomes feed only the frozen sample-size rule.',
+    primarySeeds: 20,
   });
 }
 
 function passingInput() {
   const compiled = registration();
   const binding: PreRegistrationBinding = {
-    registrationClass: 'confirmatory',
+    registrationClass: 'qualification',
     registrationAuthority: 'external',
     preRegistrationHash: compiled.preRegistrationHash,
     externalRegistrationUrl: 'https://osf.io/example',
@@ -57,7 +58,7 @@ function passingInput() {
       blockNumber: 123,
       status: 'confirmed',
     },
-    label: 'confirmatory: externally registered before run start',
+    label: 'qualification pilot: externally registered before run start',
   };
   return {
     config: compiled.runs[0]!.config,
@@ -73,7 +74,7 @@ function passingInput() {
   };
 }
 
-describe('confirmatory research preflight', () => {
+describe('registered research preflight', () => {
   it('passes only when every immutable input and registration binding agrees', () => {
     const report = evaluateResearchPreflight(passingInput());
     expect(report.ready).toBe(true);
@@ -112,6 +113,28 @@ describe('confirmatory research preflight', () => {
       ...input,
       preRegistrationHash: hashed('other'),
     })],
+    ['registered-seed-bindings', (input: ReturnType<typeof passingInput>) => ({
+      ...input,
+      config: { ...input.config, seedBindings: undefined },
+    })],
+    ['registered-run-configuration', (input: ReturnType<typeof passingInput>) => ({
+      ...input,
+      config: {
+        ...input.config,
+        seedBindings: {
+          ...input.config.seedBindings!,
+          analysis: hashed('unregistered-analysis-seed').slice(7),
+        },
+      },
+    })],
+    ['registered-run-configuration', (input: ReturnType<typeof passingInput>) => ({
+      ...input,
+      config: { ...input.config, maxSymbolsPerMessage: 3 },
+    })],
+    ['registration-class-matches', (input: ReturnType<typeof passingInput>) => ({
+      ...input,
+      binding: { ...input.binding, registrationClass: 'confirmatory' as const },
+    })],
     ['pre-run-anchor-payload', (input: ReturnType<typeof passingInput>) => ({
       ...input,
       binding: {
@@ -135,7 +158,7 @@ describe('confirmatory research preflight', () => {
     const report = evaluateResearchPreflight({
       ...input,
       binding: {
-        registrationClass: 'confirmatory',
+        registrationClass: 'qualification',
         registrationAuthority: 'repository-native',
         preRegistrationHash: input.preRegistrationHash,
         repositoryRegistration: {
@@ -145,7 +168,7 @@ describe('confirmatory research preflight', () => {
           committedAt: '2026-09-09T00:00:00.000Z',
         },
         preRunAnchor: input.binding.preRunAnchor,
-        label: 'confirmatory: repository-registered before run start',
+        label: 'qualification pilot: repository-registered before run start',
       },
     });
     expect(report.ready).toBe(true);
@@ -156,7 +179,7 @@ describe('confirmatory research preflight', () => {
     const report = evaluateResearchPreflight({
       ...input,
       binding: {
-        registrationClass: 'confirmatory',
+        registrationClass: 'qualification',
         registrationAuthority: 'repository-native',
         preRegistrationHash: input.preRegistrationHash,
         repositoryRegistration: {
@@ -166,7 +189,7 @@ describe('confirmatory research preflight', () => {
           committedAt: '2026-09-09T00:00:00.000Z',
         },
         preRunAnchor: input.binding.preRunAnchor,
-        label: 'confirmatory: repository-registered before run start',
+        label: 'qualification pilot: repository-registered before run start',
       },
       repository: { ...input.repository, registrationRecordMatches: false },
     });

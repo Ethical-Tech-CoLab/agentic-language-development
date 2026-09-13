@@ -23,7 +23,7 @@ This backlog translates `SPECIFICATION.md`, `EXPERIMENT-NOTEBOOK.md`, and `LEDGE
 
 ## 1. Document Status
 
-- **Status:** Implementation active, with 254 of 258 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, matched recurrent scratch-RL/self-supervised baselines with witnessed provenance and frozen evaluation, recorded per-Baby random policy initialization, frozen/hybrid adapter foundations, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, prospectively bound confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, executable readiness gates covering all 19 experiments, dependency-integrity enforcement, reproducible E03 design and registration artifacts, a fail-closed research preflight, a real open-weight frozen-model qualification, and hosted consolidated CI/Mode R evidence. The prospective campaign is governed by the simulation-only profile; public-chain acceptance items remain capability work rather than campaign prerequisites. The acceptance checkboxes below remain authoritative for that optional capability, upstream required-check enforcement, and independent operator restore validation.
+- **Status:** Implementation active, with 256 of 260 acceptance criteria verified. The verifiable core and Prototype Mode pipeline are joined by tested Phase E foundations for alternate carriers and affect, versioned carrier-leakage and semantic-leakage qualification, matched recurrent scratch-RL/self-supervised baselines with witnessed provenance and frozen evaluation, recorded per-Baby random policy initialization, frozen/hybrid adapter foundations, independently verified derived-run lineage, fail-closed scenario quarantine and audited observation-hygiene blocking, observation red-teaming, process and container training isolation, enumerated side-channel mitigations and active attacks, build-guarded response envelopes and claim labels, witness-committed analysis attachments, exact-export verification reports, prospectively bound confirmatory pre-registration, protected background scheduling, hash-linked deviation records, a vanilla Research Console with read-only replay, delayed human audit-ledger interpretation, telemetry, snapshot/restore, failure handling, retention enforcement, held-out scenario splits, fixed-schedule curriculum execution, verifier-bound live causal probes, recoverable bounded repair turns, a research-only three-role E40 encoding harness with an enforced production-crypto boundary, executable readiness gates covering all 19 experiments, dependency-integrity enforcement, reproducible stage-separated E03 design and registration artifacts, an exact-matrix research preflight, a real open-weight frozen-model qualification, and hosted consolidated CI/Mode R evidence. The prospective campaign is governed by the simulation-only profile; public-chain acceptance items remain capability work rather than campaign prerequisites. The acceptance checkboxes below remain authoritative for that optional capability, upstream required-check enforcement, and independent operator restore validation.
 - **Source of truth precedence:** `SPECIFICATION.md` governs implementation; `LEDGER-INTEGRITY-DESIGN.md` governs ledger, checkpoint, Merkle, and anchoring mechanics; `EXPERIMENT-NOTEBOOK.md` governs experiment pre-registration and results; `CONCEPT-IDEA.md` preserves research rationale. This backlog is derived from those documents and introduces no new normative requirements.
 - **Scope of this backlog:** software and process engineering work required to stand up the system described in `SPECIFICATION.md` and to make every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 executable. It does **not** include running the experiments themselves, interpreting results, or drafting findings — those are research-execution activities tracked in the notebook, not software backlog items.
 - **Numbering:** Epics use stable IDs `EPIC-01`…`EPIC-16`. Individual backlog items use stable IDs `ALD-001`…`ALD-086`. IDs are assigned in dependency order: every item's `Depends on` list only ever references a **lower**-numbered ALD ID. IDs are permanent once assigned and must not be reused or renumbered by future edits; new work gets the next unused ID appended at the end of its epic's range or a new epic.
@@ -1036,7 +1036,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Acceptance criteria:**
   - [x] A fixed seed reproduces byte-identical 30,000-replicate design output.
   - [x] Every registered SD/sample-size row has a lower 95% Monte Carlo bound at or above the 90% power floor.
-  - [x] The committed seed manifest deterministically derives separate scenario, random-control, and shuffled-control seeds without exposing realized confirmatory outcomes.
+  - [x] The committed seed manifest derives disjoint pilot and full-stage scenario,
+  per-role learner, Gateway, and analysis seeds without exposing outcomes.
 
 #### ALD-083 — Canonical E03 registration compiler
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-082
@@ -1044,16 +1045,22 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 - **Scope:** Compile E03's registered parameter template, its canonical domain-separated hash, complete seed allocation, and per-condition run-config templates into one validated artifact.
 - **Acceptance criteria:**
   - [x] The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat.
-  - [x] Run IDs, realized random seeds, execution bindings, and the pre-registration hash are excluded from the hashed parameter template.
+  - [x] Run IDs, realized random and component seeds, condition assignments, and the
+  pre-registration hash are excluded from the stable RunConfig template while the
+  complete prospective matrix remains inside the hashed artifact.
   - [x] Every primary and reserve condition configuration carries the same exact pre-registration hash.
+  - [x] The compiler fixes a twenty-slot zero-reserve pilot and refuses a full E03
+  qualification without the retained pilot and 30,000-repetition power decision.
 
 #### ALD-084 — Fail-closed research preflight
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-083
 - **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), [§7.2 Experiment Record](SPECIFICATION.md#72-experiment-record)
-- **Scope:** Check the immutable software, configuration, isolation, seed, registration, and pre-run commitment bindings before confirmatory collection and report every blocker together.
+- **Scope:** Check the immutable software, configuration, isolation, seed, registration, and pre-run commitment bindings before registered pilot or confirmatory collection and report every blocker together.
 - **Acceptance criteria:**
   - [x] Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable ancestral commits, seed count, complete registration, and confirmed matching pre-run commitment.
   - [x] A missing repository-native/external registration, mismatched binding, or absent/incorrect commitment blocks confirmatory readiness.
+  - [x] A realized run whose stable configuration, stage, condition, or component
+  seeds do not match one exact registered matrix entry is blocked.
   - [x] A passing preflight explicitly does not claim public-chain verification or scientific validity.
 
 #### ALD-085 — Real open-weight frozen-model qualification

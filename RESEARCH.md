@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.123 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.124 · 256/260 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -896,6 +896,11 @@ SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway
 analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
 complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
 of at least 0.90. N=100 is a planning value, not a selected result.
+
+That nine-member rule governs the confirmatory H1-H8 family and is distinct from
+E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
+numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
+nor contributes confirmatory-family alpha.
 
 A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
 At that measured uncompressed rate, maximum materialized pools including replication
@@ -1802,21 +1807,26 @@ meaningful learned communication and establish an oracle upper bound.
 
 ### D.4 Seed Generation
 
-For slot `i`, the shared scenario seed is the hexadecimal SHA-256 digest of:
+For stage `s` and slot `i`, the shared scenario seed is the hexadecimal SHA-256
+digest of:
 
 ```text
-ald-e03-v1 || 0x00 || decimal(i)
+ald-seed-allocation-v1 || 0x00 || s || 0x00 || E03 || 0x00 || decimal(i) || 0x00 || scenario
 ```
 
-Slots `1` through registered `N` are primary. The next `ceil(0.10 * N)` slots are
-ordered reserves. Every condition uses the same scenario seed for a given slot.
-Condition-specific gateway randomness for `random` and `shuffled` is derived from:
+Here `s` is `blinded-pilot` or `confirmatory`. The pilot has exactly 20 primary
+slots and no reserves. Full qualification uses slots `1` through selected `N` as
+primary and the next `ceil(0.10 * N)` as ordered reserves. Every condition uses
+the same scenario seed for a given stage and slot. Each condition has distinct
+Baby A, Baby B, Gateway, and analysis seeds derived from:
 
 ```text
-scenarioSeed || 0x00 || communicationCondition
+ald-seed-allocation-v1 || 0x00 || s || 0x00 || E03 || 0x00 || condition || 0x00 || decimal(i) || 0x00 || component-domain
 ```
 
-The complete scenario and gateway seed manifest is part of the registration.
+The `normal` condition uses `normal-no-learning` in that derivation. The complete
+component seed manifest is part of the registration, and no seed binding is visible
+to either learner.
 
 ### D.5 Conditions
 

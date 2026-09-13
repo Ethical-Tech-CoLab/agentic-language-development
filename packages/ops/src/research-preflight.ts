@@ -1,10 +1,10 @@
 /**
- * Confirmatory research preflight (SPEC §5.2, §10.4, §13.4, §15.1).
+ * Registered research preflight (SPEC §5.2, §10.4, §13.4, §15.1).
  * This checks immutable inputs and their recorded binding before collection;
  * it does not query a chain or decide that a study is scientifically valid.
  * Simulated commitments are accepted only when their class matches RunConfig.
  */
-import { hashCanonical } from '@ald/hashing';
+import { canonicalJson, hashCanonical } from '@ald/hashing';
 import {
   GENESIS_HASH,
   HASH_DOMAINS,
@@ -28,12 +28,14 @@ export type ResearchPreflightCheckId =
   | 'independent-training'
   | 'non-placeholder-input-hashes'
   | 'registered-seed-count'
+  | 'registered-seed-bindings'
+  | 'registered-run-configuration'
   | 'repository-clean'
   | 'protocol-commit-immutable'
   | 'artifact-valid'
   | 'artifact-hash-matches'
   | 'artifact-protocol-matches'
-  | 'confirmatory-class'
+  | 'registration-class-matches'
   | 'binding-valid'
   | 'registration-complete'
   | 'binding-hash-matches'
@@ -71,6 +73,69 @@ export interface ResearchPreflightReport {
 
 const COMMIT_PATTERN = /^[a-f0-9]{40}$/u;
 const CHAIN_IDS = { 'base-sepolia': 84532, 'base-mainnet': 8453 } as const;
+const REALIZED_RUN_FIELDS = new Set([
+  'runId',
+  'randomSeed',
+  'seedBindings',
+  'preRegistrationHash',
+  'communicationCondition',
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Verify that the realized run is one of the exact matrix entries committed
+ * inside the registration artifact. Merely carrying five syntactically valid
+ * seeds is insufficient: their stage, slot, condition, and stable RunConfig
+ * fields must all match the registered template.
+ */
+function registeredRunConfigurationMatches(
+  config: RunConfig,
+  artifact: PreRegistrationArtifact,
+): boolean {
+  const template = artifact.parameters['runConfigTemplate'];
+  const manifest = artifact.parameters['seedManifest'];
+  const registeredConditions = artifact.parameters['communicationConditions'];
+  if (
+    !isRecord(template) ||
+    !isRecord(manifest) ||
+    !Array.isArray(manifest['entries']) ||
+    !Array.isArray(registeredConditions) ||
+    config.seedBindings === undefined ||
+    !registeredConditions.includes(config.communicationCondition) ||
+    !artifact.seeds.includes(config.randomSeed)
+  ) {
+    return false;
+  }
+
+  const actualTemplate = Object.fromEntries(
+    Object.entries(config).filter(([key]) => !REALIZED_RUN_FIELDS.has(key)),
+  );
+  if (canonicalJson(actualTemplate) !== canonicalJson(template)) {
+    return false;
+  }
+
+  const entry = manifest['entries'].find((candidate) =>
+    isRecord(candidate) && candidate['scenarioSeed'] === config.randomSeed,
+  );
+  if (!isRecord(entry) || !isRecord(entry['conditionSeeds'])) {
+    return false;
+  }
+  const conditionSeeds = entry['conditionSeeds'][config.communicationCondition];
+  if (!isRecord(conditionSeeds)) {
+    return false;
+  }
+  return canonicalJson(config.seedBindings) === canonicalJson({
+    version: 1,
+    scenario: entry['scenarioSeed'],
+    babyA: conditionSeeds['babyA'],
+    babyB: conditionSeeds['babyB'],
+    gateway: conditionSeeds['gateway'],
+    analysis: conditionSeeds['analysis'],
+  });
+}
 
 function check(
   id: ResearchPreflightCheckId,
@@ -107,6 +172,10 @@ export function evaluateResearchPreflight(
       (value) => value !== GENESIS_HASH,
     );
   const seedCount = parsedArtifact.success ? new Set(artifact.seeds).size : 0;
+  const runConfigurationRegistered =
+    parsedConfig.success &&
+    parsedArtifact.success &&
+    registeredRunConfigurationMatches(config, artifact);
 
   const checks: ResearchPreflightCheck[] = [
     check(
@@ -119,7 +188,7 @@ export function evaluateResearchPreflight(
       'research-grade-mode',
       parsedConfig.success && config.deploymentMode === 'research-grade',
       'Research-Grade Mode is selected.',
-      'Confirmatory collection requires Research-Grade Mode.',
+      'Registered research collection requires Research-Grade Mode.',
     ),
     check(
       'independent-training',
@@ -138,6 +207,18 @@ export function evaluateResearchPreflight(
       parsedConfig.success && parsedArtifact.success && seedCount >= config.evaluationSeeds,
       'The artifact contains at least the declared number of unique seeds.',
       'The artifact does not contain the declared number of unique seeds.',
+    ),
+    check(
+      'registered-seed-bindings',
+      parsedConfig.success && config.seedBindings !== undefined,
+      'Scenario, per-role learner, Gateway, and analysis seeds are explicitly bound.',
+      'Registered research collection requires explicit component seed bindings.',
+    ),
+    check(
+      'registered-run-configuration',
+      runConfigurationRegistered,
+      'The realized condition, seed bindings, and stable RunConfig match the registered matrix.',
+      'The realized run must match one exact registered matrix entry.',
     ),
     check(
       'repository-clean',
@@ -176,13 +257,14 @@ export function evaluateResearchPreflight(
       'Artifact and RunConfig protocol commits do not match.',
     ),
     check(
-      'confirmatory-class',
+      'registration-class-matches',
       parsedConfig.success &&
         parsedArtifact.success &&
-        config.registrationClass === 'confirmatory' &&
-        artifact.registrationClass === 'confirmatory',
-      'Artifact and RunConfig are both labeled confirmatory.',
-      'Artifact and RunConfig must both be labeled confirmatory.',
+        config.registrationClass !== undefined &&
+        config.registrationClass === artifact.registrationClass &&
+        binding?.registrationClass === artifact.registrationClass,
+      'Artifact, RunConfig, and binding carry the same explicit registration class.',
+      'Artifact, RunConfig, and binding must carry the same explicit registration class.',
     ),
     check(
       'binding-valid',

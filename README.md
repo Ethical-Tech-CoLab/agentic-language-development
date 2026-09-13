@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.123 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.124 · 256/260 backlog acceptance criteria verified.
 
 Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
 
@@ -190,11 +190,13 @@ report under `reports/qualification/`. Those runs are **non-confirmatory softwar
 qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
-The committed E03 design simulation and seed manifest make the manuscript's
-power rule reproducible; the registration compiler produces canonical hashed
-artifacts and all primary/reserve run templates; and the research preflight
-blocks confirmatory execution until its immutable software, isolation, external
-registration, and confirmed pre-run simulated-commitment bindings agree.
+The committed E03 design simulation is an outcome-blind sensitivity check. The
+stage-aware registration compiler produces a canonical twenty-slot pilot packet
+with separated scenario, per-role learner, Gateway, and analysis seeds. It refuses
+to compile the full E03 qualification until a retained pilot decision selects a
+candidate seed count under the frozen 30,000-repetition rule. Research preflight
+then requires immutable registration and matching pre-run simulated-commitment
+bindings before either registered stage can execute.
 
 The frozen-LLM operator path also completed a real two-episode qualification
 against Qwen3-4B Q4_K_M through Homebrew llama.cpp 0.4.0. The retained
@@ -300,19 +302,26 @@ Registration audits require the repository's full Git history; shallow clones
 must fetch that history before running the consolidated suite. Plans and tickets
 are local, Git-ignored working documents and are not inputs to CI.
 
-Reproduce the historical E03 design calculation and its 75-primary/8-reserve draft,
-then exercise the preflight with:
+Reproduce the historical E03 design sensitivity calculation and compile the
+twenty-slot, zero-reserve pilot draft, then exercise the preflight with:
 
 ```bash
 pnpm run design:e03
-pnpm run registration:e03 --out evidence/preregistration/e03-v1-draft.json
+pnpm run registration:e03 --out evidence/preregistration/e03-pilot-v1-draft.json
 pnpm run preflight:research \
-  --registration evidence/preregistration/e03-v1-draft.json \
+  --registration evidence/preregistration/e03-pilot-v1-draft.json \
   --binding /absolute/path/repository-registration-and-commitment-binding.json
 ```
 
-This draft is a design demonstration. The current campaign still needs a blinded
-pilot and selected sample size before it can register an eligible E03 packet.
+This draft is a design demonstration. It is not executable until E02 passes and
+the pilot packet is immutably registered and simulation-committed. After that pilot,
+compile the full E03 qualification only with the retained sample-size decision:
+
+```bash
+pnpm run registration:e03 --stage full --primary-seeds <N> \
+  --sample-size-decision <retained-decision.json> \
+  --out evidence/preregistration/e03-full-v1-draft.json
+```
 Preflight also requires an unchanged packet in an ancestral Git commit and a
 matching pre-run simulated commitment; passing those identity checks alone does
 not satisfy the campaign's scientific prerequisites.

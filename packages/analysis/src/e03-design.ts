@@ -22,7 +22,7 @@ export const E03_DESIGN_SIMULATION_VERSION = 2;
 export const E03_DESIGN_REPETITIONS = 30_000;
 export const E03_DESIGN_MINIMUM_POWER = 0.9;
 export const E03_DESIGN_SEED = 'ald-e03-v1-design-check';
-export const E03_SEED_LABEL = 'ald-e03-v1';
+export const E03_SEED_ROOT = 'ald-seed-allocation-v1';
 
 export const E03_DESIGN_ROWS = [
   { maximumBetweenSeedSd: 0.05, primarySeeds: 25 },
@@ -39,6 +39,10 @@ export const E03_COMMUNICATION_CONDITIONS = [
   'normal',
   'oracle',
 ] as const;
+
+export type E03RegistrationStage = 'blinded-pilot' | 'full-qualification';
+export type E03CommunicationCondition =
+  (typeof E03_COMMUNICATION_CONDITIONS)[number];
 
 export interface E03DesignSimulationOptions {
   readonly repetitions?: number;
@@ -88,15 +92,20 @@ export interface E03SeedManifestEntry {
   readonly slot: number;
   readonly use: 'primary' | 'reserve';
   readonly scenarioSeed: string;
-  readonly gatewaySeeds: {
-    readonly random: string;
-    readonly shuffled: string;
-  };
+  readonly conditionSeeds: Record<E03CommunicationCondition, {
+    readonly babyA: string;
+    readonly babyB: string;
+    readonly gateway: string;
+    readonly analysis: string;
+  }>;
 }
 
 export interface E03SeedManifest {
-  readonly version: 1;
-  readonly seedLabel: typeof E03_SEED_LABEL;
+  readonly version: 2;
+  readonly claimBoundary: 'prospective-seed-allocation-only';
+  readonly seedRoot: typeof E03_SEED_ROOT;
+  readonly stage: E03RegistrationStage;
+  readonly seedDomain: 'blinded-pilot' | 'confirmatory';
   readonly primarySeeds: number;
   readonly reserveSeeds: number;
   readonly conditions: typeof E03_COMMUNICATION_CONDITIONS;
@@ -244,28 +253,51 @@ export function simulateE03DesignPower(
   };
 }
 
-export function buildE03SeedManifest(primarySeeds: number): E03SeedManifest {
+function seedCondition(condition: E03CommunicationCondition): string {
+  return condition === 'normal' ? 'normal-no-learning' : condition;
+}
+
+export function buildE03SeedManifest(
+  stage: E03RegistrationStage,
+  primarySeeds: number,
+): E03SeedManifest {
   positiveInteger(primarySeeds, 'primarySeeds');
-  const reserveSeeds = Math.ceil(primarySeeds * 0.1);
+  if (stage === 'blinded-pilot' && primarySeeds !== 20) {
+    throw new AnalysisError('domain', 'E03 blinded pilot requires exactly 20 primary slots');
+  }
+  const seedDomain = stage === 'blinded-pilot' ? 'blinded-pilot' : 'confirmatory';
+  const reserveSeeds = stage === 'blinded-pilot' ? 0 : Math.ceil(primarySeeds * 0.1);
   const entries = Array.from(
     { length: primarySeeds + reserveSeeds },
     (_, index): E03SeedManifestEntry => {
       const slot = index + 1;
-      const scenarioSeed = deriveSeedHex(E03_SEED_LABEL, String(slot));
+      const prefix = [E03_SEED_ROOT, seedDomain, 'E03'] as const;
+      const scenarioSeed = deriveSeedHex(...prefix, String(slot), 'scenario');
+      const conditionSeeds = Object.fromEntries(
+        E03_COMMUNICATION_CONDITIONS.map((condition) => {
+          const label = seedCondition(condition);
+          return [condition, {
+            babyA: deriveSeedHex(...prefix, label, String(slot), 'baby-a', 'learner'),
+            babyB: deriveSeedHex(...prefix, label, String(slot), 'baby-b', 'learner'),
+            gateway: deriveSeedHex(...prefix, label, String(slot), 'gateway'),
+            analysis: deriveSeedHex(...prefix, label, String(slot), 'analysis'),
+          }];
+        }),
+      ) as E03SeedManifestEntry['conditionSeeds'];
       return {
         slot,
         use: slot <= primarySeeds ? 'primary' : 'reserve',
         scenarioSeed,
-        gatewaySeeds: {
-          random: deriveSeedHex(scenarioSeed, 'random'),
-          shuffled: deriveSeedHex(scenarioSeed, 'shuffled'),
-        },
+        conditionSeeds,
       };
     },
   );
   return {
-    version: 1,
-    seedLabel: E03_SEED_LABEL,
+    version: 2,
+    claimBoundary: 'prospective-seed-allocation-only',
+    seedRoot: E03_SEED_ROOT,
+    stage,
+    seedDomain,
     primarySeeds,
     reserveSeeds,
     conditions: E03_COMMUNICATION_CONDITIONS,

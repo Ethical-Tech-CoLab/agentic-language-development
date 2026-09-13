@@ -1,6 +1,6 @@
 # Requirement Conformance Matrix
 
-Generated from repository sources for baseline `559436f` / matrix v0.1.123.
+Generated from repository sources for baseline `559436f` / matrix v0.1.124.
 
 This is a mapping and provisional-disposition artifact. A mapped file or test
 name is not by itself proof that the requirement is true. V04–V11 execution
@@ -10,7 +10,7 @@ receipts promote individual rows only after the named behavior is freshly checke
 
 | Population | Total | Provisionally mapped | Open/external | Not applicable |
 |---|---:|---:|---:|---:|
-| Backlog acceptance criteria | 258 | 254 | 4 | 0 |
+| Backlog acceptance criteria | 260 | 256 | 4 | 0 |
 | MUST-bearing source lines | 96 | 92 | 0 | 4 |
 
 ## Backlog acceptance criteria
@@ -262,13 +262,15 @@ receipts promote individual rows only after the named behavior is freshly checke
 | ALD-081.3 | checked | provisional-mapped | `.github/workflows/book-integrity.yml` | Required native dependency install scripts are explicitly allowlisted by exact package version. |
 | ALD-082.1 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | A fixed seed reproduces byte-identical 30,000-replicate design output. |
 | ALD-082.2 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | Every registered SD/sample-size row has a lower 95% Monte Carlo bound at or above the 90% power floor. |
-| ALD-082.3 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | The committed seed manifest deterministically derives separate scenario, random-control, and shuffled-control seeds without exposing realized confirmatory outcomes. |
+| ALD-082.3 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | The committed seed manifest derives disjoint pilot and full-stage scenario, |
 | ALD-083.1 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat. |
-| ALD-083.2 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | Run IDs, realized random seeds, execution bindings, and the pre-registration hash are excluded from the hashed parameter template. |
+| ALD-083.2 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | Run IDs, realized random and component seeds, condition assignments, and the |
 | ALD-083.3 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | Every primary and reserve condition configuration carries the same exact pre-registration hash. |
+| ALD-083.4 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | The compiler fixes a twenty-slot zero-reserve pilot and refuses a full E03 |
 | ALD-084.1 | checked | provisional-mapped | `packages/ops/__tests__/research-preflight.test.ts` | Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable ancestral commits, seed count, complete registration, and confirmed matching pre-run commitment. |
 | ALD-084.2 | checked | provisional-mapped | `packages/ops/__tests__/research-preflight.test.ts` | A missing repository-native/external registration, mismatched binding, or absent/incorrect commitment blocks confirmatory readiness. |
-| ALD-084.3 | checked | provisional-mapped | `packages/ops/__tests__/research-preflight.test.ts` | A passing preflight explicitly does not claim public-chain verification or scientific validity. |
+| ALD-084.3 | checked | provisional-mapped | `packages/ops/__tests__/research-preflight.test.ts` | A realized run whose stable configuration, stage, condition, or component |
+| ALD-084.4 | checked | provisional-mapped | `packages/ops/__tests__/research-preflight.test.ts` | A passing preflight explicitly does not claim public-chain verification or scientific validity. |
 | ALD-085.1 | checked | provisional-mapped | `packages/learners/__tests__/frozen-qualification.test.ts` | The report binds the exact weight-file hash, inference-runtime archive hash, model identity, quantization, software commit, and seed hash. |
 | ALD-085.2 | checked | provisional-mapped | `packages/learners/__tests__/frozen-qualification.test.ts` | At least two episodes exercise intention and interpretation in both Baby roles with tool-only conformance and no policy updates. |
 | ALD-085.3 | checked | provisional-mapped | `packages/learners/__tests__/frozen-qualification.test.ts` | The committed report is labeled non-confirmatory and omits prompts, observations, raw output, candidate references, and private ledger content. |

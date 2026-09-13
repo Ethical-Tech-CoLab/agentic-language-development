@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.123"
+    "version": "0.1.124"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -51,7 +51,9 @@
         "reproduces all four component rows above the 90% power floor",
         "is byte-for-byte deterministic for a fixed seed",
         "rejects malformed designs instead of emitting a power decision",
-        "derives the registered slots and ten-percent reserve deterministically"
+        "derives a zero-reserve twenty-slot pilot in the global stage domain",
+        "derives full component bindings and ten-percent ordered reserves",
+        "keeps pilot and full-qualification seed domains disjoint"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/analysis/__tests__/e03-design.test.ts"
     },
@@ -60,7 +62,8 @@
         "builds one canonical artifact and binds every condition/slot to its hash",
         "is byte-identical on repeat and changes hash when a registered field changes",
         "excludes realized run identity, seed, condition, and hash from the parameter template",
-        "fails closed on a non-research or mismatched seed-count base"
+        "fails closed on a non-research or mismatched seed-count base",
+        "requires a qualifying pilot decision before full qualification"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/analysis/__tests__/e03-registration.test.ts"
     },
@@ -1447,8 +1450,8 @@
   },
   "summary": {
     "backlogItems": 86,
-    "backlogCriteria": 258,
-    "checkedBacklogCriteria": 254,
+    "backlogCriteria": 260,
+    "checkedBacklogCriteria": 256,
     "openBacklogCriteria": 4,
     "normativeLines": 96,
     "mappedNormativeLines": 92,
@@ -4352,7 +4355,7 @@
     {
       "id": "ALD-082.3",
       "checked": true,
-      "statement": "The committed seed manifest deterministically derives separate scenario, random-control, and shuffled-control seeds without exposing realized confirmatory outcomes.",
+      "statement": "The committed seed manifest derives disjoint pilot and full-stage scenario,",
       "itemId": "ALD-082",
       "itemTitle": "Reproducible E03 design simulation and seed manifest",
       "disposition": "provisional-mapped",
@@ -4374,7 +4377,7 @@
     {
       "id": "ALD-083.2",
       "checked": true,
-      "statement": "Run IDs, realized random seeds, execution bindings, and the pre-registration hash are excluded from the hashed parameter template.",
+      "statement": "Run IDs, realized random and component seeds, condition assignments, and the",
       "itemId": "ALD-083",
       "itemTitle": "Canonical E03 registration compiler",
       "disposition": "provisional-mapped",
@@ -4386,6 +4389,17 @@
       "id": "ALD-083.3",
       "checked": true,
       "statement": "Every primary and reserve condition configuration carries the same exact pre-registration hash.",
+      "itemId": "ALD-083",
+      "itemTitle": "Canonical E03 registration compiler",
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/analysis/__tests__/e03-registration.test.ts"
+      ]
+    },
+    {
+      "id": "ALD-083.4",
+      "checked": true,
+      "statement": "The compiler fixes a twenty-slot zero-reserve pilot and refuses a full E03",
       "itemId": "ALD-083",
       "itemTitle": "Canonical E03 registration compiler",
       "disposition": "provisional-mapped",
@@ -4417,6 +4431,17 @@
     },
     {
       "id": "ALD-084.3",
+      "checked": true,
+      "statement": "A realized run whose stable configuration, stage, condition, or component",
+      "itemId": "ALD-084",
+      "itemTitle": "Fail-closed research preflight",
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/ops/__tests__/research-preflight.test.ts"
+      ]
+    },
+    {
+      "id": "ALD-084.4",
       "checked": true,
       "statement": "A passing preflight explicitly does not claim public-chain verification or scientific validity.",
       "itemId": "ALD-084",
