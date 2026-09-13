@@ -53,7 +53,12 @@ export interface E03ExecutionBinding {
     readonly path: string;
     readonly sha256: string;
   }[];
-  readonly rootBuildInputs: Readonly<Record<string, unknown>>;
+  readonly rootBuildInputs: {
+    readonly packageJsonSha256: string;
+    readonly lockfileSha256: string;
+    readonly sourceTreeSha256: string;
+    readonly buildCommand: 'pnpm build';
+  };
   readonly topology: {
     readonly mode: 'research-grade';
     readonly learnerContainersPerSlot: 2;
@@ -206,6 +211,10 @@ function assertExecutionBinding(binding: E03ExecutionBinding): void {
       (source) =>
         !safeRepositoryPath(source.path) || !SHA256_PATTERN.test(source.sha256),
     ) ||
+    !SHA256_PATTERN.test(binding.rootBuildInputs.packageJsonSha256) ||
+    !SHA256_PATTERN.test(binding.rootBuildInputs.lockfileSha256) ||
+    !SHA256_PATTERN.test(binding.rootBuildInputs.sourceTreeSha256) ||
+    binding.rootBuildInputs.buildCommand !== 'pnpm build' ||
     binding.topology.mode !== 'research-grade' ||
     binding.topology.learnerContainersPerSlot !== 2 ||
     binding.topology.nurseryContainersPerSlot !== 1 ||

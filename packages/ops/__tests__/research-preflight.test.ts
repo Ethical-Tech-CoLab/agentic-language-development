@@ -40,7 +40,12 @@ function registration() {
     executionBinding: {
       version: 1,
       sourceFiles: [{ path: 'packages/orchestrator/src/index.ts', sha256: hashed('source') }],
-      rootBuildInputs: { name: 'agentic-language-development', buildCommand: 'pnpm build' },
+      rootBuildInputs: {
+        packageJsonSha256: hashed('package-json'),
+        lockfileSha256: hashed('lockfile'),
+        sourceTreeSha256: hashed('source-tree'),
+        buildCommand: 'pnpm build',
+      },
       topology: {
         mode: 'research-grade', learnerContainersPerSlot: 2,
         nurseryContainersPerSlot: 1, maximumParallelSlots: 1,

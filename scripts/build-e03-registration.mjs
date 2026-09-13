@@ -86,12 +86,27 @@ const sourceFiles = await Promise.all(bindingSourcePaths.map(async (path) => ({
   path,
   sha256: sha256(await readFile(resolve(path))),
 })));
+const trackedSourcePaths = execFileSync('git', ['ls-files', '-z'], {
+  encoding: 'utf8',
+})
+  .split('\0')
+  .filter((path) =>
+    path.startsWith('packages/') ||
+    path.startsWith('twins/') ||
+    path.startsWith('deploy/') ||
+    path.startsWith('scripts/'),
+  );
+const sourceManifest = await Promise.all(trackedSourcePaths.map(async (path) =>
+  `${path}\t${sha256(await readFile(resolve(path)))}\n`,
+));
+sourceManifest.sort();
 const executionBinding = {
   version: 1,
   sourceFiles,
   rootBuildInputs: {
-    packageJson: sha256(await readFile('package.json')),
-    lockfile: sha256(await readFile('pnpm-lock.yaml')),
+    packageJsonSha256: sha256(await readFile('package.json')),
+    lockfileSha256: sha256(await readFile('pnpm-lock.yaml')),
+    sourceTreeSha256: sha256(Buffer.from(sourceManifest.join(''), 'utf8')),
     buildCommand: 'pnpm build',
   },
   topology: {

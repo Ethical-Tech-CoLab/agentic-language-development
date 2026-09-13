@@ -37,7 +37,12 @@ const input = {
   executionBinding: {
     version: 1,
     sourceFiles: [{ path: 'packages/orchestrator/src/index.ts', sha256: hash('source') }],
-    rootBuildInputs: { name: 'agentic-language-development', buildCommand: 'pnpm build' },
+    rootBuildInputs: {
+      packageJsonSha256: hash('package-json'),
+      lockfileSha256: hash('lockfile'),
+      sourceTreeSha256: hash('source-tree'),
+      buildCommand: 'pnpm build',
+    },
     topology: {
       mode: 'research-grade',
       learnerContainersPerSlot: 2,
