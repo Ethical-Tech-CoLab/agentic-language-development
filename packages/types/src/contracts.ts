@@ -669,7 +669,7 @@ export interface LearnerContract {
  * researcher-only ground truth and the other Baby's private seed, defeating
  * SPEC §4.3 ("deliver only the permitted observation"), §9.5, and §10.1.
  */
-export type LearnerVisibleRunConfig = Omit<RunConfig, 'randomSeed'>;
+export type LearnerVisibleRunConfig = Omit<RunConfig, 'randomSeed' | 'seedBindings'>;
 
 export interface LearnerInitContext {
   runId: string;

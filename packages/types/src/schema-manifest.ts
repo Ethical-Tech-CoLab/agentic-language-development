@@ -6,6 +6,7 @@
  */
 export const EXPECTED_SCHEMA_EXPORTS = [
   'RunConfigSchema',
+  'RunSeedBindingsSchema',
   'ObservationSchema',
   'AgentActionProposalSchema',
   'TurnProposalEnvelopeSchema',

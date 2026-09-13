@@ -192,11 +192,11 @@ export class SymbolGatewayImpl implements SymbolGateway {
    * SPEC §9.6 seeded control stream.
    *
    * RESEARCH.md Appendix D.4 binds condition randomness to
-   * `scenarioSeed || 0x00 || communicationCondition`. Here the run seed
-   * (`GatewayRunContext.seed`, derived by the runtime from
-   * `RunConfig.randomSeed`) plays the role of the scenario seed, and the
-   * `dtsf-seed-v1` PRNG's labelled `derive` chain plays the role of the
-   * `|| 0x00 ||` concatenation: `seed → 'gateway' → <condition>`. Per-turn
+   * `scenarioSeed || 0x00 || communicationCondition`. Registered research
+   * provides that condition-specific value as `GatewayRunContext.seed`;
+   * legacy or development configs use `RunConfig.randomSeed`. The
+   * `dtsf-seed-v1` PRNG's labelled `derive` chain then provides internal
+   * domain separation: `seed → 'gateway' → <condition>`. Per-turn
    * (`random`) and per-batch (`shuffled`) streams branch off that node, so a
    * replay from the same seed reproduces every substitution exactly
    * (SPEC §14.3).

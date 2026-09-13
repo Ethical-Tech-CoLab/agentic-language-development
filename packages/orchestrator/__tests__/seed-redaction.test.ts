@@ -64,7 +64,15 @@ describe('learner init context', () => {
     const config = buildRunConfig({
       runId: 'seed-redaction',
       experimentId: 'E03',
-      randomSeed: 'super-secret-run-seed',
+      randomSeed: '1'.repeat(64),
+      seedBindings: {
+        version: 1,
+        scenario: '1'.repeat(64),
+        babyA: '2'.repeat(64),
+        babyB: '3'.repeat(64),
+        gateway: '4'.repeat(64),
+        analysis: '5'.repeat(64),
+      },
       deploymentMode: 'prototype',
       babyA: { track: 'no-learning', modelRef: 'uniform-random-v1', trainingIsolation: 'independent' },
       babyB: { track: 'no-learning', modelRef: 'uniform-random-v1', trainingIsolation: 'independent' },
@@ -77,9 +85,13 @@ describe('learner init context', () => {
     expect(seen).toHaveLength(2);
     for (const context of seen) {
       expect('randomSeed' in context.config).toBe(false);
-      expect(JSON.stringify(context)).not.toContain('super-secret-run-seed');
-      expect(context.seed).not.toBe('super-secret-run-seed');
+      expect('seedBindings' in context.config).toBe(false);
+      expect(JSON.stringify(context.config)).not.toContain('1'.repeat(64));
+      expect(JSON.stringify(context.config)).not.toContain('4'.repeat(64));
+      expect(JSON.stringify(context.config)).not.toContain('5'.repeat(64));
     }
-    expect(seen[0]?.seed).not.toBe(seen[1]?.seed);
+    expect(new Set(seen.map((context) => context.seed))).toEqual(
+      new Set(['2'.repeat(64), '3'.repeat(64)]),
+    );
   });
 });

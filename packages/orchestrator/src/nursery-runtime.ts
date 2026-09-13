@@ -561,15 +561,17 @@ function rejectablePayload(value: unknown): TurnProposalEnvelope {
 
 /**
  * SPEC §4.3 / §9.5 / §10.1: the run configuration as a Learner may see it.
- * `randomSeed` is withheld — with the seed and the public Scenario Engine an
+ * `randomSeed` and the complete component seed binding are withheld — with
+ * those seeds and the public Scenario Engine an
  * adapter could regenerate researcher-only ground truth and the other Baby's
  * private seed, and the per-Baby seed the runtime derives from it is a
  * one-way derivation.
  */
 function learnerVisibleConfig(config: RunConfig): LearnerVisibleRunConfig {
-  // `void` marks the withheld field as deliberately unread.
-  const { randomSeed, ...visible } = config;
+  // `void` marks the withheld fields as deliberately unread.
+  const { randomSeed, seedBindings, ...visible } = config;
   void randomSeed;
+  void seedBindings;
   return visible;
 }
 
@@ -714,7 +716,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         runId,
         config: runConfig,
         symbolInventory,
-        seed: runConfig.randomSeed,
+        seed: runConfig.seedBindings?.gateway ?? runConfig.randomSeed,
       },
       writer,
     );
@@ -3459,7 +3461,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       learnerContract: contract,
       // §6.2: the per-Baby seed is private and is never shared with the
       // other Baby or with the Gateway.
-      seed: deriveSeedHex(run.config.randomSeed, role),
+      seed:
+        role === 'baby-a'
+          ? (run.config.seedBindings?.babyA ?? deriveSeedHex(run.config.randomSeed, role))
+          : (run.config.seedBindings?.babyB ?? deriveSeedHex(run.config.randomSeed, role)),
       symbolInventory: run.symbolInventory,
       ledger: new RuntimePrivateLedgerClient(
         run.writer,
@@ -3676,7 +3681,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       signers,
       lifecycle: new RunLifecycle(runId, state),
       gateway: new SymbolGatewayImpl(
-        { runId, config, symbolInventory, seed: config.randomSeed },
+        {
+          runId,
+          config,
+          symbolInventory,
+          seed: config.seedBindings?.gateway ?? config.randomSeed,
+        },
         writer,
       ),
       engine,

@@ -557,6 +557,34 @@ describe('missing and malformed input (ALD-023)', () => {
   });
 });
 
+describe('registered component seed bindings', () => {
+  const seeds = {
+    version: 1 as const,
+    scenario: '1'.repeat(64),
+    babyA: '2'.repeat(64),
+    babyB: '3'.repeat(64),
+    gateway: '4'.repeat(64),
+    analysis: '5'.repeat(64),
+  };
+
+  it('accepts five distinct bindings when the scenario binding is randomSeed', () => {
+    const config = buildRunConfig({ ...BASE, randomSeed: seeds.scenario, seedBindings: seeds });
+    expect(config.seedBindings).toEqual(seeds);
+  });
+
+  it('rejects a mismatched scenario binding and any reused component seed', () => {
+    expect(paths({
+      ...buildRunConfig(BASE),
+      seedBindings: seeds,
+    })).toContain('seedBindings.scenario');
+    expect(paths({
+      ...buildRunConfig(BASE),
+      randomSeed: seeds.scenario,
+      seedBindings: { ...seeds, gateway: seeds.babyA },
+    })).toContain('seedBindings');
+  });
+});
+
 describe('derived-run lineage fields are all-or-none (SPEC §11.1)', () => {
   const parent = buildRunConfig(BASE);
 

@@ -131,7 +131,8 @@ export function driftEvaluationTurns(
 
 /** Derived analysis seed for one run (see the module comment). */
 export function deriveInterventionSeed(config: RunConfig): string {
-  return deriveSeedHex(PROBE_SEED_DOMAIN, config.runId, config.randomSeed);
+  return config.seedBindings?.analysis ??
+    deriveSeedHex(PROBE_SEED_DOMAIN, config.runId, config.randomSeed);
 }
 
 /**

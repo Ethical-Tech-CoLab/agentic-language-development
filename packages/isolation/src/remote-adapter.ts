@@ -705,7 +705,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
  *
  * `LearnerInitContext.config` is typed as `LearnerVisibleRunConfig`, but a
  * caller holding a full `RunConfig` satisfies that type structurally and
- * `@ald/learners`' conformance harness passes exactly that. `randomSeed` is
+ * `@ald/learners`' conformance harness passes exactly that. Private seed fields are
  * therefore stripped here rather than assumed absent: with the run seed and
  * the public Scenario Engine, a host could regenerate researcher-only ground
  * truth and the other Baby's private seed. The host's own schema also rejects
@@ -716,7 +716,7 @@ function learnerVisibleWireConfig(
 ): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(config as Record<string, unknown>).filter(
-      ([key]) => key !== 'randomSeed',
+      ([key]) => key !== 'randomSeed' && key !== 'seedBindings',
     ),
   );
 }

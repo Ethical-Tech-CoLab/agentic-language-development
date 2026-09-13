@@ -160,6 +160,18 @@ const causalPredictionPlanSchema = z
   })
   .strict();
 
+/** Prospectively allocated, role-separated seeds for registered research runs. */
+export const RunSeedBindingsSchema = z
+  .object({
+    version: z.literal(1),
+    scenario: hashString,
+    babyA: hashString,
+    babyB: hashString,
+    gateway: hashString,
+    analysis: hashString,
+  })
+  .strict();
+
 export const RunConfigSchema = z
   .object({
     version: z.literal(1),
@@ -209,6 +221,7 @@ export const RunConfigSchema = z
     protocolGitCommit: nonEmptyString,
     preRegistrationHash: hashString,
     randomSeed: nonEmptyString,
+    seedBindings: RunSeedBindingsSchema.optional(),
     experimentId: z.string().regex(/^E\d{2}$/u),
     /** E16 comparator/native-predictor identities committed before run creation. */
     causalPredictionPlan: causalPredictionPlanSchema.optional(),
@@ -249,6 +262,30 @@ export const RunConfigSchema = z
         path: ['communicationCondition'],
         message: 'The oracle communication condition is restricted to E03',
       });
+    }
+
+    if (config.seedBindings !== undefined) {
+      if (config.seedBindings.scenario !== config.randomSeed) {
+        context.addIssue({
+          code: 'custom',
+          path: ['seedBindings', 'scenario'],
+          message: 'seedBindings.scenario must equal randomSeed',
+        });
+      }
+      const boundSeeds = [
+        config.seedBindings.scenario,
+        config.seedBindings.babyA,
+        config.seedBindings.babyB,
+        config.seedBindings.gateway,
+        config.seedBindings.analysis,
+      ];
+      if (new Set(boundSeeds).size !== boundSeeds.length) {
+        context.addIssue({
+          code: 'custom',
+          path: ['seedBindings'],
+          message: 'scenario, learner, Gateway, and analysis seeds must be distinct',
+        });
+      }
     }
 
     if (config.causalPredictionPlan !== undefined && config.experimentId !== 'E16') {

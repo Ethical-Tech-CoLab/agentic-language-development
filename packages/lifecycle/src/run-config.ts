@@ -416,6 +416,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     runId: overrides.runId,
     experimentId: overrides.experimentId,
     randomSeed: overrides.randomSeed,
+    ...(overrides.seedBindings === undefined
+      ? {}
+      : { seedBindings: overrides.seedBindings }),
     ...(overrides.parentRunId === undefined
       ? {}
       : { parentRunId: overrides.parentRunId }),

@@ -7,6 +7,27 @@ import { buildConformanceRunConfig } from '@ald/learners';
 import { HASH_DOMAINS } from '@ald/types';
 
 import { aggregateAcrossSeeds } from '../src/index.js';
+import { deriveInterventionSeed } from '../src/run-plan.js';
+
+it('uses the prospectively bound analysis seed when one is present', () => {
+  const config = buildConformanceRunConfig('no-learning', {
+    runId: 'bound-analysis-seed',
+    experimentId: 'E03',
+    seed: '1'.repeat(64),
+  });
+  const analysis = '5'.repeat(64);
+  expect(deriveInterventionSeed({
+    ...config,
+    seedBindings: {
+      version: 1,
+      scenario: '1'.repeat(64),
+      babyA: '2'.repeat(64),
+      babyB: '3'.repeat(64),
+      gateway: '4'.repeat(64),
+      analysis,
+    },
+  })).toBe(analysis);
+});
 
 describe('experiment readiness gates', () => {
   it('runs every E21 learner condition against the identical scenario configuration', () => {

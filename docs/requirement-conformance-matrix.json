@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.122"
+    "version": "0.1.123"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -489,6 +489,7 @@
     },
     "packages/interventions/__tests__/readiness-gates.test.ts": {
       "selectors": [
+        "uses the prospectively bound analysis seed when one is present",
         "runs every E21 learner condition against the identical scenario configuration",
         "creates E50 independent-seed children from one pre-registered parent and aggregates every seed"
       ],
@@ -806,6 +807,8 @@
         "reports each missing required field by path",
         "reports a nested learner field by dotted path",
         "rejects an unknown version",
+        "accepts five distinct bindings when the scenario binding is randomSeed",
+        "rejects a mismatched scenario binding and any reused component seed",
         "accepts a complete lineage record",
         "rejects a partial lineage record",
         "flags centralized training isolation without rejecting it",

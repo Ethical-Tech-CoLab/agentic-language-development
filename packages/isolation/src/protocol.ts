@@ -87,7 +87,7 @@ const roleSchema = z.enum(['baby-a', 'baby-b']);
 const hashSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/u);
 
 /**
- * `LearnerVisibleRunConfig` (`RunConfig` minus `randomSeed`, SPEC §6.2) as a
+ * `LearnerVisibleRunConfig` (`RunConfig` minus private seed material, SPEC §6.2) as a
  * schema.
  *
  * `RunConfigSchema` carries cross-field refinements, so zod v4 refuses
@@ -95,11 +95,13 @@ const hashSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/u);
  * are not re-run here on purpose: the runtime validated the whole
  * configuration before the run was created, and this boundary's job is to
  * refuse a *shape* that does not belong on the wire (an extra key, a wrong
- * type, or `randomSeed` itself, which a Baby must never receive).
+ * type, or any run/component seed, which a Baby must never receive).
  */
 const visibleConfigShape = Object.fromEntries(
-  Object.entries(RunConfigSchema.shape).filter(([key]) => key !== 'randomSeed'),
-) as Omit<typeof RunConfigSchema.shape, 'randomSeed'>;
+  Object.entries(RunConfigSchema.shape).filter(
+    ([key]) => key !== 'randomSeed' && key !== 'seedBindings',
+  ),
+) as Omit<typeof RunConfigSchema.shape, 'randomSeed' | 'seedBindings'>;
 
 export const LearnerVisibleRunConfigSchema = z.strictObject(visibleConfigShape);
 

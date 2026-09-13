@@ -41,12 +41,14 @@ import {
   LedgerEventSchema,
   ObservationSchema,
   RunConfigSchema,
+  RunSeedBindingsSchema,
   TurnProposalEnvelopeSchema,
   VerificationReportSchema,
 } from './schemas.js';
 
 export const schemaRegistry = {
   RunConfigSchema,
+  RunSeedBindingsSchema,
   ObservationSchema,
   AgentActionProposalSchema,
   TurnProposalEnvelopeSchema,
