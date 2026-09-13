@@ -14,8 +14,9 @@ ordinary two-container Mode R gates, with source and logs bound in the
 [v3 readiness qualification](../reports/research/e02-v3-readiness-qualification.md).
 The v3 packet is repository-registered under
 `sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248`.
-Its five identifiers and seeds are disjoint from v1/v2 and remain unused pending the
-matching simulated commitment and exact clean execution gate.
+Its five identifiers and seeds are disjoint from v1/v2. A matching deterministic
+simulated commitment records three confirmations and zero currency. The seeds remain
+unused pending the exact clean execution gate.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode

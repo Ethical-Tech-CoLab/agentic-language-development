@@ -10,7 +10,7 @@ type ScientificDisposition = 'not-tested' | 'supported' | 'not-supported' | 'inc
 interface ExperimentProgress {
   id: string;
   executionReadiness: { stage: ExecutionStage; decision: GateDecision; reasonCodes: string[] };
-  attempt: { status: AttemptStatus; planned: number | null; attempted: number; completed: number };
+  attempt: { version?: string; status: AttemptStatus; planned: number | null; attempted: number; completed: number };
   scientificDisposition: ScientificDisposition;
   evidence: Array<{ kind: string; path: string; statusAuthority: boolean }>;
 }
@@ -68,6 +68,9 @@ const attemptStatuses = new Set<AttemptStatus>(['not-started', 'running', 'compl
 const scientificDispositions = new Set<ScientificDisposition>(['not-tested', 'supported', 'not-supported', 'inconclusive']);
 for (const entry of review.experiments) {
   const { executionReadiness, attempt } = entry;
+  if (attempt.version !== undefined && !/^v[1-9][0-9]*$/u.test(attempt.version)) {
+    throw new Error(`${entry.id} has an invalid attempt version`);
+  }
   if (!executionStages.has(executionReadiness.stage) || !gateDecisions.has(executionReadiness.decision)) {
     throw new Error(`${entry.id} has an invalid execution-readiness state`);
   }

@@ -147,8 +147,10 @@ describe('current project status', () => {
     const directory = statusFixture();
     const target = join(directory, 'EXPERIMENT-NOTEBOOK.md');
     const original = readFileSync(target, 'utf8');
-    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Failed |',
-      '| E02 | Observation and metadata leakage audit | E00 | Running |'));
+    const changed = original.replace('| E02 | Observation and metadata leakage audit | E00 | Not started |',
+      '| E02 | Observation and metadata leakage audit | E00 | Running |');
+    expect(changed).not.toBe(original);
+    writeFileSync(target, changed);
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E02 notebook attempt/disposition contradicts the campaign progress record');

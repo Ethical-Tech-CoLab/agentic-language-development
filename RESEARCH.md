@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.118 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.119 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1188,8 +1188,9 @@ the separate all-method framed fault suite and raw logs are bound in the
 [pre-registration qualification](reports/research/e02-v3-readiness-qualification.md).
 The prospective v3 packet is now repository-registered under
 `sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248`
-with five seeds disjoint from v1/v2. It is not yet activated or executed, and this is
-not E02 completion or a behavioral claim.
+with five seeds disjoint from v1/v2. Its deterministic simulated commitment has
+three confirmations and zero currency. It is not yet executed, and this is not E02
+completion or a behavioral claim.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

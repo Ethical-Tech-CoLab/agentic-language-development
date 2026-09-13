@@ -39,8 +39,8 @@ to relabel any existing fixture as a pilot.
    turn-path methods and quarantines any timed-out remote adapter against late state
    mutation. Exact v0.1.115 passed the full repository gate, all framed deadline
    cases, and the ordinary two-container Mode R lifecycle. V3 still requires a
-   newly repository-registered packet with five fresh, unused seeds. A matching
-   simulated commitment and exact clean execution gate remain required.
+   newly repository-registered packet with five fresh, unused seeds and a matching
+   three-confirmation simulated commitment. The exact clean execution gate remains.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
@@ -78,7 +78,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | No | V2 failed after 161 recorded turns; v3 has a fresh registered packet and unused seeds, but still needs its matching commitment, exact preflight, five-slot execution, restore, and probes |
+| E02 | No | V2 failed after 161 recorded turns; v3 has a fresh registered packet, unused seeds, and simulated commitment, but still needs exact preflight, five-slot execution, restore, and probes |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |
