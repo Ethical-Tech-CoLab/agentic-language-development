@@ -1,6 +1,8 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: registered v1 attempt failed before restore and probe evaluation. E02 is not qualified.
+Status: registered v1 attempt failed before restore and probe evaluation. Its
+deadline defect is corrected and qualified as software on a committed development
+smoke. E02 itself is not qualified; fresh v2 registration and execution remain.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -79,12 +81,14 @@ said `executed`, but its empty `reports` array and absent restore record establi
 that evaluation was not reached. Future summaries derive that field from completed
 reports. The failed seed set remains consumed.
 
-Before another registered attempt, reproduce the timing boundary without study
-seeds. The current Mode R proxy pads turn-path calls to the 1,000 ms normalization
-deadline while the Nursery independently races the same call against a 1,000 ms
-response deadline. Any correction must preserve both the normalization requirement
-and the five-rejection safety pause. It requires a new prospective packet, binding,
-run identifiers, and seed root.
+The timing boundary was reproduced without study seeds. The prior Mode R proxy
+padded turn-path calls to the 1,000 ms normalization deadline while the Nursery
+independently raced the same call against that boundary. The correction makes the
+trusted normalized adapter the single deadline authority through remote work,
+parsing, policy synchronization, and fixed-schedule release. The Nursery retains
+its deadline for adapters without that authority. Genuine late completion and the
+five-rejection safety pause remain enforced. A new prospective packet, binding, run
+identifiers, and seed root are still required before another registered attempt.
 
 ### Reproducible design calculation
 
@@ -166,15 +170,16 @@ The host runner refuses dirty sources, changed build inputs, reused attempt root
 and overwritten receipts. Failed statistical probes remain in the five-slot decision;
 infrastructure failure stops with partial evidence retained and no replacement seed.
 
-The second Mode R smoke used the shared collector, ran ten real turns with an actual
-restore, and completed in 67.431 seconds. Both verifiers accepted 83 events, six
-checkpoints and one attachment. The separate in-process smoke had 84 events and
-also passed both verifiers. These are smoke counts, not leakage-test denominators.
-The resource report binds the original smoke JSON and preserves the distinction
-between Node process maxRSS, Nursery cgroup peak memory and unmeasured learner or
-host-side resource consumption.
+The committed-candidate Mode R smoke used the shared collector, ran ten real turns
+with an actual restore, and completed in 71.221 seconds. Both verifiers accepted its
+bundle. The two adapters reported zero timeouts and zero protocol violations; the
+SQLite channel record contains no timeout reason code. The separate in-process
+smoke also passed both verifiers. These are smoke observations, not leakage-test
+denominators. The resource report binds the committed-candidate JSON and preserves
+the distinction between Node process maxRSS, Nursery cgroup peak memory and
+unmeasured learner or host-side resource consumption.
 
-The planned schedule is serial, about 7.972 projected hours per slot including a
+The planned schedule is serial, about 8.397 projected hours per slot including a
 linear analysis/replay allowance, with a ten-hour Nursery-command timeout; the
 post-run audit is outside that wall timeout and inside the host CPU budget. Docker enforces
 512 MiB/one CPU per learner and 2 GiB/two CPUs for the Nursery, no swap allowance,
@@ -185,7 +190,7 @@ These estimates do not resolve the whole campaign's resource-allocation blocker.
 No response deadline is shortened to make the run cheaper.
 
 The resource envelope has a portable arithmetic/source check and an explicit live
-comparison with retained development evidence. The historical v1 sequence was:
+comparison with retained development evidence. The v2 sequence is:
 
 ```text
 pnpm run audit:e02-resources:live
@@ -197,9 +202,9 @@ pnpm run qualify:e02
 pnpm run audit:qualification-e02:live
 ```
 
-That sequence is no longer executable for v1 because the attempt consumed its seed
-set and failed. A source fix requires an explicit prospective amendment, never
-relabeling an observed slot or rerunning its seed to obtain a pass.
+The same sequence is no longer executable for v1 because the attempt consumed its
+seed set and failed. V2 uses new paths, identifiers, and seeds and preserves v1; no
+observed slot is relabeled or rerun to obtain a pass.
 
 The v1 packet binds all eleven classes to implementation commit
 `0fdcdb0ede7a332e7e82546e569e55e0bb17f155`, including the exact Rust binary.

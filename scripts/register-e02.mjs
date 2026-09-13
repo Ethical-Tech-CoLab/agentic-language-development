@@ -8,8 +8,16 @@ import { PreRegistrationBindingSchema } from '@ald/types';
 import { e02RootBuildInputs, validateE02SlotContract } from '../deploy/mode-r/e02-slot-contract.mjs';
 import { E02_REGISTERED_ROWS_PER_STAGE, E02_REGISTERED_ANALYSIS_VERSION, E02_PROBES, E02_LABELS } from '../deploy/mode-r/e02-observation-analysis.mjs';
 
-const packetPath = 'protocols/e02-registration.v1.json';
-const bindingPath = 'protocols/e02-registration-binding.v1.json';
+const targets = {
+  v1: {
+    packetPath: 'protocols/e02-registration.v1.json',
+    bindingPath: 'protocols/e02-registration-binding.v1.json',
+  },
+  v2: {
+    packetPath: 'protocols/e02-registration.v2.json',
+    bindingPath: 'protocols/e02-registration-binding.v2.json',
+  },
+};
 const resourcePath = 'reports/research/e02-resource-envelope.json';
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
@@ -19,7 +27,9 @@ const writeNew = (path, value) => {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
 };
 const mode = process.argv[2];
-assert.ok(process.argv.length === 3 && ['--compile', '--activate', '--check'].includes(mode));
+assert.ok(process.argv.length === 3 && ['--compile', '--activate', '--check', '--check-v1'].includes(mode));
+const target = mode === '--check-v1' ? targets.v1 : targets.v2;
+const { packetPath, bindingPath } = target;
 
 if (mode === '--compile') {
   assert.equal(git('status', '--porcelain'), '', 'compile from a clean implementation commit');
@@ -42,7 +52,7 @@ if (mode === '--compile') {
   ])].sort();
   const protocolBaseCommit = git('rev-parse', 'HEAD');
   const rootBuildInputs = e02RootBuildInputs(read('package.json'));
-  const seedRoot = 'ald-e02-observed-v1-prospective-qualification';
+  const seedRoot = 'ald-e02-observed-v2-prospective-qualification';
   const bindings = {
     protocolCard: { source: cardPath, sourceSha256: sha256(readFileSync(cardPath)), card },
     runConfigurations: [{ protocolBaseCommit, experimentId: 'E02', deploymentMode: 'research-grade',
@@ -56,7 +66,7 @@ if (mode === '--compile') {
       allSlotsRequired: true, estimator: '400-epoch linear softmax',
       split: 'seeded stratified 75/25 with per-class floor; independent by slot/role/stage/probe',
       baseline: 'untouched-test majority accuracy', permutations: 20, permutationRole: 'diagnostic only',
-      amendment: 'Prospectively supersedes the 800-turn provisional allocation; fixes rounding and improves conditional all-60 assurance without changing margins or feature membership.' },
+      amendment: 'Fresh post-failure qualification: preserves the v1 allocation, margins, estimator and features; changes deadline ownership, failure diagnostics, run identifiers and seeds prospectively. V1 remains failed.' },
     analysisVersions: sourcePaths.map((path) => ({ path, sha256: sha256(readFileSync(path)) })),
     modelAssets: { learner: 'two independently initialized tabular-reinforce-v1 learners',
       contractPath: 'contracts/learner-contract.scratch-rl.v1.md',
@@ -91,7 +101,7 @@ if (mode === '--compile') {
       inputsAndResults: 'checkpoint-bound signed attachments', independentBounds: 'R qnorm and direct Wilson formula',
       independentVerifier: 'release Rust auditor plus TypeScript verifier',
       modelReplayBoundary: 'same estimator implementation; no independent human review claim',
-      evidenceRoot: 'evidence/qualification/e02-v1', receiptPath: 'reports/research/e02-qualification-receipt.json' },
+      evidenceRoot: 'evidence/qualification/e02-v2', receiptPath: 'reports/research/e02-v2-qualification-receipt.json' },
   };
   const compiled = compileRegistrationPacket({ experimentId: 'E02', registrationClass: 'qualification', bindings });
   writeNew(packetPath, { artifact: compiled.artifact, preRegistrationHash: compiled.preRegistrationHash,
@@ -113,11 +123,11 @@ if (mode === '--compile') {
       transactionHash: tx.transactionHash, inputData: tx.inputData, blockNumber: receipt.blockNumber, status: 'confirmed' },
     label: 'E02 numeric observation software qualification; simulation is not independent public timestamping' });
   for (const expected of packet.artifact.bindings.find((entry) => entry.key === 'selectedSeedPrefix').content.primary) {
-    validateE02SlotContract(packet, binding, expected.slot, expected.scenario);
+    validateE02SlotContract(packet, binding, expected.slot, expected.scenario, packetPath);
   }
   if (mode === '--activate') {
     assert.equal(git('status', '--porcelain'), '', 'activate a committed packet');
     writeNew(bindingPath, binding);
   } else assert.deepEqual(read(bindingPath), binding);
 }
-console.log(`E02 registration ${mode.slice(2)} complete`);
+console.log(`E02 ${mode === '--check-v1' ? 'v1 historical check' : 'v2 registration ' + mode.slice(2)} complete`);

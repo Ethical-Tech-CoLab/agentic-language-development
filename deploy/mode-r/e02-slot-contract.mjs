@@ -14,7 +14,7 @@ export function e02RootBuildInputs(packageJson) {
 
 // A second boundary inside the container; the host also verifies Git ancestry
 // and every frozen source before starting any registered learner observation.
-export function validateE02SlotContract(packet, candidate, slot, seed) {
+export function validateE02SlotContract(packet, candidate, slot, seed, packetPath) {
   assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= 5);
   assert.match(seed, /^[a-f0-9]{64}$/u);
   assert.equal(packet.artifact.experimentId, 'E02');
@@ -39,7 +39,8 @@ export function validateE02SlotContract(packet, candidate, slot, seed) {
   assert.equal(binding.registrationClass, 'qualification');
   assert.equal(binding.registrationAuthority, 'repository-native');
   assert.equal(binding.preRegistrationHash, packet.preRegistrationHash);
-  assert.equal(binding.repositoryRegistration.path, 'protocols/e02-registration.v1.json');
+  assert.match(packetPath, /^protocols\/e02-registration\.v[12]\.json$/u);
+  assert.equal(binding.repositoryRegistration.path, packetPath);
   assert.equal(binding.repositoryRegistration.artifactSha256, packet.preRegistrationHash);
   assert.equal(binding.preRunAnchor.anchorClass, 'simulated');
   assert.equal(binding.preRunAnchor.network, 'base-sepolia');

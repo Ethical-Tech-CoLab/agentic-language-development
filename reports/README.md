@@ -33,8 +33,8 @@ closure checks. Its read-only upstream observation records that required-check
 enforcement is not demonstrated; the zero-spend profile ledger is ready at 1/1
 applicable item and does not treat a receipt path as external approval.
 The data/claim manifest inventories every locally captured export by content hash and
-claim boundary. Its frozen cutoff resolves 139 bundles while keeping all 139 excluded
-from empirical use and distinguishing 91 local simulated confirmations from zero
+claim boundary. Its frozen cutoff resolves 140 bundles while keeping all 140 excluded
+from empirical use and distinguishing 92 local simulated confirmations from zero
 confirmed public-chain anchors.
 The audit-cost/utility protocol and receipt compare a declared ordinary-log proxy,
 actual signed streams, integrity structures, policy state, whole-input hashing, and

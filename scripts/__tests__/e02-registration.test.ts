@@ -20,7 +20,7 @@ function fixture() {
   const packet = { artifact: compiled.artifact, preRegistrationHash: compiled.preRegistrationHash, researchFinding: false };
   const binding = JSON.parse(readFileSync('protocols/e01-registration-binding.v2.json', 'utf8'));
   binding.preRegistrationHash = packet.preRegistrationHash;
-  binding.repositoryRegistration.path = 'protocols/e02-registration.v1.json';
+  binding.repositoryRegistration.path = 'protocols/e02-registration.v2.json';
   binding.repositoryRegistration.artifactSha256 = packet.preRegistrationHash;
   binding.preRunAnchor.inputData = `0x${packet.preRegistrationHash.slice(7)}`;
   binding.label = 'Synthetic E02 unit-test binding; not a registration';
@@ -42,7 +42,7 @@ describe('E02 prospective container contract', () => {
   });
   it('accepts the exact slot, seed, source-packet hash, class and simulated binding', () => {
     const { packet, binding } = fixture();
-    expect(validateE02SlotContract(packet, binding, 1, seed)).toEqual(binding);
+    expect(validateE02SlotContract(packet, binding, 1, seed, 'protocols/e02-registration.v2.json')).toEqual(binding);
   });
   const mutations = [
     ['wrong experiment', (p: any) => { p.artifact.experimentId = 'E01'; }],
@@ -61,13 +61,13 @@ describe('E02 prospective container contract', () => {
   it.each(mutations)('rejects %s', (_label, mutate) => {
     const { packet, binding } = fixture();
     mutate(packet, binding);
-    expect(() => validateE02SlotContract(packet, binding, 1, seed)).toThrow();
+    expect(() => validateE02SlotContract(packet, binding, 1, seed, 'protocols/e02-registration.v2.json')).toThrow();
   });
   it('does not allow a different seed or out-of-range slot', () => {
     const { packet, binding } = fixture();
-    expect(() => validateE02SlotContract(packet, binding, 1, '9'.repeat(64))).toThrow();
-    expect(() => validateE02SlotContract(packet, binding, 0, seed)).toThrow();
-    expect(() => validateE02SlotContract(packet, binding, 6, seed)).toThrow();
+    expect(() => validateE02SlotContract(packet, binding, 1, '9'.repeat(64), 'protocols/e02-registration.v2.json')).toThrow();
+    expect(() => validateE02SlotContract(packet, binding, 0, seed, 'protocols/e02-registration.v2.json')).toThrow();
+    expect(() => validateE02SlotContract(packet, binding, 6, seed, 'protocols/e02-registration.v2.json')).toThrow();
   });
   it('does not promote a development profile or run a registered profile in-process', async () => {
     const { binding } = fixture();

@@ -6,10 +6,10 @@ import { join, resolve } from 'node:path';
 import { auditE02Observations } from '../deploy/mode-r/audit-e02-observations.mjs';
 import { e02RootBuildInputs, validateE02SlotContract } from '../deploy/mode-r/e02-slot-contract.mjs';
 
-const evidenceRoot = 'evidence/qualification/e02-v1';
-const receiptPath = 'reports/research/e02-qualification-receipt.json';
-const packetPath = 'protocols/e02-registration.v1.json';
-const bindingPath = 'protocols/e02-registration-binding.v1.json';
+const evidenceRoot = 'evidence/qualification/e02-v2';
+const receiptPath = 'reports/research/e02-v2-qualification-receipt.json';
+const packetPath = 'protocols/e02-registration.v2.json';
+const bindingPath = 'protocols/e02-registration-binding.v2.json';
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
@@ -23,10 +23,10 @@ const packet = read(packetPath), binding = read(bindingPath);
 const bindings = Object.fromEntries(packet.artifact.bindings.map((entry) => [entry.key, entry.content]));
 const seeds = bindings.selectedSeedPrefix.primary;
 assert.equal(seeds.length, 5);
-for (const expected of seeds) validateE02SlotContract(packet, binding, expected.slot, expected.scenario);
+for (const expected of seeds) validateE02SlotContract(packet, binding, expected.slot, expected.scenario, packetPath);
 
 async function checkSlot(expected, executionCommit) {
-  const directory = join(evidenceRoot, `registered-e02-${expected.slot}`);
+  const directory = join(evidenceRoot, `registered-e02-v2-${expected.slot}`);
   const checked = await auditE02Observations(directory, { slot: expected.slot, seed: expected.scenario, executionCommit, binding,
     rustPath: resolve(evidenceRoot, 'ald-integrity-auditor'), rustSha256: bindings.executionHost.rustAuditorSha256 });
   const output = read(join(directory, 'slot.json'));
@@ -53,7 +53,7 @@ if (mode === '--audit') {
   assert.deepEqual(receipt.slots, slots);
   assert.equal(new Set(slots.flatMap((slot) => slot.containerIds)).size, 10);
   assert.equal(receipt.passed, slots.every((slot) => slot.passed));
-  console.log(`E02 original five-slot audit complete; qualification ${receipt.passed ? 'passed' : 'failed'}`);
+  console.log(`E02 v2 five-slot audit complete; qualification ${receipt.passed ? 'passed' : 'failed'}`);
   if (!receipt.passed) process.exitCode = 1;
 } else {
   assert.equal(git('status', '--porcelain'), '', 'registered execution requires a clean commit');
@@ -81,7 +81,7 @@ if (mode === '--audit') {
   const environment = { ...process.env, ALD_SOFTWARE_COMMIT: executionCommit, ALD_LEARNER_TRACK: 'scratch-rl',
     ALD_MODE_R_NURSERY_UID: String(process.getuid()), ALD_MODE_R_NURSERY_GID: String(process.getgid()),
     ALD_MODE_R_EVIDENCE_DIR: resolve(evidenceRoot) };
-  const compose = ['compose', '--project-name', 'ald-e02-qualified', '--file', 'deploy/mode-r/docker-compose.yml',
+  const compose = ['compose', '--project-name', 'ald-e02-v2-qualified', '--file', 'deploy/mode-r/docker-compose.yml',
     '--file', 'deploy/mode-r/docker-compose.e02.yml'];
   const command = (args) => {
     const result = spawnSync('docker', args, { env: environment, encoding: 'utf8', timeout: 600000, maxBuffer: 8 * 1024 * 1024 });
@@ -100,7 +100,7 @@ if (mode === '--audit') {
       command([...compose, 'up', '--detach', '--force-recreate', 'baby-a', 'baby-b']);
       const log = createWriteStream(join(evidenceRoot, `slot-${expected.slot}.log`), { flags: 'wx' });
       const status = await new Promise((resolveStatus, reject) => {
-        const child = spawn('docker', [...compose, 'run', '--rm', '--no-deps', '--name', 'ald-e02-qualified-nursery',
+        const child = spawn('docker', [...compose, 'run', '--rm', '--no-deps', '--name', 'ald-e02-v2-qualified-nursery',
           '--entrypoint', '/usr/local/bin/node', 'nursery-study', '--max-old-space-size=1536',
           '/app/deploy/mode-r/run-e02-slot.mjs', String(expected.slot), expected.scenario, executionCommit],
         { env: environment, signal: abort.signal, timeout: 10 * 60 * 60 * 1000 });
@@ -109,7 +109,7 @@ if (mode === '--audit') {
         child.once('close', (code) => log.end(() => resolveStatus(code)));
         log.once('error', reject);
       });
-      const outputPath = join(evidenceRoot, `registered-e02-${expected.slot}`, 'slot.json');
+      const outputPath = join(evidenceRoot, `registered-e02-v2-${expected.slot}`, 'slot.json');
       assert.ok(existsSync(outputPath), 'infrastructure failure; partial evidence and log retained');
       const checked = await checkSlot(expected, executionCommit);
       assert.ok(status === 0 || (status === 1 && !checked.passed), 'process status contradicts audited slot');
@@ -122,8 +122,8 @@ if (mode === '--audit') {
   finally {
     // A timed-out Docker client can leave its one-off container alive. Stop only
     // this experiment's exact named container before removing its owned topology.
-    if (spawnSync('docker', ['inspect', 'ald-e02-qualified-nursery'], { stdio: 'ignore' }).status === 0) {
-      try { command(['stop', '--time', '30', 'ald-e02-qualified-nursery']); }
+    if (spawnSync('docker', ['inspect', 'ald-e02-v2-qualified-nursery'], { stdio: 'ignore' }).status === 0) {
+      try { command(['stop', '--time', '30', 'ald-e02-v2-qualified-nursery']); }
       catch (error) { failure = `${failure ?? ''} stop failed: ${error.message}`; }
     }
     try { command([...compose, 'down', '--remove-orphans']); }

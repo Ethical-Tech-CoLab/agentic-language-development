@@ -26,7 +26,7 @@ export async function auditE02Observations(directory, expected) {
     assert.equal(evidence.seed, expected.seed);
     assert.equal(evidence.softwareCommit, expected.executionCommit);
     assert.equal(evidence.registrationHash, expected.binding.preRegistrationHash);
-    assert.equal(evidence.runId, `registered-e02-${expected.slot}`);
+    assert.equal(evidence.runId, `registered-e02-v2-${expected.slot}`);
     assert.equal(evidence.mode, 'research-grade');
     assert.deepEqual(evidence.topology.map((entry) => entry.stage), ['before-restore', 'after-restore']);
     for (const entry of evidence.topology) {
