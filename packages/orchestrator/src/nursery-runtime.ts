@@ -1393,10 +1393,25 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         if (error instanceof TurnDeadlineExceededError) {
           throw error;
         }
+        if (
+          error !== null &&
+          typeof error === 'object' &&
+          'failureClass' in error &&
+          error.failureClass === 'adapter-timeout'
+        ) {
+          throw new TurnDeadlineExceededError(run.config.turnResponseBudgetMs);
+        }
         lastError = error;
       }
     }
     throw new AdapterFailureError(role, method, attempts, lastError);
+  }
+
+  #awaitTurnResponse<T>(run: RunRuntime, role: BabyRole, response: Promise<T>): Promise<T> {
+    const authority = run.adapters[role].isolation?.turnDeadlineAuthority;
+    return authority === 'adapter'
+      ? response
+      : run.gateway.withTurnDeadline(response, run.config.turnResponseBudgetMs);
   }
 
   /**
@@ -2361,14 +2376,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let envelope: TurnProposalEnvelope;
     try {
       envelope = await this.#callAdapter(run, sender, 'act', () =>
-        run.gateway.withTurnDeadline(
+        this.#awaitTurnResponse(
+          run,
+          sender,
           run.adapters[sender].act({
             turn: turnContext.turn,
             role: 'sender',
             responseBudgetMs: run.config.turnResponseBudgetMs,
             availableActions: [...run.gateway.carrierProtocol.allowedKinds],
           }),
-          run.config.turnResponseBudgetMs,
         ),
       );
     } catch (error) {
@@ -2431,7 +2447,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let envelope: TurnProposalEnvelope;
     try {
       envelope = await this.#callAdapter(run, receiver, 'act', () =>
-        run.gateway.withTurnDeadline(
+        this.#awaitTurnResponse(
+          run,
+          receiver,
           adapter.act({
             turn: turnContext.turn,
             role: 'receiver',
@@ -2439,7 +2457,6 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
             availableActions: ['select_object'],
             candidateRefs: instance.candidateRefs,
           }),
-          run.config.turnResponseBudgetMs,
         ),
       );
     } catch (error) {
@@ -2559,14 +2576,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           // boundary, so a malformed one becomes a committed rejection rather
           // than a `TypeError` escaping `step()` with no turn record.
           return this.#callAdapter(run, slotSender, 'act', async () => {
-            const value: unknown = await run.gateway.withTurnDeadline(
+            const value: unknown = await this.#awaitTurnResponse(
+              run,
+              slotSender,
               run.adapters[slotSender].act({
                 turn: slotTurn,
                 role: 'sender',
                 responseBudgetMs: run.config.turnResponseBudgetMs,
                 availableActions: [...run.gateway.carrierProtocol.allowedKinds],
               }),
-              run.config.turnResponseBudgetMs,
             );
             const parsed = TurnProposalEnvelopeSchema.safeParse(value);
             return parsed.success
@@ -3937,6 +3955,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           path: `deploymentMode.${role}.timingNormalization`,
           message:
             'research-grade mode requires normalized turn timing (SPEC §5.3)',
+        });
+      }
+      if (descriptor?.turnDeadlineAuthority !== 'adapter') {
+        roleErrors.push({
+          path: `deploymentMode.${role}.turnDeadlineAuthority`,
+          message:
+            'research-grade mode requires one adapter-owned turn deadline (SPEC §8.3, §10.3)',
         });
       }
       if (initialized && descriptor?.containerId === undefined) {

@@ -513,6 +513,8 @@ export interface IsolationDescriptor {
   boundary: IsolationBoundary;
   /** Runtime-side turn scheduling policy; Mode R requires `normalized`. */
   timingNormalization?: 'immediate' | 'normalized';
+  /** Which trusted boundary makes the response-deadline decision. */
+  turnDeadlineAuthority?: 'runtime' | 'adapter';
   processId?: number;
   containerId?: string;
   /** Free-form operator label (host name, compose service); never Baby-visible. */

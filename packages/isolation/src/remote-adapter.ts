@@ -183,6 +183,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     this.descriptor = {
       boundary: options.transport.boundary,
       timingNormalization: this.timing,
+      turnDeadlineAuthority: this.timing === 'normalized' ? 'adapter' : 'runtime',
       ...(processId === undefined ? {} : { processId }),
       ...(options.transport.hostLabel === undefined
         ? {}
@@ -270,7 +271,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
   }
 
   async observe(observation: Observation): Promise<void> {
-    const result = await this.call(
+    await this.call(
       'observe',
       {
         runId: observation.runId,
@@ -281,8 +282,8 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
         scenarioRef: observation.scenarioRef,
       },
       (raw) => PolicyStateResultSchema.parse(raw),
+      (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'observe', deadlineAt),
     );
-    await this.syncPolicy(result.policyDigest, 'observe');
   }
 
   async act(budget: TurnBudget): Promise<TurnProposalEnvelope> {
@@ -299,8 +300,8 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
         ...(budget.window === undefined ? {} : { window: budget.window }),
       },
       (raw) => EnvelopeResultSchema.parse(raw),
+      (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'act', deadlineAt),
     );
-    await this.syncPolicy(result.policyDigest, 'act');
     // Verbatim: judging the envelope is the Gateway's job (SPEC §9.4).
     return result.envelope as TurnProposalEnvelope;
   }
@@ -317,18 +318,18 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
         channelEventHash: delivery.channelEventHash,
       },
       (raw) => EnvelopeResultSchema.parse(raw),
+      (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'receive', deadlineAt),
     );
-    await this.syncPolicy(result.policyDigest, 'receive');
     return result.envelope as LedgerDraftEnvelope;
   }
 
   async onOutcome(outcome: OutcomeEvent): Promise<void> {
-    const result = await this.call(
+    await this.call(
       'on_outcome',
       outcomeToWire(outcome),
       (raw) => PolicyStateResultSchema.parse(raw),
+      (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'on_outcome', deadlineAt),
     );
-    await this.syncPolicy(result.policyDigest, 'on_outcome');
   }
 
   /**
@@ -431,28 +432,30 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
               learningSignal: batch.learningSignal,
             },
             (raw) => CheckpointResultSchema.parse(raw),
+            (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'update_policy', deadlineAt),
           );
-          await this.syncPolicy(result.policyDigest, 'update_policy');
           return result.checkpoint;
         };
         return;
       case 'measureAffect':
         this.measureAffect = async (): Promise<AffectStateMeasurement> => {
-          const result = await this.call('measure_affect', {}, (raw) =>
-            MeasureAffectResultSchema.parse(raw),
+          const result = await this.call(
+            'measure_affect',
+            {},
+            (raw) => MeasureAffectResultSchema.parse(raw),
+            (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'measure_affect', deadlineAt),
           );
-          await this.syncPolicy(result.policyDigest, 'measure_affect');
           return result.measurement;
         };
         return;
       case 'applyCurriculumStage':
         this.applyCurriculumStage = async (stage: CurriculumStage): Promise<void> => {
-          const result = await this.call(
+          await this.call(
             'apply_curriculum_stage',
             { stage },
             (raw) => PolicyStateResultSchema.parse(raw),
+            (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'apply_curriculum_stage', deadlineAt),
           );
-          await this.syncPolicy(result.policyDigest, 'apply_curriculum_stage');
         };
         return;
       case 'describeProvenance':
@@ -526,6 +529,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     method: HostMethod,
     params: unknown,
     parse: (raw: unknown) => T,
+    beforeRelease?: (value: T, deadlineAt: number | undefined) => Promise<void>,
   ): Promise<T> {
     const connection = this.requireConnection(method);
     const deadlineMs = this.deadline();
@@ -533,12 +537,22 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     const startedAt = this.timer.now();
     this.diagnostics.calls += 1;
     try {
-      const raw = await connection.request(method, params, deadlineMs);
+      const raw = await connection.request(
+        method,
+        params,
+        this.remainingDeadline(deadlineMs, normalize ? startedAt + deadlineMs : undefined, method),
+      );
+      let value: T;
       try {
-        return parse(raw);
+        value = parse(raw);
       } catch (cause) {
         throw new IsolationError('protocol-violation', { method, cause });
       }
+      await beforeRelease?.(value, normalize ? startedAt + deadlineMs : undefined);
+      if (normalize && this.timer.now() > startedAt + deadlineMs) {
+        throw new IsolationError('deadline-exceeded', { method });
+      }
+      return value;
     } catch (error) {
       if (error instanceof IsolationError) {
         if (error.code === 'deadline-exceeded') {
@@ -550,7 +564,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
       throw error;
     } finally {
       if (normalize) {
-        await this.padToDeadline(startedAt, deadlineMs);
+        await this.padToDeadline(startedAt + deadlineMs);
       }
     }
   }
@@ -560,15 +574,31 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
    *
    * This is the timing half of SPEC §10.3: an accepted turn, a turn the host
    * refused, and a turn the host never answered all return to the caller at
-   * the same point on the schedule.
+   * the same point on the schedule. The adapter owns that one deadline in
+   * normalized mode; the Nursery must not race a second timer at the same tick.
    */
-  private async padToDeadline(startedAt: number, deadlineMs: number): Promise<void> {
-    const remaining = deadlineMs - (this.timer.now() - startedAt);
+  private async padToDeadline(deadlineAt: number): Promise<void> {
+    const remaining = deadlineAt - this.timer.now();
     if (remaining <= 0) {
       return;
     }
     this.diagnostics.paddedCalls += 1;
     await this.timer.delay(remaining).promise;
+  }
+
+  private remainingDeadline(
+    fallbackMs: number,
+    deadlineAt: number | undefined,
+    method: HostMethod,
+  ): number {
+    if (deadlineAt === undefined) {
+      return fallbackMs;
+    }
+    const remaining = deadlineAt - this.timer.now();
+    if (remaining <= 0) {
+      throw new IsolationError('deadline-exceeded', { method });
+    }
+    return remaining;
   }
 
   /**
@@ -579,12 +609,20 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
    * the host's and this raises `protocol-violation` instead of silently
    * checkpointing a different object than the host holds.
    */
-  private async syncPolicy(digest: Sha256Hash, method: HostMethod): Promise<void> {
+  private async syncPolicy(
+    digest: Sha256Hash,
+    method: HostMethod,
+    deadlineAt?: number,
+  ): Promise<void> {
     if (this.policy?.digest === digest) {
       return;
     }
     const connection = this.requireConnection('export_policy');
-    const raw = await connection.request('export_policy', {}, this.deadline());
+    const raw = await connection.request(
+      'export_policy',
+      {},
+      this.remainingDeadline(this.deadline(), deadlineAt, 'export_policy'),
+    );
     let result: { policy: unknown; policyDigest: Sha256Hash };
     try {
       result = ExportPolicyResultSchema.parse(raw);
@@ -684,6 +722,9 @@ function mergeDescriptor(
     ...(local.timingNormalization === undefined
       ? {}
       : { timingNormalization: local.timingNormalization }),
+    ...(local.turnDeadlineAuthority === undefined
+      ? {}
+      : { turnDeadlineAuthority: local.turnDeadlineAuthority }),
     ...(processId === undefined ? {} : { processId }),
     ...(reported.containerId === undefined
       ? {}

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "attemptVersion": "v1",
+  "classification": "supplemental-failure-evidence",
+  "researchFinding": false,
+  "historicalEvidenceModified": false,
+  "attemptStatus": "failed",
+  "scientificDisposition": "not-tested",
+  "registrationHash": "sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413",
+  "executionCommit": "895d59a90b66cf74603d58f1962c58f98e29dfb9",
+  "startedAt": "2026-09-13T14:16:52.445Z",
+  "plannedSlots": 5,
+  "attemptedSlots": 1,
+  "completedSlots": 0,
+  "unattemptedSlots": 4,
+  "progress": {
+    "runId": "registered-e02-1",
+    "committedTurns": 465,
+    "lastCommittedTurnIndex": 464,
+    "deliveredAdapterObservations": 930,
+    "checkpointManifests": 3,
+    "completedProbeReports": 0,
+    "restoreCompleted": false,
+    "finalExportCompleted": false
+  },
+  "terminalCause": {
+    "stage": "collection",
+    "eventType": "safety-trigger",
+    "actorId": "symbol-gateway",
+    "reasonCode": "max-consecutive-rejections",
+    "lastReasonCode": "timeout",
+    "consecutiveRejections": 5,
+    "maximumConsecutiveRejections": 5,
+    "recordedAt": "2026-09-13T15:08:37.160Z"
+  },
+  "collectorFailure": {
+    "relationship": "secondary-after-safety-pause",
+    "message": "RunNotAcceptingTurnsError: run \"registered-e02-1\" does not accept turns in state \"paused\" (SPECIFICATION.md §7.1, §7.3)"
+  },
+  "resourceObservation": {
+    "wallMilliseconds": 3041728.65994,
+    "processUserCpuMicroseconds": 14769434,
+    "processSystemCpuMicroseconds": 2887516,
+    "processMaximumResidentSetKiB": 175384,
+    "containerResourceUsageCaptured": false
+  },
+  "trackedArtifacts": [
+    {
+      "path": "protocols/e02-registration.v1.json",
+      "bytes": 67917,
+      "sha256": "16f8a874980e470ca09f4eff00470dccb5125fdd490412665fca57e344184f6c"
+    },
+    {
+      "path": "protocols/e02-registration-binding.v1.json",
+      "bytes": 928,
+      "sha256": "1de85c3944223708f6db7737fe517354e5776ea21c50919cdc64de8cd737311c"
+    },
+    {
+      "path": "reports/research/e02-qualification-receipt.json",
+      "bytes": 889,
+      "sha256": "fbf6da8e335298be6b079c0e094c084229f3731363498584bda326a1d87dea3b"
+    }
+  ],
+  "retainedRawArtifacts": [
+    {
+      "path": "evidence/qualification/e02-v1/attempt.json",
+      "bytes": 826,
+      "sha256": "9955d2333cf6efa11689e7c64b284061e812ffdc9bb5e18a5d3928019cf4c861"
+    },
+    {
+      "path": "evidence/qualification/e02-v1/registration-packet.json",
+      "bytes": 67917,
+      "sha256": "16f8a874980e470ca09f4eff00470dccb5125fdd490412665fca57e344184f6c"
+    },
+    {
+      "path": "evidence/qualification/e02-v1/registration-binding.json",
+      "bytes": 928,
+      "sha256": "1de85c3944223708f6db7737fe517354e5776ea21c50919cdc64de8cd737311c"
+    },
+    {
+      "path": "evidence/qualification/e02-v1/registered-e02-1/slot.json",
+      "bytes": 752343,
+      "sha256": "13e62242c03188fdff498c1d1d2c3089bea805bd083c0ada4a674d6305e411f0"
+    },
+    {
+      "path": "evidence/qualification/e02-v1/registered-e02-1/evidence.sqlite",
+      "bytes": 4939776,
+      "sha256": "af6a66cb6036770bacc10d0521a2eb22124136f20a0b2807d62fb9ae6bc0e878"
+    },
+    {
+      "path": "evidence/qualification/e02-v1/slot-1.log",
+      "bytes": 246,
+      "sha256": "b72573a61c8033bae526f9397cdff8e11777820e2f6ed2191de7effb017e8903"
+    }
+  ],
+  "databaseCounts": {
+    "channel_events": 574,
+    "checkpoint_manifests": 3,
+    "experiment_records": 1,
+    "intervention_log": 2,
+    "ledger_events": 1270,
+    "run_metadata": 1,
+    "run_signers": 6,
+    "schema_migrations": 4,
+    "turn_records": 465
+  },
+  "claimBoundary": "Append-only interpretation of a failed software-qualification attempt. This record is not a completed export, successful qualification, behavioral result, negative scientific finding, independent review, or public timestamp."
+}

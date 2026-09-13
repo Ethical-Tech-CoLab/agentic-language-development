@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createLearnerAdapterFactory } from '@ald/learners';
 import {
   MODE_COMPARISON,
@@ -49,6 +49,7 @@ describe('anchored seal path (ALD-071)', () => {
   let harness: Harness | undefined;
 
   afterEach(async () => {
+    vi.useRealTimers();
     await harness?.cleanup();
     harness = undefined;
   });
@@ -393,6 +394,7 @@ describe('run creation guard rails', () => {
         declaredIsolationFactory(role, {
           boundary: 'separate-container',
           timingNormalization: 'normalized',
+          turnDeadlineAuthority: 'adapter',
           processId: 1,
           containerId: role === 'baby-a' ? 'container-a' : 'container-b',
         }),
@@ -421,6 +423,74 @@ describe('run creation guard rails', () => {
     });
   });
 
+  it('refuses normalized Research-Grade adapters without a single deadline authority', async () => {
+    const runId = 'run-research-grade-missing-deadline-authority';
+    harness = await createHarness({
+      anchorPolicy: 'required',
+      anchorPublisher: anchorPublisherFor(runId),
+      adapterFactoryFor: (_config, role) =>
+        declaredIsolationFactory(role, {
+          boundary: 'separate-container',
+          timingNormalization: 'normalized',
+          containerId: role === 'baby-a' ? 'container-a' : 'container-b',
+        }),
+    });
+    await expect(harness.runtime.createRun({
+      ...testConfig(noLearningOverrides({
+        runId,
+        experimentId: 'E03',
+        randomSeed: 'ald-missing-deadline-authority',
+        maxTurnsPerRun: 1,
+        evaluationTurns: 1,
+      })),
+      deploymentMode: 'research-grade',
+    })).rejects.toThrow(/adapter-owned turn deadline/u);
+  });
+
+  it('does not race a second timer against an adapter-owned normalized release', async () => {
+    const runId = 'run-single-deadline-authority';
+    harness = await createHarness({
+      adapterFactoryFor: (_config, role) => {
+        const inner = createLearnerAdapterFactory('no-learning', { seed: `deadline-${role}` });
+        return {
+          track: 'no-learning',
+          isolation: 'in-process',
+          create: () => {
+            const adapter = inner.create();
+            const act = adapter.act.bind(adapter);
+            return Object.assign(adapter, {
+              isolation: {
+                boundary: 'in-process' as const,
+                timingNormalization: 'normalized' as const,
+                turnDeadlineAuthority: 'adapter' as const,
+              },
+              act: async (...args: Parameters<typeof act>) => {
+                await Promise.resolve();
+                await new Promise<void>((resolveDelay) => setTimeout(resolveDelay, 1_000));
+                return act(...args);
+              },
+            });
+          },
+        };
+      },
+    });
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'ald-single-deadline-authority',
+      maxTurnsPerRun: 1,
+      evaluationTurns: 1,
+      turnResponseBudgetMs: 1_000,
+    })));
+    vi.useFakeTimers();
+    const step = harness.runtime.step(runId);
+    await vi.runAllTimersAsync();
+    await expect(step).resolves.toBeDefined();
+    const channelEvents = harness.runtime.writerFor(runId).readEvents(runId, 'channel')
+      .map((event) => JSON.parse(event.canonicalJson) as { reasonCode?: string });
+    expect(channelEvents.some((event) => event.reasonCode === 'timeout')).toBe(false);
+  });
+
   it('changes only the six documented §5.3 deployment dimensions between Mode P and Mode R', async () => {
     const runId = 'run-mode-comparison';
     harness = await createHarness();
@@ -442,6 +512,7 @@ describe('run creation guard rails', () => {
         declaredIsolationFactory(role, {
           boundary: 'separate-container',
           timingNormalization: 'normalized',
+          turnDeadlineAuthority: 'adapter',
           processId: role === 'baby-a' ? 301 : 302,
           containerId: role === 'baby-a' ? 'mode-r-a' : 'mode-r-b',
         }),

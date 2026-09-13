@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.108 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.109 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -131,8 +131,8 @@ Research status: 2 qualified (software), 1 failed qualification attempt, 0 in pr
   `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
-- The complete local data/claim snapshot resolves and hash-binds 138 exported bundles
-  in 22 collections. All are excluded from empirical estimates; 90 local fake-chain
+- The complete local data/claim snapshot resolves and hash-binds 139 exported bundles
+  in 22 collections. All are excluded from empirical estimates; 91 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
@@ -197,18 +197,18 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 138 bundles,
-22 collections, and 257,875,782 bundle bytes. It records content-tree, manifest, and
+exported bundle present in ignored local evidence storage at the cutoff: 139 bundles,
+22 collections, and 258,454,005 bundle bytes. It records content-tree, manifest, and
 available verification-report hashes without copying raw events or private ledger content.
 Forty-six bundles have tracked exact/current bounded software-qualification support,
-33 are historical qualification exports, and 59 are development, failed, or superseded diagnostic
+33 are historical qualification exports, and 60 are development, failed, or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-Of 138 exports, 137 have a recorded verifier exit code of zero; one partial
+Of 139 exports, 138 have a recorded verifier exit code of zero; one partial
 unregistered development export has no recorded verification report. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Ninety bundle records show anchor confirmation, but those
+verifier status. Ninety-one bundle records show anchor confirmation, but those
 receipts are local simulated evidence. Confirmed public-chain anchors:
 zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
 class relabeling so a simulated commitment cannot silently become a public-chain
@@ -852,6 +852,6 @@ defects but return `needs-revision`: E00 v5 passed after two preserved failed at
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
 topology/category suite; v2 completed the signed explicit corpus. E02 v1 failed before
 analysis and sixteen experiments remain unstarted,
-all 138 local
+all 139 local
 bundles remain research-excluded, 160 registration bindings remain unresolved, and
 independent review is absent.

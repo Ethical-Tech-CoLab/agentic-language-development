@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.108"
+    "version": "0.1.109"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1166,6 +1166,8 @@
         "refuses an external learner boundary under Prototype Mode",
         "refuses a Research-Grade label without normalized distinct containers",
         "accepts a Research-Grade label only for normalized distinct containers",
+        "refuses normalized Research-Grade adapters without a single deadline authority",
+        "does not race a second timer against an adapter-owned normalized release",
         "changes only the six documented §5.3 deployment dimensions between Mode P and Mode R",
         "refuses an anchoring run without a publisher",
         "requires an injected verifier for verify()"

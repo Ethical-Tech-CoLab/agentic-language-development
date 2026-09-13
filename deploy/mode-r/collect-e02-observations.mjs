@@ -58,7 +58,9 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
   let production;
   let restoreRecord = null;
   let containerResourceUsage = null;
+  let resourceMeasurementFailure = null;
   let failure = null;
+  let failureStage = 'initialization';
   const started = performance.now();
   const bundleRoot = join(root, 'bundles');
 
@@ -162,8 +164,18 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
       actorId: registered ? 'researcher:e02' : 'researcher:e02-development', reasonCode: 'e02-observed-probes', value: stageReports });
   }
 
+  async function sampleContainerResources(scope) {
+    const peakBytes = Number((await readFile('/sys/fs/cgroup/memory.peak', 'utf8')).trim());
+    const cpu = Object.fromEntries((await readFile('/sys/fs/cgroup/cpu.stat', 'utf8')).trim().split('\n')
+      .map((line) => { const [key, value] = line.split(' '); return [key, Number(value)]; }));
+    assert.ok(Number.isSafeInteger(peakBytes) && peakBytes > 0);
+    assert.ok(Number.isSafeInteger(cpu.usage_usec) && cpu.usage_usec > 0);
+    return { peakBytes, cpuUsageMicroseconds: cpu.usage_usec, scope };
+  }
+
   try {
     production = openRuntime();
+    failureStage = 'run-creation';
     await production.runtime.createRun(buildRunConfig({ runId, experimentId: 'E02', randomSeed: seed,
       deploymentMode: mode, babyA: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' },
       babyB: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' }, learningSignal: 'extrinsic-task',
@@ -173,17 +185,23 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
       registered ? { preRegistration: registration } : {});
     captureAdapters();
     for (const stage of ['before-restore', 'after-restore']) {
+      failureStage = `${stage}-collection`;
       for (let index = 0; index < sampleCount; index++) {
         await production.runtime.step(runId);
         if ((index + 1) % 100 === 0) console.log(`${stage}: ${index + 1}/${sampleCount} turns`);
       }
-      if (profile !== 'smoke') await analyseStage(stage);
+      if (profile !== 'smoke') {
+        failureStage = `${stage}-analysis`;
+        await analyseStage(stage);
+      }
       if (stage === 'before-restore') {
+        failureStage = 'snapshot';
         const taken = await takeSnapshot(production.runtime, join(root, 'snapshots'), { clock, softwareCommit });
         for (const factory of factories) await factory.dispose();
         production.close();
         production = undefined;
         production = openRuntime();
+        failureStage = 'restore';
         const restored = await autoRestore(() => production.runtime, { directory: join(root, 'snapshots'), bundleRoot });
         assert.equal(restored.ok, true);
         assert.equal(restored.runs.length, 1);
@@ -195,6 +213,7 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
         captureAdapters();
       }
     }
+    failureStage = 'sealing';
     await production.runtime.attachAnalysis({ runId, path: 'analysis/semantic-leakage/restore.json',
       kind: 'semantic-leakage-battery', analysisVersion,
       actorId: registered ? 'researcher:e02' : 'researcher:e02-development', reasonCode: 'e02-actual-runtime-restore', value: restoreRecord });
@@ -204,18 +223,30 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
     assert.equal(verification.exitCode, 0);
     assert.equal(production.runtime.turnRecords(runId).length, 2 * sampleCount + 2);
     if (mode === 'research-grade') {
-      // The registered Linux Docker topology uses cgroup v2. A missing measurement
-      // is an infrastructure error, never an invented zero or an alternate path.
-      const peakBytes = Number((await readFile('/sys/fs/cgroup/memory.peak', 'utf8')).trim());
-      const cpu = Object.fromEntries((await readFile('/sys/fs/cgroup/cpu.stat', 'utf8')).trim().split('\n')
-        .map((line) => { const [key, value] = line.split(' '); return [key, Number(value)]; }));
-      assert.ok(Number.isSafeInteger(peakBytes) && peakBytes > 0);
-      assert.ok(Number.isSafeInteger(cpu.usage_usec) && cpu.usage_usec > 0);
-      containerResourceUsage = { peakBytes, cpuUsageMicroseconds: cpu.usage_usec,
-        scope: 'Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit' };
+      containerResourceUsage = await sampleContainerResources(
+        'Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit',
+      );
     }
+    failureStage = 'complete';
   } catch (error) { failure = `${error.name}: ${error.message}`; console.error(failure); }
   finally {
+    if (mode === 'research-grade' && containerResourceUsage === null) {
+      try {
+        containerResourceUsage = await sampleContainerResources(
+          `Nursery cgroup sampled after failure during ${failureStage}; excludes learner containers and host-side audit`,
+        );
+      } catch (error) {
+        resourceMeasurementFailure = `${error.name}: ${error.message}`;
+      }
+    }
+    const adapterDiagnostics = factories.flatMap((factory) => factory.adapters.map((adapter) => ({
+      isolation: adapter.isolation,
+      diagnostics: adapter.diagnostics,
+      transportStats: adapter.transportStats,
+    })));
+    let turnRecords = null;
+    try { turnRecords = production?.runtime.turnRecords(runId).length ?? null; }
+    catch { turnRecords = null; }
     if (production) production.close();
     for (const factory of factories) await factory.dispose();
     const probeEvaluation = e02ProbeEvaluation(profile, reports.length);
@@ -225,6 +256,9 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
       sourceBoundary: registered ? 'Frozen sources checked by the registered host runner' : 'Unregistered development source; base commit does not assert a clean execution tree',
       probeEvaluation,
       captured: [...captured.values()], reports, restoreRecord, topology, failure,
+      executionProgress: { stage: failureStage, turnRecords, capturedRows: captured.size,
+        completedProbeReports: reports.length, restoreCompleted: restoreRecord !== null },
+      adapterDiagnostics, resourceMeasurementFailure,
       passed: failure === null && reports.length === (profile !== 'smoke' ? 12 : 0) && reports.every((report) => report.passed),
       wallMilliseconds: performance.now() - started, resourceUsage: process.resourceUsage(), containerResourceUsage }, null, 2));
   }

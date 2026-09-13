@@ -182,27 +182,27 @@ E01 Channel isolation ---- E02 Observation leakage
 
 ## 8. Experiment Index
 
-| ID | Experiment | Depends on | Status | Result |
-|---|---|---|---|---|
-| E00 | Ledger integrity and simulated commitment | None | Qualified (software) | V2/v4 failures preserved; v5 passed |
-| E01 | Channel isolation and side-channel red team | E00 | Qualified (software) | V2 passed five registered slots with 560 signed records and both verifiers |
-| E02 | Observation and metadata leakage audit | E00 | Failed qualification attempt | Registered v1 stopped at its safety pause; evidence retained |
-| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
-| E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | — |
-| E11 | From-scratch RL Naming Game | E03 | Not started | — |
-| E12 | Self-supervised ungrounded baseline | E11 infrastructure | Not started | — |
-| E13 | No predefined symbol library | E11 or E12 | Not started | — |
-| E14 | Turn-taking, role reversal, and repair | E13 | Not started | — |
-| E15 | Composition and held-out generalization | E14 | Not started | — |
-| E16 | Causal listening and ledger validity | E15 | Not started | — |
-| E20 | Constrained affect-channel study | E16 | Not started | — |
-| E21 | RL versus non-RL learning comparison | E16 | Not started | — |
-| E22 | Developmental plasticity and curriculum | E16 | Not started | — |
-| E30 | Partner replacement and zero-shot transfer | E20-E22 | Not started | — |
-| E31 | Longitudinal drift and stability | E30 | Not started | — |
-| E32 | Cooperative signaling versus negotiation | E31 | Not started | — |
-| E40 | Ephemeral encoding and adversarial cryptography | E32 | Not started | — |
-| E50 | Multi-seed replication and study closeout | E40 | Not started | — |
+| ID | Experiment | Depends on | Attempt | Scientific disposition | Next execution gate | Evidence note |
+|---|---|---|---|---|---|---|
+| E00 | Ledger integrity and simulated commitment | None | Completed | Not tested | Qualification complete | V2/v4 failures preserved; v5 passed |
+| E01 | Channel isolation and side-channel red team | E00 | Completed | Not tested | Qualification complete | V2 passed five registered slots with 560 signed records and both verifiers |
+| E02 | Observation and metadata leakage audit | E00 | Failed | Not tested | Qualification blocked (B16) | Registered v1 stopped at its safety pause; evidence retained |
+| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Qualification blocked | — |
+| E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | Not tested | Confirmatory blocked | — |
+| E11 | From-scratch RL Naming Game | E03 | Not started | Not tested | Confirmatory blocked | — |
+| E12 | Self-supervised ungrounded baseline | E11 infrastructure | Not started | Not tested | Confirmatory blocked | — |
+| E13 | No predefined symbol library | E11 or E12 | Not started | Not tested | Confirmatory blocked | — |
+| E14 | Turn-taking, role reversal, and repair | E13 | Not started | Not tested | Confirmatory blocked | — |
+| E15 | Composition and held-out generalization | E14 | Not started | Not tested | Confirmatory blocked | — |
+| E16 | Causal listening and ledger validity | E15 | Not started | Not tested | Confirmatory blocked | — |
+| E20 | Constrained affect-channel study | E16 | Not started | Not tested | Confirmatory blocked | — |
+| E21 | RL versus non-RL learning comparison | E16 | Not started | Not tested | Confirmatory blocked | — |
+| E22 | Developmental plasticity and curriculum | E16 | Not started | Not tested | Confirmatory blocked | — |
+| E30 | Partner replacement and zero-shot transfer | E20-E22 | Not started | Not tested | Confirmatory blocked | — |
+| E31 | Longitudinal drift and stability | E30 | Not started | Not tested | Confirmatory blocked | — |
+| E32 | Cooperative signaling versus negotiation | E31 | Not started | Not tested | Confirmatory blocked | — |
+| E40 | Ephemeral encoding and adversarial cryptography | E32 | Not started | Not tested | Exploratory blocked | — |
+| E50 | Multi-seed replication and study closeout | E40 | Not started | Not tested | Replication blocked | — |
 
 ---
 

@@ -143,15 +143,15 @@ describe('current project status', () => {
     expect(result.stderr).toContain(path);
   });
 
-  it('rejects an E02 notebook status that contradicts the terminal receipt', () => {
+  it('rejects an E02 notebook attempt that contradicts campaign progress', () => {
     const directory = statusFixture();
     const target = join(directory, 'EXPERIMENT-NOTEBOOK.md');
     const original = readFileSync(target, 'utf8');
-    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Failed qualification attempt |',
-      '| E02 | Observation and metadata leakage audit | E00 | In progress |'));
+    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Failed |',
+      '| E02 | Observation and metadata leakage audit | E00 | Running |'));
     const result = check(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('terminal receipt requires Failed qualification attempt');
+    expect(result.stderr).toContain('E02 notebook attempt/disposition contradicts the campaign progress record');
   });
 });
 

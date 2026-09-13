@@ -15,15 +15,15 @@ portable check continues to validate the frozen cutoff, not newly collected data
 
 ## Inventory result
 
-The snapshot contains 138 bundles in 22 collections and 257,875,782 bundle bytes.
-Of 138 exports, 137 have a recorded verifier exit code of zero; one partial
+The snapshot contains 139 bundles in 22 collections and 258,454,005 bundle bytes.
+Of 139 exports, 138 have a recorded verifier exit code of zero; one partial
 unregistered development export has no recorded verification report. A pass does
 not make a collection current or scientific: 33 are historical qualification exports
 whose old intervention-tree declaration is incompatible with the current verifier,
-59 belong to development, failed, or superseded diagnostics, and 46 have tracked bounded software
-qualification support. All 138 are excluded from empirical estimates.
+60 belong to development, failed, or superseded diagnostics, and 46 have tracked bounded software
+qualification support. All 139 are excluded from empirical estimates.
 
-Ninety bundle records show anchor confirmation, but every such confirmation
+Ninety-one bundle records show anchor confirmation, but every such confirmation
 in this snapshot is a local simulated receipt. Confirmed public-chain
 anchors: zero. The manifest uses separate fields for these values and its audit fails
 if any local receipt is relabeled public.
@@ -32,7 +32,7 @@ if any local receipt is relabeled public.
 |---|---:|---|
 | Exact/current bounded software qualification | 46 | Only the claim boundary in the matching tracked receipt |
 | Historical qualification | 33 | Historical software behavior; no inheritance of current verifier status |
-| Development, failed, or superseded diagnostic | 59 | Development behavior, failure history, and debugging provenance only |
+| Development, failed, or superseded diagnostic | 60 | Development behavior, failure history, and debugging provenance only |
 | Pilot | 0 | None |
 | Confirmatory | 0 | None |
 | Replication | 0 | None |
