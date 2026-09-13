@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.103 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.104 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1094,7 +1094,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.103 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.104 · 254/258 backlog acceptance criteria verified.
 
 As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1164,11 +1164,11 @@ strengthening activities. Their absence is disclosed and prohibits claims of pub
 finality, hosted enforcement, independent restoration, or third-party registration;
 it does not answer or alter the agent-language estimands.
 
-The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 136
+The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 138
 exported bundles across 22 collections by path and content hash. Forty-six have
 tracked bounded software-qualification support, 33 are historical qualification
-exports, and 57 are failed or superseded diagnostics. All 136 are excluded from
-empirical estimates. Eighty-eight recorded anchor confirmations are local simulated
+exports, and 59 are development, failed, or superseded diagnostics. All 138 are excluded from
+empirical estimates. Ninety recorded anchor confirmations are local simulated
 receipts; prospective receipts now bind an explicit class that the
 verifier refuses to relabel. Confirmed public-chain anchors, pilot bundles, confirmatory
 bundles, replication bundles, and research-included bundles are all zero.

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "classification": "development-resource-envelope",
+  "researchFinding": false,
+  "smokePassed": true,
+  "rowsPerRolePerStage": 2016,
+  "maximumParallelSlots": 1,
+  "externalSpend": 0,
+  "modeRSmoke": {
+    "path": "evidence/development/e02-mode-r-02/e02-smoke-02/development.json",
+    "sha256": "2f10d7452dce7805ed7c21377576d7d5366d64a97f8c78dac8e68652d25193d8",
+    "turns": 10,
+    "observations": 20,
+    "leakageProbes": 0,
+    "wallMilliseconds": 67431.03978199999,
+    "nurseryCgroupPeakBytes": 131284992,
+    "nurseryCgroupCpuUsageMicroseconds": 3054018,
+    "nodeProcessMaxRssKiB": 176204,
+    "completeDirectoryBytes": 1187603
+  },
+  "prototypeFull": {
+    "path": "evidence/development/e02-prototype-01/development.json",
+    "sha256": "44ca1e30c2acd4307b38c22355ec2b89ea08e607e971d35d1304b4175acca02b",
+    "turns": 1634,
+    "rowsPerRolePerStage": 816,
+    "wallMilliseconds": 303321.90535300004,
+    "completeDirectoryBytes": 62581540
+  },
+  "projection": {
+    "registeredTurnsPerSlot": 4034,
+    "collectionFormula": "smoke wallMilliseconds * 4034 / 10",
+    "analysisAndReplayAllowanceFormula": "2 * prototype wallMilliseconds * 2016 / 816",
+    "expectedApproximateWallHoursPerSlot": 8,
+    "plannedMaximumWallHoursPerSlot": 10,
+    "plannedFiveSlotEvidenceGiB": 3,
+    "primaryProcessCpuReservationHours": 20,
+    "additionalBuildAndAuditSubprocessAllowanceHours": 2,
+    "boundary": "Linear planning estimates, not measured full registered runs, guaranteed power, or a measured whole-campaign resource bound. The global campaign ceiling still needs allocation across remaining experiments."
+  },
+  "enforcedContainerLimits": {
+    "composePath": "deploy/mode-r/docker-compose.e02.yml",
+    "composeSha256": "029b3175eeb59b46fd4def678ae628b71421a5fb3e67066e6350ce0f8e609799",
+    "learnerMemoryBytesEach": 536870912,
+    "learnerCpuQuotaEach": 1,
+    "nurseryMemoryBytes": 2147483648,
+    "nurseryCpuQuota": 2,
+    "cpuSecondsPerContainerProcess": 3600,
+    "swapAllowanceBytes": 0,
+    "verification": "Separate no-observation startup inspection confirmed Docker learner limits and Nursery /proc/self/limits, memory.max and cpu.max. The preceding smoke predates addition of the CPU-time ulimit."
+  },
+  "measurementBoundary": "The smoke used dirty development sources with its exact controller hashes recorded. Nursery cgroup statistics were sampled after bundle verification, before cleanup/final-summary serialization, and exclude learner containers and host-side replay. Node maxRSS and cgroup memory.peak have different accounting scopes. Original observations remain unregistered and immutable."
+}

@@ -9,16 +9,16 @@ messages, observations, native ledgers, or secrets into Git.
 
 ## Inventory result
 
-The snapshot contains 136 bundles in 22 collections and 256,709,250 bundle bytes.
-Of 136 exports, 135 have a recorded verifier exit code of zero; one partial
+The snapshot contains 138 bundles in 22 collections and 257,875,782 bundle bytes.
+Of 138 exports, 137 have a recorded verifier exit code of zero; one partial
 unregistered development export has no recorded verification report. A pass does
 not make a collection current or scientific: 33 are historical qualification exports
 whose old intervention-tree declaration is incompatible with the current verifier,
-57 belong to failed or superseded diagnostics, and 46 have tracked bounded software
-qualification support. All 136 are excluded from empirical estimates.
+59 belong to development, failed, or superseded diagnostics, and 46 have tracked bounded software
+qualification support. All 138 are excluded from empirical estimates.
 
-Eighty-eight bundle records show anchor confirmation, but every such confirmation
-in this snapshot is a local fake-chain qualification receipt. Confirmed public-chain
+Ninety bundle records show anchor confirmation, but every such confirmation
+in this snapshot is a local simulated receipt. Confirmed public-chain
 anchors: zero. The manifest uses separate fields for these values and its audit fails
 if any local receipt is relabeled public.
 
@@ -26,7 +26,7 @@ if any local receipt is relabeled public.
 |---|---:|---|
 | Exact/current bounded software qualification | 46 | Only the claim boundary in the matching tracked receipt |
 | Historical qualification | 33 | Historical software behavior; no inheritance of current verifier status |
-| Failed or superseded diagnostic | 57 | Failure history and debugging provenance only |
+| Development, failed, or superseded diagnostic | 59 | Development behavior, failure history, and debugging provenance only |
 | Pilot | 0 | None |
 | Confirmatory | 0 | None |
 | Replication | 0 | None |

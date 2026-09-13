@@ -81,6 +81,9 @@ importers:
 
   deploy/mode-r:
     dependencies:
+      '@ald/analysis':
+        specifier: workspace:*
+        version: link:../../packages/analysis
       '@ald/anchor':
         specifier: workspace:*
         version: link:../../packages/anchor

@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@ald/analysis": "workspace:*",
     "@ald/anchor": "workspace:*",
     "@ald/checkpoint": "workspace:*",
     "@ald/evidence": "workspace:*",

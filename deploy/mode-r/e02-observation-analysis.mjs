@@ -5,13 +5,20 @@ import { assertObservationHygiene, hashObservation } from '@ald/scenario';
 import { HASH_DOMAINS } from '@ald/types';
 
 export const E02_ROWS_PER_STAGE = 816;
+export const E02_REGISTERED_ROWS_PER_STAGE = 2016;
 export const E02_ANALYSIS_VERSION = 'e02-observation-qualification-v1';
+export const E02_REGISTERED_ANALYSIS_VERSION = 'e02-observation-qualification-v2';
 export const E02_PROBES = ['metadata', 'identifier', 'timing'];
 export const E02_LABELS = ['red', 'green', 'blue', 'yellow'];
 
 // Offline labels never enter the learner observation or configuration.
 // Sensory values, target flags, type codes and outcome success are NOT features.
-export function e02Features(row, probe) {
+function checkSampleCount(sampleCount) {
+  assert.ok([E02_ROWS_PER_STAGE, E02_REGISTERED_ROWS_PER_STAGE].includes(sampleCount));
+}
+
+export function e02Features(row, probe, sampleCount = E02_ROWS_PER_STAGE) {
+  checkSampleCount(sampleCount);
   const { observation, budget } = row;
   assertObservationHygiene(observation);
   assert.deepEqual(Object.keys(observation).sort(), ['encoding', 'payload', 'recipient', 'runId', 'scenarioRef', 'turn']);
@@ -41,16 +48,18 @@ export function e02Features(row, probe) {
   const payload = observation.payload;
   assert.equal(payload.length, 4);
   assert.ok(payload.every((entry) => Array.isArray(entry) && entry.every(Number.isFinite)));
-  return [observation.turn / (2 * E02_ROWS_PER_STAGE), budget.role === 'receiver' ? 1 : 0,
+  return [observation.turn / (2 * sampleCount), budget.role === 'receiver' ? 1 : 0,
     payload.length / 4, ...payload.map((entry) => entry.length / 4),
     Buffer.byteLength(canonicalJson(observation)) / 1024,
     budget.availableActions.length / 4, refs.length / 4, ...identifiers];
 }
 
-export function auditE02Rows(rows, role, stage, turnRecords, instances) {
+export function auditE02Rows(rows, role, stage, turnRecords, instances, sampleCount = E02_ROWS_PER_STAGE) {
+  checkSampleCount(sampleCount);
+  assert.ok(['baby-a', 'baby-b'].includes(role));
   assert.ok(['before-restore', 'after-restore'].includes(stage));
-  assert.equal(rows.length, E02_ROWS_PER_STAGE);
-  const offset = stage === 'before-restore' ? 0 : E02_ROWS_PER_STAGE;
+  assert.equal(rows.length, sampleCount);
+  const offset = stage === 'before-restore' ? 0 : sampleCount;
   const recordByTurn = new Map(turnRecords.map((record) => [record.turn, record]));
   assert.equal(recordByTurn.size, turnRecords.length);
   const refs = new Set();
@@ -79,14 +88,15 @@ export function auditE02Rows(rows, role, stage, turnRecords, instances) {
     assert.equal(row.label, E02_LABELS[truth.attributeCodes[String(truth.targetTypeCode)][0]]);
     assert.deepEqual(observation.payload, instance.observations[role]);
     assert.deepEqual(row.budget.candidateRefs ?? [], row.budget.role === 'receiver' ? instance.candidateRefs : []);
-    for (const probe of E02_PROBES) e02Features(row, probe);
+    for (const probe of E02_PROBES) e02Features(row, probe, sampleCount);
   }
   assert.equal(new Set(rows.map((row) => row.label)).size, 4);
 }
 
 // Reproduce the existing estimator's declared stratified split for inspection.
 // This uses the same PRNG; it is not an independent statistical implementation.
-export function e02Split(rows, seed) {
+export function e02Split(rows, seed, sampleCount = E02_ROWS_PER_STAGE) {
+  checkSampleCount(sampleCount);
   const labels = [...new Set(rows.map((row) => row.label))].sort();
   assert.equal(labels.length, 4);
   const train = [], test = [];
@@ -99,17 +109,20 @@ export function e02Split(rows, seed) {
     train.push(...shuffled.slice(count));
   }
   assert.equal(new Set([...train, ...test]).size, rows.length);
-  assert.ok(test.length >= 200);
+  assert.ok(test.length >= (sampleCount === E02_REGISTERED_ROWS_PER_STAGE ? 501 : 200));
   return { train, test };
 }
 
-export function evaluateE02Probe(rows, provenance, seed, probe) {
+export function evaluateE02Probe(rows, provenance, seed, probe, sampleCount = E02_ROWS_PER_STAGE) {
+  checkSampleCount(sampleCount);
+  assert.equal(rows.length, sampleCount);
   assert.equal(provenance.track, 'scratch-rl');
-  const split = e02Split(rows, seed);
+  const split = e02Split(rows, seed, sampleCount);
   const input = { provenance,
-    frozenFeatures: rows.map((row) => ({ label: row.label, features: e02Features(row, probe) })),
+    frozenFeatures: rows.map((row) => ({ label: row.label, features: e02Features(row, probe, sampleCount) })),
     preRegistration: { seed, confidence: 0.95, permutations: 20,
-      maximumAccuracyAdvantage: 0.1, minimumTestRows: 200, positiveControlMinimumAdvantage: 0.2 } };
+      maximumAccuracyAdvantage: 0.1, minimumTestRows: sampleCount === E02_REGISTERED_ROWS_PER_STAGE ? 501 : 200,
+      positiveControlMinimumAdvantage: 0.2 } };
   const result = evaluateSemanticLeakage(input);
   assert.equal(result.linearProbe.trainRows, split.train.length);
   assert.equal(result.linearProbe.testRows, split.test.length);

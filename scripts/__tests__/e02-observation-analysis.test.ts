@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ReferentialScenarioEngine, hashObservation } from '@ald/scenario';
 // @ts-expect-error The qualification helper is executable ESM.
-import { E02_LABELS, auditE02Rows, e02Features, e02Split } from '../../deploy/mode-r/e02-observation-analysis.mjs';
+import { E02_LABELS, auditE02Rows, e02Features, e02Split, evaluateE02Probe } from '../../deploy/mode-r/e02-observation-analysis.mjs';
 
 // Synthetic unit-test fixtures only; these are not delivered run observations.
 const engine = new ReferentialScenarioEngine({ version: 1,
@@ -68,6 +68,29 @@ describe('E02 actual-observation analysis contracts', () => {
     const labels = (counts: number[]) => counts.flatMap((count, i) => Array.from({ length: count }, () => ({ label: E02_LABELS[i] })));
     expect(e02Split(labels([203, 203, 203, 207]), 'rounding').test.length).toBe(201);
     expect(() => e02Split(labels([199, 199, 199, 203]), 'rounding')).toThrow();
+  });
+  it('requires the prospective 501-row bound and preserves the historical default', () => {
+    const labels = (counts: number[]) => counts.flatMap((count, i) => Array.from({ length: count }, () => ({ label: E02_LABELS[i] })));
+    expect(e02Split(labels([503, 503, 503, 507]), 'prospective-rounding', 2016).test.length).toBe(501);
+    expect(() => e02Split(rows, 'prospective-rounding', 2016)).toThrow();
+    expect(() => e02Features(rows[0], 'metadata', 800)).toThrow();
+    expect(e02Features(rows[1], 'metadata', 2016)[0]).toBe(1 / 4032);
+    expect(e02Features(rows[1], 'metadata')[0]).toBe(1 / 1632);
+    expect(() => auditE02Rows(rows, 'baby-a', 'before-restore', records, instances, 2016)).toThrow();
+  });
+  it('runs the prospective estimator without reducing its held-out floor', () => {
+    // Deliberately planted timing fixture, not measured timing or research data.
+    const planted = Array.from({ length: 2016 }, (_, index) => ({ ...rows[0],
+      label: E02_LABELS[index % 4], observeDurationMs: Math.expm1(index % 4 + 1) }));
+    const provenance = { track: 'scratch-rl', modelRef: 'unit-fixture',
+      textAlignedEncoderPresent: false, textTokenizerPresent: false,
+      weightUpdatePath: 'private-buffers-only', components: [{ kind: 'communication-policy',
+        name: 'synthetic-unit-policy', hash: `sha256:${'1'.repeat(64)}`, provenance: 'random-init', textAligned: false }] };
+    const report = evaluateE02Probe(planted, provenance, 'prospective-unit-estimator', 'timing', 2016);
+    expect(report.input.preRegistration.minimumTestRows).toBe(501);
+    expect(report.result.linearProbe.testRows).toBe(504);
+    expect(report.result.linearProbe.positiveControl.detected).toBe(true);
+    expect(report.passed).toBe(false);
   });
   const mutations = [
     ['missing row', (r: any[]) => { r.pop(); }],

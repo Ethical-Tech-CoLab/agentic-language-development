@@ -1,8 +1,8 @@
 # The System Is Software-Qualified, but the Research Questions Remain Open
 
 Working research-validation report  
-Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.98 (D08 and A03 in progress; A01 snapshot complete)
+Evidence cutoff: 2026-09-13
+Latest tracked research-design candidate: v0.1.104 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -39,6 +39,15 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   also three text-free controls and failed on five malformed images. These retained
   development observations do not qualify E02. A prospective sample-size critique
   and explicit limits are in `../../docs/e02-observation-qualification.md`.
+- The prospective E02 controller now fixes 2,016 rows per role/stage and at least
+  501 held-out rows, with the unchanged leakage margins. A fresh shared-collector
+  Prototype smoke and a resource-limited Mode R smoke passed; the latter completed
+  ten turns in 67.431 seconds. Its measured Nursery cgroup peak was 131,284,992
+  bytes and CPU usage 3,054,018 microseconds, excluding learners and host replay.
+  A separate no-observation startup check confirmed the new CPU-time limits.
+  The resource envelope projects 7.972 hours per complete slot including a linear
+  analysis/replay allowance; this is not a measured full registered result.
+  Packet compilation, activation and five-slot execution remain pending.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -120,8 +129,8 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
-- The complete local data/claim snapshot resolves and hash-binds 136 exported bundles
-  in 22 collections. All are excluded from empirical estimates; 88 local fake-chain
+- The complete local data/claim snapshot resolves and hash-binds 138 exported bundles
+  in 22 collections. All are excluded from empirical estimates; 90 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
@@ -185,19 +194,19 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 136 bundles,
-22 collections, and 256,709,250 bundle bytes. It records content-tree, manifest, and
+exported bundle present in ignored local evidence storage at the cutoff: 138 bundles,
+22 collections, and 257,875,782 bundle bytes. It records content-tree, manifest, and
 available verification-report hashes without copying raw events or private ledger content.
 Forty-six bundles have tracked exact/current bounded software-qualification support,
-33 are historical qualification exports, and 57 are failed or superseded diagnostic
+33 are historical qualification exports, and 59 are development, failed, or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-Of 136 exports, 135 have a recorded verifier exit code of zero; one partial
+Of 138 exports, 137 have a recorded verifier exit code of zero; one partial
 unregistered development export has no recorded verification report. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Eighty-eight bundle records show anchor confirmation, but those
-receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
+verifier status. Ninety bundle records show anchor confirmation, but those
+receipts are local simulated evidence. Confirmed public-chain anchors:
 zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
 class relabeling so a simulated commitment cannot silently become a public-chain
 claim.
@@ -839,6 +848,6 @@ eight-perspective internal pass. They correct cross-document status and renderin
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
 topology/category suite; v2 completed the signed explicit corpus. Seventeen experiments remain unstarted,
-all 136 local
+all 138 local
 bundles remain research-excluded, 170 registration bindings remain unresolved, and
 independent review is absent.

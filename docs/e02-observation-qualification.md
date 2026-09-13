@@ -57,11 +57,12 @@ of failing the stated Wilson bound is about 0.06792 at 201 test rows, versus
 This is a conditional design calculation, not measured operating characteristics
 for the trained, stratified production probes.
 
-The prospective candidate is therefore 2,016 observations per role per stage,
+The prospective implementation therefore uses 2,016 observations per role per stage,
 yielding at least 501 held-out rows after four-class rounding. Neither margin nor
-feature set changes. Resource requirements, the exact amendment, and final packet
-remain to be frozen; no registered E02 run has started. The development collector
-still uses 816 rows and must not be mistaken for that larger future packet.
+feature membership changes. The turn-index feature is normalized by twice the
+declared per-stage sample count. The measured development resource envelope is
+recorded, but the exact packet remains to be frozen; no registered E02 run has
+started. Historical development uses 816 rows and the original normalization.
 
 ### Reproducible design calculation
 
@@ -132,3 +133,49 @@ software commit supplied by the Compose environment. `smoke` is a distinct ten-t
 transport/recovery check: it runs no leakage probe and cannot qualify E02. The full
 audit rejects smoke outputs as insufficient. Historical E00/E01 evidence and
 registration packets remain unchanged.
+
+## Prospective execution and resource boundary
+
+`collect-e02-observations.mjs` is shared by the development and registered entry
+points. Registered mode requires an exact E02 packet, its matching repository-native
+simulated binding, a listed slot and seed, and the isolated `research-grade` topology.
+Development profiles cannot accept a registration or be promoted after collection.
+The host runner refuses dirty sources, changed build inputs, reused attempt roots,
+and overwritten receipts. Failed statistical probes remain in the five-slot decision;
+infrastructure failure stops with partial evidence retained and no replacement seed.
+
+The second Mode R smoke used the shared collector, ran ten real turns with an actual
+restore, and completed in 67.431 seconds. Both verifiers accepted 83 events, six
+checkpoints and one attachment. The separate in-process smoke had 84 events and
+also passed both verifiers. These are smoke counts, not leakage-test denominators.
+The resource report binds the original smoke JSON and preserves the distinction
+between Node process maxRSS, Nursery cgroup peak memory and unmeasured learner or
+host-side resource consumption.
+
+The planned schedule is serial, about 7.972 projected hours per slot including a
+linear analysis/replay allowance, with a ten-hour Nursery-command timeout; the
+post-run audit is outside that wall timeout and inside the host CPU budget. Docker enforces
+512 MiB/one CPU per learner and 2 GiB/two CPUs for the Nursery, no swap allowance,
+and one CPU-hour per container process. The host controller is capped at five CPU
+hours. The primary-process reservation is 20 CPU-hours, plus a two-hour planning
+allowance for build and audit subprocesses, and 3 GiB planned evidence storage.
+These estimates do not resolve the whole campaign's resource-allocation blocker.
+No response deadline is shortened to make the run cheaper.
+
+The resource envelope has a portable arithmetic/source check and an explicit live
+comparison with retained development evidence. Once the exact implementation is
+committed and its consolidated validation passes, the remaining sequence is:
+
+```text
+pnpm run audit:e02-resources:live
+pnpm run build:registration-e02
+# Commit the packet with the next patch version and reconcile readiness.
+pnpm run activate:registration-e02
+# Commit the binding with the next patch version and validate the clean tree.
+pnpm run qualify:e02
+pnpm run audit:qualification-e02:live
+```
+
+The five registered slots must not start before both commits exist. A source fix
+after activation requires an explicit prospective amendment, never relabeling an
+observed slot or rerunning its seed to obtain a pass.

@@ -1,0 +1,21 @@
+# Prospective E02 uses one slot at a time. Limits are per container, not
+# measured resource claims or replacements for the campaign CPU/storage ceiling.
+services:
+  baby-a:
+    cpus: 1
+    mem_limit: 512m
+    memswap_limit: 512m
+    ulimits:
+      cpu: { soft: 3600, hard: 3600 }
+  baby-b:
+    cpus: 1
+    mem_limit: 512m
+    memswap_limit: 512m
+    ulimits:
+      cpu: { soft: 3600, hard: 3600 }
+  nursery-study:
+    cpus: 2
+    mem_limit: 2g
+    memswap_limit: 2g
+    ulimits:
+      cpu: { soft: 3600, hard: 3600 }
