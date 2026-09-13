@@ -74,7 +74,7 @@ if (
 ) {
   throw new Error('external prerequisite or upstream-enforcement status changed');
 }
-if (registration.totals['compiledPackets'] !== 2 || registration.totals['unresolvedBindings'] !== 170) {
+if (registration.totals['compiledPackets'] !== 3 || registration.totals['unresolvedBindings'] !== 160) {
   throw new Error('registration readiness counts changed');
 }
 if (claims.totals['researchIncluded'] !== 0 || claims.totals['confirmedPublicChainAnchors'] !== 0) {
@@ -85,7 +85,7 @@ if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(
 }
 exact(`v${packageJson.version} · 254/258 backlog acceptance criteria verified.`);
 exact(`resolves ${String(claims.totals['bundles'])} exported bundles across ${String(claims.totals['collections'])} collections`);
-exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits E00 and E01 registration hashes`);
+exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits E00, E01 and E02 registration hashes`);
 exact(`external-dependency ledger is ready at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
 exact('No empirical results are reported in this version.');
 

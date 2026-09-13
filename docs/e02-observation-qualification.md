@@ -1,6 +1,6 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: development only. E02 is not yet registered or qualified.
+Status: exact prospective packet compiled; activation and execution pending. E02 is not qualified.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -61,7 +61,7 @@ The prospective implementation therefore uses 2,016 observations per role per st
 yielding at least 501 held-out rows after four-class rounding. Neither margin nor
 feature membership changes. The turn-index feature is normalized by twice the
 declared per-stage sample count. The measured development resource envelope is
-recorded, but the exact packet remains to be frozen; no registered E02 run has
+recorded, and the exact packet is compiled; no registered E02 run has
 started. Historical development uses 816 rows and the original normalization.
 
 ### Reproducible design calculation
@@ -179,3 +179,9 @@ pnpm run audit:qualification-e02:live
 The five registered slots must not start before both commits exist. A source fix
 after activation requires an explicit prospective amendment, never relabeling an
 observed slot or rerunning its seed to obtain a pass.
+
+The v1 packet binds all eleven classes to implementation commit
+`0fdcdb0ede7a332e7e82546e569e55e0bb17f155`, including the exact Rust binary.
+Its canonical hash is
+`sha256:b59c0e22e8c4cc84331723a9266055d653c8341dbd9a326a11aa5ec7ad2fc413`.
+Compilation alone does not establish committed activation or a passing slot.

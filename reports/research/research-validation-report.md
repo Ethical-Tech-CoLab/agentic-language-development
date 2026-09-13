@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.104 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.105 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -47,7 +47,7 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   A separate no-observation startup check confirmed the new CPU-time limits.
   The resource envelope projects 7.972 hours per complete slot including a linear
   analysis/replay allowance; this is not a measured full registered result.
-  Packet compilation, activation and five-slot execution remain pending.
+  The exact E02 packet is compiled; committed activation and five-slot execution remain pending.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -787,7 +787,7 @@ decision stays negative while the remaining scientific prerequisites are open.
 2. Hypothesis-specific blinded-pilot variances and resulting selected N prefixes remain
    to be produced before D08 can freeze registration-ready configurations.
    The fail-closed packet inventory currently resolves all eleven bindings for E00
-   and E01 and leaves 170 exact experiment bindings unresolved. E01 v1 executed and
+   and E01/E02 and leaves 160 exact experiment bindings unresolved. E01 v1 executed and
    passed its bounded category/topology gate; v2 subsequently closed B15.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
@@ -849,5 +849,5 @@ defects but return `needs-revision`: E00 v5 passed after two preserved failed at
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
 topology/category suite; v2 completed the signed explicit corpus. Seventeen experiments remain unstarted,
 all 138 local
-bundles remain research-excluded, 170 registration bindings remain unresolved, and
+bundles remain research-excluded, 160 registration bindings remain unresolved, and
 independent review is absent.
