@@ -1,6 +1,6 @@
 # Requirement Conformance Matrix
 
-Generated from repository sources for baseline `559436f` / matrix v0.1.124.
+Generated from repository sources for baseline `559436f` / matrix v0.1.125.
 
 This is a mapping and provisional-disposition artifact. A mapped file or test
 name is not by itself proof that the requirement is true. V04–V11 execution
@@ -10,7 +10,7 @@ receipts promote individual rows only after the named behavior is freshly checke
 
 | Population | Total | Provisionally mapped | Open/external | Not applicable |
 |---|---:|---:|---:|---:|
-| Backlog acceptance criteria | 260 | 256 | 4 | 0 |
+| Backlog acceptance criteria | 261 | 257 | 4 | 0 |
 | MUST-bearing source lines | 96 | 92 | 0 | 4 |
 
 ## Backlog acceptance criteria
@@ -263,6 +263,7 @@ receipts promote individual rows only after the named behavior is freshly checke
 | ALD-082.1 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | A fixed seed reproduces byte-identical 30,000-replicate design output. |
 | ALD-082.2 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | Every registered SD/sample-size row has a lower 95% Monte Carlo bound at or above the 90% power floor. |
 | ALD-082.3 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | The committed seed manifest derives disjoint pilot and full-stage scenario, |
+| ALD-082.4 | checked | provisional-mapped | `packages/analysis/__tests__/e03-design.test.ts` | The pilot reducer requires all five non-oracle conditions and exactly twenty |
 | ALD-083.1 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat. |
 | ALD-083.2 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | Run IDs, realized random and component seeds, condition assignments, and the |
 | ALD-083.3 | checked | provisional-mapped | `packages/analysis/__tests__/e03-registration.test.ts` | Every primary and reserve condition configuration carries the same exact pre-registration hash. |

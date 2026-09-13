@@ -98,6 +98,22 @@ simulate its complete test including composite outcomes and missingness, and sel
 the largest resulting count whose lower Monte Carlo bound is at least 0.90. Neither
 the ten-seed floor nor the historical 75-seed convention is evidence of power.
 
+## Prospective E03 pilot reduction
+
+The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each
+of the five non-oracle controls. It fits the already qualified deterministic
+beta-binomial grid model to each condition, converts each fitted precision to
+latent between-seed standard deviation, and maps the largest value to E03's
+four frozen Appendix D rows. A value above 0.20 returns no seed count and
+requires a prospective amendment.
+
+This reduction remains design input, not a qualification decision. It does not
+run the chance-equivalence, oracle-adequacy, or separation tests, and its
+point-estimate selection does not by itself establish power. Full registration
+still requires the independently reproduced 30,000-repetition bounded
+numeric-rule receipt and exact hashes for both the eligible pilot receipt and
+that power receipt.
+
 ## Reproduction
 
 ```sh

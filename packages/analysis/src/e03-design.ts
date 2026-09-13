@@ -40,9 +40,26 @@ export const E03_COMMUNICATION_CONDITIONS = [
   'oracle',
 ] as const;
 
+export const E03_NON_ORACLE_CONDITIONS = [
+  'disabled',
+  'constant',
+  'random',
+  'shuffled',
+  'normal',
+] as const;
+
 export type E03RegistrationStage = 'blinded-pilot' | 'full-qualification';
 export type E03CommunicationCondition =
   (typeof E03_COMMUNICATION_CONDITIONS)[number];
+
+export function selectE03PrimarySeeds(largestLatentPilotSd: number): number | undefined {
+  if (!Number.isFinite(largestLatentPilotSd) || largestLatentPilotSd < 0) {
+    throw new AnalysisError('domain', 'largestLatentPilotSd must be finite and nonnegative');
+  }
+  return E03_DESIGN_ROWS.find(
+    (row) => largestLatentPilotSd <= row.maximumBetweenSeedSd,
+  )?.primarySeeds;
+}
 
 export interface E03DesignSimulationOptions {
   readonly repetitions?: number;

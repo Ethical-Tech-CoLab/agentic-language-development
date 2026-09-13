@@ -114,6 +114,7 @@ export {
 } from './e03.js';
 export {
   E03_COMMUNICATION_CONDITIONS,
+  E03_NON_ORACLE_CONDITIONS,
   E03_DESIGN_MINIMUM_POWER,
   E03_DESIGN_REPETITIONS,
   E03_DESIGN_ROWS,
@@ -121,6 +122,7 @@ export {
   E03_DESIGN_SIMULATION_VERSION,
   E03_SEED_ROOT,
   buildE03SeedManifest,
+  selectE03PrimarySeeds,
   simulateE03DesignPower,
   type E03DesignPowerRow,
   type E03DesignSimulation,
@@ -130,6 +132,16 @@ export {
   type E03SeedManifest,
   type E03SeedManifestEntry,
 } from './e03-design.js';
+export {
+  E03_PILOT_ANALYSIS_VERSION,
+  E03_PILOT_EPISODES,
+  E03_PILOT_SLOTS,
+  reduceE03Pilot,
+  type E03PilotConditionFit,
+  type E03PilotConditionInput,
+  type E03PilotSampleSizeInput,
+  type E03PilotSlotTally,
+} from './e03-pilot.js';
 export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,

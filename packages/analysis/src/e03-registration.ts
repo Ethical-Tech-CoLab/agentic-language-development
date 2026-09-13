@@ -14,8 +14,8 @@ import {
 
 import {
   E03_COMMUNICATION_CONDITIONS,
-  E03_DESIGN_ROWS,
   buildE03SeedManifest,
+  selectE03PrimarySeeds,
   type E03RegistrationStage,
   type E03SeedManifest,
 } from './e03-design.js';
@@ -52,6 +52,8 @@ export interface E03SampleSizeDecision {
   readonly pilotRegistrationHash: string;
   readonly pilotReceiptPath: string;
   readonly pilotReceiptSha256: string;
+  readonly pilotReductionPath: string;
+  readonly pilotReductionSha256: string;
   readonly powerReceiptPath: string;
   readonly powerReceiptSha256: string;
   readonly largestLatentPilotSd: number;
@@ -136,22 +138,18 @@ function assertSampleSizeDecision(
     decision.largestLatentPilotSd > 0.2 ||
     decision.selectedPrimarySeeds !== input.primarySeeds ||
     !E03_CANDIDATE_PRIMARY_SEEDS.has(input.primarySeeds) ||
-    selectedSeedsForSd(decision.largestLatentPilotSd) !==
+    selectE03PrimarySeeds(decision.largestLatentPilotSd) !==
       decision.selectedPrimarySeeds ||
     !safeEvidencePath(decision.pilotReceiptPath) ||
+    !safeEvidencePath(decision.pilotReductionPath) ||
     !safeEvidencePath(decision.powerReceiptPath) ||
     !SHA256_PATTERN.test(decision.pilotRegistrationHash) ||
     !SHA256_PATTERN.test(decision.pilotReceiptSha256) ||
+    !SHA256_PATTERN.test(decision.pilotReductionSha256) ||
     !SHA256_PATTERN.test(decision.powerReceiptSha256)
   ) {
     throw new AnalysisError('domain', 'E03 sample-size decision does not satisfy the frozen rule');
   }
-}
-
-function selectedSeedsForSd(largestLatentPilotSd: number): number | undefined {
-  return E03_DESIGN_ROWS.find(
-    (row) => largestLatentPilotSd <= row.maximumBetweenSeedSd,
-  )?.primarySeeds;
 }
 
 function safeEvidencePath(value: string): boolean {

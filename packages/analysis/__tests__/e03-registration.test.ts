@@ -42,6 +42,8 @@ const sampleSizeDecision = {
   pilotRegistrationHash: hash('pilot-registration'),
   pilotReceiptPath: 'evidence/pilots/e03-v1/pilot-receipt.json',
   pilotReceiptSha256: hash('pilot-receipt'),
+  pilotReductionPath: 'evidence/pilots/e03-v1/pilot-reduction.json',
+  pilotReductionSha256: hash('pilot-reduction'),
   powerReceiptPath: 'evidence/pilots/e03-v1/power-receipt.json',
   powerReceiptSha256: hash('power-receipt'),
   largestLatentPilotSd: 0.05,

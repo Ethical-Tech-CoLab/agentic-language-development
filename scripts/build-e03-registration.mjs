@@ -67,6 +67,25 @@ if (stage === 'full-qualification') {
     throw new Error('sample-size decision does not identify a complete eligible E03 pilot');
   }
 
+  const reduction = await readJson(sampleSizeDecision.pilotReductionPath);
+  if (sha256(reduction.bytes) !== sampleSizeDecision.pilotReductionSha256) {
+    throw new Error('sample-size decision pilot reduction digest does not match retained bytes');
+  }
+  if (
+    reduction.value.classification !== 'outcome-blind-pilot-sample-size-input' ||
+    reduction.value.researchFinding !== false ||
+    reduction.value.scientificDisposition !== 'not-tested' ||
+    reduction.value.pilotSlots !== 20 ||
+    reduction.value.episodesPerSlot !== 200 ||
+    reduction.value.pilotRegistrationHash !== sampleSizeDecision.pilotRegistrationHash ||
+    reduction.value.pilotReceipt?.sha256 !== sampleSizeDecision.pilotReceiptSha256 ||
+    reduction.value.largestLatentPilotSd !== sampleSizeDecision.largestLatentPilotSd ||
+    reduction.value.selectedPrimarySeeds !== sampleSizeDecision.selectedPrimarySeeds ||
+    reduction.value.requiresProspectiveAmendment !== false
+  ) {
+    throw new Error('sample-size decision does not match the outcome-blind pilot reduction');
+  }
+
   const power = await readJson(sampleSizeDecision.powerReceiptPath);
   if (sha256(power.bytes) !== sampleSizeDecision.powerReceiptSha256) {
     throw new Error('sample-size decision power receipt digest does not match retained bytes');
@@ -75,6 +94,10 @@ if (stage === 'full-qualification') {
     power.value.experimentId !== 'E03' ||
     power.value.classification !== 'outcome-blind-power-simulation' ||
     power.value.decisionRule !== sampleSizeDecision.decisionRule ||
+    power.value.pilotRegistrationHash !== sampleSizeDecision.pilotRegistrationHash ||
+    power.value.pilotReceipt?.sha256 !== sampleSizeDecision.pilotReceiptSha256 ||
+    power.value.pilotReduction?.sha256 !== sampleSizeDecision.pilotReductionSha256 ||
+    power.value.largestLatentPilotSd !== sampleSizeDecision.largestLatentPilotSd ||
     power.value.selectedPrimarySeeds !== sampleSizeDecision.selectedPrimarySeeds ||
     power.value.monteCarloRepetitions !== sampleSizeDecision.monteCarloRepetitions ||
     power.value.monteCarloLower95 !== sampleSizeDecision.monteCarloLower95 ||

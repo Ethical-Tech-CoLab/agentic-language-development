@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.124"
+    "version": "0.1.125"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1450,8 +1450,8 @@
   },
   "summary": {
     "backlogItems": 86,
-    "backlogCriteria": 260,
-    "checkedBacklogCriteria": 256,
+    "backlogCriteria": 261,
+    "checkedBacklogCriteria": 257,
     "openBacklogCriteria": 4,
     "normativeLines": 96,
     "mappedNormativeLines": 92,
@@ -4356,6 +4356,17 @@
       "id": "ALD-082.3",
       "checked": true,
       "statement": "The committed seed manifest derives disjoint pilot and full-stage scenario,",
+      "itemId": "ALD-082",
+      "itemTitle": "Reproducible E03 design simulation and seed manifest",
+      "disposition": "provisional-mapped",
+      "assertionPaths": [
+        "packages/analysis/__tests__/e03-design.test.ts"
+      ]
+    },
+    {
+      "id": "ALD-082.4",
+      "checked": true,
+      "statement": "The pilot reducer requires all five non-oracle conditions and exactly twenty",
       "itemId": "ALD-082",
       "itemTitle": "Reproducible E03 design simulation and seed manifest",
       "disposition": "provisional-mapped",
