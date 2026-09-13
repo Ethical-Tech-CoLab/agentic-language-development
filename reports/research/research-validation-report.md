@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.117 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.118 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -59,7 +59,9 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   1,959 tests and the ordinary two-container Mode R lifecycle. The
   [pre-registration receipt](e02-v3-readiness-qualification-receipt.json) binds the
   separate framed fault suite, source files, raw logs, checks, and limitations.
-  Packet registration and all E02 execution evidence remain absent.
+  A fresh v3 packet with five seeds disjoint from v1/v2 is now repository-registered
+  under `sha256:d35e6b1…f979f248`. Its matching commitment and all v3 execution
+  evidence remain absent.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

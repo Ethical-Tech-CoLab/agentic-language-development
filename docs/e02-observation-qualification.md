@@ -12,8 +12,10 @@ the ceiling for non-remote timeout rejections. Local synthetic and real framed-
 adapter deadline fixtures pass. Exact v0.1.115 also passed the full repository and
 ordinary two-container Mode R gates, with source and logs bound in the
 [v3 readiness qualification](../reports/research/e02-v3-readiness-qualification.md).
-V3 packet creation is now eligible; no v3 identifier, seed, or observation has yet
-been registered or used.
+The v3 packet is repository-registered under
+`sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248`.
+Its five identifiers and seeds are disjoint from v1/v2 and remain unused pending the
+matching simulated commitment and exact clean execution gate.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode

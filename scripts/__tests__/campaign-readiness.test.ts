@@ -34,6 +34,7 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'reports/research/e02-v2-failure-evidence.json': source('reports/research/e02-v2-failure-evidence.json'),
     'protocols/e02-registration.v2.json': source('protocols/e02-registration.v2.json'),
     'protocols/e02-registration-binding.v2.json': source('protocols/e02-registration-binding.v2.json'),
+    'protocols/e02-registration.v3.json': source('protocols/e02-registration.v3.json'),
   };
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);

@@ -9,7 +9,7 @@ import { hashCanonical } from '@ald/hashing';
 const cardsPath = 'protocols/research-protocol-cards.v1.json';
 const e00Path = 'protocols/e00-registration.v5.json';
 const e01Path = 'protocols/e01-registration.v2.json';
-const e02Path = 'protocols/e02-registration.v2.json';
+const e02Path = 'protocols/e02-registration.v3.json';
 const outputPath = 'reports/research/registration-packet-readiness.json';
 const hash = (value: Buffer | string): string => createHash('sha256').update(value).digest('hex');
 

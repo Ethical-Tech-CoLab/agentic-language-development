@@ -164,62 +164,62 @@
         {
           "key": "protocolCard",
           "sha256": "sha256:ef8ff26e9eadab7faced94e9e084a84de242fbc42e32926faf79d94f293094c3",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "runConfigurations",
-          "sha256": "sha256:465d748417953e48c5f1b00c1d679f05732983c0bfc44e04a8ae0a84ab1bc244",
-          "source": "protocols/e02-registration.v2.json"
+          "sha256": "sha256:aa7ddfc7419b6ad98c8d0b8742e651a5daf5bc61b93e1ec931991c8a6deaa8a1",
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "practicalMargins",
-          "sha256": "sha256:4a933b00b6042d04508354778f1798522f23a8f55f5aaade4eb3d0525dbde62a",
-          "source": "protocols/e02-registration.v2.json"
+          "sha256": "sha256:d73584626a16533edbeb53c82485cd08183591099348033809c302174b1d51ab",
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "analysisVersions",
-          "sha256": "sha256:8c72bedeb7a3ac336a600f2c2554bd1a31a5681b7427a150123122161489d565",
-          "source": "protocols/e02-registration.v2.json"
+          "sha256": "sha256:75ee292df884c03f19aa6f0e5b6efd8d8cdada5773f3d0a59c3e7bbfb3363482",
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "modelAssets",
           "sha256": "sha256:0ae95b69a6472be0eac468c297193b050375b7b0a945d7aa5c21f28563329645",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "selectedSeedPrefix",
-          "sha256": "sha256:f7eb23a4d5cd6112c1e9c3368ad632253fa8c9134ad0f87a62e33279264f8256",
-          "source": "protocols/e02-registration.v2.json"
+          "sha256": "sha256:1f38937947dcfef1e9bf2c64d58bcf0ee699f2a338934a196093b3f962ffbac5",
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "executionHost",
           "sha256": "sha256:3ced6d4b6cf5a211977882b8e0866d0f44544f1b454746022f552d074673a170",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "scenarioBundle",
           "sha256": "sha256:c0e033f78b402dfa4cb694f750dfe3043fc56cebb56937c47f0bcca9445c4a4c",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "exclusionRules",
           "sha256": "sha256:e3232e9ddbccf5a7e6a941d81efee0cd516565d69c9d2579d32190d2f106eabd",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "stoppingRules",
           "sha256": "sha256:06fa8de98d57ca7013496e496cb890b75201285a9312745317657394f5ed330a",
-          "source": "protocols/e02-registration.v2.json"
+          "source": "protocols/e02-registration.v3.json"
         },
         {
           "key": "evidenceAndAnchorPolicy",
-          "sha256": "sha256:3d945caee950321cbe2363859d5221467acffaadbfec8af324be73899d16f7ff",
-          "source": "protocols/e02-registration.v2.json"
+          "sha256": "sha256:fc0071f46897b5a312cf82a76ae60d590f0fddfa3b9a5c3a16afa6033446efb5",
+          "source": "protocols/e02-registration.v3.json"
         }
       ],
       "unresolvedBindings": [],
       "compileAttempt": "compiled-and-hash-reproduced",
-      "preRegistrationHash": "sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d"
+      "preRegistrationHash": "sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248"
     },
     {
       "experimentId": "E03",
