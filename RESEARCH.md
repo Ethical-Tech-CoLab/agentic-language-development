@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.120 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.121 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1191,8 +1191,9 @@ The prospective v3 packet is now repository-registered under
 with five seeds disjoint from v1/v2. Its deterministic simulated commitment has
 three confirmations and zero currency. It is not yet executed, and this is not E02
 completion or a behavioral claim. Exact v0.1.119 passed the full 1,963-test gate,
-release-auditor binding, and ordinary two-container Mode R preflight; one sequential
-v3 attempt is ready and remains unstarted.
+release-auditor binding, and ordinary two-container Mode R preflight. One sequential
+v3 attempt began on exact clean commit `9ec08ec`; slot 1 is running and the service
+has zero restarts. This start is not a completed slot or result.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

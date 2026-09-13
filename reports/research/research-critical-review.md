@@ -1,9 +1,9 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-13
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.120
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.121
 Decision: **Needs revision before submission**  
-Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
 AI-assistance disclosure, and rendered-page overlap were corrected.

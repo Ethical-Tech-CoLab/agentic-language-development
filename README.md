@@ -95,9 +95,9 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.120 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.121 · 254/258 backlog acceptance criteria verified.
 
-Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
 
 The verifiable core, communication runtime, Mode R isolation, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00 and E01 have
@@ -115,8 +115,9 @@ binds the source, fault cases, raw logs, results, and limitations. Prospective v
 packet and five fresh seed identifiers are repository-registered under hash
 `sha256:d35e6b1…f979f248`. Its matching deterministic simulated commitment has three
 confirmations and zero currency. Exact v0.1.119 passed the clean 1,963-test and
-real-container execution gates, so one sequential v3 qualification attempt is ready;
-the five seeds remain unused. The remaining
+real-container execution gates. One sequential v3 qualification attempt started on
+exact clean commit `9ec08ec`; slot 1 is in progress with zero service restarts. This
+start is not a completed slot or result. The remaining
 research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785

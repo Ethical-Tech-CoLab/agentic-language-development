@@ -19,7 +19,10 @@ simulated commitment records three confirmations and zero currency. The seeds re
 unused. Exact v0.1.119 passed the full 1,963-test gate, release-auditor hash check,
 and ordinary two-container Mode R preflight. The
 [execution-gate receipt](../reports/research/e02-v3-execution-gate.md) authorizes one
-sequential v3 attempt.
+sequential v3 attempt. That attempt started on exact commit `9ec08ec` at
+2026-09-13T20:49:51Z. Slot 1 is running under a no-restart service; the
+[start receipt](../reports/research/e02-v3-execution-start.json) is not a completion
+or result.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode

@@ -37,6 +37,7 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'protocols/e02-registration.v3.json': source('protocols/e02-registration.v3.json'),
     'protocols/e02-registration-binding.v3.json': source('protocols/e02-registration-binding.v3.json'),
     'reports/research/e02-v3-execution-gate-receipt.json': source('reports/research/e02-v3-execution-gate-receipt.json'),
+    'reports/research/e02-v3-execution-start.json': source('reports/research/e02-v3-execution-start.json'),
   };
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
@@ -68,6 +69,7 @@ describe('stage-specific campaign progress', () => {
       const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
       e02.executionReadiness = { stage: 'qualification', decision: 'complete', reasonCodes: [] };
       e02.attempt = { status: 'completed', planned: 5, attempted: 5, completed: 5 };
+      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = false;
       e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v2-qualification-receipt.json').statusAuthority = true;
       receipts.e02.passed = true;
       receipts.e02.failure = null;
@@ -81,6 +83,7 @@ describe('stage-specific campaign progress', () => {
       const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
       e02.executionReadiness = { stage: 'qualification', decision: 'blocked', reasonCodes: ['B16'] };
       e02.attempt = { status: 'failed', planned: 5, attempted: 1, completed: 0 };
+      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = false;
       e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v2-qualification-receipt.json').statusAuthority = true;
       receipts.e02.passed = false;
       receipts.e02.failure = null;

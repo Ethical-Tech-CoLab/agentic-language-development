@@ -7,7 +7,7 @@ Independent human review: not performed
 
 ## Decision
 
-Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
 
 All 19 experiment cards are covered. E00 completed its registered software
 qualification and E01 v2 closed B15 with signed explicit-corpus evidence. E02 v1
@@ -42,7 +42,8 @@ to relabel any existing fixture as a pilot.
    newly repository-registered packet with five fresh, unused seeds and a matching
    three-confirmation simulated commitment. Exact v0.1.119 passed the clean
    1,963-test, release-auditor, and real-container preflight gates; the single
-   sequential attempt is ready and unstarted.
+   sequential attempt started on exact commit `9ec08ec`; slot 1 is running and no
+   completion or result is claimed.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
@@ -80,7 +81,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | Yes—qualification | V3 packet, unused seeds, simulated commitment, and exact preflight pass; five-slot execution, restore, probes, verification, and terminal accounting remain |
+| E02 | Running—qualification | V3 packet, simulated commitment, and exact preflight pass; slot 1 is running, while five-slot completion, restore, probes, verification, and terminal accounting remain |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |

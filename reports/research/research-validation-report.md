@@ -2,12 +2,12 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.120 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.121 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
 
-Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
 
 - The 2026-09-13 maintenance audit reproduced 18 malformed E00/E01 receipts that
   permissive checks accepted, plus two failures caused by absent ignored evidence.
@@ -65,7 +65,9 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   Exact v0.1.119 subsequently passed 1,963 tests, the registered release-auditor
   hash check, and ordinary two-container Mode R preflight. The hash-bound
   [execution gate](e02-v3-execution-gate-receipt.json) permits one sequential
-  five-slot attempt; its seeds remain unused.
+  five-slot attempt. That attempt started on exact clean commit `9ec08ec`; slot 1 is
+  running under a no-restart service. The start receipt records zero completed slots
+  and remains non-scientific.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

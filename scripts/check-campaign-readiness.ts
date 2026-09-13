@@ -114,12 +114,25 @@ for (const entry of review.experiments) {
     if (receipt.experimentId !== entry.id) throw new Error(`${entry.id} status receipt belongs to another experiment`);
     const slots = Array.isArray(receipt.slots) ? receipt.slots.length : 0;
     let receiptStatus: AttemptStatus | 'unresolved' = 'unresolved';
-    if (receipt.allDispositionsMatched === true && slots === attempt.planned) receiptStatus = 'completed';
+    if (
+      receipt.attemptStatus === 'running' &&
+      receipt.researchFinding === false &&
+      receipt.scientificDisposition === 'not-tested' &&
+      receipt.completedSlots === 0
+    ) receiptStatus = 'running';
+    else if (receipt.allDispositionsMatched === true && slots === attempt.planned) receiptStatus = 'completed';
     else if (receipt.passed === true && receipt.failure === null && slots === attempt.planned) receiptStatus = 'completed';
     else if (receipt.passed === false && typeof receipt.failure === 'string' && receipt.failure.length > 0) receiptStatus = 'failed';
     else if (receipt.passed === false && receipt.failure === null && slots === attempt.planned) receiptStatus = 'completed';
     if (receiptStatus !== attempt.status || slots !== attempt.completed) {
       throw new Error(`${entry.id} progress contradicts its status-authority receipt`);
+    }
+    if (
+      (typeof receipt.plannedSlots === 'number' && receipt.plannedSlots !== attempt.planned) ||
+      (typeof receipt.attemptedSlots === 'number' && receipt.attemptedSlots !== attempt.attempted) ||
+      (typeof receipt.completedSlots === 'number' && receipt.completedSlots !== attempt.completed)
+    ) {
+      throw new Error(`${entry.id} accounting contradicts its status-authority receipt`);
     }
   }
 }

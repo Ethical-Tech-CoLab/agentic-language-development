@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "attemptVersion": "v3",
+  "stage": "qualification",
+  "classification": "registered-qualification-attempt-start",
+  "attemptStatus": "running",
+  "scientificDisposition": "not-tested",
+  "researchFinding": false,
+  "executionCommit": "9ec08ecf4528c6da8867d55900d6ca8667ded7ce",
+  "registrationHash": "sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248",
+  "startedAt": "2026-09-13T20:49:51.132Z",
+  "observedAt": "2026-09-13T20:51:47Z",
+  "plannedSlots": 5,
+  "attemptedSlots": 1,
+  "completedSlots": 0,
+  "currentSlot": 1,
+  "currentRunId": "registered-e02-v3-1",
+  "noSameSeedRerun": true,
+  "serviceObservation": {
+    "unit": "ald-e02-v3-qualification.service",
+    "activeState": "active",
+    "subState": "running",
+    "restartPolicy": "no",
+    "restartCount": 0
+  },
+  "trackedArtifacts": [
+    { "path": "protocols/e02-registration.v3.json", "bytes": 68462, "sha256": "eaef00298ec39d80343dff8a13ae32f45f7b36ebba2cb00d3eacaa39408d55d8" },
+    { "path": "protocols/e02-registration-binding.v3.json", "bytes": 928, "sha256": "5bec2f4a669bf822bfa687f69b4b8988d0ff9a7f224b2e35dcda5e8972fe9cab" },
+    { "path": "reports/research/e02-v3-execution-gate-receipt.json", "bytes": 4389, "sha256": "decb3b0b88809e20f28ee8f519154d695014d42bf89c837a27518d10ea24d6e6" }
+  ],
+  "retainedAttemptArtifact": {
+    "path": "evidence/qualification/e02-v3/attempt.json",
+    "bytes": 826,
+    "sha256": "f073a585b157f4e021f95ac80e0afb55439f8278c7a40928ecf678e3d95cc17d"
+  },
+  "claimBoundary": "This is a start receipt for one registered software-qualification attempt. It is not a completed slot, passing qualification, behavioral result, hypothesis decision, independent review, or public timestamp. Current progress after observedAt belongs to retained live evidence and the eventual terminal receipt."
+}
