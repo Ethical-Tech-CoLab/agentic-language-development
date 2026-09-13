@@ -147,7 +147,7 @@ describe('current project status', () => {
     const directory = statusFixture();
     const target = join(directory, 'EXPERIMENT-NOTEBOOK.md');
     const original = readFileSync(target, 'utf8');
-    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Not started |',
+    writeFileSync(target, original.replace('| E02 | Observation and metadata leakage audit | E00 | Failed |',
       '| E02 | Observation and metadata leakage audit | E00 | Running |'));
     const result = check(directory);
     expect(result.status).not.toBe(0);

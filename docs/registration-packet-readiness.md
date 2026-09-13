@@ -59,10 +59,10 @@ Therefore:
 - immutable repository registration and matching simulated pre-run commitments:
   E00 v2 and v4 are complete failed attempts; v3 is superseded without outcomes;
   v5 passed all five registered slots. E01 v1 passed its bounded category gate and
-  v2 passed the explicit signed corpus. E02 v1 and its matching simulated activation
-  remain preserved as a failed attempt. A fresh v2 packet is compiled from the
-  repaired implementation with new identifiers and seeds. Its matching simulated
-  activation is committed; qualification remains a separate gate.
+  v2 passed the explicit signed corpus. E02 v1 and v2, with their matching simulated
+  activations, remain preserved as failed attempts. The E02 v2 packet still
+  hash-reproduces as a historical compiled artifact, but its identifiers and seeds
+  are consumed; a fresh v3 packet is required after the all-method deadline repair.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

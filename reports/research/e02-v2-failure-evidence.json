@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "attemptVersion": "v2",
+  "classification": "supplemental-failure-evidence",
+  "researchFinding": false,
+  "historicalEvidenceModified": false,
+  "attemptStatus": "failed",
+  "scientificDisposition": "not-tested",
+  "registrationHash": "sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d",
+  "executionCommit": "7ed10f9f844f6a51c257f1f57829a57bbdf754ab",
+  "startedAt": "2026-09-13T18:48:09.203Z",
+  "plannedSlots": 5,
+  "attemptedSlots": 1,
+  "completedSlots": 0,
+  "unattemptedSlots": 4,
+  "progress": {
+    "runId": "registered-e02-v2-1",
+    "stage": "before-restore-collection",
+    "committedTurns": 161,
+    "lastCommittedTurnIndex": 160,
+    "deliveredAdapterObservations": 324,
+    "acceptedChannelEvents": 162,
+    "checkpointManifests": 1,
+    "completedProbeReports": 0,
+    "restoreCompleted": false,
+    "finalExportCompleted": false
+  },
+  "terminalCause": {
+    "recordedFailure": "TurnDeadlineExceededError: Turn response budget of 1000ms elapsed",
+    "deadlineExceededAdapters": 1,
+    "deadlineExceededCalls": 1,
+    "hostErrors": 0,
+    "timeouts": 1,
+    "responsesDropped": 1,
+    "localization": "The timeout occurred after both observations, the accepted sender event, the receiver interpretation, and the receiver action-side ledger writes for turn 161, but before its turn record. This sequence localizes the uncaught timeout to the post-action turn path; the exact method was not persisted in the original error.",
+    "safetyEventRecorded": false
+  },
+  "collectorFailure": {
+    "relationship": "wrapper-assertion-after-slot-failure",
+    "message": "AssertionError: Expected values to be strictly equal: actual TurnDeadlineExceededError versus expected null",
+    "receiptSlotCount": 0
+  },
+  "resourceObservation": {
+    "wallMilliseconds": 1145098.580785,
+    "processUserCpuMicroseconds": 7499384,
+    "processSystemCpuMicroseconds": 2278112,
+    "processMaximumResidentSetKiB": 160736,
+    "nurseryCgroupPeakBytes": 138432512,
+    "nurseryCgroupCpuUsageMicroseconds": 9653182
+  },
+  "trackedArtifacts": [
+    {
+      "path": "protocols/e02-registration.v2.json",
+      "bytes": 68038,
+      "sha256": "ab1f709fe6f2849c9556e7ad28810ea1aa1bfda8c22b243e4e8d752aa2577666"
+    },
+    {
+      "path": "protocols/e02-registration-binding.v2.json",
+      "bytes": 928,
+      "sha256": "a6cc7d3244038a1354ec5f6dcd62d38bfca06ec10ea8366961da152af723837e"
+    },
+    {
+      "path": "reports/research/e02-v2-qualification-receipt.json",
+      "bytes": 829,
+      "sha256": "995e57758a65f94126a4580bb5efed4332d283cf95d306eff2369a4cc156f7e4"
+    }
+  ],
+  "retainedRawArtifacts": [
+    {
+      "path": "evidence/qualification/e02-v2/attempt.json",
+      "bytes": 826,
+      "sha256": "2afdda2c1ae2a228f77daf5bf30bf98846fbc5c48851f22cfc45c60d3c695c6c"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/registration-packet.json",
+      "bytes": 68038,
+      "sha256": "ab1f709fe6f2849c9556e7ad28810ea1aa1bfda8c22b243e4e8d752aa2577666"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/registration-binding.json",
+      "bytes": 928,
+      "sha256": "a6cc7d3244038a1354ec5f6dcd62d38bfca06ec10ea8366961da152af723837e"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/ald-integrity-auditor",
+      "bytes": 1004296,
+      "sha256": "2a81ee950998c91a14801d7d9adde514b5856aa3ad4f6da594f273bf060f307c"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/slot-1.log",
+      "bytes": 97,
+      "sha256": "b3173452d78cc565604863bfc79fb9caafd985574f82f3bc39caa9530092398c"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/registered-e02-v2-1/evidence.sqlite",
+      "bytes": 2351104,
+      "sha256": "79253703f81055bf2d023bf2397777928dbdac8197d5c7318593e5feb957fa0f"
+    },
+    {
+      "path": "evidence/qualification/e02-v2/registered-e02-v2-1/slot.json",
+      "bytes": 278709,
+      "sha256": "b443b445fabc27da9875b49db3db1fe2b850d4bbf42c2482c6d349df6613624f"
+    }
+  ],
+  "databaseCounts": {
+    "affect_events": 0,
+    "analysis_attachments": 0,
+    "anchor_receipts": 0,
+    "audit_ledger_entries": 0,
+    "channel_events": 162,
+    "checkpoint_manifests": 1,
+    "experiment_records": 1,
+    "fork_artifacts": 0,
+    "intervention_log": 1,
+    "ledger_events": 756,
+    "run_metadata": 1,
+    "run_signers": 6,
+    "schema_migrations": 4,
+    "turn_records": 161
+  },
+  "claimBoundary": "Append-only interpretation of a failed software-qualification attempt. This record is not a completed export, successful qualification, behavioral result, negative scientific finding, independent review, or public timestamp."
+}

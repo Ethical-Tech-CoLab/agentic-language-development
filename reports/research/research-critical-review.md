@@ -1,9 +1,9 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-13
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.112
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.113
 Decision: **Needs revision before submission**  
-Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
 AI-assistance disclosure, and rendered-page overlap were corrected.
@@ -38,7 +38,7 @@ received independent verification.
    passed as software qualification after two preserved failures and one outcome-free
    amendment. E01 v2 passed five registered topology slots with 560 signed records,
    closing B15's explicit-corpus and evidence-binding gap;
-   E02 v1 failed before analysis, 16 experiments remain `Not started`, and zero bundles are research-included.
+   E02 v1 and v2 failed before analysis, 16 experiments remain `Not started`, and zero bundles are research-included.
    Three E00 prospective simulated commitments are preserved, and the E00, E01 and E02
    qualification packets compile. **Fix (required):**
    close the local gates, repository-register an exact experiment, run the dependency-ordered

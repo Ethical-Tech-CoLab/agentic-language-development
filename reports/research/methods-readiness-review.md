@@ -7,13 +7,14 @@ Independent human review: not performed
 
 ## Decision
 
-Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
 
 All 19 experiment cards are covered. E00 completed its registered software
 qualification and E01 v2 closed B15 with signed explicit-corpus evidence. E02 v1
-stopped at its safety pause before restore or analysis. Its corrected v2 packet and
-simulated activation are committed, and its fresh five-slot attempt has not started;
-16 other experiments await prerequisites. The
+stopped at its safety pause before restore or analysis. E02 v2 then stopped after
+161 recorded turns when one post-action turn-path deadline escaped without a
+forfeited turn record or safety event. Both attempts remain failed; 16 other
+experiments await prerequisites. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
 software qualifications do not substitute for repository registration, prospective
@@ -32,9 +33,10 @@ to relabel any existing fixture as a pilot.
    registration, and identical verified pre-run simulated commitment.
 2. No blinded pilot has supplied the variance and feasibility inputs needed to select
    exact confirmatory seed prefixes. N=100 is planning-only.
-3. E02 v1 stopped after repeated response timeouts triggered the safety pause. Its
-   timing boundary is corrected and v2 is prospectively registered with fresh seeds;
-   the complete five-slot qualification and integrity audits remain required.
+3. E02 v1 stopped after repeated response timeouts triggered the safety pause. V2
+   corrected the nested deadline race but exposed an uncovered post-action timeout
+   path. All turn-path methods must now receive the same audited forfeit behavior
+   before v3 can be registered with fresh seeds.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
@@ -59,8 +61,9 @@ to relabel any existing fixture as a pilot.
   slots with all 560 explicit attempt/control records signed and checkpointed;
   both verifier implementations accepted the original bundles, closing B15.
 - A fail-closed canonical packet compiler rejects missing, extra, empty, and
-  placeholder operational fields. E00, E01 and E02 each have all eleven bindings and
-  compile exact packets; the remaining 16 cards have 160 unresolved exact bindings.
+  placeholder operational fields. E00 and E01 retain usable packets; the failed E02
+  v2 attempt consumed its packet and seeds. The remaining 16 cards have 160 unresolved
+  exact bindings, and E02 requires a fresh v3 packet.
 - Independent restore, methods/statistics review, reproduction review, hosted
   enforcement, and load-bearing citation re-review remain optional external evidence
   gaps. They do not block local collection, and no corresponding independent claim is made.
@@ -71,7 +74,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | Yes, to start qualification | V2 packet and simulated activation are committed; all five fresh slots, restore stages, probes, and audits must pass before E03 |
+| E02 | No | V2 failed after 161 recorded turns; all turn-path deadline failures must forfeit and be audited before a fresh v3 packet can be registered |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |

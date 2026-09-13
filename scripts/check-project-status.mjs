@@ -67,15 +67,17 @@ for (const expected of campaign.experiments) {
 }
 const qualifiedSoftware = campaign.experiments.filter((entry) =>
   entry.executionReadiness.stage === 'qualification' && entry.executionReadiness.decision === 'complete').length;
-const failedQualification = campaign.experiments.filter((entry) =>
-  entry.executionReadiness.stage === 'qualification' &&
-  (entry.attempt.status === 'failed' || entry.evidence.some((evidence) =>
-    evidence.kind === 'historical-terminal-receipt'))).length;
+const failedQualification = campaign.experiments.reduce((sum, entry) => {
+  if (entry.executionReadiness.stage !== 'qualification') return sum;
+  const historical = entry.evidence.filter((evidence) =>
+    evidence.kind === 'historical-terminal-receipt').length;
+  return sum + historical + (entry.attempt.status === 'failed' ? 1 : 0);
+}, 0);
 const running = campaign.experiments.filter((entry) => entry.attempt.status === 'running').length;
 const notStarted = campaign.experiments.filter((entry) =>
   entry.attempt.status === 'not-started' && entry.evidence.length === 0).length;
 const researchStatus = `Research status: ${qualifiedSoftware} qualified (software), ` +
-  `${failedQualification} failed qualification attempt, ` +
+  `${failedQualification} failed qualification ${failedQualification === 1 ? 'attempt' : 'attempts'}, ` +
   `${running} in progress, ${notStarted} not started; ` +
   `${campaign.blockingFindings.length} open campaign blockers.`;
 requireText(readme, researchStatus, 'README.md');

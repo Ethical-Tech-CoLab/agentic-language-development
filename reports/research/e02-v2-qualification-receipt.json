@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "researchFinding": false,
+  "classification": "prospectively-registered-software-qualification",
+  "registrationHash": "sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d",
+  "executionCommit": "7ed10f9f844f6a51c257f1f57829a57bbdf754ab",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "slots": [],
+  "failure": "AssertionError: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'TurnDeadlineExceededError: Turn response budget of 1000ms elapsed'\n- null\n",
+  "wallMilliseconds": 1217232.4305540002,
+  "passed": false,
+  "claimBoundary": "Asset-free numeric scratch-learner topology and registered linear feature probes only. No behavioral finding, image encoder qualification, independent operator review, or public timestamp."
+}

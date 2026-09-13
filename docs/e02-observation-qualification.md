@@ -1,11 +1,9 @@
 # E02 observation qualification: implementation and evidence boundary
 
-Status: registered v1 attempt failed before restore and probe evaluation. Its
-deadline defect is corrected and qualified as software on a committed development
-smoke. E02 itself is not qualified. V2 packet
-`sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d`
-is compiled from base `d87840029d0cbe6a780bb0e950aa07018d962d4e`; its matching
-repository-native simulated activation is committed. Execution remains.
+Status: registered v1 and v2 attempts both failed before restore and probe
+evaluation. V1 exposed the nested deadline race; v2 corrected that race but exposed
+an uncovered post-action timeout path after 161 recorded turns. E02 is not qualified.
+The v2 packet and its fresh seeds are consumed and must not be reused.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -92,6 +90,23 @@ parsing, policy synchronization, and fixed-schedule release. The Nursery retains
 its deadline for adapters without that authority. Genuine late completion and the
 five-rejection safety pause remain enforced. A new prospective packet, binding, run
 identifiers, and seed root are still required before another registered attempt.
+
+### Registered v2 attempt disposition
+
+The attempt started from exact clean commit
+`7ed10f9f844f6a51c257f1f57829a57bbdf754ab`. Slot 1 retained 161 turn records,
+324 delivered observations, 162 accepted channel events, and one checkpoint. One
+deadline exceedance and one dropped response occurred after both turn-161
+observations, the accepted sender event, receiver interpretation, and receiver
+action-side ledger writes, but before the turn record. No safety event, restore,
+probe report, sealing, or final export completed; slots 2–5 were not attempted.
+
+The original error did not persist the exact method. The recorded ordering localizes
+it to the post-action turn path. The wrapper receipt's zero slot summaries result
+from a later assertion against the failed slot, not from absence of the partial
+evidence. The next correction must cover every turn-path deadline as an audited
+forfeit and preserve the five-consecutive-rejection pause before a fresh v3 packet
+can be registered.
 
 ### Reproducible design calculation
 

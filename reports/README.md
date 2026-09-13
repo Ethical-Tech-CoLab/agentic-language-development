@@ -28,6 +28,10 @@ The campaign readiness review covers all 19 experiment cards and deliberately re
 `not-registration-ready` while governance, external anchors/registration, selected
 sample sizes, resources, final detector/comparator qualifications, and independent
 review remain absent.
+E02 v1 and v2 are retained failed software-qualification attempts. Neither reached
+restore or probe evaluation, and neither supplies an empirical leakage result. The
+v2 terminal receipt and supplemental failure analysis distinguish its primary
+turn-path deadline failure from the collector's later wrapper assertion.
 The external-prerequisite ledger converts O01–O06 into exact, privacy-minimized
 closure checks. Its read-only upstream observation records that required-check
 enforcement is not demonstrated; the zero-spend profile ledger is ready at 1/1

@@ -2,12 +2,12 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.112 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.113 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
 
-Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
 
 - The 2026-09-13 maintenance audit reproduced 18 malformed E00/E01 receipts that
   permissive checks accepted, plus two failures caused by absent ignored evidence.
@@ -48,10 +48,10 @@ Research status: 2 qualified (software), 1 failed qualification attempt, 0 in pr
   The resource envelope projects 7.972 hours per complete slot including a linear
   analysis/replay allowance; this is not a measured full registered result.
   The exact E02 v1 packet and matching simulated activation were committed. Its first
-  slot later stopped at the registered safety pause after 465 turns; no restore or
-  probe analysis completed, and slots 2–5 were not attempted. A prospectively amended
-  v2 packet and matching simulated activation are now committed with fresh run IDs
-  and seeds; its five-slot qualification has not started.
+  slot stopped at the registered safety pause after 465 turns. The prospectively
+  amended v2 packet then consumed a fresh allocation and stopped after 161 recorded
+  turns when one post-action deadline escaped without a forfeited turn record. Neither
+  attempt reached restore or probe analysis; slots 2–5 were unattempted in each.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -146,8 +146,8 @@ Research status: 2 qualified (software), 1 failed qualification attempt, 0 in pr
   The notebook preserves two failed E00 attempts and one outcome-free amendment;
   E01 v1 also passed five prospectively registered local topology/category slots,
   and E01 v2 subsequently closed the explicit corpus and signed-attempt gap with
-  five registered slots and dual-verifier acceptance. E02 v1 has an unsuccessful
-  retained attempt;
+  five registered slots and dual-verifier acceptance. E02 v1 and v2 have unsuccessful
+  retained attempts;
   16 experiments remain `Not started`. The historical 33-run Prototype qualification
   corpus remains unregistered, unanchored, and invalid
   for confirmatory inference by construction.
