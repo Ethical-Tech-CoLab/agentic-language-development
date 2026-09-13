@@ -1,0 +1,21 @@
+{
+  "registrationClass": "qualification",
+  "registrationAuthority": "repository-native",
+  "preRegistrationHash": "sha256:19e09a204bea21f03cfafbe240770d6913bbb4342d1c93ea4ec948e2c93630ea",
+  "repositoryRegistration": {
+    "commit": "f446239b2baa0967d557556d05ba4ee71be5c425",
+    "path": "protocols/e01-registration.v2.json",
+    "artifactSha256": "sha256:19e09a204bea21f03cfafbe240770d6913bbb4342d1c93ea4ec948e2c93630ea",
+    "committedAt": "2026-09-13T12:26:15+00:00"
+  },
+  "preRunAnchor": {
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "transactionHash": "0x124db842a5962c23836e9a0b0b822b3fcfd638117f5ea66244082dfa18084e42",
+    "inputData": "0x19e09a204bea21f03cfafbe240770d6913bbb4342d1c93ea4ec948e2c93630ea",
+    "blockNumber": 1,
+    "status": "confirmed"
+  },
+  "label": "E01 v2 software qualification; local simulation is not independent public timestamping"
+}
