@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.115 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.116 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1179,12 +1179,14 @@ stopped after 161 committed turns when a post-action turn-path deadline escaped
 without the required forfeited-turn record. Their partial databases are not exported
 bundles and are not included in this bundle inventory. Both attempts remain preserved
 as failed software qualifications, not behavioral results.
-The current engineering candidate converts deadlines from observation, sending,
+The exact v0.1.115 engineering candidate converts deadlines from observation, sending,
 receiving, receiver action, and post-outcome processing into one audited timeout-
 forfeit path with method-specific diagnostics. A timed-out remote adapter is made
 unreachable before another turn, and the attempt cannot be resumed even after
-runtime recovery. This repair remains development evidence until it passes a fresh
-exact-topology qualification.
+runtime recovery. It passed 1,959 tests and the ordinary two-container Mode R gate;
+the separate all-method framed fault suite and raw logs are bound in the
+[pre-registration qualification](reports/research/e02-v3-readiness-qualification.md).
+This authorizes prospective packet creation, not E02 completion or a behavioral claim.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

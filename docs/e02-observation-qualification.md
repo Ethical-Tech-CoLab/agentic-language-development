@@ -9,8 +9,11 @@ method used during a turn. It makes a timed-out remote adapter unreachable, paus
 the attempt immediately, and refuses resume—including after runtime recovery—so a
 late host completion cannot affect another turn. The five-rejection pause remains
 the ceiling for non-remote timeout rejections. Local synthetic and real framed-
-adapter deadline fixtures pass, but v3 remains ineligible until a fresh exact-
-topology qualification succeeds.
+adapter deadline fixtures pass. Exact v0.1.115 also passed the full repository and
+ordinary two-container Mode R gates, with source and logs bound in the
+[v3 readiness qualification](../reports/research/e02-v3-readiness-qualification.md).
+V3 packet creation is now eligible; no v3 identifier, seed, or observation has yet
+been registered or used.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -115,8 +118,11 @@ evidence. The current correction routes `observe`, sender and receiver `act`,
 `receive`, and `onOutcome` deadline failures through one audited forfeit path,
 records the method and role, and preserves the five-consecutive-rejection pause.
 Remote framed-adapter fixtures additionally show immediate boundary quarantine and
-no-resume recovery for each method. These are development-fixture results; fresh
-exact-topology qualification is still required before a v3 packet can be registered.
+no-resume recovery for each method. Exact v0.1.115 passed those cases within the
+1,959-test repository gate and separately passed the ordinary two-container Mode R
+lifecycle. The receipt discloses that delayed-method injection was framed in-process,
+not injected inside a container. These checks permit prospective v3 registration;
+they do not qualify E02 itself.
 
 ### Reproducible design calculation
 

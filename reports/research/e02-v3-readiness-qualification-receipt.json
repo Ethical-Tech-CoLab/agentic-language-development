@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "qualificationVersion": "v3-readiness-v1",
+  "classification": "pre-registration-software-qualification",
+  "passed": true,
+  "researchFinding": false,
+  "registeredExecution": false,
+  "scientificDisposition": "not-tested",
+  "candidate": {
+    "version": "0.1.115",
+    "commit": "2b87fa4177b50d1d0d939c676249bdb1966e3f71",
+    "tree": "01bc386b0bff8e66d81836b919e3ffc712208a13",
+    "committedAt": "2026-09-13T20:02:21+00:00"
+  },
+  "qualifiedAt": "2026-09-13T20:08:02Z",
+  "deadlineQualification": {
+    "turnPaths": [
+      { "role": "baby-a", "method": "observe" },
+      { "role": "baby-a", "method": "act" },
+      { "role": "baby-b", "method": "receive" },
+      { "role": "baby-b", "method": "act" },
+      { "role": "baby-a", "method": "onOutcome" }
+    ],
+    "syntheticForfeitCases": 5,
+    "framedRemoteDeadlineCases": 5,
+    "restartQuarantineCases": 1,
+    "nonRemoteRejectionStreakCases": 1,
+    "deadlineMilliseconds": 1000,
+    "remoteDisposition": "immediate-pause-quarantine-abort-only",
+    "nonRemoteDisposition": "five-consecutive-rejections-pause"
+  },
+  "fullCheck": {
+    "artifact": {
+      "path": "evidence/qualification/e02-v3-readiness-v2/full-check.log",
+      "bytes": 9358,
+      "sha256": "02686ed27f407088b2928922b99c8eb91cbd2623ad564546acc2a801a5b34449"
+    },
+    "testFilesPassed": 153,
+    "testsPassed": 1959,
+    "rustTestsPassed": 5,
+    "secretScanFiles": 764,
+    "dependencyAudit": "no-known-vulnerabilities",
+    "wallTime": "3:12.10",
+    "maximumResidentSetKiB": 690124,
+    "exitStatus": 0
+  },
+  "modeR": {
+    "artifact": {
+      "path": "evidence/qualification/e02-v3-readiness-v2/mode-r.log",
+      "bytes": 16228,
+      "sha256": "148fab43bb9ea4896cf63fa04dc0a25bee82b7e13847a1f7d3ba575847234f91"
+    },
+    "distinctLearnerContainers": true,
+    "directNetworkRoutes": "refused",
+    "filesystem": "denied",
+    "clipboard": "denied",
+    "childProcess": "denied",
+    "worker": "denied",
+    "environmentKeys": 0,
+    "timingNormalization": "normalized",
+    "activeSideChannelCategories": 12,
+    "transportSamples": 6,
+    "timingWithinTolerance": true,
+    "sizeWithinTolerance": true,
+    "errorShapeWithinTolerance": true,
+    "crashSurvivorResponsive": true,
+    "privateUpdateTracks": ["scratch-rl", "self-supervised", "hybrid"],
+    "wallTime": "1:35.64",
+    "maximumResidentSetKiB": 62744,
+    "exitStatus": 0
+  },
+  "sourceArtifacts": [
+    { "path": "packages/types/src/contracts.ts", "bytes": 30192, "sha256": "0fea31b2bed0e98c5eaa4ef55e34eb3196886008e9fc0dcb38603d4daa8554e6" },
+    { "path": "packages/isolation/src/host.ts", "bytes": 21731, "sha256": "859ee8102949aac2370d8d8bdc348b5c0e2e51175d03212e73d8f20c6bc7abad" },
+    { "path": "packages/isolation/src/remote-adapter.ts", "bytes": 27401, "sha256": "7f2a756925b847e7b1d70bd3e94b5281926e4683349d1490f2f85451ebc2ca48" },
+    { "path": "packages/orchestrator/src/nursery-runtime.ts", "bytes": 149914, "sha256": "494dbb9e845c43945565e99fcfa5603afc6f2369debc09b5b9aef7a5e99f16dc" },
+    { "path": "packages/orchestrator/src/index.ts", "bytes": 2943, "sha256": "6f3e99af22ddf667df98c0f660018321426cd87e90ac159669c8f48eec4fa56a" },
+    { "path": "packages/orchestrator/__tests__/turn-path-deadline.test.ts", "bytes": 11845, "sha256": "72bf8a55aa5860ca9812d82cbeb90a18519ed8ae73be51c3e8b1bb19ad9b0d2d" }
+  ],
+  "limitations": {
+    "faultInjectionTopology": "The deadline faults used a real framed RemoteLearnerAdapter and host transport in-process; the separate Mode R run qualified the ordinary two-container topology but did not inject a delayed method into a container.",
+    "nestedRendererBuildAdvisory": {
+      "reportedHighSeverity": 2,
+      "scope": "temporary read-as-book build dependency installation",
+      "runtimeDisposition": "pruned-before-runtime",
+      "claim": "This qualification does not establish a hardened supply-chain construction path."
+    },
+    "externalIndependence": "No public timestamp, public funds, third-party registration, or independent operator was used.",
+    "researchBoundary": "No registered E02 v3 packet, seed, observation, restore, probe report, behavioral estimate, or hypothesis decision was produced."
+  },
+  "claimBoundary": "This receipt qualifies the exact software candidate for prospective E02 v3 packet creation. It is not E02 completion, a behavioral result, independent replication, or publication readiness."
+}

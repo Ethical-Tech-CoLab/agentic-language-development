@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.115 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.116 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -55,8 +55,11 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   The current candidate unifies all turn-path method deadlines under an audited
   timeout-forfeit path with method-specific diagnostics. It immediately quarantines
   a timed-out remote adapter, forbids in-place resume across runtime recovery, and
-  retains the five-timeout ceiling for non-remote rejections. This is development
-  evidence pending fresh exact-topology qualification.
+  retains the five-timeout ceiling for non-remote rejections. Exact v0.1.115 passed
+  1,959 tests and the ordinary two-container Mode R lifecycle. The
+  [pre-registration receipt](e02-v3-readiness-qualification-receipt.json) binds the
+  separate framed fault suite, source files, raw logs, checks, and limitations.
+  Packet registration and all E02 execution evidence remain absent.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

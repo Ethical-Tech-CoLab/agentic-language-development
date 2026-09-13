@@ -37,8 +37,9 @@ to relabel any existing fixture as a pilot.
    corrected the nested deadline race but exposed an uncovered post-action timeout
    path. The current candidate supplies the same audited forfeit behavior across all
    turn-path methods and quarantines any timed-out remote adapter against late state
-   mutation, but fresh exact-topology qualification must pass before v3 can be
-   registered with fresh seeds.
+   mutation. Exact v0.1.115 passed the full repository gate, all framed deadline
+   cases, and the ordinary two-container Mode R lifecycle. V3 still requires a
+   fresh prospective packet, commitment, and unused seeds before execution.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
@@ -76,7 +77,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | No | V2 failed after 161 recorded turns; the all-method deadline and remote-quarantine repair has development coverage but requires fresh exact-topology qualification before a v3 packet can be registered |
+| E02 | No | V2 failed after 161 recorded turns; the all-method deadline and remote-quarantine repair passed pre-registration qualification, but v3 still needs a fresh packet, commitment, exact preflight, five-slot execution, restore, and probes |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |
