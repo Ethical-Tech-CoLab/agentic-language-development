@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -12,7 +13,10 @@ const sha256 = (value: Buffer | string): string =>
   createHash('sha256').update(value).digest('hex');
 const derive = (...parts: Array<string | number>): string =>
   sha256(parts.map(String).join('\0'));
-const read = (path: string): Buffer => readFileSync(path);
+// V1 is historical. Reproduce its committed inputs, not today's toolchain.
+const registrationCommit = '62dfd93e6e68cd52bed60701da6848b8292ccc4b';
+const read = (path: string): Buffer =>
+  execFileSync('git', ['show', `${registrationCommit}:${path}`]);
 
 const cardsPath = 'protocols/research-protocol-cards.v1.json';
 const allocationPath = 'protocols/seed-and-resource-allocation.v1.json';

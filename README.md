@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.98 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.99 · 254/258 backlog acceptance criteria verified.
 
 Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
 

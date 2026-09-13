@@ -4,11 +4,16 @@
   "type": "module",
   "dependencies": {
     "@ald/anchor": "workspace:*",
+    "@ald/checkpoint": "workspace:*",
+    "@ald/evidence": "workspace:*",
+    "@ald/gateway": "workspace:*",
+    "@ald/hashing": "workspace:*",
     "@ald/isolation": "workspace:*",
     "@ald/learners": "workspace:*",
     "@ald/lifecycle": "workspace:*",
     "@ald/orchestrator": "workspace:*",
     "@ald/redteam": "workspace:*",
-    "@ald/types": "workspace:*"
+    "@ald/types": "workspace:*",
+    "@ald/verifier": "workspace:*"
   }
 }

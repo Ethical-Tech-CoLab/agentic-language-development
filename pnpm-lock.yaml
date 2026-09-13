@@ -84,6 +84,18 @@ importers:
       '@ald/anchor':
         specifier: workspace:*
         version: link:../../packages/anchor
+      '@ald/checkpoint':
+        specifier: workspace:*
+        version: link:../../packages/checkpoint
+      '@ald/evidence':
+        specifier: workspace:*
+        version: link:../../packages/evidence
+      '@ald/gateway':
+        specifier: workspace:*
+        version: link:../../packages/gateway
+      '@ald/hashing':
+        specifier: workspace:*
+        version: link:../../packages/hashing
       '@ald/isolation':
         specifier: workspace:*
         version: link:../../packages/isolation
@@ -102,6 +114,9 @@ importers:
       '@ald/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@ald/verifier':
+        specifier: workspace:*
+        version: link:../../packages/verifier
 
   packages/analysis:
     dependencies:
