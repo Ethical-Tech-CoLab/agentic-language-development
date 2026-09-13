@@ -39,7 +39,7 @@ export function validateE02SlotContract(packet, candidate, slot, seed, packetPat
   assert.equal(binding.registrationClass, 'qualification');
   assert.equal(binding.registrationAuthority, 'repository-native');
   assert.equal(binding.preRegistrationHash, packet.preRegistrationHash);
-  assert.match(packetPath, /^protocols\/e02-registration\.v[12]\.json$/u);
+  assert.match(packetPath, /^protocols\/e02-registration\.v[123]\.json$/u);
   assert.equal(binding.repositoryRegistration.path, packetPath);
   assert.equal(binding.repositoryRegistration.artifactSha256, packet.preRegistrationHash);
   assert.equal(binding.preRunAnchor.anchorClass, 'simulated');

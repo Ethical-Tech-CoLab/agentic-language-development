@@ -17,6 +17,10 @@ const targets = {
     packetPath: 'protocols/e02-registration.v2.json',
     bindingPath: 'protocols/e02-registration-binding.v2.json',
   },
+  v3: {
+    packetPath: 'protocols/e02-registration.v3.json',
+    bindingPath: 'protocols/e02-registration-binding.v3.json',
+  },
 };
 const resourcePath = 'reports/research/e02-resource-envelope.json';
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
@@ -27,12 +31,22 @@ const writeNew = (path, value) => {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
 };
 const mode = process.argv[2];
-assert.ok(process.argv.length === 3 && ['--compile', '--activate', '--check', '--check-v1'].includes(mode));
-const target = mode === '--check-v1' ? targets.v1 : targets.v2;
+assert.ok(process.argv.length === 3 && [
+  '--compile-v3', '--activate-v3', '--check-v3', '--check-v2', '--check-v1', '--check',
+].includes(mode));
+const targetVersion = mode === '--check-v1' ? 'v1'
+  : mode === '--check-v2' || mode === '--check' ? 'v2'
+    : 'v3';
+const target = targets[targetVersion];
 const { packetPath, bindingPath } = target;
 
-if (mode === '--compile') {
+if (mode === '--compile-v3') {
   assert.equal(git('status', '--porcelain'), '', 'compile from a clean implementation commit');
+  execFileSync(process.execPath, ['scripts/check-e02-v3-readiness-qualification.mjs', '--live-evidence'], { stdio: 'inherit' });
+  const readiness = read('reports/research/e02-v3-readiness-qualification-receipt.json');
+  assert.equal(readiness.passed, true);
+  assert.equal(readiness.researchFinding, false);
+  git('merge-base', '--is-ancestor', readiness.candidate.commit, 'HEAD');
   execFileSync(process.execPath, ['scripts/check-e02-resource-envelope.mjs', '--live-evidence'], { stdio: 'inherit' });
   const resource = read(resourcePath);
   assert.equal(resource.classification, 'development-resource-envelope');
@@ -47,12 +61,14 @@ if (mode === '--compile') {
     ...git('ls-files', 'packages', 'twins', 'contracts', 'deploy/mode-r').split('\n')
       .filter((path) => !path.includes('/__tests__/') && /\.(ts|js|mjs|json|yml|md)$/u.test(path)),
     'deploy/mode-r/Dockerfile', 'scripts/register-e02.mjs', 'scripts/run-e02.mjs', 'scripts/check-e02-resource-envelope.mjs',
+    'scripts/check-e02-v3-readiness-qualification.mjs',
     'tools/integrity-auditor/src/main.rs', 'tools/integrity-auditor/Cargo.lock',
     'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json', 'tsconfig.base.json', '.dockerignore', resourcePath,
+    'reports/research/e02-v3-readiness-qualification-receipt.json',
   ])].sort();
   const protocolBaseCommit = git('rev-parse', 'HEAD');
   const rootBuildInputs = e02RootBuildInputs(read('package.json'));
-  const seedRoot = 'ald-e02-observed-v2-prospective-qualification';
+  const seedRoot = 'ald-e02-observed-v3-prospective-qualification';
   const bindings = {
     protocolCard: { source: cardPath, sourceSha256: sha256(readFileSync(cardPath)), card },
     runConfigurations: [{ protocolBaseCommit, experimentId: 'E02', deploymentMode: 'research-grade',
@@ -66,7 +82,7 @@ if (mode === '--compile') {
       allSlotsRequired: true, estimator: '400-epoch linear softmax',
       split: 'seeded stratified 75/25 with per-class floor; independent by slot/role/stage/probe',
       baseline: 'untouched-test majority accuracy', permutations: 20, permutationRole: 'diagnostic only',
-      amendment: 'Fresh post-failure qualification: preserves the v1 allocation, margins, estimator and features; changes deadline ownership, failure diagnostics, run identifiers and seeds prospectively. V1 remains failed.' },
+      amendment: 'Fresh post-failure qualification: preserves the v2 allocation, margins, estimator and features; adds all-method timeout forfeits, remote quarantine, no-resume recovery, and fresh run identifiers and seeds prospectively. V1 and v2 remain failed.' },
     analysisVersions: sourcePaths.map((path) => ({ path, sha256: sha256(readFileSync(path)) })),
     modelAssets: { learner: 'two independently initialized tabular-reinforce-v1 learners',
       contractPath: 'contracts/learner-contract.scratch-rl.v1.md',
@@ -101,7 +117,7 @@ if (mode === '--compile') {
       inputsAndResults: 'checkpoint-bound signed attachments', independentBounds: 'R qnorm and direct Wilson formula',
       independentVerifier: 'release Rust auditor plus TypeScript verifier',
       modelReplayBoundary: 'same estimator implementation; no independent human review claim',
-      evidenceRoot: 'evidence/qualification/e02-v2', receiptPath: 'reports/research/e02-v2-qualification-receipt.json' },
+      evidenceRoot: 'evidence/qualification/e02-v3', receiptPath: 'reports/research/e02-v3-qualification-receipt.json' },
   };
   const compiled = compileRegistrationPacket({ experimentId: 'E02', registrationClass: 'qualification', bindings });
   writeNew(packetPath, { artifact: compiled.artifact, preRegistrationHash: compiled.preRegistrationHash,
@@ -125,9 +141,9 @@ if (mode === '--compile') {
   for (const expected of packet.artifact.bindings.find((entry) => entry.key === 'selectedSeedPrefix').content.primary) {
     validateE02SlotContract(packet, binding, expected.slot, expected.scenario, packetPath);
   }
-  if (mode === '--activate') {
+  if (mode === '--activate-v3') {
     assert.equal(git('status', '--porcelain'), '', 'activate a committed packet');
     writeNew(bindingPath, binding);
   } else assert.deepEqual(read(bindingPath), binding);
 }
-console.log(`E02 ${mode === '--check-v1' ? 'v1 historical check' : 'v2 registration ' + mode.slice(2)} complete`);
+console.log(`E02 ${targetVersion} registration ${mode.startsWith('--check') ? 'check' : mode.slice(2, -3)} complete`);

@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.116",
+  "version": "0.1.117",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -29,8 +29,8 @@
     "audit:e02-v2-failure:live": "node scripts/check-e02-v2-failure-evidence.mjs --live-evidence",
     "audit:e02-v3-readiness": "node scripts/check-e02-v3-readiness-qualification.mjs",
     "audit:e02-v3-readiness:live": "node scripts/check-e02-v3-readiness-qualification.mjs --live-evidence",
-    "build:registration-e02": "node scripts/register-e02.mjs --compile",
-    "activate:registration-e02": "node scripts/register-e02.mjs --activate",
+    "build:registration-e02": "node scripts/register-e02.mjs --compile-v3",
+    "activate:registration-e02": "node scripts/register-e02.mjs --activate-v3",
     "audit:registration-e02-v1": "node scripts/register-e02.mjs --check-v1",
     "audit:registration-e02": "node scripts/register-e02.mjs --check",
     "qualify:e02": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e02.mjs --run",

@@ -33,8 +33,8 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
     assert.equal(registration.registrationClass, 'qualification');
     assert.equal(registration.registrationAuthority, 'repository-native');
     assert.equal(registration.preRunAnchor.anchorClass, 'simulated');
-    assert.match(directory, /^\/evidence\/registered-e02-v2-[1-5]$/u);
-    assert.equal(directory, '/evidence/registered-e02-v2-' + slot);
+    assert.match(directory, /^\/evidence\/registered-e02-v3-[1-5]$/u);
+    assert.equal(directory, '/evidence/registered-e02-v3-' + slot);
   } else {
     assert.equal(registration, undefined);
     assert.equal(slot, undefined);
@@ -43,7 +43,7 @@ export async function collectE02Observations({ directory, seed, mode, profile, s
   const sampleCount = registered ? E02_REGISTERED_ROWS_PER_STAGE : profile !== 'smoke' ? E02_ROWS_PER_STAGE : 4;
   const classification = registered ? 'prospectively-registered-software-qualification' : 'development-only';
   const analysisVersion = registered ? E02_REGISTERED_ANALYSIS_VERSION : E02_ANALYSIS_VERSION;
-  const runId = registered ? 'registered-e02-v2-' + slot : 'e02-development';
+  const runId = registered ? 'registered-e02-v3-' + slot : 'e02-development';
   const root = resolve(directory);
   const controllerSources = await Promise.all(['collect-e02-observations.mjs', 'e02-observation-analysis.mjs']
     .map(async (file) => ({ file, sha256: createHash('sha256').update(await readFile(new URL(file, import.meta.url))).digest('hex') })));
