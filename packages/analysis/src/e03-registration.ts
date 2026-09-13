@@ -43,7 +43,51 @@ export interface CompileE03RegistrationInput {
   readonly hypothesis: string;
   readonly analysisPlan: string;
   readonly primarySeeds: number;
+  readonly executionBinding: E03ExecutionBinding;
   readonly sampleSizeDecision?: E03SampleSizeDecision;
+}
+
+export interface E03ExecutionBinding {
+  readonly version: 1;
+  readonly sourceFiles: readonly {
+    readonly path: string;
+    readonly sha256: string;
+  }[];
+  readonly rootBuildInputs: Readonly<Record<string, unknown>>;
+  readonly topology: {
+    readonly mode: 'research-grade';
+    readonly learnerContainersPerSlot: 2;
+    readonly nurseryContainersPerSlot: 1;
+    readonly maximumParallelSlots: 1;
+    readonly adapterTransport: 'container-tcp';
+    readonly adapterTiming: 'normalized';
+    readonly adapterDeadlineMs: 2_000;
+    readonly learnerTrack: 'no-learning';
+  };
+  readonly signing: {
+    readonly provider: 'si-fort-files';
+    readonly exactRunAuthorization: true;
+    readonly learnerAccess: false;
+  };
+  readonly dependency: {
+    readonly experimentId: 'E02';
+    readonly disposition: 'software-qualified';
+    readonly receiptPath: string;
+    readonly receiptSha256: string;
+    readonly registrationHash: string;
+  };
+  readonly resourceAllocation: {
+    readonly path: string;
+    readonly sha256: string;
+    readonly externalSpend: 0;
+    readonly publicChainTransaction: false;
+  };
+  readonly evidencePolicy: {
+    readonly anchorClass: 'simulated';
+    readonly publicTimestamp: false;
+    readonly originalEvidenceImmutable: true;
+    readonly pilotResearchFinding: false;
+  };
 }
 
 export interface E03SampleSizeDecision {
@@ -152,9 +196,56 @@ function assertSampleSizeDecision(
   }
 }
 
+function assertExecutionBinding(binding: E03ExecutionBinding): void {
+  const sourcePaths = new Set(binding.sourceFiles.map((source) => source.path));
+  if (
+    binding.version !== 1 ||
+    binding.sourceFiles.length === 0 ||
+    sourcePaths.size !== binding.sourceFiles.length ||
+    binding.sourceFiles.some(
+      (source) =>
+        !safeRepositoryPath(source.path) || !SHA256_PATTERN.test(source.sha256),
+    ) ||
+    binding.topology.mode !== 'research-grade' ||
+    binding.topology.learnerContainersPerSlot !== 2 ||
+    binding.topology.nurseryContainersPerSlot !== 1 ||
+    binding.topology.maximumParallelSlots !== 1 ||
+    binding.topology.adapterTransport !== 'container-tcp' ||
+    binding.topology.adapterTiming !== 'normalized' ||
+    binding.topology.adapterDeadlineMs !== 2_000 ||
+    binding.topology.learnerTrack !== 'no-learning' ||
+    binding.signing.provider !== 'si-fort-files' ||
+    binding.signing.exactRunAuthorization !== true ||
+    binding.signing.learnerAccess !== false ||
+    binding.dependency.experimentId !== 'E02' ||
+    binding.dependency.disposition !== 'software-qualified' ||
+    !safeRepositoryPath(binding.dependency.receiptPath) ||
+    !SHA256_PATTERN.test(binding.dependency.receiptSha256) ||
+    !SHA256_PATTERN.test(binding.dependency.registrationHash) ||
+    !safeRepositoryPath(binding.resourceAllocation.path) ||
+    !SHA256_PATTERN.test(binding.resourceAllocation.sha256) ||
+    binding.resourceAllocation.externalSpend !== 0 ||
+    binding.resourceAllocation.publicChainTransaction !== false ||
+    binding.evidencePolicy.anchorClass !== 'simulated' ||
+    binding.evidencePolicy.publicTimestamp !== false ||
+    binding.evidencePolicy.originalEvidenceImmutable !== true ||
+    binding.evidencePolicy.pilotResearchFinding !== false
+  ) {
+    throw new AnalysisError('domain', 'E03 execution binding is incomplete or invalid');
+  }
+}
+
 function safeEvidencePath(value: string): boolean {
   return (
     value.startsWith('evidence/') &&
+    !value.startsWith('/') &&
+    !value.split('/').includes('..')
+  );
+}
+
+function safeRepositoryPath(value: string): boolean {
+  return (
+    value.length > 0 &&
     !value.startsWith('/') &&
     !value.split('/').includes('..')
   );
@@ -164,6 +255,7 @@ function registeredParameters(
   config: RunConfig,
   stage: E03RegistrationStage,
   seedManifest: E03SeedManifest,
+  executionBinding: E03ExecutionBinding,
   sampleSizeDecision: E03SampleSizeDecision | undefined,
 ): Record<string, unknown> {
   const template = Object.fromEntries(
@@ -174,6 +266,7 @@ function registeredParameters(
     stage,
     communicationConditions: E03_COMMUNICATION_CONDITIONS,
     seedManifest,
+    executionBinding,
     reservePolicy: stage === 'blinded-pilot'
       ? 'zero reserves; every attempted pilot slot remains accounted for'
       : 'next unused ordered reserve slot for registered validity failures only',
@@ -187,6 +280,7 @@ export function compileE03Registration(
   const baseConfig = RunConfigSchema.parse(input.baseConfig);
   assertE03Base(baseConfig);
   assertSampleSizeDecision(input);
+  assertExecutionBinding(input.executionBinding);
   const seedManifest = buildE03SeedManifest(input.stage, input.primarySeeds);
   if (baseConfig.evaluationSeeds !== input.primarySeeds) {
     throw new AnalysisError(
@@ -205,6 +299,7 @@ export function compileE03Registration(
       baseConfig,
       input.stage,
       seedManifest,
+      input.executionBinding,
       input.sampleSizeDecision,
     ),
     seeds: seedManifest.entries.map((entry) => entry.scenarioSeed),

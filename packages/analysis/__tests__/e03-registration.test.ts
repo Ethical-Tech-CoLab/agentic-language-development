@@ -34,6 +34,45 @@ const input = {
   hypothesis: 'Estimate E03 variance without testing the qualification claim.',
   analysisPlan: 'Use pilot outcomes only for the frozen sample-size rule.',
   primarySeeds: 20,
+  executionBinding: {
+    version: 1,
+    sourceFiles: [{ path: 'packages/orchestrator/src/index.ts', sha256: hash('source') }],
+    rootBuildInputs: { name: 'agentic-language-development', buildCommand: 'pnpm build' },
+    topology: {
+      mode: 'research-grade',
+      learnerContainersPerSlot: 2,
+      nurseryContainersPerSlot: 1,
+      maximumParallelSlots: 1,
+      adapterTransport: 'container-tcp',
+      adapterTiming: 'normalized',
+      adapterDeadlineMs: 2_000,
+      learnerTrack: 'no-learning',
+    },
+    signing: {
+      provider: 'si-fort-files',
+      exactRunAuthorization: true,
+      learnerAccess: false,
+    },
+    dependency: {
+      experimentId: 'E02',
+      disposition: 'software-qualified',
+      receiptPath: 'reports/research/e02-v3-qualification-receipt.json',
+      receiptSha256: hash('e02-receipt'),
+      registrationHash: hash('e02-registration'),
+    },
+    resourceAllocation: {
+      path: 'protocols/seed-and-resource-allocation.v1.json',
+      sha256: hash('resources'),
+      externalSpend: 0,
+      publicChainTransaction: false,
+    },
+    evidencePolicy: {
+      anchorClass: 'simulated',
+      publicTimestamp: false,
+      originalEvidenceImmutable: true,
+      pilotResearchFinding: false,
+    },
+  },
 } as const;
 
 const sampleSizeDecision = {
@@ -66,6 +105,7 @@ describe('E03 pre-registration compiler', () => {
     );
     expect(new Set(result.runs.map((run) => run.condition)).size).toBe(6);
     expect(result.artifact.registrationClass).toBe('qualification');
+    expect(result.artifact.parameters['executionBinding']).toEqual(input.executionBinding);
     expect(result.seedManifest.reserveSeeds).toBe(0);
     const firstSlot = result.runs.filter((run) => run.slot === 1);
     expect(new Set(firstSlot.map((run) => run.config.randomSeed)).size).toBe(1);
@@ -114,6 +154,13 @@ describe('E03 pre-registration compiler', () => {
     expect(() => compileE03Registration({ ...input, baseConfig: baseConfig(19) })).toThrow(
       /must equal primarySeeds/u,
     );
+    expect(() => compileE03Registration({
+      ...input,
+      executionBinding: {
+        ...input.executionBinding,
+        signing: { ...input.executionBinding.signing, learnerAccess: true },
+      },
+    })).toThrow(/execution binding/u);
   });
 
   it('requires a qualifying pilot decision before full qualification', () => {

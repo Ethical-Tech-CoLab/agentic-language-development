@@ -148,6 +148,7 @@ export {
   compileE03Registration,
   type CompileE03RegistrationInput,
   type CompiledE03Registration,
+  type E03ExecutionBinding,
   type E03RegisteredRun,
   type E03SampleSizeDecision,
 } from './e03-registration.js';

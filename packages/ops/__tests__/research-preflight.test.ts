@@ -37,6 +37,31 @@ function registration() {
     hypothesis: 'Registered E03 pilot question.',
     analysisPlan: 'Pilot outcomes feed only the frozen sample-size rule.',
     primarySeeds: 20,
+    executionBinding: {
+      version: 1,
+      sourceFiles: [{ path: 'packages/orchestrator/src/index.ts', sha256: hashed('source') }],
+      rootBuildInputs: { name: 'agentic-language-development', buildCommand: 'pnpm build' },
+      topology: {
+        mode: 'research-grade', learnerContainersPerSlot: 2,
+        nurseryContainersPerSlot: 1, maximumParallelSlots: 1,
+        adapterTransport: 'container-tcp', adapterTiming: 'normalized',
+        adapterDeadlineMs: 2_000, learnerTrack: 'no-learning',
+      },
+      signing: { provider: 'si-fort-files', exactRunAuthorization: true, learnerAccess: false },
+      dependency: {
+        experimentId: 'E02', disposition: 'software-qualified',
+        receiptPath: 'reports/research/e02-v3-qualification-receipt.json',
+        receiptSha256: hashed('e02-receipt'), registrationHash: hashed('e02-registration'),
+      },
+      resourceAllocation: {
+        path: 'protocols/seed-and-resource-allocation.v1.json',
+        sha256: hashed('resources'), externalSpend: 0, publicChainTransaction: false,
+      },
+      evidencePolicy: {
+        anchorClass: 'simulated', publicTimestamp: false,
+        originalEvidenceImmutable: true, pilotResearchFinding: false,
+      },
+    },
   });
 }
 
