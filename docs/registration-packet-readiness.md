@@ -61,8 +61,8 @@ Therefore:
   v5 passed all five registered slots. E01 v1 passed its bounded category gate and
   v2 passed the explicit signed corpus. E02 v1 and its matching simulated activation
   remain preserved as a failed attempt. A fresh v2 packet is compiled from the
-  repaired implementation with new identifiers and seeds; its activation and
-  qualification remain separate gates.
+  repaired implementation with new identifiers and seeds. Its matching simulated
+  activation is committed; qualification remains a separate gate.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

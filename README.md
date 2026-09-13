@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.111 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.112 · 254/258 backlog acceptance criteria verified.
 
 Research status: 2 qualified (software), 1 failed qualification attempt, 0 in progress, 16 not started; 9 open campaign blockers.
 
@@ -103,8 +103,10 @@ The verifiable core, communication runtime, Mode R isolation, experiment-readine
 scaffolds, and operator preflight are implemented and tested. E00 and E01 have
 qualified within their registered software scope. E02's first registered
 observation-leakage attempt stopped at its safety pause after 465 turns; it produced
-no probe result and will not be restarted. A prospectively amended qualification
-and the remaining research gates precede the dependent behavioral campaign:
+no probe result and will not be restarted. The prospectively amended v2 packet and
+simulated activation are committed with fresh seeds, so its not-yet-started
+qualification is ready for the exact clean-commit gate. The remaining research
+gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC

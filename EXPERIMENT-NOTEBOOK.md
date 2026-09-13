@@ -28,7 +28,7 @@ the authoritative proof of what occurred.
 
 | Status | Meaning |
 |---|---|
-| Not started | Protocol exists but no pre-registration is sealed |
+| Not started | No run has begun for the current attempt; registration state is recorded by its execution gate and evidence note |
 | Pre-registered | Hypothesis, parameters, seeds, and analysis plan are committed |
 | Running | At least one planned run is active |
 | Evidence review | Runs ended; integrity and protocol checks are in progress |
@@ -186,7 +186,7 @@ E01 Channel isolation ---- E02 Observation leakage
 |---|---|---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Completed | Not tested | Qualification complete | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Completed | Not tested | Qualification complete | V2 passed five registered slots with 560 signed records and both verifiers |
-| E02 | Observation and metadata leakage audit | E00 | Failed | Not tested | Qualification blocked (B16) | Registered v1 stopped at its safety pause; evidence retained |
+| E02 | Observation and metadata leakage audit | E00 | Not started | Not tested | Qualification ready | V2 packet and simulated activation committed; v1 failure retained |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Qualification blocked | — |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E11 | From-scratch RL Naming Game | E03 | Not started | Not tested | Confirmatory blocked | — |

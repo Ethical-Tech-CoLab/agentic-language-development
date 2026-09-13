@@ -31,6 +31,7 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'reports/research/e02-qualification-receipt.json': receipts.e02,
     'reports/research/e02-v1-failure-evidence.json': source('reports/research/e02-v1-failure-evidence.json'),
     'protocols/e02-registration.v2.json': source('protocols/e02-registration.v2.json'),
+    'protocols/e02-registration-binding.v2.json': source('protocols/e02-registration-binding.v2.json'),
   };
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
@@ -62,6 +63,7 @@ describe('stage-specific campaign progress', () => {
       const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
       e02.executionReadiness = { stage: 'qualification', decision: 'complete', reasonCodes: [] };
       e02.attempt = { status: 'completed', planned: 5, attempted: 5, completed: 5 };
+      e02.evidence.find((entry: any) => entry.kind === 'historical-terminal-receipt').statusAuthority = true;
       receipts.e02.passed = true;
       receipts.e02.failure = null;
       receipts.e02.slots = Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 }));
@@ -70,7 +72,11 @@ describe('stage-specific campaign progress', () => {
   });
 
   it('rejects a missing terminal disposition instead of inferring a running attempt', () => {
-    const result = run(fixture((_campaign, receipts) => {
+    const result = run(fixture((campaign, receipts) => {
+      const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
+      e02.executionReadiness = { stage: 'qualification', decision: 'blocked', reasonCodes: ['B16'] };
+      e02.attempt = { status: 'failed', planned: 5, attempted: 1, completed: 0 };
+      e02.evidence.find((entry: any) => entry.kind === 'historical-terminal-receipt').statusAuthority = true;
       receipts.e02.passed = false;
       receipts.e02.failure = null;
     }));

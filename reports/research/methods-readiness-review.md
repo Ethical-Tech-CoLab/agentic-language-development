@@ -11,7 +11,9 @@ Research status: 2 qualified (software), 1 failed qualification attempt, 0 in pr
 
 All 19 experiment cards are covered. E00 completed its registered software
 qualification and E01 v2 closed B15 with signed explicit-corpus evidence. E02 v1
-stopped at its safety pause before restore or analysis; 16 other experiments await prerequisites. The
+stopped at its safety pause before restore or analysis. Its corrected v2 packet and
+simulated activation are committed, and its fresh five-slot attempt has not started;
+16 other experiments await prerequisites. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
 software qualifications do not substitute for repository registration, prospective
@@ -30,8 +32,9 @@ to relabel any existing fixture as a pilot.
    registration, and identical verified pre-run simulated commitment.
 2. No blinded pilot has supplied the variance and feasibility inputs needed to select
    exact confirmatory seed prefixes. N=100 is planning-only.
-3. E02 v1 stopped after repeated response timeouts triggered the safety pause; its
-   timing boundary must be corrected and prospectively requalified with fresh seeds.
+3. E02 v1 stopped after repeated response timeouts triggered the safety pause. Its
+   timing boundary is corrected and v2 is prospectively registered with fresh seeds;
+   the complete five-slot qualification and integrity audits remain required.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
    zero-spend local ceiling.
@@ -68,7 +71,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | No | V1 failed before restore and analysis; reproduce the timing conflict, correct it, and register a fresh attempt |
+| E02 | Yes, to start qualification | V2 packet and simulated activation are committed; all five fresh slots, restore stages, probes, and audits must pass before E03 |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |

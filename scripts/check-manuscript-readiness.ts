@@ -42,7 +42,7 @@ const citedReferences = [...body.matchAll(/\[(\d+)\]/gu)].map((match) => Number(
 const uniqueCitations = [...new Set(citedReferences)].sort((left, right) => left - right);
 const experimentIndex = notebook.split('## 8. Experiment Index')[1]?.split('\n---\n')[0] ?? '';
 const experimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|[^\n]+\|$/gmu)].map((match) => match[1]);
-const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|.*\| Not started \|/gmu)].map((match) => match[1]);
+const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|.*\| Not started \| Not tested \|.*\| — \|$/gmu)].map((match) => match[1]);
 const exact = (needle: string): void => {
   if (!compactManuscript.includes(needle)) throw new Error(`manuscript lacks exact audited claim: ${needle}`);
 };

@@ -4,8 +4,8 @@ Status: registered v1 attempt failed before restore and probe evaluation. Its
 deadline defect is corrected and qualified as software on a committed development
 smoke. E02 itself is not qualified. V2 packet
 `sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d`
-is compiled from base `d87840029d0cbe6a780bb0e950aa07018d962d4e`; committed
-activation and execution remain.
+is compiled from base `d87840029d0cbe6a780bb0e950aa07018d962d4e`; its matching
+repository-native simulated activation is committed. Execution remains.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -219,6 +219,15 @@ The packet commit is `4d7068b5ccc1c8259239923d88ebff10fb85a3b1`. The matching
 repository-native binding records a successful local simulated commitment, not
 a public transaction. Execution may begin only from a clean descendant containing
 the committed binding and after the full consolidated suite passes.
+
+The prospective v2 packet is committed at
+`f1f63b4607d1b68033f7d8934e56b0b6559dde2b` with canonical hash
+`sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d`.
+Its matching binding records a confirmed deterministic simulation at block 1 and
+transaction-shaped identifier
+`0x041e98a23a16d0eb1de9481fe81361d1a66863a71b4ba350df4c06996c53ee69`.
+This is prospective local ordering evidence only: no public transaction, public
+timestamp, real funds, or external custody is claimed.
 
 ## Registered v1 execution record
 
