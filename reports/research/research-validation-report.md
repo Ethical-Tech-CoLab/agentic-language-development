@@ -29,6 +29,16 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   finite registered corpus, not for arbitrary future topology or side channels.
   Exact measurements and limits are in `e01-v2-qualification-receipt.json` and
   `../../docs/e01-explicit-qualification.md`. No behavioral dataset was created.
+- E02 development now captures actual scratch-learner observations and budgets,
+  binds them to turn/scenario commitments, performs real runtime snapshot/restore,
+  and fits metadata, identifier, and timing probes before and after recovery.
+  The unregistered Prototype run passed 12 probes with 203 held-out rows each;
+  same-estimator replay, independently recomputed R Wilson bounds, and both bundle
+  verifiers passed. A separate ten-turn Mode R recovery smoke passed in 65.45 s;
+  it ran no leakage probe. OCR found characters in ten visible-text fixtures but
+  also three text-free controls and failed on five malformed images. These retained
+  development observations do not qualify E02. A prospective sample-size critique
+  and explicit limits are in `../../docs/e02-observation-qualification.md`.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -110,8 +120,8 @@ Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open c
   `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
-- The complete local data/claim snapshot resolves and hash-binds 134 exported bundles
-  in 21 collections. All are excluded from empirical estimates; 86 local fake-chain
+- The complete local data/claim snapshot resolves and hash-binds 136 exported bundles
+  in 22 collections. All are excluded from empirical estimates; 88 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
@@ -175,18 +185,18 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 134 bundles,
-21 collections, and 236,708,791 bundle bytes. It records content-tree, manifest, and
+exported bundle present in ignored local evidence storage at the cutoff: 136 bundles,
+22 collections, and 256,709,250 bundle bytes. It records content-tree, manifest, and
 available verification-report hashes without copying raw events or private ledger content.
 Forty-six bundles have tracked exact/current bounded software-qualification support,
-33 are historical qualification exports, and 55 are failed or superseded diagnostic
+33 are historical qualification exports, and 57 are failed or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-Of 134 exports, 133 have a recorded verifier exit code of zero; one partial
+Of 136 exports, 135 have a recorded verifier exit code of zero; one partial
 unregistered development export has no recorded verification report. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Eighty-six bundle records show anchor confirmation, but those
+verifier status. Eighty-eight bundle records show anchor confirmation, but those
 receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
 zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
 class relabeling so a simulated commitment cannot silently become a public-chain
@@ -829,6 +839,6 @@ eight-perspective internal pass. They correct cross-document status and renderin
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
 topology/category suite; v2 completed the signed explicit corpus. Seventeen experiments remain unstarted,
-all 134 local
+all 136 local
 bundles remain research-excluded, 170 registration bindings remain unresolved, and
 independent review is absent.

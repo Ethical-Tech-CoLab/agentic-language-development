@@ -58,6 +58,14 @@ function collection(path: string): { id: string; evidenceClass: string; verifica
       supportingReceipt: null,
     };
   }
+  if (path.startsWith('evidence/development/e02-')) {
+    return {
+      id: 'e02-development-diagnostics',
+      evidenceClass: 'failed-or-superseded-diagnostic',
+      verificationBasis: 'unregistered observation-probe and transport/recovery development; all results remain excluded from registered qualification and research',
+      supportingReceipt: null,
+    };
+  }
   const mappings: Array<[string, string, string]> = [
     ['20260911-v06-97a33be-exact', 'mode-r-exact-v06', 'reports/research/mode-r-topology-receipt.json'],
     ['20260911-v07-6871f8d-exact', 'recurrent-exact-v07', 'reports/research/recurrent-baseline-receipt.json'],

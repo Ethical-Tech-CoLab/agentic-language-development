@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.102 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.103 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1094,7 +1094,7 @@ as separate fields.
 
 ## 10. Current Implementation Status
 
-**Engineering snapshot:** v0.1.102 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.103 · 254/258 backlog acceptance criteria verified.
 
 As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.
@@ -1154,7 +1154,7 @@ Implemented:
 Not yet empirically executed or independently evidenced:
 
 - final-topology/pilot resource qualification; and
-- confirmatory experiments E00-E50 or any scientific results.
+- registered behavioral and replication findings for the planned hypothesis family.
 
 The external-dependency ledger is ready at 1/1 applicable item: O01 is verified by
 the scoped synthetic-only governance decision, while O02-O06 are non-applicable to
@@ -1164,12 +1164,12 @@ strengthening activities. Their absence is disclosed and prohibits claims of pub
 finality, hosted enforcement, independent restoration, or third-party registration;
 it does not answer or alter the agent-language estimands.
 
-The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 134
-exported bundles across 21 collections by path and content hash. Forty-six have
+The frozen local [data/claim inventory](docs/data-and-claim-inventory.md) resolves 136
+exported bundles across 22 collections by path and content hash. Forty-six have
 tracked bounded software-qualification support, 33 are historical qualification
-exports, and 55 are failed or superseded diagnostics. All 134 are excluded from
-empirical estimates. Eighty-six recorded anchor confirmations are historical local
-fake-chain receipts; prospective receipts now bind an explicit class that the
+exports, and 57 are failed or superseded diagnostics. All 136 are excluded from
+empirical estimates. Eighty-eight recorded anchor confirmations are local simulated
+receipts; prospective receipts now bind an explicit class that the
 verifier refuses to relabel. Confirmed public-chain anchors, pilot bundles, confirmatory
 bundles, replication bundles, and research-included bundles are all zero.
 

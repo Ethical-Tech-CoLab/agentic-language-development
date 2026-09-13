@@ -10,9 +10,12 @@
     "@ald/hashing": "workspace:*",
     "@ald/isolation": "workspace:*",
     "@ald/learners": "workspace:*",
+    "@ald/leakage": "workspace:*",
     "@ald/lifecycle": "workspace:*",
     "@ald/orchestrator": "workspace:*",
+    "@ald/ops": "workspace:*",
     "@ald/redteam": "workspace:*",
+    "@ald/scenario": "workspace:*",
     "@ald/types": "workspace:*",
     "@ald/verifier": "workspace:*"
   }
