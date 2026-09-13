@@ -2,11 +2,25 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-12
-Latest tracked research-design candidate: v0.1.97 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.98 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
 
+Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+
+- The 2026-09-13 maintenance audit reproduced 18 malformed E00/E01 receipts that
+  permissive checks accepted, plus two failures caused by absent ignored evidence.
+  The repaired receipt checks enforce explicit verdicts, complete attack identities,
+  detector keys, counts, finite measurements, and agreement between timing means
+  and their reported difference. Thirty-five regression tests cover these cases,
+  retained-record mismatches, historical-workflow binding, and status drift. Both
+  local retained-evidence comparisons pass. Default receipt audits now run from
+  tracked files and explicitly report that raw evidence was not checked; separate
+  `:live` commands require retained records. CI fetches registration history, and
+  the earlier workflow observation is verified against its recorded commit.
+  Historical outcomes and registrations are unchanged; these repairs add no
+  behavioral observations and do not close B15.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -73,7 +87,7 @@ Report status: in progress
   development iterations. A fresh five-run benchmark supplies measured CPU, memory,
   time, byte, and file rates rather than an assumed cost model.
 - An internal adversarial readiness review covers every experiment and returns
-  `not-registration-ready`. Eight evidence-linked blockers include packet completion,
+  `not-registration-ready`. Nine evidence-linked blockers include packet completion,
   resources, pilot-selected N, final detector/comparator qualification, exact packets,
   independent review, and citation re-review. Three former blockers are prospectively
   resolved by the approved synthetic-only, simulation-funded profile; three more are
@@ -83,8 +97,9 @@ Report status: in progress
   denominator because real funds, public chains, hosted enforcement, second-person
   restoration, and third-party registration are not required for local synthetic
   execution. Their stronger claims remain unavailable unless later evidenced.
-- A fresh read-only upstream observation found no repository ruleset or demonstrated
-  branch protection. The exact v0.1.79 pull-request workflow is `action_required` with zero
+- The read-only upstream observation recorded on 2026-09-11 found no repository
+  ruleset or demonstrated branch protection. The v0.1.78 pull-request workflow was
+  `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
 - The complete local data/claim snapshot resolves and hash-binds 125 exported bundles
@@ -110,7 +125,8 @@ Report status: in progress
   nearest-prototype diagnostic now covers bitmap, canvas, and tone representations,
   but learned perceptual carrier generalization,
   confirmatory, and replication paths require further implementation, measured
-  pilot costs, and authentic external approvals.
+  pilot costs, and exact repository registration. Independent review remains a
+  publication limitation; it is not an external prerequisite to local collection.
 - The defensible publication position today is a protocol and software-readiness
   draft, not a completed empirical paper. This report will be extended only from
   verified artifacts; null, failed, invalid, and blocked outcomes remain visible.
@@ -730,8 +746,9 @@ bundles.
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
 experiment cards and identifies nine open blockers with explicit closure tests. It does not
-claim independent review. No experiment is registration-ready, and the fail-closed
-machine audit rejects any ready flag while the recorded campaign decision is negative.
+claim independent review. E00 has completed its registered software qualification;
+E01 has a registered bounded result but remains incomplete under B15. The campaign
+decision stays negative while the remaining scientific prerequisites are open.
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
    variants. Handcrafted carrier-specific distances and held-out nearest-prototype

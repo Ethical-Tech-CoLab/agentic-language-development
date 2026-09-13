@@ -1,8 +1,9 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
 Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.97
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.98
 Decision: **Needs revision before submission**  
+Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
 AI-assistance disclosure, and rendered-page overlap were corrected.
@@ -119,5 +120,7 @@ received independent verification.
 The manuscript is a defensible, unusually explicit **pre-results protocol and software
 qualification record**. It is **not a complete research paper**, not ready for external
 registration, and not ready for conference or archival submission. The next valid
-transition is external authority plus one exactly registered prerequisite experiment;
-editorial polishing cannot substitute for that evidence.
+transition is completion of E01's explicit variant and signed-attempt coverage,
+followed by the remaining locally registered prerequisite experiments. The approved
+synthetic campaign can proceed when those local gates pass; independent review
+remains a publication limitation. Editorial polishing cannot supply missing evidence.

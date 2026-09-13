@@ -10,12 +10,13 @@ function requireText(text, expected, surface) {
   }
 }
 
-const [pkg, backlog, readme, research, plan] = await Promise.all([
+const [pkg, backlog, readme, research, notebook, campaign] = await Promise.all([
   readJson('package.json'),
   readFile('BACKLOG.md', 'utf8'),
   readFile('README.md', 'utf8'),
   readFile('RESEARCH.md', 'utf8'),
-  readFile('plans/completion-plan.md', 'utf8'),
+  readFile('EXPERIMENT-NOTEBOOK.md', 'utf8'),
+  readJson('protocols/campaign-readiness-review.v1.json'),
 ]);
 
 if (pkg.engines?.pnpm !== '12.3.4') {
@@ -43,19 +44,26 @@ const publicStatus =
 requireText(readme, publicStatus, 'README.md');
 requireText(research, publicStatus, 'RESEARCH.md');
 
-const executionSteps = [...plan.matchAll(/^\d+\. \[([x ])\]/gmu)];
-if (
-  executionSteps.length !== 6 ||
-  executionSteps.some((step) => step[1] !== 'x')
-) {
-  throw new Error('completion plan must contain exactly six completed execution steps');
+const index = notebook.split('## 8. Experiment Index')[1]?.split('\n---\n')[0] ?? '';
+const experiments = [...index.matchAll(/^\| (E\d{2}) \|[^|]+\|[^|]+\| ([^|]+) \|/gmu)]
+  .map((match) => ({ id: match[1], status: match[2].trim() }));
+if (JSON.stringify(experiments.map(({ id }) => id).sort()) !==
+    JSON.stringify(campaign.experiments.map(({ id }) => id).sort())) {
+  throw new Error('notebook and campaign review disagree on the experiment inventory');
 }
-requireText(
-  plan,
-  '**Status:** Local execution complete; external evidence gates remain',
-  'plans/completion-plan.md',
-);
+const count = (status) => experiments.filter((entry) => entry.status === status).length;
+const researchStatus = `Research status: ${count('Qualified (software)')} qualified (software), ` +
+  `${count('In progress')} in progress, ${count('Not started')} not started; ` +
+  `${campaign.blockingFindings.length} open campaign blockers.`;
+requireText(readme, researchStatus, 'README.md');
+for (const path of [
+  'reports/research/research-validation-report.md',
+  'reports/research/research-critical-review.md',
+  'reports/research/methods-readiness-review.md',
+]) {
+  requireText(await readFile(path, 'utf8'), researchStatus, path);
+}
 
 console.log(
-  `Project status aligned: v${pkg.version}, ${String(checked)}/${String(total)} acceptance criteria, six execution steps complete.`,
+  `Project status aligned: v${pkg.version}, ${String(checked)}/${String(total)} acceptance criteria. ${researchStatus}`,
 );

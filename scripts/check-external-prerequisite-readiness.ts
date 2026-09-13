@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const readinessPath = 'reports/research/external-prerequisite-readiness.json';
@@ -46,6 +47,7 @@ interface CampaignReview {
 
 interface UpstreamObservation {
   schemaVersion: number;
+  localCandidate: { commit: string; version: string };
   classification: string;
   researchFinding: boolean;
   executionBranch: { presentOnOriginRemote: boolean; presentAsPullRequestHead: boolean };
@@ -159,7 +161,9 @@ if (
   upstream.repositoryRulesetsQuery.rulesetCount !== 0 ||
   upstream.latestDefaultBranchWorkflow.status !== 'completed' ||
   upstream.latestDefaultBranchWorkflow.conclusion !== 'failure' ||
-  sha256(readFileSync(upstream.localWorkflow.path)) !== upstream.localWorkflow.sha256 ||
+  upstream.localWorkflow.path !== '.github/workflows/book-integrity.yml' ||
+  !/^[a-f0-9]{40}$/u.test(upstream.localCandidate.commit) ||
+  sha256(execFileSync('git', ['show', `${upstream.localCandidate.commit}:${upstream.localWorkflow.path}`])) !== upstream.localWorkflow.sha256 ||
   JSON.stringify(upstream.localWorkflow.requiredJobIds) !== JSON.stringify(['consolidated-suite', 'mode-r']) ||
   upstream.decision !== 'not-demonstrated'
 ) {

@@ -7,6 +7,10 @@ const receiptPath = 'reports/research/e00-integrity-qualification-receipt.json';
 const registrationPath = 'protocols/e00-registration.v5.json';
 const bindingPath = 'protocols/e00-registration-binding.v4.json';
 const executionCommit = '6a3faa8e85cb9f7a9fe7847445897c6e98ee56cb';
+const liveEvidence = process.argv.includes('--live-evidence');
+if (process.argv.slice(2).some((arg) => arg !== '--live-evidence')) {
+  throw new Error('usage: check-e00-qualification.ts [--live-evidence]');
+}
 const mutationCases = [
   'event-content',
   'deleted-middle-event',
@@ -55,7 +59,7 @@ const receipt = JSON.parse(read(receiptPath)) as {
 if (
   receipt.schemaVersion !== 2 ||
   receipt.classification !== 'prospectively-registered-software-qualification' ||
-  receipt.researchFinding ||
+  receipt.researchFinding !== false ||
   receipt.experimentId !== 'E00'
 ) {
   throw new Error('E00 receipt identity or claim class is invalid');
@@ -92,26 +96,32 @@ for (const [index, slot] of receipt.slots.entries()) {
     registered.slot !== slot.slot ||
     registered.scenario !== slot.scenarioSeed ||
     slot.runId !== `run-e00-qualified-${String(slot.slot).padStart(2, '0')}` ||
-    slot.eventCount < 200 ||
-    slot.checkpointCount < 3 ||
+    !Number.isInteger(slot.eventCount) || slot.eventCount < 200 ||
+    !Number.isInteger(slot.checkpointCount) || slot.checkpointCount < 3 ||
     slot.babyLedgerEvents.babyA !== 100 ||
     slot.babyLedgerEvents.babyB !== 100 ||
-    !slot.anchored ||
-    !slot.commitmentPayloadsOnly32ByteHashes ||
-    !slot.allDispositionsMatched ||
+    slot.anchored !== true ||
+    slot.commitmentPayloadsOnly32ByteHashes !== true ||
+    slot.allDispositionsMatched !== true ||
+    slot.retainedBundle !== `evidence/qualification/e00-v5/${slot.runId}` ||
     JSON.stringify(slot.cases.map((entry) => entry.case)) !== JSON.stringify(expectedCases) ||
     slot.cases[0]?.expectedPass !== true ||
     slot.cases[0]?.verifierPass !== true ||
     slot.cases[0]?.auditorPass !== true ||
-    slot.cases.slice(1).some((entry) => entry.expectedPass || entry.verifierPass || entry.auditorPass)
+    slot.cases.slice(1).some((entry) => entry.expectedPass !== false || entry.verifierPass !== false || entry.auditorPass !== false)
   ) {
     throw new Error(`E00 slot ${String(index + 1)} contradicts its registration or acceptance rules`);
   }
-  const manifest = JSON.parse(read(`${slot.retainedBundle}/run-manifest.json`)) as { runId?: string };
-  if (manifest.runId !== slot.runId) throw new Error(`retained bundle mismatch for ${slot.runId}`);
+  if (liveEvidence) {
+    const manifest = JSON.parse(read(`${slot.retainedBundle}/run-manifest.json`)) as { runId?: string };
+    if (manifest.runId !== slot.runId) throw new Error(`retained bundle mismatch for ${slot.runId}`);
+  }
 }
-if (!receipt.restoreExtensionQualification.passed || !receipt.allDispositionsMatched) {
+if (receipt.restoreExtensionQualification.passed !== true || receipt.allDispositionsMatched !== true) {
   throw new Error('E00 recovery or aggregate disposition failed');
 }
 
-console.log('E00 qualification valid: 5/5 unchanged accepted, 55/55 mutations rejected by both verifiers');
+console.log('E00 receipt valid: records 5/5 unchanged accepted and 55/55 mutations rejected by both verifiers');
+console.log(liveEvidence
+  ? 'Live evidence: retained manifest identities checked; verifier challenges were not rerun'
+  : 'Receipt audit only: raw evidence not checked; use --live-evidence to check retained manifest identities');

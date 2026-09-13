@@ -7,11 +7,16 @@ Independent human review: not performed
 
 ## Decision
 
-All 19 experiment cards are covered, but none is ready for outcome collection. The
+Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+
+All 19 experiment cards are covered. E00 completed its registered software
+qualification, E01's bounded topology result leaves B15 open, and the remaining
+17 experiments await their prerequisites. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
 software qualifications do not substitute for repository registration, prospective
-commitments, selected sample sizes, adequate resources, or independent review. The
+commitments, selected sample sizes, or adequate resources. Independent review
+remains necessary for claims of independent scrutiny and later publication readiness. The
 scoped governance and simulation-only funding decision is now complete.
 
 The existing work is internally coherent enough to continue safe local engineering,

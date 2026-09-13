@@ -95,12 +95,14 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.97 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.98 · 254/258 backlog acceptance criteria verified.
 
-The repository's locally executable **verifiable core and research-execution
-readiness path are complete**. The evidence integrity spine, communication MVP,
-Mode R isolation, experiment-readiness scaffolds, and operator preflight are
-implemented and tested:
+Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+
+The verifiable core, communication runtime, Mode R isolation, experiment-readiness
+scaffolds, and operator preflight are implemented and tested. E00 has qualified;
+E01 requires its remaining explicit variants and signed attempt evidence before
+the dependent research campaign can proceed:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC
@@ -206,7 +208,7 @@ repository-native policy. A read-only upstream observation remains as historical
 evidence that hosted required-check enforcement is not demonstrated, not as an
 experiment blocker.
 
-No experiment results are claimed.
+No behavioral research results are claimed.
 
 The complete rationale, literature review, experimental ideas, risks, and open
 decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
@@ -255,7 +257,8 @@ Set `CHROME_PATH` if Chrome or Edge is not installed at a standard location. The
 generated PDF, page manifest, page images, print edition, and locally bundled reader
 are committed so GitHub Pages needs no server, CDN, or runtime PDF renderer.
 
-The notebook is ready for pre-registration. No experiment results are claimed yet.
+The notebook records E00's software qualification and E01's incomplete isolation
+qualification. Behavioral collection awaits the remaining local research gates.
 
 ## Running the Platform Locally
 
@@ -268,8 +271,18 @@ pnpm run check
 every workspace, runs the complete test suite, scans for committed secrets, and
 blocks on high/critical dependency advisories.
 
-Reproduce the E03 design inputs, compile the default 75-primary/8-reserve
-registration, and run the fail-closed preflight with:
+The E00/E01 commands in that suite validate tracked receipt summaries. On the
+execution host, also run `pnpm run audit:qualification-e00:live` and
+`pnpm run audit:qualification-e01:live` to compare retained manifest identities
+and slot records. These explicit checks require the ignored `evidence/` directory
+and fail if it is missing. They do not rerun the historical experiments.
+
+Registration audits require the repository's full Git history; shallow clones
+must fetch that history before running the consolidated suite. Plans and tickets
+are local, Git-ignored working documents and are not inputs to CI.
+
+Reproduce the historical E03 design calculation and its 75-primary/8-reserve draft,
+then exercise the preflight with:
 
 ```bash
 pnpm run design:e03
@@ -279,8 +292,11 @@ pnpm run preflight:research \
   --binding /absolute/path/repository-registration-and-commitment-binding.json
 ```
 
-The preflight fails until the packet exists unchanged in an ancestral Git commit and
-a confirmed matching pre-run simulated commitment is supplied in the binding.
+This draft is a design demonstration. The current campaign still needs a blinded
+pilot and selected sample size before it can register an eligible E03 packet.
+Preflight also requires an unchanged packet in an ancestral Git commit and a
+matching pre-run simulated commitment; passing those identity checks alone does
+not satisfy the campaign's scientific prerequisites.
 
 Run the Prototype Mode qualification harness and verify a bundle independently:
 

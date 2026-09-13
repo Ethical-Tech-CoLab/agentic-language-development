@@ -10,3 +10,6 @@ coverage/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+/plans/
+**/tickets/
+/artifacts/
