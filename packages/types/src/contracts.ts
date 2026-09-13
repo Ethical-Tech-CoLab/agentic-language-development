@@ -736,6 +736,13 @@ export interface LearnerAdapter {
   describeProvenance?(): LearnerProvenance;
   /** SPEC §5.3: where this adapter executes; `in-process` when absent. */
   readonly isolation?: IsolationDescriptor;
+  /**
+   * Runtime-only fail-closed hook for a remote turn deadline. It must make the
+   * current hosted adapter unreachable so a late completion cannot affect a
+   * later turn. In-process adapters omit it and retain the rejection-streak
+   * policy.
+   */
+  quarantineAfterDeadline?(): Promise<void>;
   /** Hash of the initialized policy before the first turn, when trainable. */
   initialPolicyHash?(): Sha256Hash;
   /** Canonicalizable policy state for policy-checkpoint hashing and derived runs. */

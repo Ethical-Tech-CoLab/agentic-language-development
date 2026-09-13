@@ -36,7 +36,8 @@ to relabel any existing fixture as a pilot.
 3. E02 v1 stopped after repeated response timeouts triggered the safety pause. V2
    corrected the nested deadline race but exposed an uncovered post-action timeout
    path. The current candidate supplies the same audited forfeit behavior across all
-   turn-path methods, but fresh topology qualification must pass before v3 can be
+   turn-path methods and quarantines any timed-out remote adapter against late state
+   mutation, but fresh exact-topology qualification must pass before v3 can be
    registered with fresh seeds.
 4. Maximum pools project to 855.9 GiB and 375.7 single-core hours before
    frozen-model overhead, above the authorized 25 GiB/72-hour,
@@ -75,7 +76,7 @@ to relabel any existing fixture as a pilot.
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
 | E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
-| E02 | No | V2 failed after 161 recorded turns; the all-method deadline repair has development coverage but requires fresh topology qualification before a v3 packet can be registered |
+| E02 | No | V2 failed after 161 recorded turns; the all-method deadline and remote-quarantine repair has development coverage but requires fresh exact-topology qualification before a v3 packet can be registered |
 | E03 | No | E02 qualification, blinded pilot, selected N, exact packet; E01 is satisfied |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |
 | E20-E22 | No | E16, resources, selected N and topology leakage qualification where applicable |

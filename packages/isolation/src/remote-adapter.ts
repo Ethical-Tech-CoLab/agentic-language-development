@@ -414,6 +414,18 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     await this.options.transport.terminate();
   }
 
+  /**
+   * Stop a hosted adapter immediately after a turn deadline. Closing the
+   * boundary makes any late host completion unreachable before another turn
+   * can begin; the Nursery requires an abort rather than resuming this run.
+   */
+  async quarantineAfterDeadline(): Promise<void> {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.connection?.close();
+    await this.options.transport.terminate();
+  }
+
   /** Kill the host with no handshake (ALD-055 criterion 3). */
   async terminate(): Promise<void> {
     await this.options.transport.terminate();

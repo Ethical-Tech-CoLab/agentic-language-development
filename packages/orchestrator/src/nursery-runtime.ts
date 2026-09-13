@@ -286,6 +286,9 @@ export const SIGNER_MISMATCH_REASON = 'signer-registry-mismatch';
 /** Reason code of the §9.4 rejection-streak trigger, for the pause audit. */
 export const REJECTION_STREAK_REASON = 'max-consecutive-rejections';
 
+/** A remote timeout closed its adapter boundary; the paused run must abort. */
+export const TURN_DEADLINE_QUARANTINE_REASON = 'turn-deadline-quarantine';
+
 export interface NurseryRuntimeOptions {
   /** Open evidence store shared by every run of this runtime (LEDGER §3). */
   database: EvidenceDatabase;
@@ -470,6 +473,13 @@ interface RunRuntime {
   causalPrediction: CausalPredictionRuntimeProvider | undefined;
   /** One pre-registered E14 second attempt waiting to run. */
   pendingRepair: PendingRepair | null;
+  /** Set when a remote timeout makes safe in-place resume impossible. */
+  deadlineQuarantine: {
+    role: BabyRole;
+    turn: number;
+    method: Exclude<AdapterMethod, 'updatePolicy'>;
+    quarantineFailed: boolean;
+  } | null;
 }
 
 export interface RunToCompletionOptions {
@@ -744,6 +754,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       probeSchedule: null,
       causalPrediction,
       pendingRepair: null,
+      deadlineQuarantine: null,
     };
     this.#runs.set(runId, run);
 
@@ -817,6 +828,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let pauseRequested = false;
     let failure: AdapterFailureError | undefined;
     let deadline: AdapterTurnDeadlineExceededError | undefined;
+    let deadlineQuarantined = false;
 
     try {
       const executed = await this.#executeTurn(run, scratch);
@@ -826,6 +838,22 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     } catch (error) {
       if (error instanceof AdapterTurnDeadlineExceededError) {
         deadline = error;
+        const quarantine = run.adapters[deadline.role].quarantineAfterDeadline;
+        let quarantineFailed = false;
+        if (quarantine !== undefined) {
+          try {
+            await quarantine.call(run.adapters[deadline.role]);
+          } catch {
+            quarantineFailed = true;
+          }
+          deadlineQuarantined = true;
+          run.deadlineQuarantine = {
+            role: deadline.role,
+            turn,
+            method: deadline.method,
+            quarantineFailed,
+          };
+        }
         const rejection = await run.gateway.rejectForTimeout(
           this.#gatewayTurnContext(run, scratch),
           deadline.role,
@@ -833,7 +861,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         scratch.channelEvent = rejection.channelEvent;
         scratch.deliveredArtifactHash = rejection.channelEvent.publicArtifactHash;
         outcome = forfeitOutcome('forfeit', rejection.reasonCode);
-        pauseRequested = rejection.pauseRequested;
+        pauseRequested = deadlineQuarantined || rejection.pauseRequested;
       } else if (error instanceof AdapterFailureError) {
         // §14.5: an adapter that crashed through its whole retry budget
         // forfeits the turn.
@@ -881,6 +909,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           role: deadline.role,
           method: deadline.method,
           budgetMs: deadline.budgetMs,
+          adapterQuarantined: deadlineQuarantined,
+          quarantineFailed: run.deadlineQuarantine?.quarantineFailed ?? false,
         },
       });
     }
@@ -979,11 +1009,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // `#autoPause` re-applies it when it cannot pause, and `resume()`
       // applies it before the run accepts another turn (§7.2, §18: a pause
       // never buys a turn beyond `maxTurnsPerRun`/`evaluationTurns`).
-      await this.#autoPause(
-        run,
-        turn,
-        failure === undefined ? REJECTION_STREAK_REASON : ADAPTER_FAILURE_REASON,
-      );
+      await this.#autoPause(run, turn,
+        failure !== undefined
+          ? ADAPTER_FAILURE_REASON
+          : deadlineQuarantined
+            ? TURN_DEADLINE_QUARANTINE_REASON
+            : REJECTION_STREAK_REASON);
     } else if (!(await this.#applyStageTransitions(run, turn))) {
       if (
         phase === 'running' &&
@@ -1543,6 +1574,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async resume(runId: string, intervention: Intervention): Promise<RunSummary> {
     const run = this.#requireRun(runId);
+    if (run.deadlineQuarantine !== null) {
+      throw new RunConfigurationError([{
+        path: 'resume',
+        message:
+          `remote adapter ${run.deadlineQuarantine.role} was quarantined after ` +
+          `${run.deadlineQuarantine.method} timed out on turn ` +
+          `${String(run.deadlineQuarantine.turn)}; abort this attempt instead of resuming it`,
+      }]);
+    }
     if (!run.lifecycle.canApply('resume')) {
       throw new RunStateError(runId, run.lifecycle.state, 'resume');
     }
@@ -3519,12 +3559,30 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     );
     const pendingRepairPhase = pendingRepairEvent?.details['phase'];
     const experimentRecords = writer.readExperimentRecords(runId);
+    const pauseTimes = [
+      ...interventionEvents
+        .filter((event) => event.eventType === 'pause')
+        .map((event) => event.recordedAt),
+      ...writer
+        .readCheckpoints(runId)
+        .filter((checkpoint) => checkpoint.reason === 'pause')
+        .map((checkpoint) => checkpoint.createdAt),
+    ].sort();
+    const lastPauseAt = pauseTimes.at(-1);
+    const lastResume = [...interventionEvents].reverse().find(
+      (event) => event.eventType === 'resume',
+    );
+    const paused =
+      lastPauseAt !== undefined &&
+      (lastResume === undefined || lastPauseAt > lastResume.recordedAt);
     const state =
       this.#terminalStateFrom(writer, runId, experimentRecords) ??
-      (evaluationCount > 0 ||
-      (trainingCount >= config.maxTurnsPerRun && pendingRepairPhase !== 'running')
-        ? 'evaluating'
-        : 'running');
+      (paused
+        ? 'paused'
+        : evaluationCount > 0 ||
+            (trainingCount >= config.maxTurnsPerRun && pendingRepairPhase !== 'running')
+          ? 'evaluating'
+          : 'running');
 
     const carrierForms = carrierInventory(config);
     const symbolInventory =
@@ -3584,6 +3642,31 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       }
       pendingRepair = { episodeId, originalTurn, phase, split, instance };
     }
+    let deadlineQuarantine: RunRuntime['deadlineQuarantine'] = null;
+    const quarantineEvent = [...interventionEvents].reverse().find(
+      (event) =>
+        event.reasonCode === 'turn-deadline-forfeit' &&
+        event.details['adapterQuarantined'] === true,
+    );
+    if (quarantineEvent !== undefined) {
+      const role = quarantineEvent.details['role'];
+      const method = quarantineEvent.details['method'];
+      const turn = quarantineEvent.details['turn'];
+      const quarantineFailed = quarantineEvent.details['quarantineFailed'];
+      if (
+        (role !== 'baby-a' && role !== 'baby-b') ||
+        (method !== 'observe' && method !== 'act' && method !== 'receive' &&
+          method !== 'onOutcome') ||
+        typeof turn !== 'number' ||
+        typeof quarantineFailed !== 'boolean'
+      ) {
+        throw new RunConfigurationError([{
+          path: 'intervention.turn-deadline-forfeit',
+          message: 'recorded adapter quarantine is malformed',
+        }]);
+      }
+      deadlineQuarantine = { role, method, turn, quarantineFailed };
+    }
     const run: RunRuntime = {
       runId,
       config,
@@ -3625,6 +3708,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       probeSchedule: null,
       causalPrediction: this.#causalPredictionProvider(config),
       pendingRepair,
+      deadlineQuarantine,
     };
     this.#runs.set(runId, run);
     return run;

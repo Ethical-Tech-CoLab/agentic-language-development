@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.114 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.115 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1181,8 +1181,10 @@ bundles and are not included in this bundle inventory. Both attempts remain pres
 as failed software qualifications, not behavioral results.
 The current engineering candidate converts deadlines from observation, sending,
 receiving, receiver action, and post-outcome processing into one audited timeout-
-forfeit path with method-specific diagnostics. This repair remains development
-evidence until it passes a fresh exact-topology qualification.
+forfeit path with method-specific diagnostics. A timed-out remote adapter is made
+unreachable before another turn, and the attempt cannot be resumed even after
+runtime recovery. This repair remains development evidence until it passes a fresh
+exact-topology qualification.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

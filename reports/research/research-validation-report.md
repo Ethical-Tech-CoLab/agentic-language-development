@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.114 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.115 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -53,8 +53,10 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   turns when one post-action deadline escaped without a forfeited turn record. Neither
   attempt reached restore or probe analysis; slots 2–5 were unattempted in each.
   The current candidate unifies all turn-path method deadlines under an audited
-  timeout-forfeit path with method-specific diagnostics and five-timeout pause
-  coverage. This is development evidence pending fresh topology qualification.
+  timeout-forfeit path with method-specific diagnostics. It immediately quarantines
+  a timed-out remote adapter, forbids in-place resume across runtime recovery, and
+  retains the five-timeout ceiling for non-remote rejections. This is development
+  evidence pending fresh exact-topology qualification.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a

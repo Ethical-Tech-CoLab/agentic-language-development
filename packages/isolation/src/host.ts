@@ -26,6 +26,7 @@ import {
   type LearnerProvenance,
   type LearnerTrackId,
   type LearnerVisibleRunConfig,
+  type IsolationBoundary,
   type LedgerEvent,
   type LedgerEventDraft,
   type OutcomeEvent,
@@ -63,10 +64,10 @@ const WITHHELD_REWARD_MESSAGE =
 export interface LearnerHostOptions {
   channel: FrameChannel;
   /**
-   * Boundary this host reports. A process host says `separate-process`; a
-   * container host says `separate-container` (SPEC §5.3).
+   * Boundary this host reports. Production process/container hosts report
+   * their separate boundary; loopback protocol fixtures report `in-process`.
    */
-  boundary?: 'separate-process' | 'separate-container';
+  boundary?: IsolationBoundary;
   /**
    * Pin the host to one track. When set, an `init` naming a different track
    * is `invalid-params`: a container built for `baby-a`'s track cannot be
