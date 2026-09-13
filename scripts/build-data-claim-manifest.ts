@@ -42,6 +42,22 @@ function collection(path: string): { id: string; evidenceClass: string; verifica
       supportingReceipt: 'reports/research/e00-integrity-qualification-receipt.json',
     };
   }
+  if (path.startsWith('evidence/qualification/e01-v2/')) {
+    return {
+      id: 'e01-v2-software-qualification',
+      evidenceClass: 'software-qualification',
+      verificationBasis: 'prospective repository registration, signed attempt attachments, simulated commitment, and dual-verifier receipt',
+      supportingReceipt: 'reports/research/e01-v2-qualification-receipt.json',
+    };
+  }
+  if (path.startsWith('evidence/development/e01-v2-')) {
+    return {
+      id: 'e01-v2-development-diagnostics',
+      evidenceClass: 'failed-or-superseded-diagnostic',
+      verificationBasis: 'unregistered development attempts retained, including partial exports and passing controls; never promoted to registered outcomes',
+      supportingReceipt: null,
+    };
+  }
   const mappings: Array<[string, string, string]> = [
     ['20260911-v06-97a33be-exact', 'mode-r-exact-v06', 'reports/research/mode-r-topology-receipt.json'],
     ['20260911-v07-6871f8d-exact', 'recurrent-exact-v07', 'reports/research/recurrent-baseline-receipt.json'],
@@ -117,7 +133,7 @@ function summarizeBundle(manifestPath: string) {
         : 'failure-history-only',
     exclusionReasons: [
       'not collected under the D07 confirmatory or replication seed domain',
-      'no eligible prospective repository registration binding',
+      'no eligible prospective research registration binding; software qualification is not study registration',
       recordedAnchorConfirmed
         ? 'recorded confirmation is local/fake-chain qualification evidence, not a public-chain anchor'
         : 'no recorded anchor confirmation and no confirmed public-chain anchor',
@@ -146,7 +162,7 @@ function buildManifest() {
   });
   return {
     schemaVersion: 1,
-    capturedAt: '2026-09-11',
+    capturedAt: '2026-09-13',
     classification: 'historical-evidence-inventory',
     researchFinding: false,
     scope: 'Every locally present exported run bundle at capture; raw events and private ledger content are represented only by hashes and counts.',

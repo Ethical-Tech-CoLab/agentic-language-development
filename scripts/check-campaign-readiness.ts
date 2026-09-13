@@ -35,8 +35,8 @@ if (JSON.stringify(actual) !== JSON.stringify(expected)) {
 if (review.experiments.some((entry) => entry.ready !== (entry.blockers.length === 0))) {
   throw new Error('an experiment readiness flag contradicts its blocker list');
 }
-if (review.experiments.filter((entry) => entry.ready).map((entry) => entry.id).join(',') !== 'E00') {
-  throw new Error('only the prospectively committed E00 v5 qualification may be ready');
+if (review.experiments.filter((entry) => entry.ready).map((entry) => entry.id).join(',') !== 'E00,E01') {
+  throw new Error('only the prospectively committed E00 v5 and E01 v2 qualifications may be ready');
 }
 const findingIds = new Set(review.blockingFindings.map((finding) => finding.id));
 if (findingIds.size !== review.blockingFindings.length) throw new Error('blocking-finding IDs are not unique');
@@ -45,12 +45,12 @@ for (const finding of review.blockingFindings) {
     throw new Error(`${finding.id} lacks an evidence-bearing finding or closure test`);
   }
 }
-for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14','B15']) {
+for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14']) {
   if (!findingIds.has(required)) throw new Error(`campaign review omits ${required}`);
 }
 const resolvedIds = new Set(review.resolvedFindings.map((finding) => finding.id));
-if (JSON.stringify([...resolvedIds].sort()) !== JSON.stringify(['B01', 'B02', 'B03', 'B04', 'B05', 'B06'])) {
-  throw new Error('campaign review must record B01-B06 as the six prospectively resolved findings');
+if (JSON.stringify([...resolvedIds].sort()) !== JSON.stringify(['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B15'])) {
+  throw new Error('campaign review must record B01-B06 and B15 as the seven resolved findings');
 }
 if (review.resolvedFindings.some((finding) => finding.resolution.length < 40 || finding.boundary.length < 40)) {
   throw new Error('a resolved finding lacks a complete resolution or claim boundary');

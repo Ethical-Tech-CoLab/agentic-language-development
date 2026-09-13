@@ -4,28 +4,29 @@ Status: A01 evidence-cutoff inventory complete; no research result
 
 The machine-readable source is
 `reports/research/data-claim-manifest.json`. It captures every exported run bundle
-present under local ignored evidence storage through 2026-09-12 without copying raw events,
+present under local ignored evidence storage through 2026-09-13 without copying raw events,
 messages, observations, native ledgers, or secrets into Git.
 
 ## Inventory result
 
-The snapshot contains 125 bundles in 19 collections and 228,577,459 bundle bytes.
-Every bundle has a recorded verifier exit code of zero. That fact does not make every
-collection current or scientific: 33 are historical qualification exports whose old
-intervention-tree declaration is incompatible with the current verifier, 51 belong
-to failed or superseded diagnostic collections, and 41 have tracked bounded software
-qualification support. All 125 are excluded from empirical estimates.
+The snapshot contains 134 bundles in 21 collections and 236,708,791 bundle bytes.
+Of 134 exports, 133 have a recorded verifier exit code of zero; one partial
+unregistered development export has no recorded verification report. A pass does
+not make a collection current or scientific: 33 are historical qualification exports
+whose old intervention-tree declaration is incompatible with the current verifier,
+55 belong to failed or superseded diagnostics, and 46 have tracked bounded software
+qualification support. All 134 are excluded from empirical estimates.
 
-Seventy-seven bundle records show anchor confirmation, but every such confirmation
+Eighty-six bundle records show anchor confirmation, but every such confirmation
 in this snapshot is a local fake-chain qualification receipt. Confirmed public-chain
 anchors: zero. The manifest uses separate fields for these values and its audit fails
 if any local receipt is relabeled public.
 
 | Evidence use | Bundles | Permitted claim |
 |---|---:|---|
-| Exact/current bounded software qualification | 41 | Only the claim boundary in the matching tracked receipt |
+| Exact/current bounded software qualification | 46 | Only the claim boundary in the matching tracked receipt |
 | Historical qualification | 33 | Historical software behavior; no inheritance of current verifier status |
-| Failed or superseded diagnostic | 51 | Failure history and debugging provenance only |
+| Failed or superseded diagnostic | 55 | Failure history and debugging provenance only |
 | Pilot | 0 | None |
 | Confirmatory | 0 | None |
 | Replication | 0 | None |

@@ -1,16 +1,16 @@
 # Campaign Methods and Registration Readiness Review
 
-Review date: 2026-09-11  
+Review date: 2026-09-13
 Review type: internal adversarial methods review  
 Decision: not registration-ready  
 Independent human review: not performed
 
 ## Decision
 
-Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
 
 All 19 experiment cards are covered. E00 completed its registered software
-qualification, E01's bounded topology result leaves B15 open, and the remaining
+qualification, E01 v2 closed B15 with signed explicit-corpus evidence, and the remaining
 17 experiments await their prerequisites. The
 machine-readable decision is `protocols/campaign-readiness-review.v1.json`. This
 review is deliberately fail-closed: repository implementation, complete tests, and
@@ -50,8 +50,9 @@ to relabel any existing fixture as a pilot.
   registered execution and aggregate analysis remain absent.
 - E01 v1 passed five independently recreated slots on its exact registered
   two-container topology, including timing/envelope/error, host, network, Gateway,
-  and detector-positive controls. B15 remains because the complete explicit notebook
-  variant corpus and attempt-level signed evidence are not yet present.
+  and detector-positive controls. V2 then passed five prospectively registered fresh
+  slots with all 560 explicit attempt/control records signed and checkpointed;
+  both verifier implementations accepted the original bundles, closing B15.
 - A fail-closed canonical packet compiler rejects missing, extra, empty, and
   placeholder operational fields. E00 and E01 each have all eleven bindings and
   compile exact packets; the remaining 17 cards have 170 unresolved exact bindings.
@@ -64,7 +65,7 @@ to relabel any existing fixture as a pilot.
 | Experiment | Ready | Immediate blocking chain |
 |---|---|---|
 | E00 | Yes | V5 passed its prospectively registered five-slot software-qualification gate |
-| E01 | No | V1 registered topology/category suite passed; B15 explicit variant corpus and signed attempt evidence remain |
+| E01 | Yes | V2 passed the prospective five-slot explicit corpus with signed evidence; bounded software qualification only |
 | E02 | No | Exact packet and prospectively registered semantic-leakage evidence remain |
 | E03 | No | E01/E02, blinded pilot, selected N, exact packet |
 | E10-E16 | No | upstream experimental dependencies, resources, selected N where confirmatory, missing carrier/comparator qualification |

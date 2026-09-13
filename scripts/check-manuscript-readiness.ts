@@ -62,7 +62,7 @@ if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 17 || ca
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');
 }
-if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 9) {
+if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 8) {
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');

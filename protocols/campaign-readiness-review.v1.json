@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "reviewedAt": "2026-09-11",
+  "reviewedAt": "2026-09-13",
   "reviewClass": "internal-adversarial-methods-review",
   "independentHumanReview": false,
   "decision": "not-registration-ready",
@@ -11,7 +11,8 @@
     {"id":"B03","owner":"O03","resolution":"Mainnet funding and custody are not applicable because public-chain transactions are prohibited for this campaign.","boundary":"The optional software capability remains unactivated and outside study claims."},
     {"id":"B04","owner":"O04","resolution":"Hosted branch protection is not an execution prerequisite under the repository-native profile; exact commits, clean-tree preflight, and local full-suite receipts govern collection.","boundary":"This does not claim hosted enforcement, protected publication branches, or successful hosted CI."},
     {"id":"B05","owner":"O05","resolution":"A second-person restore is an optional independent-reproducibility enhancement, not a prerequisite for local synthetic collection; first-party restore tests remain mandatory.","boundary":"No independent human restoration, reproduction, or review is claimed."},
-    {"id":"B06","owner":"O06","resolution":"Repository-native preregistration prospectively binds canonical packet bytes, an ancestral commit, and a matching simulated pre-run commitment.","boundary":"This does not claim third-party custody, an independent timestamp, decentralized persistence, or public-chain finality."}
+    {"id":"B06","owner":"O06","resolution":"Repository-native preregistration prospectively binds canonical packet bytes, an ancestral commit, and a matching simulated pre-run commitment.","boundary":"This does not claim third-party custody, an independent timestamp, decentralized persistence, or public-chain finality."},
+    {"id":"B15","owner":"D06+D08","resolution":"Prospectively registered E01 v2 passed five fresh topology slots with 560 signed attempt/control records, complete attachment inclusion proofs, and acceptance by TypeScript and Rust verifiers; the tracked receipt binds every original slot.","boundary":"Finite enumerated corpus on the registered no-learning local topology only; storage-path denial is not a deployed database audit, planted detector fixtures are not live escapes, and no behavioral finding, public timestamp, or independent operator review is claimed."}
   ],
   "blockingFindings": [
     {"id":"B07","severity":"critical","owner":"D07+D08","finding":"Maximum pools project to 855.9 GiB and 375.7 single-core hours before frozen-model overhead, exceeding the 25 GiB/72 CPU-hour local ceiling.","closure":"Blinded-pilot selected prefixes plus an approved measured execution/storage envelope within the zero-external-spend profile."},
@@ -21,12 +22,11 @@
     {"id":"B11","severity":"major","owner":"D08","finding":"A fail-closed canonical compiler requires eleven binding classes; E00 and E01 now compile, while the remaining 17 experiments have 170 unresolved exact bindings.","closure":"One canonical registration packet per remaining executable experiment with no unresolved operational field."},
     {"id":"B12","severity":"major","owner":"D08","finding":"Timing/envelope/error and host controls pass on the exact current two-container Mode R reference topology, but have not run on the final selected registered study topology.","closure":"Final-topology detector-positive and negative measurements with selected learners, carriers, samples, tolerances, and bounds, bound into verified evidence."},
     {"id":"B13","severity":"critical","owner":"R03","finding":"The current review is internal; no independent methods/statistics or reproduction review exists.","closure":"Authentic external review record with disposition of every critical and major objection."},
-    {"id":"B14","severity":"major","owner":"W04+R03","finding":"The source audit is single-screener and human re-verification of load-bearing full-text claim mappings remains open.","closure":"Independent citation/claim audit with corrections and preserved review history."},
-    {"id":"B15","severity":"major","owner":"D06+D08","finding":"E01 v1 passed five registered real-topology category suites, but the packet aggregates schema-equivalent content variants and receipt-records transport and host observations rather than binding each enumerated notebook attempt into signed run evidence.","closure":"A prospective E01 amendment separately enumerates language, Unicode, URL/code, whitespace, storage/cache/replay/snapshot, malformed-error, timing, retry, identifier, process, environment, and network attempts and binds every disposition into verified signed evidence."}
+    {"id":"B14","severity":"major","owner":"W04+R03","finding":"The source audit is single-screener and human re-verification of load-bearing full-text claim mappings remains open.","closure":"Independent citation/claim audit with corrections and preserved review history."}
   ],
   "experiments": [
     {"id":"E00","ready":true,"blockers":[]},
-    {"id":"E01","ready":false,"blockers":["B15"]},
+    {"id":"E01","ready":true,"blockers":[]},
     {"id":"E02","ready":false,"blockers":["B11"]},
     {"id":"E03","ready":false,"blockers":["E01","E02","B08","B11"]},
     {"id":"E10","ready":false,"blockers":["E03","B07","B11"]},

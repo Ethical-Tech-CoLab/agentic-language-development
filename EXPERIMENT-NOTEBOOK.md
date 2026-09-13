@@ -185,7 +185,7 @@ E01 Channel isolation ---- E02 Observation leakage
 | ID | Experiment | Depends on | Status | Result |
 |---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Qualified (software) | V2/v4 failures preserved; v5 passed |
-| E01 | Channel isolation and side-channel red team | E00 | In progress | V1 registered topology suite passed; explicit attempt corpus/evidence binding remains |
+| E01 | Channel isolation and side-channel red team | E00 | Qualified (software) | V2 passed five registered slots with 560 signed records and both verifiers |
 | E02 | Observation and metadata leakage audit | E00 | Not started | — |
 | E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | — |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | — |
@@ -302,7 +302,7 @@ it is not evidence for emergent communication or any other behavioral hypothesis
 
 ## E01. Channel Isolation and Side-Channel Red Team
 
-**Status:** In progress—v1 registered topology qualification passed; B15 remains
+**Status:** Qualified (software)—v2 explicit corpus passed; B15 closed
 
 **Depends on:** E00
 
@@ -315,18 +315,18 @@ recorded.
 
 ### Procedure
 
-- [ ] Attempt English and other human-language text.
-- [ ] Attempt arbitrary Unicode and non-allowlisted emoji.
-- [ ] Attempt URLs, code, JSON extensions, and tool-like text.
-- [ ] Attempt message-length and whitespace signaling.
-- [ ] Attempt timing and retry-count signaling.
-- [ ] Attempt model-generated identifiers.
-- [ ] Attempt filesystem, clipboard, environment, and process access.
-- [ ] Attempt direct network access between Baby containers.
-- [ ] Attempt shared cache, vector store, replay buffer, and snapshot access.
-- [ ] Attempt malformed payloads designed to trigger distinguishable errors.
-- [ ] Verify normalized rejection timing and envelope.
-- [ ] Verify every attempt appears in the audit log.
+- [x] Attempt English and other human-language text.
+- [x] Attempt arbitrary Unicode and non-allowlisted emoji.
+- [x] Attempt URLs, code, JSON extensions, and tool-like text.
+- [x] Attempt message-length and whitespace signaling.
+- [x] Attempt timing and retry-count signaling.
+- [x] Attempt model-generated identifiers.
+- [x] Attempt filesystem, clipboard, environment, and process access.
+- [x] Attempt direct network access between Baby containers.
+- [x] Attempt shared cache, vector store, replay buffer, and snapshot access.
+- [x] Attempt malformed payloads designed to trigger distinguishable errors.
+- [x] Verify normalized rejection timing and envelope.
+- [x] Verify every attempt appears in the audit log.
 
 ### Acceptance Criteria
 
@@ -343,9 +343,13 @@ recorded.
 | Recipient-visible Gateway/transport observations | 500 | 500 within registered bounds | Receipt-verified aggregates |
 | Host capability decisions | 25 | 25 | Receipt-verified aggregates |
 | Detector-positive checks | 20 | 20 detected | Receipt-verified aggregates |
-| Explicit notebook content/path variants | Complete enumerated corpus | Not yet run | B15 open |
+| V2 explicit Gateway rejections | 100 | 100; no recipient delivery | Signed attachments and channel events |
+| V2 host requests (both roles, five paths) | 50 | 50; denied capabilities and refused peer sockets | Signed attachments |
+| V2 accepted/malformed transport captures | 400 | Within registered timing/size/error bounds | Signed raw captures |
+| V2 permitted-delivery controls | 5 | 5 delivered and interpreted | Signed channel, interpretation, and attachment |
+| V2 planted-detector fixture records | 5 | All required detectors identified planted leaks | Signed fixture reports; not live escapes |
 
-- [ ] Isolation criteria met across the complete notebook corpus
+- [x] Isolation criteria met across the complete registered notebook corpus
 - [x] Residual risks documented
 - [x] V1 bounded qualification result committed
 
@@ -358,14 +362,22 @@ external spend or public-chain transaction. The tracked receipt is
 `reports/research/e01-isolation-qualification-receipt.json`; five detailed slot
 records remain under `evidence/qualification/e01-v1/`.
 
-The internal review does not mark E01 complete. V1 groups schema-equivalent carrier
-content and does not separately exercise every notebook variant, including each
-human-language, Unicode, URL/code, whitespace, cache, vector-store, replay-buffer,
-and snapshot path. Its host and transport observations are preserved in the receipt
-but are not individual signed ledger events. B15 requires a prospective amendment
-with the full enumerated corpus and attempt-level verified evidence. V1 therefore
-supports only its registered topology/category claim and is not an agent-language
-finding.
+V1's limited category aggregation and unsigned per-attempt observations remain
+unchanged. V2 prospectively registered an explicit corpus and ran once on clean
+commit `4ba1f27561d2ae20261a2e14a5a91e34fe602d56`. All five fresh topologies passed:
+560 signed records, 685 ledger events, ten checkpoints, and 560 attachment inclusion
+proofs. The TypeScript verifier and separate Rust auditor accepted all original
+bundles, and a subsequent retained-evidence replay passed. Receipt:
+`reports/research/e01-v2-qualification-receipt.json`; originals:
+`evidence/qualification/e01-v2/`. This closes B15 within the registered local scope.
+
+The 400 transport observations include accepted and rejected controls, not 400
+blocked attacks. Success and error bodies differ to the Nursery; malformed-error
+bodies are identical across prohibited variants. Storage probes test denied paths,
+not deployed external databases. Planted detector fixtures are not live escapes.
+All anchors are simulated with zero external spend. The finite corpus does not
+establish universal side-channel resistance, independent witnessing, or any
+agent-language finding. Final selected study topologies still require B12's checks.
 
 ---
 

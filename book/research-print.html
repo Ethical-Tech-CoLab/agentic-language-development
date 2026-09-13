@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.101 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.102 · 254/258 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1128,7 +1128,7 @@ synthetic messages and report novelty, adversarial recovery, and established sec
 as separate fields.</p>
 <hr>
 <h2>10. Current Implementation Status</h2>
-<p><strong>Engineering snapshot:</strong> v0.1.101 · 254/258 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.102 · 254/258 backlog acceptance criteria verified.</p>
 <p>As of September 12, 2026, 82 of 86 backlog items satisfy all of their acceptance
 criteria. This is engineering status, not an empirical result.</p>
 <p>Implemented:</p>
@@ -1195,11 +1195,11 @@ second-person restoration, and third-party registration remain optional claim-
 strengthening activities. Their absence is disclosed and prohibits claims of public
 finality, hosted enforcement, independent restoration, or third-party registration;
 it does not answer or alter the agent-language estimands.</p>
-<p>The frozen local <a href="docs/data-and-claim-inventory.md">data/claim inventory</a> resolves 125
-exported bundles across 19 collections by path and content hash. Forty-one have
+<p>The frozen local <a href="docs/data-and-claim-inventory.md">data/claim inventory</a> resolves 134
+exported bundles across 21 collections by path and content hash. Forty-six have
 tracked bounded software-qualification support, 33 are historical qualification
-exports, and 51 are failed or superseded diagnostics. All 125 are excluded from
-empirical estimates. Seventy-seven recorded anchor confirmations are historical local
+exports, and 55 are failed or superseded diagnostics. All 134 are excluded from
+empirical estimates. Eighty-six recorded anchor confirmations are historical local
 fake-chain receipts; prospective receipts now bind an explicit class that the
 verifier refuses to relabel. Confirmed public-chain anchors, pilot bundles, confirmatory
 bundles, replication bundles, and research-included bundles are all zero.</p>
@@ -2154,7 +2154,8 @@ uncalibrated statistical rejection rule;</li>
 separately registered protocol is justified.</p>
 <hr>
 <h2>Appendix E. Future Results-Table Scaffolds</h2>
-<p>These tables contain no observed results.</p>
+<p>E00/E01 report bounded software qualifications only. All behavioral tables remain
+unpopulated; no empirical hypothesis results are reported.</p>
 <h3>E.1 Qualification</h3>
 <table>
 <thead>
@@ -2170,21 +2171,21 @@ separately registered protocol is justified.</p>
 </thead>
 <tbody><tr>
 <td>E00 Integrity</td>
-<td align="right">TBD</td>
-<td align="right">—</td>
-<td align="right">—</td>
-<td>Detect all mutation classes</td>
-<td>Not run</td>
-<td>—</td>
+<td align="right">5 v5 slots</td>
+<td align="right">0 in v5</td>
+<td align="right">5</td>
+<td>Detect all registered mutations</td>
+<td>Software qualified</td>
+<td>E00 v5 receipt</td>
 </tr>
 <tr>
 <td>E01 Isolation</td>
-<td align="right">TBD</td>
-<td align="right">—</td>
-<td align="right">—</td>
-<td>Block all enumerated side routes</td>
-<td>Not run</td>
-<td>—</td>
+<td align="right">5 v2 topology slots</td>
+<td align="right">0 in v2</td>
+<td align="right">5</td>
+<td>Enumerated local corpus only</td>
+<td>Software qualified</td>
+<td>E01 v2 receipt</td>
 </tr>
 <tr>
 <td>E02 Leakage</td>
@@ -2197,7 +2198,7 @@ separately registered protocol is justified.</p>
 </tr>
 <tr>
 <td>E03 Controls</td>
-<td align="right">6 x registered N (450 at current SD assumption)</td>
+<td align="right">6 x selected N (not yet selected)</td>
 <td align="right">—</td>
 <td align="right">—</td>
 <td>Equivalence and oracle bounds</td>

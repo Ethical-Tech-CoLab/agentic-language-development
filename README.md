@@ -95,14 +95,14 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.101 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.102 · 254/258 backlog acceptance criteria verified.
 
-Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
 
 The verifiable core, communication runtime, Mode R isolation, experiment-readiness
-scaffolds, and operator preflight are implemented and tested. E00 has qualified;
-E01 requires its remaining explicit variants and signed attempt evidence before
-the dependent research campaign can proceed:
+scaffolds, and operator preflight are implemented and tested. E00 and E01 have
+qualified within their registered software scope. E02 observation-leakage checks
+and the remaining research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC
@@ -257,8 +257,8 @@ Set `CHROME_PATH` if Chrome or Edge is not installed at a standard location. The
 generated PDF, page manifest, page images, print edition, and locally bundled reader
 are committed so GitHub Pages needs no server, CDN, or runtime PDF renderer.
 
-The notebook records E00's software qualification and E01's incomplete isolation
-qualification. Behavioral collection awaits the remaining local research gates.
+The notebook records E00's integrity qualification and E01 v2's completed bounded
+isolation qualification. Behavioral collection awaits the remaining local research gates.
 
 ## Running the Platform Locally
 

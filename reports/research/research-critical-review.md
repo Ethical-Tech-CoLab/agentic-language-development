@@ -1,9 +1,9 @@
 # Critical Review: Strong Qualification, No Research Result Yet
 
-Review date: 2026-09-12
-Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.98
+Review date: 2026-09-13
+Reviewed artifact: `RESEARCH.md` at engineering snapshot v0.1.102
 Decision: **Needs revision before submission**  
-Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
 Completeness: **Complete internal review of the current pre-results draft; empirical and independent-review checks remain unavailable**  
 Changes made: yes—registration status, causal-runtime status, anonymity metadata,
 AI-assistance disclosure, and rendered-page overlap were corrected.
@@ -28,16 +28,16 @@ received independent verification.
 | Numerical and status accuracy | 0 / 8 | Eight principal claim groups were reconciled to the acceptance, data/claim, registration, campaign, seed/resource, statistics, audit-cost, and causal-runtime artifacts after correcting stale E16 language. |
 | Within-chart agreement | N/A | The manuscript intentionally contains no empirical chart. Future result figures remain prohibited until eligible data exist. |
 | Complete source details | 0 / 50 | All 50 bibliography entries have a locator and recorded inspection depth. Only the priority subset was inspected in full text; that declared limitation prevents a stronger verification claim. |
-| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and qualification receipts agree that E00 is software-qualified and E01 v1 passed only its bounded category/topology gate while the behavioral campaign remains unexecuted. |
-| Data-quality controls | 18 / 18 | Every behavioral experiment lacks an eligible input dataset. E00 now has qualified software evidence but no behavioral estimand; none of the 18 agent-language result units can yet be validated. |
+| Cross-artifact consistency | 0 / 6 | The manuscript, notebook, validation report, methods review, campaign decision, and qualification receipts agree that E00 and E01 v2 are software-qualified within their registered bounds while the behavioral campaign remains unexecuted. |
+| Data-quality controls | 17 / 17 | Every remaining experiment lacks its eligible registered dataset. E00 and E01 provide bounded software qualification, not behavioral estimates; the remaining units cannot yet be validated. |
 | Conclusion support | 0 / 4 | The four current conclusions—pre-results status, substantial software qualification, zero eligible empirical bundles, and not-registration-ready disposition—match the retained evidence. No scientific hypothesis is presented as supported. |
 
 ## Prioritized problems and required fixes
 
 1. **P0 — The central research questions have no eligible observations.** E00 v5
    passed as software qualification after two preserved failures and one outcome-free
-   amendment. E01 v1 passed five registered topology/category slots, but its full
-   explicit variant corpus and attempt-level signed evidence remain open under B15;
+   amendment. E01 v2 passed five registered topology slots with 560 signed records,
+   closing B15's explicit-corpus and evidence-binding gap;
    the other 17 experiments remain `Not started`, and zero bundles are research-included.
    Three E00 prospective simulated commitments are preserved, and the E00 and E01
    qualification packets compile. **Fix (required):**
@@ -46,11 +46,11 @@ received independent verification.
    any Results claim.
 
 2. **P0 — Local experiment packets and independent evidence remain incomplete.** The
-   machine review has nine open blockers and no independent human review. Scoped
+   machine review has eight open blockers and no independent human review. Scoped
    governance is approved and the external-dependency ledger is ready at 1/1;
    O02-O06 are non-applicable to local collection. Exact packet compilation, pilots,
    resource selection, and final-topology qualifications remain substantive local
-   blockers. **Fix (required):** resolve B07-B12 and B15 in dependency order and keep B13-B14
+   blockers. **Fix (required):** resolve B07-B12 in dependency order and keep B13-B14
    as publication-readiness limitations until authentic independent work exists.
 
 3. **P1 — Simulation removes monetary dependency but weakens the timestamp trust
@@ -120,7 +120,7 @@ received independent verification.
 The manuscript is a defensible, unusually explicit **pre-results protocol and software
 qualification record**. It is **not a complete research paper**, not ready for external
 registration, and not ready for conference or archival submission. The next valid
-transition is completion of E01's explicit variant and signed-attempt coverage,
-followed by the remaining locally registered prerequisite experiments. The approved
+transition is E02's observation/metadata-leakage qualification, followed by the
+remaining locally registered prerequisite experiments. The approved
 synthetic campaign can proceed when those local gates pass; independent review
 remains a publication limitation. Editorial polishing cannot supply missing evidence.

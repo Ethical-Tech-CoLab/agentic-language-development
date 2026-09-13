@@ -194,7 +194,7 @@ for (const [index, slot] of receipt.slots.entries()) {
 }
 if (containerIds.size !== 10) throw new Error('E01 did not recreate both learner containers for every slot');
 
-console.log('E01 v1 receipt valid: records 5/5 topologies, 500 observations, 60/60 category decisions, all positive controls detected; B15 remains open');
+console.log('E01 v1 historical receipt valid: records 5/5 topologies, 500 observations, 60/60 category decisions, all positive controls detected; explicit-corpus closure is audited separately in v2');
 console.log(liveEvidence
   ? 'Live evidence: retained slot records match the receipt; topology attacks were not rerun'
   : 'Receipt audit only: raw evidence not checked; use --live-evidence to compare retained slot records');

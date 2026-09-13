@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 2,
+  "experimentId": "E01",
+  "researchFinding": false,
+  "classification": "prospectively-registered-software-qualification",
+  "registrationHash": "sha256:19e09a204bea21f03cfafbe240770d6913bbb4342d1c93ea4ec948e2c93630ea",
+  "executionCommit": "4ba1f27561d2ae20261a2e14a5a91e34fe602d56",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "slots": [
+    {
+      "slot": 1,
+      "scenarioSeed": "178c9f582ab3033366a3c660d7d11f690b4ec3bb2cb453c71f4b660361661289",
+      "runId": "registered-e01-v2-1",
+      "passed": true,
+      "decision": {
+        "passed": true,
+        "issues": [],
+        "attempts": 112,
+        "timingDifferenceMs": 0.28513697500090984
+      },
+      "containerIds": [
+        "a56f20925318",
+        "459539df122a"
+      ],
+      "slotSha256": "10dcccc99029586260b8ed6dd782d800ce8ca25209ca2917a9ed88b543ba841f",
+      "bundleManifestHash": "sha256:860bfa92bce82e5798937c0af8228e776c73e6b8d65a44c3caf1e7d1d8f4e119",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e01-v2/registered-e01-v2-1/bundle",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 137,
+        "checkpointCount": 2,
+        "attachmentCount": 112,
+        "issues": []
+      }
+    },
+    {
+      "slot": 2,
+      "scenarioSeed": "10fbb23e818ec63c552699622a92c4755d6b6270de56fccc9ee5ffb152642946",
+      "runId": "registered-e01-v2-2",
+      "passed": true,
+      "decision": {
+        "passed": true,
+        "issues": [],
+        "attempts": 112,
+        "timingDifferenceMs": 0.06658050000021376
+      },
+      "containerIds": [
+        "9b4e024fc5b1",
+        "928ff937b14f"
+      ],
+      "slotSha256": "d50d89543fc6d9df4b21ec923bcf8be22c48c4bf96cf48a87048d726bbd59ea3",
+      "bundleManifestHash": "sha256:cb4d27fedc96431eb4593db38ab2946a72193f54a16c7bc6f3c8033081c3eb80",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e01-v2/registered-e01-v2-2/bundle",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 137,
+        "checkpointCount": 2,
+        "attachmentCount": 112,
+        "issues": []
+      }
+    },
+    {
+      "slot": 3,
+      "scenarioSeed": "659f5f4cc4a6a681ec62c9fb1c1e75f933f2a921df289a901ed2c96ba5945a50",
+      "runId": "registered-e01-v2-3",
+      "passed": true,
+      "decision": {
+        "passed": true,
+        "issues": [],
+        "attempts": 112,
+        "timingDifferenceMs": 0.05194879999942259
+      },
+      "containerIds": [
+        "697f28bc3d33",
+        "3a3ce269c75d"
+      ],
+      "slotSha256": "f25f9c62c6d690b474fdbf292ffe387953e9b6c97ce435fa5d107ec9c9681df0",
+      "bundleManifestHash": "sha256:f389ac8fcbb9baa1a989fd3024ea5283425bcb3de03aef05e3e467599c3ac7b2",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e01-v2/registered-e01-v2-3/bundle",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 137,
+        "checkpointCount": 2,
+        "attachmentCount": 112,
+        "issues": []
+      }
+    },
+    {
+      "slot": 4,
+      "scenarioSeed": "f22aad52b4f7c8f030e964a021dfe427e702943c2c199765a721c0ebf3730752",
+      "runId": "registered-e01-v2-4",
+      "passed": true,
+      "decision": {
+        "passed": true,
+        "issues": [],
+        "attempts": 112,
+        "timingDifferenceMs": 0.3057187749992636
+      },
+      "containerIds": [
+        "953f5cfc27e7",
+        "361dfd4c0b83"
+      ],
+      "slotSha256": "799418304a6f6b04d3e7011ca610ae50c2d144956d4593ffbf7c2363581fdaf5",
+      "bundleManifestHash": "sha256:e991581ef3b2e51af6f80ff6daaa477e8f0bf66d846c1056f8dc06c51a72168a",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e01-v2/registered-e01-v2-4/bundle",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 137,
+        "checkpointCount": 2,
+        "attachmentCount": 112,
+        "issues": []
+      }
+    },
+    {
+      "slot": 5,
+      "scenarioSeed": "06ea2318b52fc8a1980c5655442af7c3f4bd32c6b6eef11d64361cd5d8f8f321",
+      "runId": "registered-e01-v2-5",
+      "passed": true,
+      "decision": {
+        "passed": true,
+        "issues": [],
+        "attempts": 112,
+        "timingDifferenceMs": 0.2150769000013497
+      },
+      "containerIds": [
+        "0f2f8c20b30c",
+        "e8c1d41a955b"
+      ],
+      "slotSha256": "8098ea796424350af98641e215c74ac72183c72cf38fb839cc2d5dbc7e091d9e",
+      "bundleManifestHash": "sha256:34e08b3e93f72cda19702ca4f20fa32a3f11fcd4ff785db16db9b8ee8b2d1455",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e01-v2/registered-e01-v2-5/bundle",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 137,
+        "checkpointCount": 2,
+        "attachmentCount": 112,
+        "issues": []
+      }
+    }
+  ],
+  "failure": null,
+  "wallMilliseconds": 508950.56246,
+  "passed": true,
+  "claimBoundary": "Tested local topology and enumerated corpus only; no behavioral result, public timestamp, independent operator review, or universal side-channel-resistance claim."
+}

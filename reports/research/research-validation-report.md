@@ -7,7 +7,7 @@ Report status: in progress
 
 ## Executive Summary
 
-Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open campaign blockers.
+Research status: 2 qualified (software), 0 in progress, 17 not started; 8 open campaign blockers.
 
 - The 2026-09-13 maintenance audit reproduced 18 malformed E00/E01 receipts that
   permissive checks accepted, plus two failures caused by absent ignored evidence.
@@ -20,7 +20,15 @@ Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open c
   `:live` commands require retained records. CI fetches registration history, and
   the earlier workflow observation is verified against its recorded commit.
   Historical outcomes and registrations are unchanged; these repairs add no
-  behavioral observations and do not close B15.
+  behavioral observations and did not themselves close B15.
+- The subsequent E01 v2 amendment ran once on clean v0.1.101 after repository
+  registration and a simulated pre-run commitment. Five fresh topology slots passed
+  560 signed attempt/control records, 685 events, ten checkpoints, and complete
+  attachment proofs. Both verifier implementations accepted every original bundle;
+  the retained-evidence audit reproduced the result. This closes B15 within the
+  finite registered corpus, not for arbitrary future topology or side channels.
+  Exact measurements and limits are in `e01-v2-qualification-receipt.json` and
+  `../../docs/e01-explicit-qualification.md`. No behavioral dataset was created.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -102,8 +110,8 @@ Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open c
   `action_required` with zero
   jobs started, and the latest relevant default-branch workflow failed; this
   remains historical evidence that hosted enforcement is not demonstrated.
-- The complete local data/claim snapshot resolves and hash-binds 125 exported bundles
-  in 19 collections. All are excluded from empirical estimates; 77 local fake-chain
+- The complete local data/claim snapshot resolves and hash-binds 134 exported bundles
+  in 21 collections. All are excluded from empirical estimates; 86 local fake-chain
   confirmations are separately labeled from zero confirmed public-chain anchors.
 - The frozen local audit-cost benchmark covers five immutable qualifications: 260
   turns, 1,828 stream events, a 687,916-byte ordinary-log proxy, 2,053,633 bytes of
@@ -114,8 +122,8 @@ Research status: 1 qualified (software), 1 in progress, 17 not started; 9 open c
   mutation instances. This does not answer the agent-language research questions.
   The notebook preserves two failed E00 attempts and one outcome-free amendment;
   E01 v1 also passed five prospectively registered local topology/category slots,
-  but internal review keeps E01 `In progress` because the explicit notebook variant
-  corpus and attempt-level signed evidence remain absent. The other 17 experiments
+  and E01 v2 subsequently closed the explicit corpus and signed-attempt gap with
+  five registered slots and dual-verifier acceptance. The other 17 experiments
   remain `Not started`. The only retained behavioral corpus contains
   33 Prototype Mode qualification runs and is unregistered, unanchored, and invalid
   for confirmatory inference by construction.
@@ -167,17 +175,18 @@ runs into experimental evidence.
 ## 3. Current corpus and claim inventory
 
 The [data/claim inventory](../../docs/data-and-claim-inventory.md) captures every
-exported bundle present in ignored local evidence storage at the cutoff: 125 bundles,
-19 collections, and 228,577,459 bundle bytes. It records content-tree, manifest, and
+exported bundle present in ignored local evidence storage at the cutoff: 134 bundles,
+21 collections, and 236,708,791 bundle bytes. It records content-tree, manifest, and
 available verification-report hashes without copying raw events or private ledger content.
-Forty-one bundles have tracked exact/current bounded software-qualification support,
-33 are historical qualification exports, and 51 are failed or superseded diagnostic
+Forty-six bundles have tracked exact/current bounded software-qualification support,
+33 are historical qualification exports, and 55 are failed or superseded diagnostic
 artifacts. Every one is excluded from pilot, confirmatory, replication, and empirical
 hypothesis estimates.
 
-All 125 have a recorded verifier exit code of zero. The 33 historical exports remain
+Of 134 exports, 133 have a recorded verifier exit code of zero; one partial
+unregistered development export has no recorded verification report. The 33 historical exports remain
 incompatible with the current intervention-tree declaration and do not inherit later
-verifier status. Seventy-seven bundle records show anchor confirmation, but those
+verifier status. Eighty-six bundle records show anchor confirmation, but those
 receipts are local fake-chain qualification evidence. Confirmed public-chain anchors:
 zero. Prospective receipts carry an explicit `anchorClass`; the verifier rejects
 class relabeling so a simulated commitment cannot silently become a public-chain
@@ -745,9 +754,9 @@ bundles.
 ## 20. Critical gaps before empirical claims
 
 The internal [methods readiness review](methods-readiness-review.md) covers all 19
-experiment cards and identifies nine open blockers with explicit closure tests. It does not
+experiment cards and identifies eight open blockers with explicit closure tests. It does not
 claim independent review. E00 has completed its registered software qualification;
-E01 has a registered bounded result but remains incomplete under B15. The campaign
+E01 v2 closed B15 with the complete registered explicit corpus and signed evidence. The campaign
 decision stays negative while the remaining scientific prerequisites are open.
 
 1. Generative learners now acquire exact partner artifacts and expose bounded local
@@ -760,7 +769,7 @@ decision stays negative while the remaining scientific prerequisites are open.
    to be produced before D08 can freeze registration-ready configurations.
    The fail-closed packet inventory currently resolves all eleven bindings for E00
    and E01 and leaves 170 exact experiment bindings unresolved. E01 v1 executed and
-   passed its bounded category/topology gate, but B15 prevents full E01 completion.
+   passed its bounded category/topology gate; v2 subsequently closed B15.
 3. The runner now qualifies a derived trained-policy disabled-channel evaluation, but
    a prospectively registered, seed-paired panel of normal, disabled, constant, random,
    and shuffled controls is still needed to estimate causal communication effects.
@@ -819,7 +828,7 @@ The current [critical review](research-critical-review.md) and machine-readable
 eight-perspective internal pass. They correct cross-document status and rendering
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
-topology/category suite but remains in progress under B15, while 17 experiments remain unstarted,
-all 125 local
+topology/category suite; v2 completed the signed explicit corpus. Seventeen experiments remain unstarted,
+all 134 local
 bundles remain research-excluded, 170 registration bindings remain unresolved, and
 independent review is absent.

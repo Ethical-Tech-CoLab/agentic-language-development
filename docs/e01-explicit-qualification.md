@@ -53,7 +53,31 @@ directories and can never be promoted into qualification outcomes.
 temporary copies, including a missing per-attempt proof, and preserves the source.
 Portable corpus regression tests are under `scripts/__tests__/`.
 
-## Limits
+## Registered result, 2026-09-13
+
+The one registered v2 execution passed all five slots on clean commit
+`4ba1f27561d2ae20261a2e14a5a91e34fe602d56`. The retained-evidence audit then
+recomputed each signed record, raw frame, channel disposition, inclusion proof,
+and bundle result. All five bundles passed both verifier implementations.
+There are 560 signed records, 685 events, ten checkpoints, and 560 attachments.
+The five absolute condition-mean timing differences were 0.285137, 0.066581,
+0.051949, 0.305719, and 0.215077 ms (rounded here; exact values are retained),
+below the registered 100 ms bound. These are qualification measurements, not
+confidence bounds or a statistical proof of zero timing capacity.
+
+The full build/execution/cleanup took 508.951 seconds. The tracked result is
+`reports/research/e01-v2-qualification-receipt.json`; original slot records and
+bundles remain under ignored `evidence/qualification/e01-v2/`. Ten distinct
+learner container IDs establish fresh topology instances across the five slots.
+Development attempts and their failures remain separate and research-excluded.
+
+`pnpm run audit:qualification-e01` checks the portable v1/v2 receipts and their
+historical source identity. `pnpm run audit:qualification-e01:live` additionally
+requires and verifies the original ignored evidence; it does not rerun experiments.
+The runner refuses to overwrite the completed v2 execution. Future protocol changes
+require a new prospective version and seed domain.
+
+## Interpretation limits
 
 Signatures prove consistency of retained bytes under the recorded keys, not that
 the operator is independent or incapable of fabricating observations. Simulated
