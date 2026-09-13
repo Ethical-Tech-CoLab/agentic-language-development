@@ -33,7 +33,9 @@
  *   pause — never an unbounded retry loop, and never a turn left without a
  *   record. A crash is not a channel violation, so no `channel.rejected`
  *   event is written for it and the §9.4 rejection counter is untouched; an
- *   over-budget turn, by contrast, keeps its §8.3 `timeout` rejection.
+ *   over-budget turn, by contrast, is converted at the `step()` boundary into
+ *   one audited §8.3 `timeout` rejection and forfeited turn regardless of
+ *   which turn-path adapter method exceeded its deadline.
  * - §7.2 `sealing-blocked` recovery. `retrySeal` re-runs only the export,
  *   anchor, and verification work; `abandonSeal` records the governance
  *   decision that makes the `invalid` disposition permanent. Both rely on the
@@ -189,6 +191,17 @@ import {
   scenarioReplayCheck,
   type ScenarioReplayResult,
 } from './replay.js';
+
+/** Internal signal preserving which Baby method exhausted the turn budget. */
+class AdapterTurnDeadlineExceededError extends TurnDeadlineExceededError {
+  constructor(
+    budgetMs: number,
+    readonly role: BabyRole,
+    readonly method: Exclude<AdapterMethod, 'updatePolicy'>,
+  ) {
+    super(budgetMs);
+  }
+}
 
 /** Both Babies, in the fixed order used for every symmetric operation. */
 export const BABY_ROLES = ['baby-a', 'baby-b'] as const;
@@ -803,6 +816,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let action: AgentActionProposal | null = null;
     let pauseRequested = false;
     let failure: AdapterFailureError | undefined;
+    let deadline: AdapterTurnDeadlineExceededError | undefined;
 
     try {
       const executed = await this.#executeTurn(run, scratch);
@@ -810,14 +824,26 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       action = executed.action;
       pauseRequested = executed.pauseRequested;
     } catch (error) {
-      // §14.5: an adapter that crashed through its whole retry budget
-      // forfeits the turn. Anything else is a runtime or evidence fault and
-      // still propagates — the runtime never swallows an integrity error.
-      if (!(error instanceof AdapterFailureError)) {
+      if (error instanceof AdapterTurnDeadlineExceededError) {
+        deadline = error;
+        const rejection = await run.gateway.rejectForTimeout(
+          this.#gatewayTurnContext(run, scratch),
+          deadline.role,
+        );
+        scratch.channelEvent = rejection.channelEvent;
+        scratch.deliveredArtifactHash = rejection.channelEvent.publicArtifactHash;
+        outcome = forfeitOutcome('forfeit', rejection.reasonCode);
+        pauseRequested = rejection.pauseRequested;
+      } else if (error instanceof AdapterFailureError) {
+        // §14.5: an adapter that crashed through its whole retry budget
+        // forfeits the turn.
+        failure = error;
+        outcome = adapterFailureOutcome(failure.role, phase);
+      } else {
+        // Runtime and evidence faults still propagate — the runtime never
+        // swallows an integrity error.
         throw error;
       }
-      failure = error;
-      outcome = adapterFailureOutcome(failure.role, phase);
     }
 
     const instance = this.#instanceFor(run, scratch);
@@ -840,6 +866,21 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           attempts: failure.attempts,
           errorName: failure.errorName,
           message: failure.detail,
+        },
+      });
+    }
+    if (deadline !== undefined) {
+      await run.writer.appendInterventionEvent({
+        runId,
+        eventType: 'runtime-attestation',
+        actorId: this.#actorId,
+        reasonCode: 'turn-deadline-forfeit',
+        details: {
+          turn,
+          phase,
+          role: deadline.role,
+          method: deadline.method,
+          budgetMs: deadline.budgetMs,
         },
       });
     }
@@ -1086,19 +1127,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       );
     }
 
-    const turnContext: GatewayTurnContext = {
-      turn,
-      sender,
-      recipient: receiver,
-      ...this.#batchBinding(run, turn),
-      ...(phase === 'evaluating'
-        ? {
-            probe: run.probeSchedule?.probes.find(
-              (planned) => planned.turn === turn,
-            )?.probe,
-          }
-        : {}),
-    };
+    const turnContext = this.#gatewayTurnContext(run, scratch);
 
     let action: AgentActionProposal | null = null;
     let outcome: Outcome;
@@ -1203,6 +1232,26 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     return { outcome, action, pauseRequested };
+  }
+
+  /** Reconstruct the exact Gateway context even when a turn method times out. */
+  #gatewayTurnContext(
+    run: RunRuntime,
+    scratch: Pick<TurnScratch, 'turn' | 'phase' | 'sender' | 'receiver'>,
+  ): GatewayTurnContext {
+    return {
+      turn: scratch.turn,
+      sender: scratch.sender,
+      recipient: scratch.receiver,
+      ...this.#batchBinding(run, scratch.turn),
+      ...(scratch.phase === 'evaluating'
+        ? {
+            probe: run.probeSchedule?.probes.find(
+              (planned) => planned.turn === scratch.turn,
+            )?.probe,
+          }
+        : {}),
+    };
   }
 
   async #recordCausalPredictionCommitment(
@@ -1372,11 +1421,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   /**
    * SPEC §14.5 bullet 4: one adapter call, retried at most `retryBudget`
-   * times, then reported as an `AdapterFailureError`. A
-   * `TurnDeadlineExceededError` is never retried here — §8.3 already fixes
-   * what an over-budget turn costs (a `channel.rejected` event with reason
-   * `timeout` and a forfeited turn), and retrying it would reopen exactly the
-   * timing side channel §10.3 closes.
+   * times, then reported as an `AdapterFailureError`. A turn-path deadline is
+   * never retried here — §8.3 already fixes what an
+   * over-budget turn costs (a `channel.rejected` event with reason `timeout`
+   * and a forfeited turn), and retrying it would reopen exactly the timing
+   * side channel §10.3 closes. `updatePolicy` is outside the normalized turn
+   * path and retains the bounded adapter-failure retry policy.
    */
   async #callAdapter<T>(
     run: RunRuntime,
@@ -1390,16 +1440,18 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       try {
         return await call();
       } catch (error) {
-        if (error instanceof TurnDeadlineExceededError) {
-          throw error;
-        }
-        if (
-          error !== null &&
-          typeof error === 'object' &&
-          'failureClass' in error &&
-          error.failureClass === 'adapter-timeout'
-        ) {
-          throw new TurnDeadlineExceededError(run.config.turnResponseBudgetMs);
+        const deadlineExceeded =
+          error instanceof TurnDeadlineExceededError ||
+          (error !== null &&
+            typeof error === 'object' &&
+            'failureClass' in error &&
+            error.failureClass === 'adapter-timeout');
+        if (deadlineExceeded && method !== 'updatePolicy') {
+          throw new AdapterTurnDeadlineExceededError(
+            run.config.turnResponseBudgetMs,
+            role,
+            method,
+          );
         }
         lastError = error;
       }
@@ -2373,26 +2425,18 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return run.gateway.submitProposal(turnContext, cached);
     }
 
-    let envelope: TurnProposalEnvelope;
-    try {
-      envelope = await this.#callAdapter(run, sender, 'act', () =>
-        this.#awaitTurnResponse(
-          run,
-          sender,
-          run.adapters[sender].act({
-            turn: turnContext.turn,
-            role: 'sender',
-            responseBudgetMs: run.config.turnResponseBudgetMs,
-            availableActions: [...run.gateway.carrierProtocol.allowedKinds],
-          }),
-        ),
-      );
-    } catch (error) {
-      if (error instanceof TurnDeadlineExceededError) {
-        return run.gateway.rejectForTimeout(turnContext, sender);
-      }
-      throw error;
-    }
+    const envelope = await this.#callAdapter(run, sender, 'act', () =>
+      this.#awaitTurnResponse(
+        run,
+        sender,
+        run.adapters[sender].act({
+          turn: turnContext.turn,
+          role: 'sender',
+          responseBudgetMs: run.config.turnResponseBudgetMs,
+          availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+        }),
+      ),
+    );
     return run.gateway.submitProposal(turnContext, envelope);
   }
 
@@ -2444,35 +2488,19 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       }
     }
 
-    let envelope: TurnProposalEnvelope;
-    try {
-      envelope = await this.#callAdapter(run, receiver, 'act', () =>
-        this.#awaitTurnResponse(
-          run,
-          receiver,
-          adapter.act({
-            turn: turnContext.turn,
-            role: 'receiver',
-            responseBudgetMs: run.config.turnResponseBudgetMs,
-            availableActions: ['select_object'],
-            candidateRefs: instance.candidateRefs,
-          }),
-        ),
-      );
-    } catch (error) {
-      if (!(error instanceof TurnDeadlineExceededError)) {
-        throw error;
-      }
-      const rejection = await run.gateway.rejectForTimeout(
-        turnContext,
+    const envelope = await this.#callAdapter(run, receiver, 'act', () =>
+      this.#awaitTurnResponse(
+        run,
         receiver,
-      );
-      return {
-        outcome: forfeitOutcome('forfeit', rejection.reasonCode),
-        action: null,
-        pauseRequested: rejection.pauseRequested,
-      };
-    }
+        adapter.act({
+          turn: turnContext.turn,
+          role: 'receiver',
+          responseBudgetMs: run.config.turnResponseBudgetMs,
+          availableActions: ['select_object'],
+          candidateRefs: instance.candidateRefs,
+        }),
+      ),
+    );
 
     const parsed = TurnProposalEnvelopeSchema.safeParse(envelope);
     if (!parsed.success || parsed.data.proposal.kind !== 'select_object') {

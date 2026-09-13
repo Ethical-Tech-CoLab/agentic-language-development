@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.113 · 254/258 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.114 · 254/258 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1179,6 +1179,10 @@ stopped after 161 committed turns when a post-action turn-path deadline escaped
 without the required forfeited-turn record. Their partial databases are not exported
 bundles and are not included in this bundle inventory. Both attempts remain preserved
 as failed software qualifications, not behavioral results.
+The current engineering candidate converts deadlines from observation, sending,
+receiving, receiver action, and post-outcome processing into one audited timeout-
+forfeit path with method-specific diagnostics. This repair remains development
+evidence until it passes a fresh exact-topology qualification.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

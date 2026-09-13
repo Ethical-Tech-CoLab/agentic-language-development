@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.113 · 254/258 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.114 · 254/258 backlog acceptance criteria verified.
 
 Research status: 2 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 9 open campaign blockers.
 
@@ -105,9 +105,10 @@ qualified within their registered software scope. E02 v1 stopped at its safety
 pause after 465 turns. E02 v2 then stopped after 161 recorded turns when one
 post-action turn-path timeout escaped without a forfeited turn record. Neither
 attempt reached restore or probe evaluation; both are preserved and will not be
-restarted. E02 now requires a development-only all-method deadline correction,
-fresh topology qualification, and prospectively registered v3 identifiers and
-seeds. The remaining research gates precede the dependent behavioral campaign:
+restarted. The current candidate converts all turn-path method deadlines into
+audited forfeits and preserves the five-rejection pause; it still requires fresh
+topology qualification before prospectively registered v3 identifiers and seeds
+may be created. The remaining research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC

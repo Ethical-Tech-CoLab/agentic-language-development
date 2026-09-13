@@ -4,6 +4,10 @@ Status: registered v1 and v2 attempts both failed before restore and probe
 evaluation. V1 exposed the nested deadline race; v2 corrected that race but exposed
 an uncovered post-action timeout path after 161 recorded turns. E02 is not qualified.
 The v2 packet and its fresh seeds are consumed and must not be reused.
+The current candidate implements one audited timeout-forfeit path for every adapter
+method used during a turn and retains the five-rejection pause. It has passed local
+fault fixtures but remains ineligible for v3 registration until a fresh topology
+qualification succeeds.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
@@ -104,9 +108,11 @@ probe report, sealing, or final export completed; slots 2–5 were not attempted
 The original error did not persist the exact method. The recorded ordering localizes
 it to the post-action turn path. The wrapper receipt's zero slot summaries result
 from a later assertion against the failed slot, not from absence of the partial
-evidence. The next correction must cover every turn-path deadline as an audited
-forfeit and preserve the five-consecutive-rejection pause before a fresh v3 packet
-can be registered.
+evidence. The current correction routes `observe`, sender and receiver `act`,
+`receive`, and `onOutcome` deadline failures through one audited forfeit path,
+records the method and role, and preserves the five-consecutive-rejection pause.
+These are development-fixture results; fresh topology qualification is still
+required before a v3 packet can be registered.
 
 ### Reproducible design calculation
 

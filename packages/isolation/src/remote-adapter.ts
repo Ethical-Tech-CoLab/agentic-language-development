@@ -136,6 +136,8 @@ export interface RemoteLearnerAdapterOptions {
 export interface RemoteAdapterDiagnostics {
   calls: number;
   deadlineExceeded: number;
+  /** Exact most recent host method whose deadline elapsed; null before one occurs. */
+  lastDeadlineMethod: HostMethod | null;
   hostErrors: number;
   policyRefreshes: number;
   paddedCalls: number;
@@ -148,6 +150,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
   readonly diagnostics: RemoteAdapterDiagnostics = {
     calls: 0,
     deadlineExceeded: 0,
+    lastDeadlineMethod: null,
     hostErrors: 0,
     policyRefreshes: 0,
     paddedCalls: 0,
@@ -557,6 +560,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
       if (error instanceof IsolationError) {
         if (error.code === 'deadline-exceeded') {
           this.diagnostics.deadlineExceeded += 1;
+          this.diagnostics.lastDeadlineMethod = method;
         } else if (error.code === 'host-error') {
           this.diagnostics.hostErrors += 1;
         }

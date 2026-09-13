@@ -2,7 +2,7 @@
 
 Working research-validation report  
 Evidence cutoff: 2026-09-13
-Latest tracked research-design candidate: v0.1.113 (D08 and A03 in progress; A01 snapshot complete)
+Latest tracked research-design candidate: v0.1.114 (D08 and A03 in progress; A01 snapshot complete)
 Report status: in progress  
 
 ## Executive Summary
@@ -52,6 +52,9 @@ Research status: 2 qualified (software), 2 failed qualification attempts, 0 in p
   amended v2 packet then consumed a fresh allocation and stopped after 161 recorded
   turns when one post-action deadline escaped without a forfeited turn record. Neither
   attempt reached restore or probe analysis; slots 2–5 were unattempted in each.
+  The current candidate unifies all turn-path method deadlines under an audited
+  timeout-forfeit path with method-specific diagnostics and five-timeout pause
+  coverage. This is development evidence pending fresh topology qualification.
 - The project has a substantial and freshly exercised software foundation. The exact
   v0.1.50 candidate passed 1,760 tests in 139 files, the secret scan, the
   high-severity dependency audit, and every consolidated static/build gate from a
@@ -852,8 +855,8 @@ The current [critical review](research-critical-review.md) and machine-readable
 eight-perspective internal pass. They correct cross-document status and rendering
 defects but return `needs-revision`: E00 v5 passed after two preserved failed attempts
 and one outcome-free superseded amendment. E01 v1 passed its bounded registered
-topology/category suite; v2 completed the signed explicit corpus. E02 v1 failed before
-analysis and sixteen experiments remain unstarted,
+topology/category suite; v2 completed the signed explicit corpus. E02 v1 and v2
+failed before analysis and sixteen experiments remain unstarted,
 all 140 local
 bundles remain research-excluded, 160 registration bindings remain unresolved, and
 independent review is absent.
