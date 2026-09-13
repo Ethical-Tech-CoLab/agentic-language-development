@@ -59,9 +59,10 @@ Therefore:
 - immutable repository registration and matching simulated pre-run commitments:
   E00 v2 and v4 are complete failed attempts; v3 is superseded without outcomes;
   v5 passed all five registered slots. E01 v1 passed its bounded category gate and
-  v2 passed the explicit signed corpus. E02 has a committed v1 packet and matching
-  simulated activation; its v1 attempt failed before restore and probe analysis, so
-  the packet is historical and a corrected attempt requires a prospective amendment.
+  v2 passed the explicit signed corpus. E02 v1 and its matching simulated activation
+  remain preserved as a failed attempt. A fresh v2 packet is compiled from the
+  repaired implementation with new identifiers and seeds; its activation and
+  qualification remain separate gates.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

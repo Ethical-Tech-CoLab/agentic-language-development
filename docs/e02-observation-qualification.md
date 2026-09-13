@@ -2,7 +2,10 @@
 
 Status: registered v1 attempt failed before restore and probe evaluation. Its
 deadline defect is corrected and qualified as software on a committed development
-smoke. E02 itself is not qualified; fresh v2 registration and execution remain.
+smoke. E02 itself is not qualified. V2 packet
+`sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d`
+is compiled from base `d87840029d0cbe6a780bb0e950aa07018d962d4e`; committed
+activation and execution remain.
 
 The collector uses actual scratch learners and the production SQLite-backed
 Nursery, not a sink that pretends to be a learner. The explicit `prototype` mode
