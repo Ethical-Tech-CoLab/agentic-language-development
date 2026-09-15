@@ -201,6 +201,23 @@ describe('stage-specific campaign progress', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it('rejects an E10+ stage that omits the open selected-topology boundary', () => {
+    const result = run(fixture((campaign) => {
+      const e10 = campaign.experiments.find((entry: any) => entry.id === 'E10');
+      e10.executionReadiness.reasonCodes = e10.executionReadiness.reasonCodes.filter((reason: string) => reason !== 'B12');
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E10 omits the open B12 selected-topology boundary gate');
+  });
+
+  it('rejects an unproven reinterpretation of the historical topology blocker', () => {
+    const result = run(fixture((campaign) => {
+      campaign.topologyBoundarySupplement.priorB12Closure = 'replaced without provenance';
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('B12 topology boundary supplement is missing');
+  });
+
   it('rejects an apparently complete pilot without prospective registration', () => {
     const result = run(fixture((campaign, receipts) => {
       const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');

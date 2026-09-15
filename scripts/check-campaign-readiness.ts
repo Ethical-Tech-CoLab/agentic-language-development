@@ -22,6 +22,10 @@ interface Review {
   reviewClass: string;
   independentHumanReview: boolean;
   decision: string;
+  topologyBoundarySupplement: {
+    recordedAt: string; sourceCommit: string; priorB12Finding: string;
+    priorB12Closure: string; basis: string; boundary: string;
+  };
   resolvedFindings: Array<{ id: string; owner: string; resolution: string; boundary: string }>;
   blockingFindings: Array<{ id: string; severity: string; owner: string; finding: string; closure: string }>;
   experiments: ExperimentProgress[];
@@ -57,6 +61,19 @@ for (const finding of review.blockingFindings) {
 for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14']) {
   if (!findingIds.has(required)) throw new Error(`campaign review omits ${required}`);
 }
+const b12 = review.blockingFindings.find((finding) => finding.id === 'B12');
+const supplement = review.topologyBoundarySupplement;
+if (!supplement || !/^2026-09-15T\d{2}:\d{2}:\d{2}Z$/u.test(supplement.recordedAt) ||
+    !/^[0-9a-f]{7}$/u.test(supplement.sourceCommit) ||
+    supplement.priorB12Finding !== 'Timing/envelope/error and host controls pass on the exact current two-container Mode R reference topology, but have not run on the final selected registered study topology.' ||
+    supplement.priorB12Closure !== 'Final-topology detector-positive and negative measurements with selected learners, carriers, samples, tolerances, and bounds, bound into verified evidence.' ||
+    !supplement.basis.includes('distinct Baby twins') ||
+    !supplement.basis.includes('Gateway, SQLite writer, and signers are constructed in the Nursery process') ||
+    !supplement.boundary.includes('no historical receipt or study outcome is promoted') ||
+    !b12?.finding.includes('controller trust-zone process boundary') ||
+    !b12.closure.includes('sealed TypeScript/Rust evidence')) {
+  throw new Error('B12 topology boundary supplement is missing or contradicts the current blocker');
+}
 const resolvedIds = new Set(review.resolvedFindings.map((finding) => finding.id));
 for (const required of ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B15']) {
   if (!resolvedIds.has(required)) throw new Error(`campaign review omits resolved finding ${required}`);
@@ -74,6 +91,10 @@ const attemptStatuses = new Set<AttemptStatus>(['not-started', 'running', 'compl
 const scientificDispositions = new Set<ScientificDisposition>(['not-tested', 'supported', 'not-supported', 'inconclusive']);
 for (const entry of review.experiments) {
   const { executionReadiness, attempt } = entry;
+  if (entry.id !== 'E03' && !['E00', 'E01', 'E02'].includes(entry.id) &&
+      findingIds.has('B12') && !executionReadiness.reasonCodes.includes('B12')) {
+    throw new Error(`${entry.id} omits the open B12 selected-topology boundary gate`);
+  }
   if (attempt.version !== undefined && !/^v[1-9][0-9]*$/u.test(attempt.version)) {
     throw new Error(`${entry.id} has an invalid attempt version`);
   }

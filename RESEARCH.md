@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.156 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.157 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1211,10 +1211,12 @@ thresholds. The [terminal receipt](reports/research/e02-v3-qualification-receipt
 and separate [full live audit](reports/research/e02-v3-full-audit-receipt.json)
 bind the original evidence. This closes bounded local E02 software reliability,
 not the behavioral ledger-value hypotheses, image-encoder qualification, or
-independent human review. The ordinary two-container preflight exercises learner
-transport and network boundaries but does not establish the specification's separate
-ledger-writer/signer process boundary; it cannot support a full Research-Grade
-isolation claim. The prospective [E03 infrastructure-mode correction](protocols/e03-prototype-mode-amendment.v2.json)
+independent human review. The ordinary two-container preflight exercises learner-host
+transport and network controls, not separate Baby twins, Gateway-only routes,
+per-role ledger-writer and signer keys, or controller trust-zone processes.
+Existing blocker B12 now requires exact selected Mode R boundary and detector
+evidence before any E10+ isolation claim. It does not gate E03 Prototype controls.
+The prospective [E03 infrastructure-mode correction](protocols/e03-prototype-mode-amendment.v2.json)
 selects shared-process Prototype Mode for controls, without a Research-Grade
 isolation claim. Its unexecuted predecessor specified external adapters, which
 the runtime guard rejects; that record remains historical. The fresh six-condition

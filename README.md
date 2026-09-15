@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.156 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.157 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -114,8 +114,11 @@ evidence. Its [terminal receipt](reports/research/e02-v3-qualification-receipt.j
 and [audit receipt](reports/research/e02-v3-full-audit-receipt.json) close the local
 reliability gate without establishing a behavioral finding, image-encoder safety,
 independent review, or a public timestamp. The ordinary two-container preflight
-does not establish the specification's separate writer/signer process boundary,
-so it cannot qualify full Research-Grade isolation. E03 controls will use the
+exercises learner-host transport and network controls, not the specification's
+separate Baby-twin, Gateway-only, per-role writer/signer-key, and controller
+trust-zone process boundaries. Existing blocker B12 now gates every E10+ stage
+until selected Mode R topology and detector bounds are qualified; it does not
+gate E03 Prototype controls. E03 controls will use the
 permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v2.json)
 without an isolation claim and face an exact development topology, measured
 resource allocation, and registered packet gate. The prospective six-condition
