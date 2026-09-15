@@ -112,6 +112,7 @@ describe('current project status', () => {
     for (const path of [
       'package.json', 'pnpm-lock.yaml', 'BACKLOG.md', 'README.md', 'RESEARCH.md',
       'EXPERIMENT-NOTEBOOK.md', 'protocols/campaign-readiness-review.v1.json',
+      'protocols/e02-registration.v3.json',
       'reports/research/e02-qualification-receipt.json',
       'reports/phase-one-research-update.md',
       'reports/research/research-validation-report.md',
@@ -154,6 +155,17 @@ describe('current project status', () => {
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E02 notebook attempt/disposition contradicts the campaign progress record');
+  });
+
+  it('rejects a stale running summary when the registered E02 terminal receipt exists', () => {
+    const directory = statusFixture();
+    const packet = read('protocols/e02-registration.v3.json');
+    const target = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
+    writeFileSync(target, JSON.stringify({ experimentId: 'E02', registrationHash: packet.preRegistrationHash,
+      passed: true, failure: null, slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 })) }));
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E02 terminal receipt exists but is not the status authority');
   });
 });
 

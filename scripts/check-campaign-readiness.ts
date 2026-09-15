@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { accessSync, readFileSync } from 'node:fs';
+import { accessSync, existsSync, readFileSync } from 'node:fs';
 
 type ExecutionStage = 'qualification' | 'pilot' | 'confirmatory' | 'analysis' | 'exploratory' | 'replication' | 'reporting';
 type GateDecision = 'ready' | 'blocked' | 'complete';
@@ -109,6 +109,24 @@ for (const entry of review.experiments) {
     throw new Error(`${entry.id} must have exactly one status-authority receipt after starting`);
   }
   for (const evidence of entry.evidence) accessSync(evidence.path);
+  const packetEvidence = entry.evidence.find((evidence) => evidence.kind === 'prospective-registration-packet');
+  if (packetEvidence) {
+    const packet = JSON.parse(readFileSync(packetEvidence.path, 'utf8')) as {
+      preRegistrationHash?: string;
+      artifact?: { bindings?: Array<{ key: string; content?: { receiptPath?: string } }> };
+    };
+    const terminalPath = packet.artifact?.bindings?.find((binding) =>
+      binding.key === 'evidenceAndAnchorPolicy')?.content?.receiptPath;
+    if (terminalPath && existsSync(terminalPath)) {
+      const terminal = JSON.parse(readFileSync(terminalPath, 'utf8')) as Record<string, unknown>;
+      if (terminal.experimentId !== entry.id || terminal.registrationHash !== packet.preRegistrationHash) {
+        throw new Error(`${entry.id} terminal receipt contradicts its prospective registration`);
+      }
+      if (authorities[0]?.path !== terminalPath) {
+        throw new Error(`${entry.id} terminal receipt exists but is not the status authority`);
+      }
+    }
+  }
   if (authorities.length === 1) {
     const receipt = JSON.parse(readFileSync(authorities[0]!.path, 'utf8')) as Record<string, unknown>;
     if (receipt.experimentId !== entry.id) throw new Error(`${entry.id} status receipt belongs to another experiment`);

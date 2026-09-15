@@ -92,6 +92,28 @@ describe('stage-specific campaign progress', () => {
     expect(result.stderr).toContain('E02 progress contradicts its status-authority receipt');
   });
 
+  it('rejects a stale running account when the registered terminal receipt exists', () => {
+    const directory = fixture();
+    const packet = source('protocols/e02-registration.v3.json');
+    const terminalPath = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
+    writeFileSync(terminalPath, JSON.stringify({
+      experimentId: 'E02', registrationHash: packet.preRegistrationHash,
+      passed: true, failure: null, slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 })),
+    }));
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E02 terminal receipt exists but is not the status authority');
+  });
+
+  it('rejects a terminal receipt bound to another registration', () => {
+    const directory = fixture();
+    const terminalPath = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
+    writeFileSync(terminalPath, JSON.stringify({ experimentId: 'E02', registrationHash: 'sha256:wrong' }));
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E02 terminal receipt contradicts its prospective registration');
+  });
+
   it('rejects attempted/completed counts that disagree with the receipt', () => {
     const result = run(fixture((campaign) => {
       const e01 = campaign.experiments.find((entry: any) => entry.id === 'E01');

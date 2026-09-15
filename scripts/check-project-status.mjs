@@ -64,6 +64,25 @@ for (const expected of campaign.experiments) {
   if (!actual.gate.startsWith(gatePrefix)) {
     throw new Error(`${expected.id} notebook gate contradicts the campaign progress record`);
   }
+  const packet = expected.evidence.find((evidence) => evidence.kind === 'prospective-registration-packet');
+  if (packet) {
+    const registered = await readJson(packet.path);
+    const terminalPath = registered.artifact?.bindings?.find((binding) =>
+      binding.key === 'evidenceAndAnchorPolicy')?.content?.receiptPath;
+    if (terminalPath) {
+      try {
+        const terminal = await readJson(terminalPath);
+        if (terminal.experimentId !== expected.id || terminal.registrationHash !== registered.preRegistrationHash) {
+          throw new Error(`${expected.id} terminal receipt contradicts its prospective registration`);
+        }
+        if (!expected.evidence.some((evidence) => evidence.path === terminalPath && evidence.statusAuthority)) {
+          throw new Error(`${expected.id} terminal receipt exists but is not the status authority`);
+        }
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+      }
+    }
+  }
 }
 const qualifiedSoftware = campaign.experiments.filter((entry) =>
   entry.executionReadiness.stage === 'qualification' && entry.executionReadiness.decision === 'complete').length;
