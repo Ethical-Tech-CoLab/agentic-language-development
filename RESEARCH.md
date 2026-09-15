@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.150 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.151 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1805,9 +1805,10 @@ not assigned a journal score because the fixed rubric is explicitly journal-base
 
 ### D.1 Registration and Integrity
 
-- Registration target: OSF Registries.
-- The canonical registration JSON, this manuscript commit, analysis-script commit,
-  and generated seed manifest will be registered before execution.
+- Registration target: a prospective clean Git packet commit and a matching
+  pre-run simulated commitment; no external registry or public timestamp is claimed.
+- The canonical registration JSON binds this manuscript commit, analysis-source
+  hashes, and generated seed manifest before execution.
 - The same `preRegistrationHash` will be committed through the deterministic
   simulation transport before any run enters `running`.
 - No outcome will be inspected before registration and commitment complete.
@@ -1822,7 +1823,7 @@ meaningful learned communication and establish an oracle upper bound.
 | Parameter | Registered value |
 |---|---|
 | Experiment | `E03-v1` |
-| Deployment mode | Research-Grade Mode |
+| Deployment mode | Prototype Mode; no Research-Grade isolation claim |
 | Learner track | `no-learning` |
 | Interaction | Cooperative signaling |
 | Carrier | Fixed token |
@@ -1886,6 +1887,9 @@ registered analysis.
 The Prototype-Mode development topology uses the same signed source for its
 six-condition paired-scenario and control-mechanics audit; a passing unsigned
 slot summary alone is insufficient.
+After a pilot terminal receipt exists, progression checks bind it to the
+registered packet and reconcile planned, attempted, and completed run counts;
+document agreement cannot conceal a failed or incomplete original attempt.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.

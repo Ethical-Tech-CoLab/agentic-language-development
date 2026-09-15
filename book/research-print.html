@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.150 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.151 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -2005,9 +2005,10 @@ or executed.</p>
 </blockquote>
 <h3>D.1 Registration and Integrity</h3>
 <ul>
-<li>Registration target: OSF Registries.</li>
-<li>The canonical registration JSON, this manuscript commit, analysis-script commit,
-and generated seed manifest will be registered before execution.</li>
+<li>Registration target: a prospective clean Git packet commit and a matching
+pre-run simulated commitment; no external registry or public timestamp is claimed.</li>
+<li>The canonical registration JSON binds this manuscript commit, analysis-source
+hashes, and generated seed manifest before execution.</li>
 <li>The same <code>preRegistrationHash</code> will be committed through the deterministic
 simulation transport before any run enters <code>running</code>.</li>
 <li>No outcome will be inspected before registration and commitment complete.</li>
@@ -2029,7 +2030,7 @@ meaningful learned communication and establish an oracle upper bound.</p>
 </tr>
 <tr>
 <td>Deployment mode</td>
-<td>Research-Grade Mode</td>
+<td>Prototype Mode; no Research-Grade isolation claim</td>
 </tr>
 <tr>
 <td>Learner track</td>
@@ -2129,6 +2130,9 @@ registered analysis.
 The Prototype-Mode development topology uses the same signed source for its
 six-condition paired-scenario and control-mechanics audit; a passing unsigned
 slot summary alone is insufficient.
+After a pilot terminal receipt exists, progression checks bind it to the
+registered packet and reconcile planned, attempted, and completed run counts;
+document agreement cannot conceal a failed or incomplete original attempt.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.

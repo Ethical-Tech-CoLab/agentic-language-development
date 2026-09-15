@@ -530,6 +530,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
       Prototype-Mode development topology before pilot registration.
 - [ ] Reconcile all 120 pilot runs with zero reserves and admit only verified,
       outcome-blind pilot tallies to variance estimation.
+- [ ] Reconcile the terminal pilot receipt and its attempt counts to the
+      prospective packet before updating current progression status.
 - [ ] Re-audit the original pilot bundles and recompute the single-use
       dispersion input before sample-size power selection.
 - [ ] Charge failed attempted slots where CPU is measured, and leave capacity

@@ -153,10 +153,33 @@ for (const entry of review.experiments) {
     if (
       (typeof receipt.plannedSlots === 'number' && receipt.plannedSlots !== attempt.planned) ||
       (typeof receipt.attemptedSlots === 'number' && receipt.attemptedSlots !== attempt.attempted) ||
-      (typeof receipt.completedSlots === 'number' && receipt.completedSlots !== attempt.completed)
+      (typeof receipt.completedSlots === 'number' && receipt.completedSlots !== attempt.completed) ||
+      (typeof receipt.plannedRuns === 'number' && receipt.plannedRuns !== attempt.planned) ||
+      (typeof receipt.attemptedRuns === 'number' && receipt.attemptedRuns !== attempt.attempted) ||
+      (typeof receipt.completedRuns === 'number' && receipt.completedRuns !== attempt.completed)
     ) {
       throw new Error(`${entry.id} accounting contradicts its status-authority receipt`);
     }
+  }
+}
+const e03Pilot = review.experiments.find((entry) => entry.id === 'E03');
+const e03PilotTerminalPath = 'evidence/pilots/e03-blinded-v1/receipt.json';
+if (e03Pilot?.executionReadiness.stage === 'pilot' && existsSync(e03PilotTerminalPath)) {
+  const packetPath = e03Pilot.evidence.find((item) => item.kind === 'prospective-registration-packet')?.path;
+  if (!packetPath || !e03Pilot.evidence.some((item) =>
+    item.path === e03PilotTerminalPath && item.statusAuthority)) {
+    throw new Error('E03 pilot terminal receipt exists but is not the status authority');
+  }
+  const packetBytes = readFileSync(packetPath);
+  const packet = JSON.parse(packetBytes.toString('utf8')) as { preRegistrationHash?: string };
+  const terminal = JSON.parse(readFileSync(e03PilotTerminalPath, 'utf8')) as Record<string, unknown>;
+  const packetSha256 = `sha256:${createHash('sha256').update(packetBytes).digest('hex')}`;
+  if (terminal.experimentId !== 'E03' || terminal.stage !== 'blinded-pilot' ||
+      terminal.registrationHash !== packet.preRegistrationHash ||
+      terminal.packetSha256 !== packetSha256 || terminal.plannedRuns !== 120 ||
+      terminal.researchFinding !== false || terminal.externalSpend !== 0 ||
+      terminal.publicChainTransaction !== false) {
+    throw new Error('E03 pilot terminal receipt contradicts its prospective packet or zero-spend scope');
   }
 }
 const e02 = review.experiments.find((entry) => entry.id === 'E02');
