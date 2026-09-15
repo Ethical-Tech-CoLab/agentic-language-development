@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.157 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.158 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1149,8 +1149,9 @@ Implemented:
   simulation-funded campaign;
 - deterministic scenarios, the tool-only Gateway, all declared carrier controls,
   five learner tracks, DTSF twin routes, and the complete turn lifecycle;
-- process/container Mode R isolation, training separation, active side-channel and
-  observation red teams, including a reusable 28-case generated-carrier structural
+- two-container Mode R learner-host separation and bounded transport/network
+  controls, training separation, active side-channel and observation red teams,
+  including a reusable 28-case generated-carrier structural
   side-feature audit with accepted controls and fail-closed evidence readiness; the
   exact candidate also passed the current two-container Mode R timing, fixed-envelope,
   error-shape, host-denial, crash-survival, and three-track update checks; plus

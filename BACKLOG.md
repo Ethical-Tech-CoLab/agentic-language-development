@@ -146,7 +146,7 @@ Milestones are ordinal and gate-based, not date-based. Each milestone's exit gat
 | EPIC-07 | Observation Hygiene, Scenario Engine, and Deterministic Services | ALD-037–041 | EPIC-05, EPIC-06 | Hygiene filter, sanitization, and seeded scenario determinism verified |
 | EPIC-08 | Learner Contracts and Model Adapters | ALD-042–047 | EPIC-05, EPIC-07 | All five tracks satisfy the shared interface and contract |
 | EPIC-09 | DTSF Twin Packs, API Surface, and Authorization | ALD-048–052 | EPIC-01, EPIC-05, EPIC-06, EPIC-08 | All routes implemented, guarded, and shape-standardized |
-| EPIC-10 | Mode R Isolation and Claim-Boundary Controls | ALD-053–057 | EPIC-01, EPIC-09 | Mode R container isolation and claim labels verified |
+| EPIC-10 | Mode R Isolation and Claim-Boundary Controls | ALD-053–057 | EPIC-01, EPIC-09 | Learner-host container controls and mode labels verified; full selected-topology Baby/Gateway/writer/key isolation remains V06/B12 |
 | EPIC-11 | Telemetry, Audit, Snapshot/Recovery, and Retention | ALD-058–062 | EPIC-02, EPIC-05, EPIC-10 | Telemetry/audit populated; snapshot/restore and retention jobs verified |
 | EPIC-12 | Dashboard / Research Console and UX | ALD-063–066 | EPIC-09, EPIC-11 | Console MVP live; prohibited-pattern checklist clean |
 | EPIC-13 | Security, Red-Team, and Cryptography Track | ALD-067–070 | EPIC-06, EPIC-07, EPIC-10 | Red-team suites green; crypto novelty/security separation policy enforced |
@@ -765,7 +765,8 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 #### ALD-055 — Separate-container isolation for Mode R
 - **Priority:** P1 · **Size:** L · **Class:** Research-Grade · **Depends on:** ALD-053
 - **Spec refs:** `SPECIFICATION.md` [§5.2 Research-Grade Mode (Mode R)](SPECIFICATION.md#52-research-grade-mode-mode-r)
-- **Scope:** Run each learner adapter in Mode R in its own container/process with no shared mutable memory, communicating only through the Gateway and evidence store.
+- **Scope:** Run each learner adapter in its own container/process with no shared mutable memory; the present Nursery calls each host through the approved adapter transport while validating public proposals in its in-process Gateway and writer.
+- **Qualification boundary:** The three checked criteria below cover the two learner-host processes and their local update state. They do not establish distinct Baby-twin, Symbol Gateway, per-role ledger-writer/signer-key, or controller trust-zone processes required by `SPECIFICATION.md` §5.2; V06/B12 gates those broader claims.
 - **Acceptance criteria:**
   - [x] In Mode R, `baby-a` and `baby-b` learner processes run in distinct OS processes/containers, verified by distinct process IDs / container IDs.
   - [x] No in-memory object reference is shared between the two learner containers (verified by an isolation test attempting cross-container object access and observing failure).

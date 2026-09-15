@@ -1,4 +1,11 @@
-# Mode R operator runbook
+# Mode R learner-host operator runbook
+
+This runbook qualifies the two-container learner-host reference and bounded
+controller/Gateway/evidence software path. Its `baby-a` and `baby-b` Compose
+service names identify adapter hosts, not fully separated Baby-twin processes.
+The Symbol Gateway, SQLite writer, and signer registry currently execute in
+the Nursery process. This path cannot clear V06/B12 or support the full
+Research-Grade claim sentence in `SPECIFICATION.md` §5.2 for E10+ studies.
 
 ## Prerequisites
 
@@ -18,27 +25,28 @@ From the repository root, run:
 pnpm run test:mode-r
 ```
 
-The command builds the hardened learner image, starts Baby A and Baby B on
+The command builds the hardened learner image, starts the two adapter hosts on
 distinct internal networks, proves their container/process IDs differ, runs
-the twelve side-channel attacks, kills Baby A and proves Baby B survives, then
+the twelve side-channel attacks, kills the `baby-a` host and proves the `baby-b` host survives, then
 recreates both hosts for `scratch-rl`, `self-supervised`, and `hybrid` and
 proves each update changes only its local policy. It removes its project,
 volumes, and containers on exit. Any failed assertion exits non-zero.
 
 ## Full-lifecycle topology qualification
 
-Run all four learner tracks through the actual controller, Gateway, SQLite writer,
+Run all four learner tracks through the in-Nursery controller, Gateway, SQLite writer,
 checkpoint, local qualification anchor, exporter, and verifier:
 
 ```sh
 pnpm run test:mode-r-study
 ```
 
-This is a software/topology qualification only. Its receipt states
+This is a bounded software/topology qualification only, not the selected E10+
+process/key topology. Its receipt states
 `researchFinding: false` and `publicChainTransaction: false`; the local fake-chain
 receipt is not evidence of public anchoring.
 
-To exercise the persistent signer boundary, first store the version-1 signer
+To exercise the Fort-to-Nursery signer-material boundary, first store the version-1 signer
 envelope in the matching encrypted `safe` environment, then let Fort materialize
 it for only the Nursery service:
 
@@ -53,6 +61,8 @@ The envelope's `runs` map must contain `mode-r-study-no-learning`,
 `mode-r-study-hybrid`; each value must contain the exact six signer domains as
 64-character lowercase hexadecimal seeds. Do not create a plaintext envelope
 outside Fort. Neither learner receives the file, its path, or its contents.
+This mount control does not put each signer in a separate process or clear
+the V06/B12 key-isolation gate.
 
 ## Inspect a standing deployment
 
@@ -64,7 +74,7 @@ docker compose --project-name ald-mode-r-operator --file deploy/mode-r/docker-co
 docker compose --project-name ald-mode-r-operator --file deploy/mode-r/docker-compose.yml run --rm --no-deps nursery both
 ```
 
-`ps` must show two running learner services. The `nursery both` check must
+`ps` must show two running adapter-host services. The `nursery both` check must
 report distinct container IDs and successful network, filesystem, clipboard,
 process, worker, timing, size, error-shape, and cross-object isolation checks.
 
