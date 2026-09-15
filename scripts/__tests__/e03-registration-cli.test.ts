@@ -41,6 +41,9 @@ describe('E03 draft CLI resource policy binding', () => {
     const packet = JSON.parse(readFileSync(join(directory, 'draft.json'), 'utf8'));
     expect(packet.artifact.parameters.stage).toBe('blinded-pilot');
     expect(packet.runs).toHaveLength(120);
+    expect(packet.runs[0].config.turnResponseBudgetMs).toBe(2_000);
+    expect(packet.runs[0].config.maxTurnsPerRun).toBe(1);
+    expect(packet.runs[0].config.checkpointEventInterval).toBe(1_024);
     expect(packet.claimBoundary).toContain('Draft E03 qualification artifact only');
   });
 

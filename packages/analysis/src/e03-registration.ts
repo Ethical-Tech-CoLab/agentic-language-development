@@ -149,6 +149,13 @@ function assertE03Base(config: RunConfig): void {
     problems.push('both learners must use independent training isolation');
   }
   if (config.evaluationTurns !== 200) problems.push('evaluationTurns must be 200');
+  if (config.turnResponseBudgetMs !== 2_000) {
+    problems.push('turnResponseBudgetMs must match the 2,000 ms normalized adapter deadline');
+  }
+  if (config.maxTurnsPerRun !== 1) problems.push('maxTurnsPerRun must be 1');
+  if (config.checkpointEventInterval !== 1_024) {
+    problems.push('checkpointEventInterval must be 1,024');
+  }
   if (config.seedBindings !== undefined) {
     problems.push('base template must not contain realized seedBindings');
   }

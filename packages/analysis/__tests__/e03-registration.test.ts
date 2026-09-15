@@ -18,9 +18,11 @@ function baseConfig(primarySeeds = 3) {
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     learningSignal: 'none',
+    turnResponseBudgetMs: 2_000,
     maxTurnsPerRun: 1,
     evaluationTurns: 200,
     evaluationSeeds: primarySeeds,
+    checkpointEventInterval: 1_024,
     scenarioBundleHash: hash('scenario'),
     promptBundleHash: hash('prompt'),
     protocolGitCommit: '1'.repeat(40),
@@ -159,6 +161,9 @@ describe('E03 pre-registration compiler', () => {
     expect(() => compileE03Registration({ ...input, baseConfig: baseConfig(19) })).toThrow(
       /must equal primarySeeds/u,
     );
+    expect(() => compileE03Registration({
+      ...input, baseConfig: { ...baseConfig(20), turnResponseBudgetMs: 30_000 },
+    })).toThrow(/2,000 ms normalized adapter deadline/u);
     expect(() => compileE03Registration({
       ...input,
       executionBinding: {
