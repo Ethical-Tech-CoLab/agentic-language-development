@@ -92,11 +92,14 @@ reject when the true standardized effect is 0.40. N=100 raises that estimate to
 0.9068 with lower 95% Monte Carlo bound 0.9035. Conversely, even N=150 reaches only
 0.8017 for effect 0.30.
 
-These are sensitivity values, not universal seed counts. D07 must convert each
-frozen raw-scale practical margin and pilot variance into a member-specific effect,
-simulate its complete test including composite outcomes and missingness, and select
-the largest resulting count whose lower Monte Carlo bound is at least 0.90. Neither
-the ten-seed floor nor the historical 75-seed convention is evidence of power.
+These are sensitivity values, not universal seed counts. Each frozen raw-scale
+margin and blinded-pilot upper variance must feed a member-specific complete
+test, including composites and missingness. The prospective
+[selection clarification](../protocols/confirmatory-family-selection-amendment.v1.json)
+requires the first ordered shared candidate whose 30,000-repetition complete
+nine-member joint-decision Wilson lower bound reaches 0.90. Member-specific
+minima are diagnostics, not a replacement for that joint gate. Neither the
+ten-seed floor nor the historical 75-seed convention is evidence of power.
 
 ## Prospective E03 pilot reduction
 

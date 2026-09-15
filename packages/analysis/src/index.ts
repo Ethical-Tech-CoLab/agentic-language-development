@@ -143,6 +143,12 @@ export {
   type E03PilotSlotTally,
 } from './e03-pilot.js';
 export {
+  selectConfirmatoryFamilySeeds,
+  type ConfirmatoryFamilySelection,
+  type ConfirmatoryFamilySelectionRule,
+  type ConfirmatoryFamilySimulationRow,
+} from './confirmatory-selection.js';
+export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,
   compileE03Registration,

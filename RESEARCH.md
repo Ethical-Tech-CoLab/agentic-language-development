@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.148 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.149 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -896,6 +896,12 @@ SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway
 analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
 complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
 of at least 0.90. N=100 is a planning value, not a selected result.
+The prospective [selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
+resolves the earlier "largest required count" wording: member-specific minima
+are diagnostics, while the first shared candidate passing the complete joint
+nine-member lower-bound gate controls registration. The selector is implemented
+for complete simulation rows; no member-specific pilot inputs or 30,000-run
+joint-family receipt yet exist.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded

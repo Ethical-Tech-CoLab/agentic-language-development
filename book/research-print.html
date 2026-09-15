@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.148 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.149 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -962,7 +962,13 @@ Qualification, blinded-pilot, confirmatory, and replication stages use disjoint
 SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway, or
 analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
 complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
-of at least 0.90. N=100 is a planning value, not a selected result.</p>
+of at least 0.90. N=100 is a planning value, not a selected result.
+The prospective <a href="protocols/confirmatory-family-selection-amendment.v1.json">selection clarification</a>
+resolves the earlier &quot;largest required count&quot; wording: member-specific minima
+are diagnostics, while the first shared candidate passing the complete joint
+nine-member lower-bound gate controls registration. The selector is implemented
+for complete simulation rows; no member-specific pilot inputs or 30,000-run
+joint-family receipt yet exist.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends

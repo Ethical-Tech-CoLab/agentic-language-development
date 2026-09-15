@@ -99,6 +99,10 @@ Unless an experiment explicitly varies one of these, hold it constant:
 The exact derivation, tuning limit, candidate N grid, ordered reserves, per-condition
 allocations, and current zero-spend local resource ceiling are frozen in
 [`protocols/seed-and-resource-allocation.v1.json`](protocols/seed-and-resource-allocation.v1.json).
+The later nine-member confirmatory seed selection follows the prospective
+[joint-family clarification](protocols/confirmatory-family-selection-amendment.v1.json):
+the first shared candidate passing the complete lower-bound gate, not the
+largest qualifying candidate. No pilot has supplied that selection yet.
 The generated ledger contains design commitments only; it is not evidence that any
 pilot or study seed has run.
 

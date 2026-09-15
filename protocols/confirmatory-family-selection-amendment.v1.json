@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-design-interpretation",
+  "status": "design-rule-only; no confirmatory pilot, simulation receipt, or selected seed count exists",
+  "researchFinding": false,
+  "independentHumanReview": false,
+  "sourcePolicies": [
+    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"},
+    {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"},
+    {"path":"protocols/research-protocol-cards.v1.json","sha256":"sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"}
+  ],
+  "scope": "H1, H2, H3, H4, H5, H6a, H6b, H7, and H8 only; E03 qualification has its separate four-row rule",
+  "ambiguity": "The statistical policy's 'largest required primary-seed count' can be read as choosing the largest qualifying candidate, while the allocation policy requires the smallest shared qualifying candidate.",
+  "resolution": "A member-specific minimum is diagnostic only. The controlling choice is the first ordered shared candidate whose complete nine-member joint-decision simulation passes the lower-bound gate. The maximum of member-specific minima does not replace that joint gate.",
+  "members": ["H1","H2","H3","H4","H5","H6a","H6b","H7","H8"],
+  "candidatePrimarySeeds": [25,50,75,100,125,150,200,300],
+  "familywiseAlpha": 0.05,
+  "globalCorrection": "Holm-Bonferroni across nine members",
+  "monteCarloRepetitionsPerCandidate": 30000,
+  "monteCarloInterval": "two-sided 95% Wilson on complete joint-decision successes",
+  "minimumLower95JointPower": 0.90,
+  "selection": "smallest-shared-candidate-with-complete-joint-lower-bound",
+  "completeDecision": "Each simulated repetition succeeds only when all nine frozen member-specific tests, composite directions and practical margins, validity/missingness rules, and the global Holm procedure succeed together.",
+  "unmetGate": "If no listed candidate passes, no confirmatory seed prefix may be registered; investigate the design and resource envelope prospectively without relaxing margins or fabricating results.",
+  "registrationGate": "Bind every member's frozen raw-scale margin, blinded-pilot upper variance, exact test/simulation implementation, 30000-repetition receipt, selected shared prefix, ordered reserves, and measured resource allocation before confirmatory collection.",
+  "externalSpend": 0,
+  "claimBoundary": "Clarifies a future selection rule only. It is not a power simulation, pilot measurement, authorized resource expansion, scientific finding, or independent review."
+}
