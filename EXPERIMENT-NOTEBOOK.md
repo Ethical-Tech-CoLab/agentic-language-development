@@ -501,6 +501,8 @@ but controller-held writer/signer keys do not qualify the full Research-Grade pr
 boundary or a side-channel-isolation claim. The current six-condition development
 attempt remains mechanics/resource evidence only; an exact Prototype-Mode topology
 binding and measured pilot allocation are required before a pilot packet is activated.
+The compiler must bind both receipts by digest and reject incomplete topology,
+under-reserved design, or an allocation beyond the local zero-spend ceiling.
 
 ### Conditions
 

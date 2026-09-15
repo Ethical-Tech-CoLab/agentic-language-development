@@ -28,6 +28,11 @@ const { values } = parseArgs({
       type: 'string',
       default: 'protocols/seed-and-resource-allocation.v1.json',
     },
+    'topology-audit': {
+      type: 'string',
+      default: 'reports/research/e03-prototype-topology-audit-receipt.json',
+    },
+    'stage-resource-allocation': { type: 'string' },
   },
 });
 const stage = values.stage === 'pilot'
@@ -63,8 +68,19 @@ const resourceAllocationPath = repositoryPath(
   values['resource-allocation'],
   '--resource-allocation',
 );
+const topologyAuditPath = repositoryPath(values['topology-audit'], '--topology-audit');
+const stageAllocationPath = repositoryPath(
+  values['stage-resource-allocation'] ??
+    (stage === 'blinded-pilot' ? 'protocols/e03-pilot-resource-allocation.v1.json' : ''),
+  '--stage-resource-allocation',
+);
+if (stageAllocationPath.length === 0) {
+  throw new Error('--stage-resource-allocation is required for --stage full');
+}
 const e02ReceiptSource = await readJson(e02ReceiptPath);
 const resourceAllocationSource = await readJson(resourceAllocationPath);
+const topologyAuditSource = await readJson(topologyAuditPath);
+const stageAllocationSource = await readJson(stageAllocationPath);
 if (
   e02ReceiptSource.value.experimentId !== 'E02' ||
   e02ReceiptSource.value.passed !== true ||
@@ -82,6 +98,42 @@ if (
   !(resourceAllocationSource.value.localCeiling.maximumResidentGiB > 0)
 ) {
   throw new Error('E03 registration requires the zero-spend resource allocation policy');
+}
+const topologyAudit = topologyAuditSource.value;
+if (
+  topologyAudit.schemaVersion !== 1 ||
+  topologyAudit.experimentId !== 'E03' ||
+  topologyAudit.classification !== 'original-prototype-development-audit' ||
+  topologyAudit.profile !== 'prototype-v2' ||
+  topologyAudit.passed !== true ||
+  topologyAudit.auditExitStatus !== 0 ||
+  topologyAudit.conditionsAudited !== 6 ||
+  topologyAudit.roleContainerCount !== 12 ||
+  topologyAudit.researchFinding !== false ||
+  topologyAudit.externalSpend !== 0 ||
+  topologyAudit.publicChainTransaction !== false
+) {
+  throw new Error('E03 registration requires a complete original Prototype-Mode topology audit');
+}
+const stageAllocation = stageAllocationSource.value;
+if (
+  stageAllocation.schemaVersion !== 1 ||
+  stageAllocation.experimentId !== 'E03' ||
+  stageAllocation.classification !== 'prospective-local-stage-allocation' ||
+  stageAllocation.stage !== stage ||
+  (stage === 'blinded-pilot' && stageAllocation.plannedRuns !== 120) ||
+  !(stageAllocation.reservedCpuHours > 0) ||
+  !(stageAllocation.reservedWorkingStorageGiB > 0) ||
+  !(stageAllocation.maximumResidentGiB > 0) ||
+  stageAllocation.reservedCpuHours > resourceAllocationSource.value.localCeiling.cpuHours ||
+  stageAllocation.reservedWorkingStorageGiB > resourceAllocationSource.value.localCeiling.workingStorageGiB ||
+  stageAllocation.maximumResidentGiB > resourceAllocationSource.value.localCeiling.maximumResidentGiB ||
+  stageAllocation.externalSpend !== 0 ||
+  stageAllocation.measurementSourceSha256 !== sha256(topologyAuditSource.bytes) ||
+  stageAllocation.policySourceSha256 !== sha256(resourceAllocationSource.bytes) ||
+  stageAllocation.decision !== 'ready'
+) {
+  throw new Error('E03 registration requires a measured prospective stage allocation within the zero-spend ceiling');
 }
 const bindingSourcePaths = [
   'packages/analysis/src/e03-design.ts',
@@ -143,11 +195,26 @@ const executionBinding = {
     receiptSha256: sha256(e02ReceiptSource.bytes),
     registrationHash: e02ReceiptSource.value.registrationHash,
   },
+  prototypeTopology: {
+    path: topologyAuditPath,
+    sha256: sha256(topologyAuditSource.bytes),
+    auditExitStatus: 0, conditionsAudited: 6, mode: 'prototype',
+  },
   resourceAllocation: {
     path: resourceAllocationPath,
     sha256: sha256(resourceAllocationSource.bytes),
     externalSpend: 0,
     publicChainTransaction: false,
+  },
+  stageResourceAllocation: {
+    path: stageAllocationPath,
+    sha256: sha256(stageAllocationSource.bytes),
+    stage,
+    plannedRuns: stageAllocation.plannedRuns,
+    reservedCpuHours: stageAllocation.reservedCpuHours,
+    reservedWorkingStorageGiB: stageAllocation.reservedWorkingStorageGiB,
+    maximumResidentGiB: stageAllocation.maximumResidentGiB,
+    externalSpend: 0,
   },
   evidencePolicy: {
     anchorClass: 'simulated',

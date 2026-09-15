@@ -60,9 +60,20 @@ function registration() {
         receiptPath: 'reports/research/e02-v3-qualification-receipt.json',
         receiptSha256: hashed('e02-receipt'), registrationHash: hashed('e02-registration'),
       },
+      prototypeTopology: {
+        path: 'reports/research/e03-prototype-topology-audit-receipt.json',
+        sha256: hashed('topology-audit'), auditExitStatus: 0,
+        conditionsAudited: 6, mode: 'prototype',
+      },
       resourceAllocation: {
         path: 'protocols/seed-and-resource-allocation.v1.json',
         sha256: hashed('resources'), externalSpend: 0, publicChainTransaction: false,
+      },
+      stageResourceAllocation: {
+        path: 'protocols/e03-pilot-resource-allocation.v1.json',
+        sha256: hashed('pilot-allocation'), stage: 'blinded-pilot', plannedRuns: 120,
+        reservedCpuHours: 1, reservedWorkingStorageGiB: 1,
+        maximumResidentGiB: 1, externalSpend: 0,
       },
       evidencePolicy: {
         anchorClass: 'simulated', publicTimestamp: false,

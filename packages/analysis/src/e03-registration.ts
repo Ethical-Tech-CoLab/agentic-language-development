@@ -82,11 +82,28 @@ export interface E03ExecutionBinding {
     readonly receiptSha256: string;
     readonly registrationHash: string;
   };
+  readonly prototypeTopology: {
+    readonly path: string;
+    readonly sha256: string;
+    readonly auditExitStatus: 0;
+    readonly conditionsAudited: 6;
+    readonly mode: 'prototype';
+  };
   readonly resourceAllocation: {
     readonly path: string;
     readonly sha256: string;
     readonly externalSpend: 0;
     readonly publicChainTransaction: false;
+  };
+  readonly stageResourceAllocation: {
+    readonly path: string;
+    readonly sha256: string;
+    readonly stage: E03RegistrationStage;
+    readonly plannedRuns: number;
+    readonly reservedCpuHours: number;
+    readonly reservedWorkingStorageGiB: number;
+    readonly maximumResidentGiB: number;
+    readonly externalSpend: 0;
   };
   readonly evidencePolicy: {
     readonly anchorClass: 'simulated';
@@ -209,7 +226,8 @@ function assertSampleSizeDecision(
   }
 }
 
-function assertExecutionBinding(binding: E03ExecutionBinding): void {
+function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03RegistrationStage,
+  plannedRuns: number): void {
   const sourcePaths = new Set(binding.sourceFiles.map((source) => source.path));
   if (
     binding.version !== 1 ||
@@ -239,10 +257,23 @@ function assertExecutionBinding(binding: E03ExecutionBinding): void {
     !safeRepositoryPath(binding.dependency.receiptPath) ||
     !SHA256_PATTERN.test(binding.dependency.receiptSha256) ||
     !SHA256_PATTERN.test(binding.dependency.registrationHash) ||
+    !safeRepositoryPath(binding.prototypeTopology.path) ||
+    !SHA256_PATTERN.test(binding.prototypeTopology.sha256) ||
+    binding.prototypeTopology.auditExitStatus !== 0 ||
+    binding.prototypeTopology.conditionsAudited !== 6 ||
+    binding.prototypeTopology.mode !== 'prototype' ||
     !safeRepositoryPath(binding.resourceAllocation.path) ||
     !SHA256_PATTERN.test(binding.resourceAllocation.sha256) ||
     binding.resourceAllocation.externalSpend !== 0 ||
     binding.resourceAllocation.publicChainTransaction !== false ||
+    !safeRepositoryPath(binding.stageResourceAllocation.path) ||
+    !SHA256_PATTERN.test(binding.stageResourceAllocation.sha256) ||
+    binding.stageResourceAllocation.stage !== stage ||
+    binding.stageResourceAllocation.plannedRuns !== plannedRuns ||
+    !(binding.stageResourceAllocation.reservedCpuHours > 0) ||
+    !(binding.stageResourceAllocation.reservedWorkingStorageGiB > 0) ||
+    !(binding.stageResourceAllocation.maximumResidentGiB > 0) ||
+    binding.stageResourceAllocation.externalSpend !== 0 ||
     binding.evidencePolicy.anchorClass !== 'simulated' ||
     binding.evidencePolicy.publicTimestamp !== false ||
     binding.evidencePolicy.originalEvidenceImmutable !== true ||
@@ -297,8 +328,9 @@ export function compileE03Registration(
   const baseConfig = RunConfigSchema.parse(input.baseConfig);
   assertE03Base(baseConfig);
   assertSampleSizeDecision(input);
-  assertExecutionBinding(input.executionBinding);
   const seedManifest = buildE03SeedManifest(input.stage, input.primarySeeds);
+  assertExecutionBinding(input.executionBinding, input.stage,
+    seedManifest.entries.length * E03_COMMUNICATION_CONDITIONS.length);
   if (baseConfig.evaluationSeeds !== input.primarySeeds) {
     throw new AnalysisError(
       'domain',

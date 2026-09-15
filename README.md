@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.142 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.143 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 
@@ -305,11 +305,16 @@ Registration audits require the repository's full Git history; shallow clones
 must fetch that history before running the consolidated suite. Plans and tickets
 are local, Git-ignored working documents and are not inputs to CI.
 
-Reproduce the historical E03 design sensitivity calculation and compile the
-twenty-slot, zero-reserve pilot draft, then exercise the preflight with:
+Reproduce the historical E03 design sensitivity calculation now. Compile the
+twenty-slot, zero-reserve pilot only after the exact Prototype-Mode six-condition
+development run and live audit finish and its measured, zero-spend allocation is
+written. The compiler binds those two receipts and fails closed while they are absent:
 
 ```bash
 pnpm run design:e03
+pnpm run qualify:e03-prototype-topology-dev # once on a clean commit with an unused evidence root
+pnpm run audit:e03-prototype-topology-dev:live
+pnpm run build:e03-pilot-allocation
 pnpm run registration:e03 --out evidence/preregistration/e03-pilot-v1-draft.json
 pnpm run preflight:research \
   --registration evidence/preregistration/e03-pilot-v1-draft.json \
@@ -317,8 +322,8 @@ pnpm run preflight:research \
 ```
 
 This draft is a design demonstration. E02's bounded software gate has passed, but
-the exact Prototype-Mode topology, measured allocation, immutable pilot packet, and
-simulated pre-run commitment remain required before collection. After that pilot,
+an immutable pilot packet, exact source/seed preflight, and simulated pre-run
+commitment remain required before collection. After that pilot,
 compile the full E03 qualification only with the retained sample-size decision:
 
 ```bash

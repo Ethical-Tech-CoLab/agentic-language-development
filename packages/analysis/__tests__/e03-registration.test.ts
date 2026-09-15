@@ -67,11 +67,22 @@ const input = {
       receiptSha256: hash('e02-receipt'),
       registrationHash: hash('e02-registration'),
     },
+    prototypeTopology: {
+      path: 'reports/research/e03-prototype-topology-audit-receipt.json',
+      sha256: hash('topology-audit'), auditExitStatus: 0,
+      conditionsAudited: 6, mode: 'prototype',
+    },
     resourceAllocation: {
       path: 'protocols/seed-and-resource-allocation.v1.json',
       sha256: hash('resources'),
       externalSpend: 0,
       publicChainTransaction: false,
+    },
+    stageResourceAllocation: {
+      path: 'protocols/e03-pilot-resource-allocation.v1.json',
+      sha256: hash('pilot-allocation'), stage: 'blinded-pilot', plannedRuns: 120,
+      reservedCpuHours: 1, reservedWorkingStorageGiB: 1,
+      maximumResidentGiB: 1, externalSpend: 0,
     },
     evidencePolicy: {
       anchorClass: 'simulated',
@@ -97,6 +108,22 @@ const sampleSizeDecision = {
   monteCarloRepetitions: 30_000,
   monteCarloLower95: 0.91,
   decisionRule: 'e03-bounded-complete-numeric-rule-v1',
+} as const;
+
+const fullInput = {
+  ...input,
+  stage: 'full-qualification',
+  baseConfig: baseConfig(25),
+  primarySeeds: 25,
+  sampleSizeDecision,
+  executionBinding: {
+    ...input.executionBinding,
+    stageResourceAllocation: {
+      ...input.executionBinding.stageResourceAllocation,
+      path: 'protocols/e03-full-resource-allocation.v1.json',
+      sha256: hash('full-allocation'), stage: 'full-qualification', plannedRuns: 168,
+    },
+  },
 } as const;
 
 describe('E03 pre-registration compiler', () => {
@@ -171,47 +198,38 @@ describe('E03 pre-registration compiler', () => {
         signing: { ...input.executionBinding.signing, learnerAccess: true },
       },
     })).toThrow(/execution binding/u);
+    expect(() => compileE03Registration({
+      ...input,
+      executionBinding: {
+        ...input.executionBinding,
+        stageResourceAllocation: { ...input.executionBinding.stageResourceAllocation,
+          plannedRuns: 119 },
+      },
+    })).toThrow(/execution binding/u);
   });
 
   it('requires a qualifying pilot decision before full qualification', () => {
-    const full = compileE03Registration({
-      ...input,
-      stage: 'full-qualification',
-      baseConfig: baseConfig(25),
-      primarySeeds: 25,
-      sampleSizeDecision,
-    });
+    const full = compileE03Registration(fullInput);
     expect(full.runs).toHaveLength(168);
     expect(full.seedManifest.reserveSeeds).toBe(3);
     expect(full.artifact.parameters['sampleSizeDecision']).toEqual(sampleSizeDecision);
     expect(() => compileE03Registration({
-      ...input,
-      stage: 'full-qualification',
-      baseConfig: baseConfig(25),
-      primarySeeds: 25,
+      ...fullInput,
+      sampleSizeDecision: undefined,
     })).toThrow(/requires a pilot sample-size decision/u);
     expect(() => compileE03Registration({
-      ...input,
-      stage: 'full-qualification',
-      baseConfig: baseConfig(25),
-      primarySeeds: 25,
+      ...fullInput,
       sampleSizeDecision: { ...sampleSizeDecision, monteCarloLower95: 0.89 },
     })).toThrow(/frozen rule/u);
     expect(() => compileE03Registration({
-      ...input,
-      stage: 'full-qualification',
-      baseConfig: baseConfig(25),
-      primarySeeds: 25,
+      ...fullInput,
       sampleSizeDecision: {
         ...sampleSizeDecision,
         largestLatentPilotSd: 0.1,
       },
     })).toThrow(/frozen rule/u);
     expect(() => compileE03Registration({
-      ...input,
-      stage: 'full-qualification',
-      baseConfig: baseConfig(25),
-      primarySeeds: 25,
+      ...fullInput,
       sampleSizeDecision: {
         ...sampleSizeDecision,
         pilotReceiptPath: '../unretained.json',
