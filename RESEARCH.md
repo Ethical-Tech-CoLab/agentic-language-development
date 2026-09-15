@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.155 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.156 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1224,6 +1224,9 @@ zero-spend allocation gate any 120-run pilot packet. The allocation charges prio
 E02 and development CPU/storage before reserving pilot capacity. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
+One disposable in-process fixture sealed with a simulated anchor and passed a
+separate TypeScript bundle replay; it does not substitute for the unexecuted
+six-condition audit.
 Its reducer and separate recomputation audit are also prepared, not executed.
 No pilot variance or behavioral finding is reported.
 

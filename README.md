@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.155 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.156 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -127,6 +127,9 @@ development runner and original pilot collector now use that shared-process
 topology, but neither has executed. A new pilot still requires the terminal v1
 audit, a complete v2 development audit, measured allocation, and prospective
 packet admission.
+A disposable one-evaluation Prototype fixture sealed with a simulated anchor
+and passed a separate TypeScript bundle replay; it is a software
+smoke check, not the six-condition v2 qualification or a pilot.
 The frozen v1 development matrix alone is collecting mechanics evidence;
 the dependent behavioral campaign remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
 explains the attempt accounting and next acceptance checks. The remaining
