@@ -9,7 +9,7 @@ import { HASH_DOMAINS, PreRegistrationArtifactSchema } from '@ald/types';
 
 const [runId, softwareCommit] = process.argv.slice(2);
 assert.equal(process.argv.length, 4, 'usage: run-e03-pilot-slot.mjs <run-id> <commit>');
-assert.match(runId, /^e03-pilot-(?:v2-)?(?:disabled|constant|random|shuffled|normal|oracle)-s\d{3}$/u);
+assert.match(runId, /^e03-pilot-(?:v[23]-)?(?:disabled|constant|random|shuffled|normal|oracle)-s\d{3}$/u);
 assert.match(softwareCommit, /^[a-f0-9]{40}$/u);
 
 const registration = JSON.parse(await readFile('/evidence/registration.json', 'utf8'));

@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.165 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.167 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -143,9 +143,14 @@ unused: tracked test-fixture corrections change their exact source digest
 before any seed use. A [prospective v2 amendment](protocols/e03-pilot-registration-amendment.v2.json)
 requires fresh pilot IDs/seeds and binding. A new
 [v2 packet](protocols/e03-pilot-registration.v2.json) now freezes 120 distinct
-run IDs and disjoint pilot seeds against clean v0.1.164. It is not activated;
-the active pilot stage remains blocked until its own simulated binding and
-live admission pass. No run has started.
+run IDs and disjoint pilot seeds against clean v0.1.164. Its separately
+committed [simulated binding](protocols/e03-pilot-registration-binding.v2.json)
+reconciles three local confirmations, zero currency, and no public transaction.
+Tracked ready-stage fixture corrections changed the v2 packet's exact source
+digest before seed use. Both earlier registrations remain unused; a
+[prospective v3 amendment](protocols/e03-pilot-registration-amendment.v3.json)
+requires fresh IDs/seeds, packet, and binding. The active pilot stage is
+blocked again, and no run has started.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.
@@ -155,12 +160,12 @@ explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:
 
 The prospective original-pilot collector is prepared but has not run. Once its
-v2 packet and simulated binding are committed and the E03 pilot stage is ready,
-`pnpm run admit:e03-pilot-v2:live` checks all registered runs against original
-topology and resource evidence. `pnpm run run:e03-pilot-v2` then executes the
+v3 packet and simulated binding are committed and the E03 pilot stage is ready,
+`pnpm run admit:e03-pilot-v3:live` checks all registered runs against original
+topology and resource evidence. `pnpm run run:e03-pilot-v3` then executes the
 single-use, zero-reserve pilot; failure is retained. A separate live audit is
 required before pilot tallies can enter the sample-size selector.
-The prepared `reduce:e03-pilot-v2:live` command also reruns the 120-bundle audit
+The prepared `reduce:e03-pilot-v3:live` command also reruns the 120-bundle audit
 before writing a single-use, outcome-blind dispersion input. Its separate
 `audit:e03-pilot-reduction:live` check recomputes that input from retained
 original records. Neither command has run on pilot data.

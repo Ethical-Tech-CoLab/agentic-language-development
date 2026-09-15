@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.165"
+    "version": "0.1.167"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -52,7 +52,7 @@
         "is byte-for-byte deterministic for a fixed seed",
         "rejects malformed designs instead of emitting a power decision",
         "derives a zero-reserve twenty-slot pilot in the global stage domain",
-        "allocates a disjoint prospective v2 pilot namespace without changing v1",
+        "allocates disjoint prospective v2/v3 pilot namespaces without changing v1",
         "derives full component bindings and ten-percent ordered reserves",
         "keeps pilot and full-qualification seed domains disjoint"
       ],
@@ -63,6 +63,7 @@
         "builds one canonical artifact and binds every condition/slot to its hash",
         "compiles a v2 pilot with fresh registered IDs and seeds",
         "rejects a v2 pilot that does not bind its prospective amendment",
+        "requires a separate v3 amendment and allocation namespace",
         "is byte-identical on repeat and changes hash when a registered field changes",
         "excludes realized run identity, seed, condition, and hash from the parameter template",
         "fails closed on a mislabeled isolation mode or mismatched seed-count base",

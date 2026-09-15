@@ -9,7 +9,8 @@ import { canonicalJson, hashCanonical } from '@ald/hashing';
 import { evaluateResearchPreflight } from '@ald/ops';
 import { HASH_DOMAINS, PreRegistrationArtifactSchema } from '@ald/types';
 
-const attemptVersion = process.argv.includes('--v2') ? 'v2' : 'v1';
+const attemptVersion = process.argv.includes('--v3') ? 'v3' :
+  process.argv.includes('--v2') ? 'v2' : 'v1';
 const packetPath = `protocols/e03-pilot-registration.${attemptVersion}.json`;
 const bindingPath = `protocols/e03-pilot-registration-binding.${attemptVersion}.json`;
 const evidenceRoot = `evidence/pilots/e03-blinded-${attemptVersion}`;
@@ -176,27 +177,34 @@ export function validateE03PilotAdmission() {
   const artifact = PreRegistrationArtifactSchema.parse(packet.artifact);
   assert.equal(artifact.experimentId, 'E03');
   assert.equal(artifact.parameters.stage, 'blinded-pilot');
-  if (attemptVersion === 'v2') {
-    const amendment = read('protocols/e03-pilot-registration-amendment.v2.json');
-    const prior = read('protocols/e03-pilot-registration.v1.json');
+  if (attemptVersion !== 'v1') {
+    const amendmentPath = `protocols/e03-pilot-registration-amendment.${attemptVersion}.json`;
+    const amendment = read(amendmentPath);
+    const priorVersion = attemptVersion === 'v3' ? 'v2' : 'v1';
+    const prior = read(`protocols/e03-pilot-registration.${priorVersion}.json`);
     assert.equal(artifact.parameters.executionBinding.registrationAmendment?.path,
-      'protocols/e03-pilot-registration-amendment.v2.json');
+      amendmentPath);
     assert.equal(artifact.parameters.executionBinding.registrationAmendment?.sha256,
-      digest('protocols/e03-pilot-registration-amendment.v2.json'));
+      digest(amendmentPath));
     assert.equal(amendment.priorRegistrationHash, prior.preRegistrationHash);
     assert.equal(amendment.priorSeedsUsed, false);
     assert.equal(existsSync(amendment.priorPilotEvidenceRoot), false,
-      'v1 pilot outcomes exist; the prospective unused-registration amendment is invalid');
+      'prior pilot outcomes exist; the prospective unused-registration amendment is invalid');
     const runIds = (registered) => new Set(registered.runs.map((run) => run.config.runId));
     const seeds = (registered) => new Set(registered.runs.flatMap((run) =>
       Object.values(run.config.seedBindings ?? {}).filter((seed) => typeof seed === 'string')));
-    const priorRunIds = runIds(prior);
-    const priorSeeds = seeds(prior);
-    assert.ok(packet.runs.every((run) => run.config.runId.startsWith('e03-pilot-v2-')));
-    assert.ok([...runIds(packet)].every((runId) => !priorRunIds.has(runId)),
-      'v2 pilot reuses a v1 registered run identifier');
-    assert.ok([...seeds(packet)].every((seed) => !priorSeeds.has(seed)),
-      'v2 pilot reuses a v1 registered seed');
+    assert.ok(packet.runs.every((run) => run.config.runId.startsWith(`e03-pilot-${attemptVersion}-`)));
+    for (const version of attemptVersion === 'v3' ? ['v1', 'v2'] : ['v1']) {
+      const registered = read(`protocols/e03-pilot-registration.${version}.json`);
+      assert.equal(existsSync(`evidence/pilots/e03-blinded-${version}`), false,
+        `${version} pilot evidence exists; fresh-registration premise is invalid`);
+      const priorRunIds = runIds(registered);
+      const priorSeeds = seeds(registered);
+      assert.ok([...runIds(packet)].every((runId) => !priorRunIds.has(runId)),
+        `${attemptVersion} pilot reuses a ${version} registered run identifier`);
+      assert.ok([...seeds(packet)].every((seed) => !priorSeeds.has(seed)),
+        `${attemptVersion} pilot reuses a ${version} registered seed`);
+    }
   }
   assert.equal(packet.preRegistrationHash, hashCanonical(HASH_DOMAINS.preRegistration, artifact));
   assert.equal(packet.canonicalArtifact, canonicalJson(artifact));
@@ -320,7 +328,8 @@ export function validateE03PilotAdmission() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  assert.deepEqual(process.argv.slice(2), attemptVersion === 'v2' ? ['--live', '--v2'] : ['--live'],
-    'usage: node scripts/check-e03-pilot-admission.mjs --live [--v2]');
+  assert.deepEqual(process.argv.slice(2), attemptVersion === 'v1' ? ['--live'] :
+    ['--live', `--${attemptVersion}`],
+  'usage: node scripts/check-e03-pilot-admission.mjs --live [--v2|--v3]');
   console.log(JSON.stringify(validateE03PilotAdmission(), null, 2));
 }

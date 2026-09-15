@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.165 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.167 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1269,8 +1269,13 @@ are retained after tracked test-fixture changes altered their exact source
 digest. A <a href="protocols/e03-pilot-registration-amendment.v2.json">prospective v2 amendment</a>
 requires fresh IDs/seeds and binding before admission. A new
 <a href="protocols/e03-pilot-registration.v2.json">v2 pilot packet</a> freezes 120
-run IDs and disjoint pilot seeds against clean v0.1.164, but has no simulated
-activation or execution. The prepared
+run IDs and disjoint pilot seeds against clean v0.1.164. A separate
+<a href="protocols/e03-pilot-registration-binding.v2.json">simulated binding</a>
+records three local confirmations without real funds or an independent
+timestamp. Tracked ready-stage fixture corrections changed the v2 exact source
+digest before seed use; a <a href="protocols/e03-pilot-registration-amendment.v3.json">prospective v3 amendment</a>
+requires a fresh packet, IDs/seeds, and binding. The active pilot is blocked,
+and no pilot has executed. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
 Its reducer and separate recomputation audit are also prepared, not executed.
@@ -1380,7 +1385,7 @@ verification reports.</p>
 and analysis plan before execution. The run configuration stores the protocol commit
 and pre-registration hash. Changes create appended amendments rather than rewriting
 the original record.</p>
-<p>The E02 software-qualification packets and unused E03 v1 pilot packet have been
+<p>The E02 software-qualification packets and unused E03 v1/v2 pilot packets have been
 repository-registered, but the E03 pilot has not begun. Before each later
 confirmatory run, its canonical packet will be committed unchanged in a Git ancestor
 of the execution commit. Preflight will load those historical bytes, reproduce the

@@ -176,6 +176,31 @@ describe('E03 pre-registration compiler', () => {
       .toThrow(/execution binding is incomplete/u);
   });
 
+  it('requires a separate v3 amendment and allocation namespace', () => {
+    const second = compileE03Registration({ ...input, attemptVersion: 'v2',
+      executionBinding: { ...input.executionBinding,
+        registrationAmendment: {
+          path: 'protocols/e03-pilot-registration-amendment.v2.json',
+          sha256: hash('amendment-v2'),
+        },
+      },
+    });
+    const third = compileE03Registration({ ...input, attemptVersion: 'v3',
+      executionBinding: { ...input.executionBinding,
+        registrationAmendment: {
+          path: 'protocols/e03-pilot-registration-amendment.v3.json',
+          sha256: hash('amendment-v3'),
+        },
+      },
+    });
+    expect(third.runs[0]?.config.runId).toMatch(/^e03-pilot-v3-/u);
+    expect(new Set([...second.runs.map((run) => run.config.runId),
+      ...third.runs.map((run) => run.config.runId)]).size).toBe(240);
+    expect(new Set([...second.seedManifest.entries.map((entry) => entry.scenarioSeed),
+      ...third.seedManifest.entries.map((entry) => entry.scenarioSeed)]).size).toBe(40);
+    expect(third.preRegistrationHash).not.toBe(second.preRegistrationHash);
+  });
+
   it('is byte-identical on repeat and changes hash when a registered field changes', () => {
     const first = compileE03Registration(input);
     const second = compileE03Registration(input);

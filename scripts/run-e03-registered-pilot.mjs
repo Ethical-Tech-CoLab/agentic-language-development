@@ -13,8 +13,9 @@ import { reconcileE03PilotAttemptResources } from './e03-pilot-resource-accounti
 const mode = process.argv[2];
 assert.ok(['--run', '--audit'].includes(mode) &&
   (process.argv.length === 3 ||
-    (process.argv.length === 4 && process.argv[3] === '--v2')));
-const attemptVersion = process.argv[3] === '--v2' ? 'v2' : 'v1';
+    (process.argv.length === 4 && ['--v2', '--v3'].includes(process.argv[3]))));
+const attemptVersion = process.argv[3] === '--v3' ? 'v3' :
+  process.argv[3] === '--v2' ? 'v2' : 'v1';
 const root = `evidence/pilots/e03-blinded-${attemptVersion}`;
 const project = `ald-e03-pilot-${attemptVersion}`;
 const packetPath = `protocols/e03-pilot-registration.${attemptVersion}.json`;

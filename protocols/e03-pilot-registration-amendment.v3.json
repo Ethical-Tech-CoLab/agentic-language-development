@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E03",
+  "stage": "blinded-pilot",
+  "amendmentVersion": 3,
+  "recordedAt": "2026-09-15T22:01:11Z",
+  "classification": "prospective-unused-registration-supersession",
+  "priorPacketPath": "protocols/e03-pilot-registration.v2.json",
+  "priorPacketCommit": "b22fdac",
+  "priorRegistrationHash": "sha256:4bc3996e0b971fe361119836ecb151ac08e4c8aec5e90d77d67872178f200b22",
+  "priorBindingPath": "protocols/e03-pilot-registration-binding.v2.json",
+  "priorAttemptStatus": "not-started",
+  "priorPilotEvidenceRoot": "evidence/pilots/e03-blinded-v2",
+  "priorSeedsUsed": false,
+  "reason": "The full ready-stage suite exposed preparation fixtures tied to whichever packet was current. Six tests failed from this stage mismatch while actual readiness and simulated-binding audits passed. The tracked fixture correction changes the v2 packet's exact source digest before pilot collection.",
+  "prospectiveDecision": "Retain both earlier packets and bindings as unused historical registrations. Make preparation and ready fixtures stage-independent, then compile a clean-source v3 pilot packet with a separate seed, run-ID, binding, and evidence namespace. Do not use the earlier allocations as a passing v3 attempt.",
+  "unchangedDesign": "Six controls, twenty paired primary slots per condition, zero reserves, 200 sealed evaluations per run, outcome-blinded pilot use, scientific thresholds, safety controls, simulated-fund policy, and measured CPU/storage/memory reservations remain unchanged.",
+  "newPacketPath": "protocols/e03-pilot-registration.v3.json",
+  "newBindingPath": "protocols/e03-pilot-registration-binding.v3.json",
+  "newPilotEvidenceRoot": "evidence/pilots/e03-blinded-v3",
+  "claimBoundary": "Prospective correction before pilot seed use or outcome collection. Earlier registrations are not failed scientific findings. No pilot result, full Mode R isolation, independent timestamp, or new spending is established."
+}

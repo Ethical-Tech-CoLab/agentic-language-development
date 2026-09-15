@@ -35,6 +35,13 @@ describe('original E03 pilot reduction', () => {
     expect(result.stderr).toContain('e03-blinded-v2/receipt.json');
   });
 
+  it('cannot reduce the v3 pilot without its separate original evidence', () => {
+    const result = spawnSync(process.execPath, [script, '--write', '--v3'],
+      { cwd: fixture(), encoding: 'utf8' });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('e03-blinded-v3/receipt.json');
+  });
+
   it('refuses to overwrite an existing pilot reduction', () => {
     const directory = fixture();
     const root = join(directory, 'evidence/pilots/e03-blinded-v1');

@@ -45,9 +45,9 @@ const stage = values.stage === 'pilot'
 if (stage === undefined) {
   throw new Error('--stage must be pilot or full');
 }
-if (!['v1', 'v2'].includes(values['attempt-version']) ||
+if (!['v1', 'v2', 'v3'].includes(values['attempt-version']) ||
     (stage !== 'blinded-pilot' && values['attempt-version'] !== 'v1')) {
-  throw new Error('--attempt-version must be v1 or v2; v2 is currently pilot-only');
+  throw new Error('--attempt-version must be v1, v2, or v3; later versions are pilot-only');
 }
 const primarySeeds = Number(values['primary-seeds']);
 if (!Number.isInteger(primarySeeds) || primarySeeds < 1) {
@@ -87,22 +87,27 @@ const e02ReceiptSource = await readJson(e02ReceiptPath);
 const resourceAllocationSource = await readJson(resourceAllocationPath);
 const topologyAuditSource = await readJson(topologyAuditPath);
 const stageAllocationSource = await readJson(stageAllocationPath);
-const amendmentPath = 'protocols/e03-pilot-registration-amendment.v2.json';
-const amendmentSource = values['attempt-version'] === 'v2'
+const attemptVersion = values['attempt-version'];
+const priorVersion = attemptVersion === 'v3' ? 'v2' : 'v1';
+const amendmentPath = `protocols/e03-pilot-registration-amendment.${attemptVersion}.json`;
+const amendmentSource = attemptVersion !== 'v1'
   ? await readJson(amendmentPath) : undefined;
 if (amendmentSource) {
-  const priorPacket = await readJson('protocols/e03-pilot-registration.v1.json');
-  const priorBinding = await readJson('protocols/e03-pilot-registration-binding.v1.json');
+  const priorPacketPath = `protocols/e03-pilot-registration.${priorVersion}.json`;
+  const priorBindingPath = `protocols/e03-pilot-registration-binding.${priorVersion}.json`;
+  const priorPacket = await readJson(priorPacketPath);
+  const priorBinding = await readJson(priorBindingPath);
   if (amendmentSource.value.classification !== 'prospective-unused-registration-supersession' ||
-      amendmentSource.value.priorPacketPath !== 'protocols/e03-pilot-registration.v1.json' ||
-      amendmentSource.value.priorBindingPath !== 'protocols/e03-pilot-registration-binding.v1.json' ||
-      amendmentSource.value.newPacketPath !== 'protocols/e03-pilot-registration.v2.json' ||
-      amendmentSource.value.priorPilotEvidenceRoot !== 'evidence/pilots/e03-blinded-v1' ||
+      amendmentSource.value.priorPacketPath !== priorPacketPath ||
+      amendmentSource.value.priorBindingPath !== priorBindingPath ||
+      amendmentSource.value.newPacketPath !== `protocols/e03-pilot-registration.${attemptVersion}.json` ||
+      amendmentSource.value.priorPilotEvidenceRoot !== `evidence/pilots/e03-blinded-${priorVersion}` ||
       amendmentSource.value.priorRegistrationHash !== priorPacket.value.preRegistrationHash ||
       priorBinding.value.preRegistrationHash !== priorPacket.value.preRegistrationHash ||
       amendmentSource.value.priorSeedsUsed !== false ||
-      existsSync(amendmentSource.value.priorPilotEvidenceRoot)) {
-    throw new Error('E03 v2 pilot registration requires a retained unused v1 packet and prospective amendment');
+      existsSync(amendmentSource.value.priorPilotEvidenceRoot) ||
+      (attemptVersion === 'v3' && existsSync('evidence/pilots/e03-blinded-v1'))) {
+    throw new Error(`E03 ${attemptVersion} pilot registration requires a retained unused prior packet and prospective amendment`);
   }
 }
 if (

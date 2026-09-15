@@ -320,7 +320,8 @@ if (e03 && e03.attempt.status === 'not-started' &&
   }
   if (packetEvidence) {
     if (!['protocols/e03-pilot-registration.v1.json',
-      'protocols/e03-pilot-registration.v2.json'].includes(packetEvidence.path)) {
+      'protocols/e03-pilot-registration.v2.json',
+      'protocols/e03-pilot-registration.v3.json'].includes(packetEvidence.path)) {
       throw new Error('E03 blocked pilot packet uses an unexpected registration path');
     }
     const packet = JSON.parse(readFileSync(packetEvidence.path, 'utf8')) as {

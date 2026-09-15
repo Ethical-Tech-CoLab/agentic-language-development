@@ -1,0 +1,21 @@
+{
+  "registrationClass": "qualification",
+  "registrationAuthority": "repository-native",
+  "preRegistrationHash": "sha256:4bc3996e0b971fe361119836ecb151ac08e4c8aec5e90d77d67872178f200b22",
+  "repositoryRegistration": {
+    "commit": "b22fdacdf53a4cb4f70d196a8e4e3da8e99b35a2",
+    "path": "protocols/e03-pilot-registration.v2.json",
+    "artifactSha256": "sha256:4bc3996e0b971fe361119836ecb151ac08e4c8aec5e90d77d67872178f200b22",
+    "committedAt": "2026-09-15T21:55:30+00:00"
+  },
+  "preRunAnchor": {
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "transactionHash": "0x0dfe7a8cd05094bdeba0402a22af53a1be19c4a20533109d9091207686238c67",
+    "inputData": "0x4bc3996e0b971fe361119836ecb151ac08e4c8aec5e90d77d67872178f200b22",
+    "blockNumber": 1,
+    "status": "confirmed"
+  },
+  "label": "E03 pilot qualification; simulation is not an independent public timestamp"
+}

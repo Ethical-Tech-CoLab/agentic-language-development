@@ -7,7 +7,8 @@ export function checkE03LocalPilotState(entry) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
-  const attemptVersion = packetPath?.endsWith('.v2.json') ? 'v2' : 'v1';
+  const attemptVersion = packetPath?.endsWith('.v3.json') ? 'v3' :
+    packetPath?.endsWith('.v2.json') ? 'v2' : 'v1';
   const terminalPath = `evidence/pilots/e03-blinded-${attemptVersion}/receipt.json`;
   const attemptPath = `evidence/pilots/e03-blinded-${attemptVersion}/attempt.json`;
   const isAuthority = (path) => entry.evidence.some((item) =>

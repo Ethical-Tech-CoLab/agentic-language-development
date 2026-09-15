@@ -87,7 +87,24 @@ function run(directory: string) {
   ], { cwd: directory, encoding: 'utf8' });
 }
 
-function readyPilotFixture(version: 'v1' | 'v2' = 'v1') {
+function resetPilotPreparation(campaign: any) {
+  const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+  e03.executionReadiness = { stage: 'pilot', decision: 'blocked', reasonCodes: ['B11'] };
+  e03.attempt = { status: 'not-started', planned: null, attempted: 0, completed: 0 };
+  e03.evidence = e03.evidence.filter((entry: any) =>
+    ['development-topology-audit', 'prospective-stage-allocation'].includes(entry.kind));
+  return e03;
+}
+
+function preparationFixture(mutate: (campaign: any, receipts: Record<string, any>) => void =
+  () => undefined) {
+  return fixture((campaign, receipts) => {
+    resetPilotPreparation(campaign);
+    mutate(campaign, receipts);
+  });
+}
+
+function readyPilotFixture(version: 'v1' | 'v2' | 'v3' = 'v1') {
   return fixture((campaign, receipts) => {
     const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
     e03.executionReadiness = { stage: 'pilot', decision: 'ready', reasonCodes: [] };
@@ -139,11 +156,9 @@ function readyPilotFixture(version: 'v1' | 'v2' = 'v1') {
 }
 
 function blockedPilotPacketFixture(mutatePacket: (packet: any) => void = () => undefined,
-  version: 'v1' | 'v2' = 'v1') {
+  version: 'v1' | 'v2' | 'v3' = 'v1') {
   return fixture((campaign, receipts) => {
-    const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
-    e03.evidence = e03.evidence.filter((entry: any) =>
-      entry.kind !== 'prospective-registration-packet');
+    const e03 = resetPilotPreparation(campaign);
     e03.evidence.push({ kind: 'prospective-registration-packet',
       path: `protocols/e03-pilot-registration.${version}.json`, statusAuthority: false });
     receipts.e03Packet = {
@@ -244,7 +259,7 @@ describe('stage-specific campaign progress', () => {
   });
 
   it('rejects a slot-only wall projection after measured host overhead', () => {
-    const result = run(fixture((_campaign, receipts) => {
+    const result = run(preparationFixture((_campaign, receipts) => {
       receipts.e03CurrentAllocation.projectedSequentialWallHours = 0.2;
     }));
     expect(result.status).not.toBe(0);
@@ -252,7 +267,7 @@ describe('stage-specific campaign progress', () => {
   });
 
   it('rejects an allocation without its measured host-overhead bound', () => {
-    const result = run(fixture((_campaign, receipts) => {
+    const result = run(preparationFixture((_campaign, receipts) => {
       delete receipts.e03CurrentAllocation.measuredMaximums.maximumPerSlotHostOverheadHours;
     }));
     expect(result.status).not.toBe(0);
@@ -260,7 +275,7 @@ describe('stage-specific campaign progress', () => {
   });
 
   it('rejects removal of the measured E03 preparation evidence', () => {
-    const result = run(fixture((campaign) => {
+    const result = run(preparationFixture((campaign) => {
       const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
       e03.evidence = [];
     }));
@@ -278,8 +293,18 @@ describe('stage-specific campaign progress', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it('accepts a fresh v3 packet as blocked preparation before its own activation', () => {
+    const result = run(blockedPilotPacketFixture(() => undefined, 'v3'));
+    expect(result.status, result.stderr).toBe(0);
+  });
+
   it('accepts the v2 pilot-ready stage with a separate packet and binding', () => {
     const result = run(readyPilotFixture('v2'));
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('accepts the v3 pilot-ready stage with its own packet and binding', () => {
+    const result = run(readyPilotFixture('v3'));
     expect(result.status, result.stderr).toBe(0);
   });
 

@@ -8,10 +8,10 @@ import { HASH_DOMAINS, PreRegistrationArtifactSchema, PreRegistrationBindingSche
 
 const [stage, mode, attemptVersion = 'v1'] = process.argv.slice(2);
 assert.ok([4, 5].includes(process.argv.length),
-  'usage: activate-e03-registration.mjs <pilot|full> <--activate|--check> [v1|v2]');
+  'usage: activate-e03-registration.mjs <pilot|full> <--activate|--check> [v1|v2|v3]');
 assert.ok(['pilot', 'full'].includes(stage));
 assert.ok(['--activate', '--check'].includes(mode));
-assert.ok(['v1', 'v2'].includes(attemptVersion));
+assert.ok(['v1', 'v2', 'v3'].includes(attemptVersion));
 assert.ok(stage === 'pilot' || attemptVersion === 'v1');
 
 const packetPath = `protocols/e03-${stage}-registration.${attemptVersion}.json`;

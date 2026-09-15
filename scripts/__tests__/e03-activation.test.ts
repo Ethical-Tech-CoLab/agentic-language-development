@@ -14,12 +14,13 @@ const script = join(root, 'scripts/activate-e03-registration.mjs');
 const git = (directory: string, ...args: string[]) => spawnSync('git', args, {
   cwd: directory, encoding: 'utf8',
 });
-const run = (directory: string, mode: '--activate' | '--check', version: 'v1' | 'v2' = 'v1') =>
+const run = (directory: string, mode: '--activate' | '--check',
+  version: 'v1' | 'v2' | 'v3' = 'v1') =>
   spawnSync(process.execPath,
-    [script, 'pilot', mode, ...(version === 'v2' ? ['v2'] : [])],
+    [script, 'pilot', mode, ...(version === 'v1' ? [] : [version])],
     { cwd: directory, encoding: 'utf8' });
 
-function fixture(version: 'v1' | 'v2' = 'v1') {
+function fixture(version: 'v1' | 'v2' | 'v3' = 'v1') {
   const directory = mkdtempSync(join(tmpdir(), 'ald-e03-activation-'));
   directories.push(directory);
   expect(git(directory, 'init', '-q').status).toBe(0);
@@ -71,6 +72,16 @@ describe('E03 repository-native simulated activation', () => {
     expect(binding.preRegistrationHash).toBe(packet.preRegistrationHash);
     expect(binding.preRunAnchor.anchorClass).toBe('simulated');
     expect(run(directory, '--check', 'v2').status).toBe(0);
+  });
+
+  it('activates a fresh v3 packet without reusing earlier binding paths', () => {
+    const { directory, packet } = fixture('v3');
+    expect(run(directory, '--activate', 'v3').status).toBe(0);
+    const binding = JSON.parse(readFileSync(join(directory,
+      'protocols/e03-pilot-registration-binding.v3.json'), 'utf8'));
+    expect(binding.preRegistrationHash).toBe(packet.preRegistrationHash);
+    expect(binding.preRunAnchor.anchorClass).toBe('simulated');
+    expect(run(directory, '--check', 'v3').status).toBe(0);
   });
 
   it('rejects a working packet that differs from its repository commitment', () => {

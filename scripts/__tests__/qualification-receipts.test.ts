@@ -124,6 +124,8 @@ describe('current project status', () => {
         ? ['protocols/e03-pilot-registration.v1.json'] : []),
       ...(existsSync(join(root, 'protocols/e03-pilot-registration.v2.json'))
         ? ['protocols/e03-pilot-registration.v2.json'] : []),
+      ...(existsSync(join(root, 'protocols/e03-pilot-registration.v3.json'))
+        ? ['protocols/e03-pilot-registration.v3.json'] : []),
     ]) {
       mkdirSync(dirname(join(directory, path)), { recursive: true });
       writeFileSync(join(directory, path), readFileSync(join(root, path)));
@@ -138,7 +140,8 @@ describe('current project status', () => {
     const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
     const packetPath = e03.evidence.find((entry: { kind: string }) =>
       entry.kind === 'prospective-registration-packet')?.path;
-    return `evidence/pilots/e03-blinded-${packetPath?.endsWith('.v2.json') ? 'v2' : 'v1'}`;
+    return `evidence/pilots/e03-blinded-${packetPath?.endsWith('.v3.json') ? 'v3' :
+      packetPath?.endsWith('.v2.json') ? 'v2' : 'v1'}`;
   };
 
   it('works without any local plans', () => {

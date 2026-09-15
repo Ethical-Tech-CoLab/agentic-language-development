@@ -44,7 +44,7 @@ export interface CompileE03RegistrationInput {
   readonly hypothesis: string;
   readonly analysisPlan: string;
   readonly primarySeeds: number;
-  readonly attemptVersion?: 'v1' | 'v2';
+  readonly attemptVersion?: 'v1' | 'v2' | 'v3';
   readonly executionBinding: E03ExecutionBinding;
   readonly sampleSizeDecision?: E03SampleSizeDecision;
 }
@@ -235,7 +235,7 @@ function assertSampleSizeDecision(
 }
 
 function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03RegistrationStage,
-  plannedRuns: number, attemptVersion: 'v1' | 'v2'): void {
+  plannedRuns: number, attemptVersion: 'v1' | 'v2' | 'v3'): void {
   const sourcePaths = new Set(binding.sourceFiles.map((source) => source.path));
   if (
     binding.version !== 1 ||
@@ -285,7 +285,7 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
     !(binding.stageResourceAllocation.priorCpuHoursCharged >= 0) ||
     !(binding.stageResourceAllocation.priorRetainedStorageGiB >= 0) ||
     binding.stageResourceAllocation.externalSpend !== 0 ||
-    (attemptVersion === 'v2' &&
+    (attemptVersion !== 'v1' &&
       (!binding.registrationAmendment ||
         !safeRepositoryPath(binding.registrationAmendment.path) ||
         !SHA256_PATTERN.test(binding.registrationAmendment.sha256))) ||
@@ -384,7 +384,7 @@ export function compileE03Registration(
         condition,
         config: RunConfigSchema.parse({
           ...baseConfig,
-          runId: `e03-${runStage}-${input.attemptVersion === 'v2' ? 'v2-' : ''}${condition}-s${String(entry.slot).padStart(3, '0')}`,
+          runId: `e03-${runStage}-${input.attemptVersion && input.attemptVersion !== 'v1' ? `${input.attemptVersion}-` : ''}${condition}-s${String(entry.slot).padStart(3, '0')}`,
           randomSeed: entry.scenarioSeed,
           seedBindings: {
             version: 1,
