@@ -84,6 +84,9 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   if (portableSummary) values[portableSummary] = source(portableSummary);
   if (portableSummary) values['evidence/pilots/e03-blinded-v3/power-selection.json'] =
     source('evidence/pilots/e03-blinded-v3/power-selection.json');
+  const selectedDecision = e03Evidence?.find((entry: any) =>
+    entry.kind === 'outcome-blind-sample-size-decision')?.path;
+  if (selectedDecision) values[selectedDecision] = source(selectedDecision);
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -313,6 +316,18 @@ describe('stage-specific campaign progress', () => {
     const result = run(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 portable pilot status contradicts its packet or campaign state');
+  });
+
+  it('rejects an altered tracked E03 design decision even from a clean checkout', () => {
+    const directory = fixture();
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    const path = join(directory, 'protocols/e03-sample-size-decision.v1.json');
+    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 tracked design decision contradicts its source digests or limitation');
   });
 
   it('rejects a slot-only wall projection after measured host overhead', () => {

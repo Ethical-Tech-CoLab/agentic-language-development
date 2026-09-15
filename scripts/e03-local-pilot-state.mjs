@@ -3,7 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
-export function checkE03LocalPilotState(entry, completionSupplement, powerSupplement) {
+export function checkE03LocalPilotState(entry, completionSupplement, powerSupplement,
+  decisionSupplement) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
@@ -91,6 +92,32 @@ export function checkE03LocalPilotState(entry, completionSupplement, powerSupple
         }
       } else if (existsSync(terminalPath)) {
         throw new Error('E03 retained original pilot lacks its separately recorded power calculation');
+      }
+      if (decisionSupplement) {
+        const decisionPath = entry.evidence.find((item) =>
+          item.kind === 'outcome-blind-sample-size-decision')?.path;
+        if (decisionPath !== decisionSupplement.path ||
+            decisionPath !== 'protocols/e03-sample-size-decision.v1.json' ||
+            !existsSync(decisionPath)) {
+          throw new Error('E03 selected design decision lacks its tracked evidence path');
+        }
+        const decisionBytes = readFileSync(decisionPath);
+        const decision = JSON.parse(decisionBytes.toString('utf8'));
+        if (sha256(decisionBytes) !== decisionSupplement.sha256 ||
+            decision.version !== 1 ||
+            decision.classification !== 'outcome-blind-pilot-sample-size-selection' ||
+            decision.pilotRegistrationHash !== packet.preRegistrationHash ||
+            decision.pilotReceiptSha256 !== portable.originalReceiptSha256 ||
+            decision.pilotReductionSha256 !== portable.sampleSizeInputSha256 ||
+            decision.powerReceiptSha256 !== powerSupplement.originalSha256 ||
+            decision.selectedPrimarySeeds !== decisionSupplement.selectedPrimarySeeds ||
+            decision.selectedPrimarySeeds !== 25 ||
+            decision.monteCarloRepetitions !== 30000 ||
+            decision.monteCarloLower95 !== powerSupplement.nominalCompleteRuleLower95 ||
+            decision.invalidAsFailureSensitivity?.forcedFailuresPerCondition !== 2 ||
+            decision.invalidAsFailureSensitivity?.successes !== 0) {
+          throw new Error('E03 tracked design decision contradicts its source digests or limitation');
+        }
       }
     }
   }

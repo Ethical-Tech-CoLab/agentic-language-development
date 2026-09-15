@@ -110,6 +110,10 @@ const sampleSizeDecision = {
   monteCarloRepetitions: 30_000,
   monteCarloLower95: 0.91,
   decisionRule: 'e03-bounded-complete-numeric-rule-v1',
+  invalidAsFailureSensitivity: {
+    forcedFailuresPerCondition: 2, successes: 0,
+    lower95: 0, upper95: 0.000128032233004777,
+  },
 } as const;
 
 const fullInput = {
@@ -272,6 +276,15 @@ describe('E03 pre-registration compiler', () => {
     expect(() => compileE03Registration({
       ...fullInput,
       sampleSizeDecision: { ...sampleSizeDecision, monteCarloLower95: 0.89 },
+    })).toThrow(/frozen rule/u);
+    expect(() => compileE03Registration({
+      ...fullInput,
+      sampleSizeDecision: { ...sampleSizeDecision,
+        invalidAsFailureSensitivity: {
+          ...sampleSizeDecision.invalidAsFailureSensitivity,
+          forcedFailuresPerCondition: 1,
+        },
+      },
     })).toThrow(/frozen rule/u);
     expect(() => compileE03Registration({
       ...fullInput,

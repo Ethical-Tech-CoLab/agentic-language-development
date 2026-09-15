@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "classification": "outcome-blind-pilot-sample-size-selection",
+  "pilotRegistrationHash": "sha256:4789ffe77ba395a34834b66f2d6adc4b2188813ec7f9a2d9c862df796ec1b259",
+  "pilotReceiptPath": "evidence/pilots/e03-blinded-v3/receipt.json",
+  "pilotReceiptSha256": "sha256:900aba17dd3acf4debc9daa51fb58113391ecff02a0fbe2afe8c14ef164370a0",
+  "pilotReductionPath": "evidence/pilots/e03-blinded-v3/sample-size-input.json",
+  "pilotReductionSha256": "sha256:95d06b46ae6c167f716d0c7c7fd89e3f3672bbba9d533cffa9315aaec4cdcf94",
+  "powerReceiptPath": "evidence/pilots/e03-blinded-v3/power-selection.json",
+  "powerReceiptSha256": "sha256:a83cc28bee0fc6b6307e613183e6a0ab45bc2b8ba1bd787ecae72cd12c658a42",
+  "largestLatentPilotSd": 0.012027756205809991,
+  "selectedPrimarySeeds": 25,
+  "monteCarloRepetitions": 30000,
+  "monteCarloLower95": 0.999871967766995,
+  "decisionRule": "e03-bounded-complete-numeric-rule-v1",
+  "invalidAsFailureSensitivity": {
+    "forcedFailuresPerCondition": 2,
+    "successes": 0,
+    "lower95": 0,
+    "upper95": 0.000128032233004777
+  }
+}

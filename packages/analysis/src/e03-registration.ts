@@ -136,6 +136,12 @@ export interface E03SampleSizeDecision {
   readonly monteCarloRepetitions: 30_000;
   readonly monteCarloLower95: number;
   readonly decisionRule: 'e03-bounded-complete-numeric-rule-v1';
+  readonly invalidAsFailureSensitivity: {
+    readonly forcedFailuresPerCondition: number;
+    readonly successes: number;
+    readonly lower95: number;
+    readonly upper95: number;
+  };
 }
 
 export interface E03RegisteredRun {
@@ -219,6 +225,17 @@ function assertSampleSizeDecision(
     decision.largestLatentPilotSd < 0 ||
     decision.largestLatentPilotSd > 0.2 ||
     decision.selectedPrimarySeeds !== input.primarySeeds ||
+    decision.invalidAsFailureSensitivity?.forcedFailuresPerCondition !==
+      Math.ceil(0.05 * input.primarySeeds) ||
+    !Number.isInteger(decision.invalidAsFailureSensitivity?.successes) ||
+    decision.invalidAsFailureSensitivity.successes < 0 ||
+    decision.invalidAsFailureSensitivity.successes > 30_000 ||
+    !Number.isFinite(decision.invalidAsFailureSensitivity.lower95) ||
+    !Number.isFinite(decision.invalidAsFailureSensitivity.upper95) ||
+    decision.invalidAsFailureSensitivity.lower95 < 0 ||
+    decision.invalidAsFailureSensitivity.upper95 > 1 ||
+    decision.invalidAsFailureSensitivity.lower95 >
+      decision.invalidAsFailureSensitivity.upper95 ||
     !E03_CANDIDATE_PRIMARY_SEEDS.has(input.primarySeeds) ||
     selectE03PrimarySeeds(decision.largestLatentPilotSd) !==
       decision.selectedPrimarySeeds ||

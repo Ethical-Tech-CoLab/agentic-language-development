@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.170",
+  "version": "0.1.171",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -24,6 +24,8 @@
     "audit:registration-e03-full": "node scripts/activate-e03-registration.mjs full --check",
     "select:e03-power": "node scripts/run-e03-power-selection.mjs",
     "audit:e03-power:live": "node scripts/run-e03-power-selection.mjs --audit",
+    "build:e03-sample-size-decision": "node scripts/build-e03-sample-size-decision.mjs --out protocols/e03-sample-size-decision.v1.json",
+    "audit:e03-sample-size-decision:live": "node scripts/build-e03-sample-size-decision.mjs --audit --out protocols/e03-sample-size-decision.v1.json",
     "qualify:e03-topology-dev": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-topology-qualification.mjs --run",
     "audit:e03-topology-dev:live": "node scripts/run-e03-topology-qualification.mjs --audit",
     "qualify:e03-prototype-topology-dev": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-topology-qualification.mjs --run-prototype-v2",

@@ -335,6 +335,14 @@ if (stage === 'full-qualification') {
     power.value.selectedPrimarySeeds !== sampleSizeDecision.selectedPrimarySeeds ||
     power.value.monteCarloRepetitions !== sampleSizeDecision.monteCarloRepetitions ||
     power.value.monteCarloLower95 !== sampleSizeDecision.monteCarloLower95 ||
+    power.value.invalidAsFailureSensitivity?.forcedFailuresPerCondition !==
+      sampleSizeDecision.invalidAsFailureSensitivity?.forcedFailuresPerCondition ||
+    power.value.invalidAsFailureSensitivity?.successes !==
+      sampleSizeDecision.invalidAsFailureSensitivity?.successes ||
+    power.value.invalidAsFailureSensitivity?.lower95 !==
+      sampleSizeDecision.invalidAsFailureSensitivity?.lower95 ||
+    power.value.invalidAsFailureSensitivity?.upper95 !==
+      sampleSizeDecision.invalidAsFailureSensitivity?.upper95 ||
     power.value.passed !== true
   ) {
     throw new Error('sample-size decision does not match a passing E03 power receipt');

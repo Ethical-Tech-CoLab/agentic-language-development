@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.170 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.171 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -169,6 +169,11 @@ The Homebrew-R 30,000-repetition nominal complete-rule simulation passed at
 per-condition sensitivity passed zero repetitions. Registered reserve and
 invalid-run handling therefore need explicit full-stage qualification; the
 nominal design calculation is not a robustness or experiment pass.
+The tracked [outcome-blind E03 design decision](protocols/e03-sample-size-decision.v1.json)
+binds the original pilot, reduction, and power hashes and carries that
+sensitivity. It can be inspected in a clean checkout; its live recomputation
+requires separately retained original evidence. The full E03 control stage
+has not yet been registered or run.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.

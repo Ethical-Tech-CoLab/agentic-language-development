@@ -20,7 +20,8 @@ const [pkg, backlog, readme, research, notebook, campaign] = await Promise.all([
   readJson('protocols/campaign-readiness-review.v1.json'),
 ]);
 checkE03LocalPilotState(campaign.experiments.find((entry) => entry.id === 'E03'),
-  campaign.e03PilotCompletionSupplement, campaign.e03PowerSelectionSupplement);
+  campaign.e03PilotCompletionSupplement, campaign.e03PowerSelectionSupplement,
+  campaign.e03SampleSizeDecisionSupplement);
 
 if (pkg.engines?.pnpm !== '12.3.4') {
   throw new Error(`unexpected pnpm version policy: ${String(pkg.engines?.pnpm)}`);

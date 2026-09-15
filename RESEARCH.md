@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.170 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.171 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1260,6 +1260,11 @@ calculation passed the nominal complete numeric rule at 25 seeds, with lower
 sensitivity passed zero repetitions; this fragility must be reported and
 reserve/replacement mechanics qualified before full collection. Neither
 simulation establishes an observed control effect.
+The tracked [outcome-blind E03 sample-size decision](protocols/e03-sample-size-decision.v1.json)
+binds the original pilot, reduction, and power digests and carries the
+invalid-as-failure limitation into future packet compilation. Its live
+recomputation needs separately retained raw records; clean-checkout inspection
+does not rerun that audit. No full E03 packet or control outcome has been collected.
 
 ## 11. Results
 
