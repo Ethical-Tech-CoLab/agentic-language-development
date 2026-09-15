@@ -229,6 +229,8 @@ if (e03 && e03.executionReadiness.stage === 'pilot' &&
   const topology = JSON.parse(readFileSync(topologyPath, 'utf8')) as {
     experimentId?: string; profile?: string; classification?: string; conditionsAudited?: number;
     roleContainerCount?: number; auditExitStatus?: number; passed?: boolean; researchFinding?: boolean;
+    pairedScenarioCheck?: boolean; typescriptVerifierPassed?: boolean; rustAuditorPassed?: boolean;
+    originalSlots?: Array<{ signedOriginalDataReconciled?: boolean }>;
   };
   const stageAllocation = JSON.parse(readFileSync(stageAllocationPath, 'utf8')) as {
     experimentId?: string; stage?: string; classification?: string; decision?: string;
@@ -249,6 +251,9 @@ if (e03 && e03.executionReadiness.stage === 'pilot' &&
     topology.experimentId !== 'E03' || topology.profile !== 'prototype-v2' ||
     topology.classification !== 'original-prototype-development-audit' ||
     topology.conditionsAudited !== 6 || topology.roleContainerCount !== 12 ||
+    topology.pairedScenarioCheck !== true || topology.typescriptVerifierPassed !== true ||
+    topology.rustAuditorPassed !== true || !topology.originalSlots || topology.originalSlots.length !== 6 ||
+    topology.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true) ||
     topology.auditExitStatus !== 0 || topology.passed !== true || topology.researchFinding !== false ||
     stageAllocation.experimentId !== 'E03' || stageAllocation.stage !== 'blinded-pilot' ||
     stageAllocation.classification !== 'prospective-local-stage-allocation' ||

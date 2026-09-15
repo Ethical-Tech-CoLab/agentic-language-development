@@ -51,6 +51,8 @@ const conditions = ['disabled', 'constant', 'random', 'shuffled', 'normal', 'ora
 assert.deepEqual(rawReceipt.conditions, conditions);
 const observedSlots = rawReceipt.slots.map((slot) => {
   assert.equal(slot.passed, true);
+  assert.equal(slot.signedOriginalDataReconciled, true,
+    'Prototype-Mode topology must pair scenarios from signed original records');
   assert.equal(slot.scenarioStateHashes.length, 200);
   assert.equal(slot.rust.integrityPass, true);
   assert.equal(slot.rust.anchored, true);
@@ -71,6 +73,7 @@ const observedSlots = rawReceipt.slots.map((slot) => {
     slotSha256: slot.slotSha256,
     learnerResourceSha256: slot.learnerResourceSha256,
     bundleManifestHash: slot.bundleManifestHash,
+    signedOriginalDataReconciled: true,
   };
 });
 assert.deepEqual(observedSlots.map((slot) => slot.condition), conditions);

@@ -24,6 +24,9 @@ function fixture() {
     schemaVersion: 1, experimentId: 'E03', classification: 'original-prototype-development-audit',
     profile: 'prototype-v2', passed: true, auditExitStatus: 0,
     conditionsAudited: 6, roleContainerCount: 12,
+    pairedScenarioCheck: true, typescriptVerifierPassed: true, rustAuditorPassed: true,
+    originalSlots: ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle']
+      .map((condition) => ({ condition, signedOriginalDataReconciled: true })),
     researchFinding: false, externalSpend: 0, publicChainTransaction: false,
   };
   writeFileSync(topologyPath, JSON.stringify(topology));
@@ -88,6 +91,16 @@ describe('E03 draft CLI resource policy binding', () => {
     const { directory, receiptPath, topologyPath, allocationPath } = fixture();
     const topology = JSON.parse(readFileSync(topologyPath, 'utf8'));
     topology.conditionsAudited = 5;
+    writeFileSync(topologyPath, JSON.stringify(topology));
+    const result = run(receiptPath, directory, topologyPath, allocationPath);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('complete original Prototype-Mode topology audit');
+  });
+
+  it('rejects paired-scenario claims not derived from signed originals', () => {
+    const { directory, receiptPath, topologyPath, allocationPath } = fixture();
+    const topology = JSON.parse(readFileSync(topologyPath, 'utf8'));
+    topology.originalSlots[0].signedOriginalDataReconciled = false;
     writeFileSync(topologyPath, JSON.stringify(topology));
     const result = run(receiptPath, directory, topologyPath, allocationPath);
     expect(result.status).not.toBe(0);

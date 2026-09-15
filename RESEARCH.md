@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.149 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.150 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1883,6 +1883,9 @@ Only the signed original turn stream supplies the episode tally and paired
 scenario hashes. Operational slot summaries must reconcile to that stream and
 to the verified channel transcript before entering the pilot reduction or a
 registered analysis.
+The Prototype-Mode development topology uses the same signed source for its
+six-condition paired-scenario and control-mechanics audit; a passing unsigned
+slot summary alone is insufficient.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { reconcileE03OriginalPilotData } from '../e03-original-pilot-data.mjs';
+import { deriveE03OriginalControlData, reconcileE03OriginalPilotData } from '../e03-original-pilot-data.mjs';
 
 const directories: string[] = [];
 const hash = `sha256:${'a'.repeat(64)}`;
@@ -40,6 +40,8 @@ describe('verified original E03 pilot data reconciliation', () => {
     const { bundle, record } = fixture();
     expect(reconcileE03OriginalPilotData(bundle, record, 'disabled',
       'e03-pilot-disabled-s001').agreements).toBe(1);
+    expect(deriveE03OriginalControlData(bundle, 'disabled',
+      'e03-pilot-disabled-s001').scenarioStateHashes).toHaveLength(200);
   });
 
   it('rejects an unsigned summary tally that contradicts the signed original', () => {
@@ -47,6 +49,20 @@ describe('verified original E03 pilot data reconciliation', () => {
     record.observations.agreements = 2;
     expect(() => reconcileE03OriginalPilotData(bundle, record, 'disabled',
       'e03-pilot-disabled-s001')).toThrow(/unsigned agreement summary/u);
+  });
+
+  it('rejects unsigned scenario pairing that contradicts the signed original', () => {
+    const { bundle, record } = fixture();
+    record.observations.scenarioStateHashes[0] = `sha256:${'b'.repeat(64)}`;
+    expect(() => reconcileE03OriginalPilotData(bundle, record, 'disabled',
+      'e03-pilot-disabled-s001')).toThrow(/unsigned scenario summary/u);
+  });
+
+  it('rejects unsigned channel counts that contradict the signed original', () => {
+    const { bundle, record } = fixture();
+    record.observations.acceptedChannelEvents = 2;
+    expect(() => reconcileE03OriginalPilotData(bundle, record, 'disabled',
+      'e03-pilot-disabled-s001')).toThrow(/unsigned channel count/u);
   });
 
   it('rejects duplicate or missing evaluation-turn keys', () => {

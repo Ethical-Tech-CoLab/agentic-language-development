@@ -8,9 +8,8 @@ function jsonLines(path) {
   return lines.map((line) => JSON.parse(line));
 }
 
-// The caller must first pass both original-bundle integrity verifiers. This
-// reconciles the unsigned operational summary against the signed records.
-export function reconcileE03OriginalPilotData(bundle, record, condition, runId) {
+// The caller must first pass both original-bundle integrity verifiers.
+export function deriveE03OriginalControlData(bundle, condition, runId) {
   const turns = jsonLines(join(bundle, 'turn-records.jsonl'));
   assert.equal(turns.length, 201, `${runId}: original turn-record grain changed`);
   assert.ok(turns.every((turn, index) => turn.runId === runId &&
@@ -23,19 +22,14 @@ export function reconcileE03OriginalPilotData(bundle, record, condition, runId) 
     /^sha256:[a-f0-9]{64}$/u.test(turn.scenarioStateHash)));
   const scenarioStateHashes = evaluation.map((turn) => turn.scenarioStateHash);
   const agreements = evaluation.filter((turn) => turn.outcome.success).length;
-  assert.deepEqual(record.observations.scenarioStateHashes, scenarioStateHashes,
-    `${runId}: unsigned scenario summary differs from signed original records`);
-  assert.equal(record.observations.agreements, agreements,
-    `${runId}: unsigned agreement summary differs from signed original records`);
 
   const channel = jsonLines(join(bundle, 'channel-transcript.jsonl'));
   assert.ok(channel.every((event, index) => event.runId === runId &&
     event.sequence === index + 1 && event.communicationCondition === condition));
-  assert.equal(record.observations.channelEvents, channel.length);
   const accepted = channel.filter((event) => event.gatewayValidationResult === 'accepted');
+  const rejected = channel.filter((event) => event.gatewayValidationResult === 'rejected');
+  assert.equal(accepted.length + rejected.length, channel.length);
   assert.ok(accepted.length > 0);
-  assert.equal(record.observations.acceptedChannelEvents, accepted.length,
-    `${runId}: unsigned channel count differs from signed original transcript`);
   assert.ok(accepted.every((event) => event.origin ===
     (condition === 'oracle' ? 'gateway-control' : 'baby')));
   assert.ok(accepted.every((event) => (event.deliveryReceipt !== undefined) ===
@@ -47,5 +41,17 @@ export function reconcileE03OriginalPilotData(bundle, record, condition, runId) 
     assert.ok(new Set(accepted.map((event) => event.publicArtifactHash)).size > 1);
   }
   return { scenarioStateHashes, agreements, channelEvents: channel.length,
-    acceptedChannelEvents: accepted.length };
+    acceptedChannelEvents: accepted.length, rejectedChannelEvents: rejected.length };
+}
+
+export function reconcileE03OriginalPilotData(bundle, record, condition, runId) {
+  const original = deriveE03OriginalControlData(bundle, condition, runId);
+  assert.deepEqual(record.observations.scenarioStateHashes, original.scenarioStateHashes,
+    `${runId}: unsigned scenario summary differs from signed original records`);
+  assert.equal(record.observations.agreements, original.agreements,
+    `${runId}: unsigned agreement summary differs from signed original records`);
+  assert.equal(record.observations.channelEvents, original.channelEvents);
+  assert.equal(record.observations.acceptedChannelEvents, original.acceptedChannelEvents,
+    `${runId}: unsigned channel count differs from signed original transcript`);
+  return original;
 }

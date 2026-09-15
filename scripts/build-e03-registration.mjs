@@ -109,6 +109,12 @@ if (
   topologyAudit.auditExitStatus !== 0 ||
   topologyAudit.conditionsAudited !== 6 ||
   topologyAudit.roleContainerCount !== 12 ||
+  topologyAudit.pairedScenarioCheck !== true ||
+  topologyAudit.typescriptVerifierPassed !== true ||
+  topologyAudit.rustAuditorPassed !== true ||
+  !Array.isArray(topologyAudit.originalSlots) ||
+  topologyAudit.originalSlots.length !== 6 ||
+  topologyAudit.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true) ||
   topologyAudit.researchFinding !== false ||
   topologyAudit.externalSpend !== 0 ||
   topologyAudit.publicChainTransaction !== false

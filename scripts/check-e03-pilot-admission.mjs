@@ -71,6 +71,8 @@ function checkOriginalTopology(topology) {
   assert.equal(original.passed, true);
   assert.deepEqual(topology.originalSlots.map((slot) => slot.condition), conditions);
   for (const slot of topology.originalSlots) {
+    assert.equal(slot.signedOriginalDataReconciled, true,
+      'development pairing must derive from signed original control data');
     const path = join('evidence/qualification/e03-topology-prototype-v2',
       `e03-topology-prototype-v2-${slot.condition}`);
     assert.equal(digest(join(path, 'slot.json')), slot.slotSha256);

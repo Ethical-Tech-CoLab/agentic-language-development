@@ -103,6 +103,8 @@ describe('stage-specific campaign progress', () => {
       receipts.e03Topology = {
         experimentId: 'E03', profile: 'prototype-v2', classification: 'original-prototype-development-audit',
         conditionsAudited: 6, roleContainerCount: 12, auditExitStatus: 0,
+        pairedScenarioCheck: true, typescriptVerifierPassed: true, rustAuditorPassed: true,
+        originalSlots: Array(6).fill({ signedOriginalDataReconciled: true }),
         passed: true, researchFinding: false,
       };
       receipts.e03Allocation = {

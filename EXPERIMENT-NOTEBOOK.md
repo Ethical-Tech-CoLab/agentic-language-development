@@ -526,6 +526,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
 - [ ] Verify all evidence bundles before analysis.
 - [ ] Reconcile operational tallies and paired scenario hashes to signed turn
       and channel streams, rejecting missing or duplicate evaluation turns.
+- [ ] Require signed-original pairing and control tallies for the exact
+      Prototype-Mode development topology before pilot registration.
 - [ ] Reconcile all 120 pilot runs with zero reserves and admit only verified,
       outcome-blind pilot tallies to variance estimation.
 - [ ] Re-audit the original pilot bundles and recompute the single-use

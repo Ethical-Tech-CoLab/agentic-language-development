@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { verifyBundle } from '@ald/verifier';
+import { deriveE03OriginalControlData } from './e03-original-pilot-data.mjs';
 
 const conditions = ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle'];
 const mode = process.argv[2];
@@ -99,9 +100,17 @@ async function auditSlot(condition, executionCommit) {
   }));
   assert.equal(rust.integrityPass, true);
   assert.equal(rust.anchored, true);
+  const original = deriveE03OriginalControlData(bundle, condition, slot.observations.runId);
+  assert.deepEqual(slot.observations.scenarioStateHashes, original.scenarioStateHashes,
+    `${condition}: operational scenario hashes differ from signed originals`);
+  assert.equal(slot.observations.successes, original.agreements,
+    `${condition}: operational success tally differs from signed originals`);
+  assert.equal(slot.observations.acceptedChannelEvents, original.acceptedChannelEvents);
+  assert.equal(slot.observations.rejectedChannelEvents, original.rejectedChannelEvents);
   return {
     condition, slotPath: path, slotSha256: sha256(path),
-    scenarioStateHashes: slot.observations.scenarioStateHashes,
+    scenarioStateHashes: original.scenarioStateHashes,
+    signedOriginalDataReconciled: true,
     containerIds: Object.values(slot.observations.containerIds),
     wallMilliseconds: slot.wallMilliseconds,
     containerResourceUsage: slot.containerResourceUsage,
