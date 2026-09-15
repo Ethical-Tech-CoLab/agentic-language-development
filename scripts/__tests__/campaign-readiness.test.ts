@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- malformed status fixtures intentionally cross the JSON boundary */
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -16,10 +15,12 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   const directory = mkdtempSync(join(tmpdir(), 'ald-campaign-readiness-'));
   temporaryDirectories.push(directory);
   const campaign = source('protocols/campaign-readiness-review.v1.json');
-  const receipts = Object.fromEntries(['e00', 'e01', 'e02'].map((id) => [id, source(
+  const receipts = Object.fromEntries(['e00', 'e01', 'e02', 'e02v3', 'fullAudit'].map((id) => [id, source(
     id === 'e00' ? 'reports/research/e00-integrity-qualification-receipt.json'
       : id === 'e01' ? 'reports/research/e01-isolation-qualification-receipt.json'
-        : 'reports/research/e02-v2-qualification-receipt.json',
+        : id === 'e02' ? 'reports/research/e02-v2-qualification-receipt.json'
+          : id === 'e02v3' ? 'reports/research/e02-v3-qualification-receipt.json'
+            : 'reports/research/e02-v3-full-audit-receipt.json',
   )]));
   mutate(campaign, receipts);
   const values: Record<string, unknown> = {
@@ -39,15 +40,10 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'protocols/e02-registration-binding.v3.json': source('protocols/e02-registration-binding.v3.json'),
     'reports/research/e02-v3-execution-gate-receipt.json': source('reports/research/e02-v3-execution-gate-receipt.json'),
     'reports/research/e02-v3-execution-start.json': source('reports/research/e02-v3-execution-start.json'),
+    'reports/research/e02-v3-qualification-receipt.json': receipts.e02v3,
+    'reports/research/e02-v3-full-audit-receipt.json': receipts.fullAudit,
   };
-  if (receipts.e02v3) {
-    values['reports/research/e02-v3-qualification-receipt.json'] = receipts.e02v3;
-    values['reports/research/e02-v3-full-audit-receipt.json'] = {
-      experimentId: 'E02', classification: 'original-raw-evidence-recomputed-audit',
-      terminalReceiptSha256: `sha256:${createHash('sha256').update(`${JSON.stringify(receipts.e02v3, null, 2)}\n`).digest('hex')}`,
-      passed: true, slotsRecomputed: 5, probeReportsRecomputed: 60,
-    };
-  }
+  if (receipts.e03) values['reports/research/e03-pilot-v1-status-receipt.json'] = receipts.e03;
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -75,66 +71,63 @@ describe('stage-specific campaign progress', () => {
 
   it('allows a gate to advance from its receipt instead of a hard-coded experiment list', () => {
     const result = run(fixture((campaign, receipts) => {
-      const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
-      e02.executionReadiness = { stage: 'qualification', decision: 'complete', reasonCodes: [] };
-      e02.attempt = { version: 'v3', status: 'completed', planned: 5, attempted: 5, completed: 5 };
-      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = false;
-      e02.evidence.push({ kind: 'post-run-full-raw-audit', path: 'reports/research/e02-v3-full-audit-receipt.json', statusAuthority: false });
-      e02.evidence.push({ kind: 'terminal-receipt', path: 'reports/research/e02-v3-qualification-receipt.json', statusAuthority: true });
-      campaign.resolvedFindings.push({ id: 'B16', owner: 'D08',
-        resolution: 'The complete E02 v3 five-slot terminal and full raw-evidence audit passed.',
-        boundary: 'Software qualification only; no behavioral finding or independent review is claimed.' });
-      campaign.blockingFindings = campaign.blockingFindings.filter((finding: any) => finding.id !== 'B16');
-      receipts.e02v3 = { experimentId: 'E02', registrationHash: source('protocols/e02-registration.v3.json').preRegistrationHash,
-        classification: 'prospectively-registered-software-qualification', passed: true, failure: null,
-        slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1, passed: true, probesRecomputed: 12 })) };
+      const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+      e03.executionReadiness = { stage: 'pilot', decision: 'complete', reasonCodes: [] };
+      e03.attempt = { version: 'v1', status: 'completed', planned: 120, attempted: 120, completed: 120 };
+      e03.evidence = [{ kind: 'terminal-receipt', path: 'reports/research/e03-pilot-v1-status-receipt.json', statusAuthority: true }];
+      receipts.e03 = { experimentId: 'E03', passed: true, failure: null,
+        plannedSlots: 120, attemptedSlots: 120, completedSlots: 120,
+        slots: Array.from({ length: 120 }, (_, index) => ({ slot: index + 1 })) };
     }));
     expect(result.status, result.stderr).toBe(0);
   });
 
   it('rejects closing B16 without completed E02 qualification', () => {
     const result = run(fixture((campaign) => {
-      campaign.resolvedFindings.push({ id: 'B16', owner: 'D08',
-        resolution: 'A reported terminal receipt is available, but no complete qualification was audited.',
-        boundary: 'No software qualification or behavioral finding is established by this report.' });
-      campaign.blockingFindings = campaign.blockingFindings.filter((finding: any) => finding.id !== 'B16');
+      const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
+      e02.executionReadiness = { stage: 'qualification', decision: 'blocked', reasonCodes: ['E02-topology'] };
     }));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('B16 disposition contradicts the terminal E02 qualification gate');
   });
 
+  it.each([
+    ['wrong terminal hash', (receipts: any) => { receipts.fullAudit.terminalReceiptSha256 = 'sha256:wrong'; }],
+    ['missing probe recomputation', (receipts: any) => { receipts.fullAudit.probeReportsRecomputed = 59; }],
+  ])('rejects B16 closure with %s', (_label, mutate) => {
+    const result = run(fixture((_campaign, receipts) => mutate(receipts)));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('B16 closure contradicts the complete audited E02 software qualification');
+  });
+
   it('rejects a missing terminal disposition instead of inferring a running attempt', () => {
     const result = run(fixture((campaign, receipts) => {
-      const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
-      e02.executionReadiness = { stage: 'qualification', decision: 'blocked', reasonCodes: ['B16'] };
-      e02.attempt = { status: 'failed', planned: 5, attempted: 1, completed: 0 };
-      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = false;
-      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v2-qualification-receipt.json').statusAuthority = true;
-      receipts.e02.passed = false;
-      receipts.e02.failure = null;
+      const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+      e03.executionReadiness = { stage: 'pilot', decision: 'blocked', reasonCodes: ['B11'] };
+      e03.attempt = { version: 'v1', status: 'failed', planned: 120, attempted: 1, completed: 0 };
+      e03.evidence = [{ kind: 'terminal-receipt', path: 'reports/research/e03-pilot-v1-status-receipt.json', statusAuthority: true }];
+      receipts.e03 = { experimentId: 'E03', passed: false, failure: null, slots: [] };
     }));
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E02 progress contradicts its status-authority receipt');
+    expect(result.stderr).toContain('E03 progress contradicts its status-authority receipt');
   });
 
   it('rejects a stale running account when the registered terminal receipt exists', () => {
-    const directory = fixture();
-    const packet = source('protocols/e02-registration.v3.json');
-    const terminalPath = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
-    writeFileSync(terminalPath, JSON.stringify({
-      experimentId: 'E02', registrationHash: packet.preRegistrationHash,
-      passed: true, failure: null, slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 })),
+    const result = run(fixture((campaign) => {
+      const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
+      e02.executionReadiness = { stage: 'qualification', decision: 'ready', reasonCodes: [] };
+      e02.attempt = { version: 'v3', status: 'running', planned: 5, attempted: 1, completed: 0 };
+      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = true;
+      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-qualification-receipt.json').statusAuthority = false;
     }));
-    const result = run(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E02 terminal receipt exists but is not the status authority');
   });
 
   it('rejects a terminal receipt bound to another registration', () => {
-    const directory = fixture();
-    const terminalPath = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
-    writeFileSync(terminalPath, JSON.stringify({ experimentId: 'E02', registrationHash: 'sha256:wrong' }));
-    const result = run(directory);
+    const result = run(fixture((_campaign, receipts) => {
+      receipts.e02v3.registrationHash = 'sha256:wrong';
+    }));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E02 terminal receipt contradicts its prospective registration');
   });

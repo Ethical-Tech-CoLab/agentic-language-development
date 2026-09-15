@@ -172,18 +172,35 @@ if (resolvedIds.has('B16')) {
   const terminalBytes = readFileSync(terminalPath);
   const terminal = JSON.parse(terminalBytes.toString('utf8')) as {
     classification?: string; passed?: boolean; failure?: string | null;
+    executionCommit?: string; registrationHash?: string; researchFinding?: boolean;
+    externalSpend?: number; publicChainTransaction?: boolean;
     slots?: Array<{ passed?: boolean; probesRecomputed?: number }>;
   };
   const audit = JSON.parse(readFileSync(fullAuditPath, 'utf8')) as {
     experimentId?: string; classification?: string; terminalReceiptSha256?: string;
     passed?: boolean; slotsRecomputed?: number; probeReportsRecomputed?: number;
+    executionCommit?: string; registrationHash?: string; terminalReceiptPath?: string;
+    originalEvidenceRoot?: string; auditCommand?: string; auditExitStatus?: number;
+    typescriptVerifierPassed?: boolean; retainedRustAuditorPassed?: boolean; rBoundsRecomputed?: boolean;
+    researchFinding?: boolean; scientificDisposition?: string; externalSpend?: number;
+    publicChainTransaction?: boolean;
   };
   if (terminal.classification !== 'prospectively-registered-software-qualification' ||
       terminal.passed !== true || terminal.failure !== null ||
+      terminal.researchFinding !== false || terminal.externalSpend !== 0 ||
+      terminal.publicChainTransaction !== false ||
       terminal.slots?.length !== 5 || terminal.slots.some((slot) =>
         slot.passed !== true || slot.probesRecomputed !== 12) ||
       audit.experimentId !== 'E02' || audit.classification !== 'original-raw-evidence-recomputed-audit' ||
       audit.terminalReceiptSha256 !== `sha256:${createHash('sha256').update(terminalBytes).digest('hex')}` ||
+      audit.terminalReceiptPath !== terminalPath || audit.executionCommit !== terminal.executionCommit ||
+      audit.registrationHash !== terminal.registrationHash ||
+      audit.originalEvidenceRoot !== 'evidence/qualification/e02-v3' ||
+      audit.auditCommand !== 'corepack pnpm@12.3.4 run audit:qualification-e02:live' ||
+      audit.auditExitStatus !== 0 || audit.typescriptVerifierPassed !== true ||
+      audit.retainedRustAuditorPassed !== true || audit.rBoundsRecomputed !== true ||
+      audit.researchFinding !== false || audit.scientificDisposition !== 'not-tested' ||
+      audit.externalSpend !== 0 || audit.publicChainTransaction !== false ||
       audit.passed !== true || audit.slotsRecomputed !== 5 || audit.probeReportsRecomputed !== 60) {
     throw new Error('B16 closure contradicts the complete audited E02 software qualification');
   }

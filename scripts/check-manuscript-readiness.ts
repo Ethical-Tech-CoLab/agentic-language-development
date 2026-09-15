@@ -43,7 +43,7 @@ const citedReferences = [...body.matchAll(/\[(\d+)\]/gu)].map((match) => Number(
 const uniqueCitations = [...new Set(citedReferences)].sort((left, right) => left - right);
 const experimentIndex = notebook.split('## 8. Experiment Index')[1]?.split('\n---\n')[0] ?? '';
 const experimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|[^\n]+\|$/gmu)].map((match) => match[1]);
-const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|.*\| Not started \| Not tested \|.*\| — \|$/gmu)].map((match) => match[1]);
+const notStartedExperimentRows = [...experimentIndex.matchAll(/^\| (E\d{2}) \|[^\n]*?\| Not started \| Not tested \|[^\n]+\|$/gmu)].map((match) => match[1]);
 const exact = (needle: string): void => {
   if (!compactManuscript.includes(needle)) throw new Error(`manuscript lacks exact audited claim: ${needle}`);
 };
@@ -67,7 +67,7 @@ if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 16 || ca
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');
 }
-if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 9) {
+if (campaign.decision !== 'not-registration-ready' || campaign.blockingFindings.length !== 8) {
   throw new Error('campaign readiness decision or blocker count changed');
 }
 if (campaign.independentHumanReview) throw new Error('independent human review must not be inferred');
@@ -101,7 +101,7 @@ const result = {
   schemaVersion: 1,
   classification: 'manuscript-readiness-audit',
   researchFinding: false,
-  capturedAt: '2026-09-13',
+  capturedAt: '2026-09-15',
   decision: 'needs-revision',
   manuscript: {
     path: 'RESEARCH.md',

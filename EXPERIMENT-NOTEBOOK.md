@@ -186,8 +186,8 @@ E01 Channel isolation ---- E02 Observation leakage
 |---|---|---|---|---|---|---|
 | E00 | Ledger integrity and simulated commitment | None | Completed | Not tested | Qualification complete | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Completed | Not tested | Qualification complete | V2 passed five registered slots with 560 signed records and both verifiers |
-| E02 | Observation and metadata leakage audit | E00 | Running | Not tested | Qualification ready | V1/v2 failures retained; exact v3 attempt started on slot 1 with no restart; no completed slot or result yet |
-| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Qualification blocked | — |
+| E02 | Observation and metadata leakage audit | E00 | Completed | Not tested | Qualification complete | V1/v2 failures retained; v3 passed five numeric software slots, recovery stages, 60 probes, and full raw audit; no behavioral finding |
+| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Pilot blocked | E02 qualified; development topology, measured pilot allocation, and exact packet remain |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E11 | From-scratch RL Naming Game | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E12 | Self-supervised ungrounded baseline | E11 infrastructure | Not started | Not tested | Confirmatory blocked | — |
@@ -383,7 +383,7 @@ agent-language finding. Final selected study topologies still require B12's chec
 
 ## E02. Observation and Metadata Leakage Audit
 
-**Status:** Failed qualification attempt
+**Status:** V3 software-qualified; v1/v2 failures retained; scientific disposition not tested
 
 **Depends on:** E00
 
@@ -400,7 +400,7 @@ baseline; its planted one-hot control has lower advantage at least 0.20.
 and the matching simulated commitment in `protocols/e02-registration-binding.v1.json`.
 The five fresh slots collect 2,016 observations per role before and after a real
 runtime restore, with at least 501 held-out rows per probe. All 60 slot/role/stage/probe
-decisions remain separate. Development evidence is excluded; no completed qualification result exists.
+decisions remain separate. Development evidence is excluded; v1 had no completed qualification result.
 The asset-free numeric baseline has no image or text-aligned encoder surface;
 the separate retained OCR diagnostic does not qualify future image observations.
 
@@ -412,6 +412,18 @@ safety pause. The collector then stopped when it attempted turn 466 against the
 paused run. Snapshot/restore and probe evaluation were not reached; slots 2–5 were
 not attempted. The terminal receipt, attempt, partial database, bundle, and log are
 retained. This seed set will not be restarted or relabeled as passing evidence.
+
+**Later attempts:** The separate v2 allocation stopped after 161 committed turns
+when a post-action deadline escaped without a forfeited-turn record. Its first slot
+failed before recovery/probes, and four slots were unused. The prospectively amended
+v3 allocation kept the original 2,016-row stages, fixed probe family, margins,
+positive controls, and five-slot requirement while using fresh identifiers. Its
+one sequential attempt on commit `9ec08ecf4528c6da8867d55900d6ca8667ded7ce`
+completed all five numeric scratch-learner slots, restored the real runtime and
+database within each, and passed all 60 reports. The [v3 terminal receipt](reports/research/e02-v3-qualification-receipt.json)
+and separate [full raw audit](reports/research/e02-v3-full-audit-receipt.json)
+bind the original records. This is bounded software qualification, not a
+behavioral language or universal sensory-leakage result.
 
 ### Procedure
 
@@ -433,7 +445,7 @@ retained. This seed set will not be restarted or relabeled as passing evidence.
 - initially ungrounded runs use no text-aligned encoder;
 - all exceptions are documented as separate experimental conditions.
 
-### Results
+### Historical v1 result (not reached)
 
 | Probe | Chance | Observed | 95% CI | Decision |
 |---|---:|---:|---|---|
@@ -445,8 +457,22 @@ retained. This seed set will not be restarted or relabeled as passing evidence.
 - [ ] Encoder provenance recorded
 - [ ] Result committed
 
-**Result summary:** The registered v1 attempt failed before analysis. No leakage
-decision or behavioral result was produced.
+**Result summary:** The registered v1 and v2 attempts failed before analysis.
+Neither produced a probe decision or behavioral result.
+
+### V3 numeric software-qualification decisions
+
+| Fixed probe family | Reports | Largest recomputed 95% probe upper accuracy bound | Smallest planted-control lower bound | Software decision |
+|---|---:|---:|---:|---|
+| Metadata | 20 | 0.335 | 0.995 | Passed |
+| Identifier | 20 | 0.340 | 0.995 | Passed |
+| Timing | 20 | 0.300 | 0.995 | Passed |
+
+Each report used 502–503 held-out rows and the unchanged registered advantage
+margin and positive-control rule. The full five-slot receipt reports all 60
+decisions as passing; the separate live audit recomputed them from retained raw
+evidence. The scientific disposition remains **not tested**. Image/text-aligned
+encoder leakage and behavior in later study topologies remain unqualified.
 
 ---
 

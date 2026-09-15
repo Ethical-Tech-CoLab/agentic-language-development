@@ -114,6 +114,8 @@ describe('current project status', () => {
       'EXPERIMENT-NOTEBOOK.md', 'protocols/campaign-readiness-review.v1.json',
       'protocols/e02-registration.v3.json',
       'reports/research/e02-qualification-receipt.json',
+      'reports/research/e02-v3-qualification-receipt.json',
+      'reports/research/e02-v3-full-audit-receipt.json',
       'reports/phase-one-research-update.md',
       'reports/research/research-validation-report.md',
       'reports/research/research-critical-review.md',
@@ -165,7 +167,7 @@ describe('current project status', () => {
     const directory = statusFixture();
     const target = join(directory, 'EXPERIMENT-NOTEBOOK.md');
     const original = readFileSync(target, 'utf8');
-    const changed = original.replace('| E02 | Observation and metadata leakage audit | E00 | Running |',
+    const changed = original.replace('| E02 | Observation and metadata leakage audit | E00 | Completed |',
       '| E02 | Observation and metadata leakage audit | E00 | Not started |');
     expect(changed).not.toBe(original);
     writeFileSync(target, changed);
@@ -176,10 +178,18 @@ describe('current project status', () => {
 
   it('rejects a stale running summary when the registered E02 terminal receipt exists', () => {
     const directory = statusFixture();
-    const packet = read('protocols/e02-registration.v3.json');
-    const target = join(directory, 'reports/research/e02-v3-qualification-receipt.json');
-    writeFileSync(target, JSON.stringify({ experimentId: 'E02', registrationHash: packet.preRegistrationHash,
-      passed: true, failure: null, slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 })) }));
+    const campaignPath = join(directory, 'protocols/campaign-readiness-review.v1.json');
+    const campaign = JSON.parse(readFileSync(campaignPath, 'utf8'));
+    const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
+    e02.executionReadiness = { stage: 'qualification', decision: 'ready', reasonCodes: [] };
+    e02.attempt = { version: 'v3', status: 'running', planned: 5, attempted: 1, completed: 0 };
+    e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = true;
+    e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-qualification-receipt.json').statusAuthority = false;
+    writeFileSync(campaignPath, JSON.stringify(campaign));
+    const notebookPath = join(directory, 'EXPERIMENT-NOTEBOOK.md');
+    writeFileSync(notebookPath, readFileSync(notebookPath, 'utf8').replace(
+      '| E02 | Observation and metadata leakage audit | E00 | Completed | Not tested | Qualification complete |',
+      '| E02 | Observation and metadata leakage audit | E00 | Running | Not tested | Qualification ready |'));
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E02 terminal receipt exists but is not the status authority');

@@ -1,15 +1,17 @@
 # Reports
 
-Start with [`phase-one-research-update.md`](phase-one-research-update.md) for the
-September 4–13 progress account. Its
+Start with the dated [`phase-one-research-update.md`](phase-one-research-update.md)
+for the September 4–13 inherited-versus-added progress account, then the
+[`phase-two-execution-update.md`](research/phase-two-execution-update.md) for the
+September 15 reliability milestone and current research gates. The phase-one
 [`phase-one-evidence-appendix.md`](phase-one-evidence-appendix.md) maps headline
 claims to commits, receipts, retained evidence, and commands. The larger files under
-`reports/research/` are supporting research and qualification records, not the first
-reading path for a progress review.
+`reports/research/` are supporting research, dated methods snapshots, and
+qualification records.
 
 ## `reports/research/`
 
-The living research-validation report, source-lineage register, source-verification
+The September 13 research-validation snapshot, source-lineage register, source-verification
 register, novelty-comparator matrix, research protocol cards, and machine-readable
 environment manifest. The versioned scenario/comparison manifest and its readable
 design note freeze the numeric compositional split, leak checks, matched budgets, and
@@ -24,22 +26,27 @@ The seed/resource protocol and generated ledger separately commit disjoint stage
 namespaces, paired-seed derivation, tuning limits, allocation formulas, a fresh local
 resource benchmark, and the explicit finding that the maximum campaign pool exceeds
 the authorized zero-spend local ceiling.
-The campaign readiness review covers all 19 experiment cards and deliberately returns
-`not-registration-ready` while governance, external anchors/registration, selected
-sample sizes, resources, final detector/comparator qualifications, and independent
-review remain absent.
+The current campaign readiness review covers all 19 experiment cards and deliberately
+returns `not-registration-ready` with eight substantive blockers: selected sample sizes,
+resources, exact remaining packets, final detector/comparator qualifications, and
+authentic independent review. Local zero-spend governance and repository-native
+registration no longer require external funds or public-chain transactions.
 E02 v1 and v2 are retained failed software-qualification attempts. Neither reached
 restore or probe evaluation, and neither supplies an empirical leakage result. The
 v2 terminal receipt and supplemental failure analysis distinguish its primary
 turn-path deadline failure from the collector's later wrapper assertion.
+The one fresh v3 attempt passed five original numeric software slots, recovery
+stages, 60 fixed probes, and a separate full live audit. Its terminal and audit
+receipts close bounded local reliability, not behavioral or image-encoder validity.
 The external-prerequisite ledger converts O01–O06 into exact, privacy-minimized
 closure checks. Its read-only upstream observation records that required-check
 enforcement is not demonstrated; the zero-spend profile ledger is ready at 1/1
 applicable item and does not treat a receipt path as external approval.
-The data/claim manifest inventories every locally captured export by content hash and
-claim boundary. Its frozen cutoff resolves 140 bundles while keeping all 140 excluded
+The frozen data/claim manifest inventories its pre-v3 exports by content hash and
+claim boundary. Its cutoff resolves 140 bundles while keeping all 140 excluded
 from empirical use and distinguishing 92 local simulated confirmations from zero
-confirmed public-chain anchors.
+confirmed public-chain anchors. The five later E02 v3 qualification bundles remain
+separately accounted for and excluded from behavioral estimates.
 The audit-cost/utility protocol and receipt compare a declared ordinary-log proxy,
 actual signed streams, integrity structures, policy state, whole-input hashing, and
 two offline verifiers over five immutable qualification bundles. Public-chain latency
@@ -54,12 +61,12 @@ score attachments. It remains software evidence and does not replace registratio
 eligible execution, aggregate inference, or independent review.
 The manuscript-readiness audit reconciles the current paper, experiment notebook,
 data/claim inventory, registration inventory, campaign decision, source register,
-and rendered-book hash. The paired critical review records eight reviewer
-perspectives and a current venue assessment; both return `needs-revision` and are
-internal review, not empirical or independent evidence.
+and rendered-book hash. The dated September 13 critical review records eight reviewer
+perspectives and then-current venue criteria; the manuscript still returns
+`needs-revision`. Neither is empirical or independent human evidence.
 The registration-readiness inventory applies an eleven-binding fail-closed packet
-contract to all 19 experiment cards. It deliberately emits zero packet hashes while
-190 exact experiment-specific bindings remain unresolved.
+contract to all 19 experiment cards. E00, E01, and E02 have registered packets;
+the remaining 16 cards retain 160 unresolved exact bindings.
 The carrier-perception protocol and receipt bind a clean v0.1.71 candidate, three
 handcrafted carrier distances, held-out nearest-prototype fixtures, and six rejection
 paths. Its perfect synthetic controls do not establish learner generalization or
@@ -69,7 +76,7 @@ accepted controls to v0.1.73, alongside six transport samples and the full curre
 two-container Mode R reference path. It is not the final selected study topology or
 a powered leakage bound, so B09/B12 remain open.
 These artifacts distinguish inspected repository facts, freshly executed software
-qualification, planned empirical work, and externally blocked prerequisites. The
+qualification, planned empirical work, and still-gated scientific prerequisites. The
 literature register records evidence depth and permitted source use; the comparator
 matrix explicitly prohibits unsupported priority claims. They are not experiment
 results.

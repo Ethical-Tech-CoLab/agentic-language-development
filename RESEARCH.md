@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.139 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.140 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1177,6 +1177,8 @@ empirical estimates. Ninety-two recorded anchor confirmations are local simulate
 receipts; prospective receipts now bind an explicit class that the
 verifier refuses to relabel. Confirmed public-chain anchors, pilot bundles, confirmatory
 bundles, replication bundles, and research-included bundles are all zero.
+The five later E02 v3 qualification bundles are accounted for separately from this
+frozen 140-bundle inventory and remain excluded from behavioral estimates.
 
 The registered E02 v1 and v2 attempts both failed before restore and probe analysis.
 The v1 attempt stopped after five consecutive timeout rejections at turn 465; v2
@@ -1194,11 +1196,17 @@ the separate all-method framed fault suite and raw logs are bound in the
 The prospective v3 packet is now repository-registered under
 `sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248`
 with five seeds disjoint from v1/v2. Its deterministic simulated commitment has
-three confirmations and zero currency. It is not yet executed, and this is not E02
-completion or a behavioral claim. Exact v0.1.119 passed the full 1,963-test gate,
-release-auditor binding, and ordinary two-container Mode R preflight. One sequential
-v3 attempt began on exact clean commit `9ec08ec`; slot 1 is running and the service
-has zero restarts. This start is not a completed slot or result.
+three confirmations and zero currency. Exact v0.1.119 passed the full 1,963-test
+pre-execution gate, release-auditor binding, and ordinary two-container Mode R
+preflight. The one sequential v3 attempt then completed on exact clean execution
+commit `9ec08ecf4528c6da8867d55900d6ca8667ded7ce`: all five numeric slots,
+before/after-restore stages, and 60 fixed probes passed their unchanged software
+thresholds. The [terminal receipt](reports/research/e02-v3-qualification-receipt.json)
+and separate [full live audit](reports/research/e02-v3-full-audit-receipt.json)
+bind the original evidence. This closes bounded local E02 software reliability,
+not the behavioral ledger-value hypotheses, image-encoder qualification, or
+independent human review. E03's next gate is development topology and a measured
+blinded-pilot allocation, not confirmatory collection.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

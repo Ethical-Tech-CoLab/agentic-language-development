@@ -1,0 +1,1191 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E02",
+  "researchFinding": false,
+  "classification": "prospectively-registered-software-qualification",
+  "registrationHash": "sha256:d35e6b118e4c811f80b426680a0b2f4b0c9b8da3e59bdc56293e557ef979f248",
+  "executionCommit": "9ec08ecf4528c6da8867d55900d6ca8667ded7ce",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "slots": [
+    {
+      "slot": 1,
+      "seed": "d4cf098cefbaaa8d1e07f7ad07cec87c0eef8b54ca921a5aafedf5ddf7de62d4",
+      "runId": "registered-e02-v3-1",
+      "slotSha256": "46f1cddbb9798f43bb0e2203251f09d1f24ed42f6a81e5cc434827ea179344c7",
+      "containerIds": [
+        "94c47c79de6b",
+        "662d7f7b0660"
+      ],
+      "resourceUsage": {
+        "userCPUTime": 957463963,
+        "systemCPUTime": 40066964,
+        "maxRSS": 523536,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 2912319,
+        "majorPageFault": 45,
+        "swappedOut": 0,
+        "fsRead": 26416,
+        "fsWrite": 2091440,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 401827,
+        "involuntaryContextSwitches": 26463
+      },
+      "containerResourceUsage": {
+        "peakBytes": 611803136,
+        "cpuUsageMicroseconds": 996835842,
+        "scope": "Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit"
+      },
+      "wallMilliseconds": 29194408.088928998,
+      "classification": "prospectively-registered-software-qualification",
+      "researchFinding": false,
+      "probesRecomputed": 12,
+      "independentWilsonReference": "R qnorm and direct Wilson formula",
+      "estimatorReplay": "same implementation, not independent model training",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e02-v3/registered-e02-v3-1/bundles/runs/registered-e02-v3-1",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 20908,
+        "checkpointCount": 29,
+        "attachmentCount": 7,
+        "issues": []
+      },
+      "passed": true,
+      "probes": [
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 124,
+          "kp": 502,
+          "rBounds": [
+            0.21676271907402153,
+            0.2799735397320954,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 122,
+          "kp": 502,
+          "rBounds": [
+            0.21297185687899986,
+            0.27583898867996925,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 122,
+          "kp": 502,
+          "rBounds": [
+            0.21297185687899986,
+            0.27583898867996925,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 136,
+          "kp": 502,
+          "rBounds": [
+            0.23958143317630234,
+            0.30470730511270117,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 121,
+          "kp": 502,
+          "rBounds": [
+            0.21107779149419953,
+            0.2737703474411957,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 133,
+          "kp": 502,
+          "rBounds": [
+            0.23386526079858277,
+            0.298535357619699,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 140,
+          "kp": 502,
+          "rBounds": [
+            0.24721446878237202,
+            0.31292509600092694,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        }
+      ],
+      "bundleManifestHash": "sha256:b60d00925db7348b9c99ad63c84caab6b9cbe611f93c6614666987b038314a80"
+    },
+    {
+      "slot": 2,
+      "seed": "29e17969e5c56be4b53a24ab8bda3d3454cddae9946e41c2f39af0411b20d217",
+      "runId": "registered-e02-v3-2",
+      "slotSha256": "37c70bbd4b8ce85782815f3e59c98654f9fd2511fa4f7f271176c158f76cc768",
+      "containerIds": [
+        "c9fd8ca83d6c",
+        "09779b0cf8c0"
+      ],
+      "resourceUsage": {
+        "userCPUTime": 956477005,
+        "systemCPUTime": 38680761,
+        "maxRSS": 505196,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 2846663,
+        "majorPageFault": 89,
+        "swappedOut": 0,
+        "fsRead": 35808,
+        "fsWrite": 2087584,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 405927,
+        "involuntaryContextSwitches": 20099
+      },
+      "containerResourceUsage": {
+        "peakBytes": 638406656,
+        "cpuUsageMicroseconds": 995030064,
+        "scope": "Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit"
+      },
+      "wallMilliseconds": 29175311.908384,
+      "classification": "prospectively-registered-software-qualification",
+      "researchFinding": false,
+      "probesRecomputed": 12,
+      "independentWilsonReference": "R qnorm and direct Wilson formula",
+      "estimatorReplay": "same implementation, not independent model training",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e02-v3/registered-e02-v3-2/bundles/runs/registered-e02-v3-2",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 20882,
+        "checkpointCount": 29,
+        "attachmentCount": 7,
+        "issues": []
+      },
+      "passed": true,
+      "probes": [
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 125,
+          "kp": 502,
+          "rBounds": [
+            0.21865950107261073,
+            0.2820394643570801,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 126,
+          "kp": 502,
+          "rBounds": [
+            0.22055717405794756,
+            0.28410449799531706,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 133,
+          "kp": 502,
+          "rBounds": [
+            0.23386526079858277,
+            0.298535357619699,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 128,
+          "kp": 502,
+          "rBounds": [
+            0.22435516505020178,
+            0.2882319202502106,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 133,
+          "kp": 502,
+          "rBounds": [
+            0.23386526079858277,
+            0.298535357619699,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 126,
+          "kp": 502,
+          "rBounds": [
+            0.22055717405794756,
+            0.28410449799531706,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 114,
+          "kp": 502,
+          "rBounds": [
+            0.19784556117007834,
+            0.2592636314002997,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 132,
+          "kp": 502,
+          "rBounds": [
+            0.23196153955132254,
+            0.29647637224338547,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 116,
+          "kp": 502,
+          "rBounds": [
+            0.20162143278667863,
+            0.2634131730308471,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 116,
+          "kp": 502,
+          "rBounds": [
+            0.20162143278667863,
+            0.2634131730308471,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 132,
+          "kp": 502,
+          "rBounds": [
+            0.23196153955132254,
+            0.29647637224338547,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        }
+      ],
+      "bundleManifestHash": "sha256:a4e474cf10807067c214f647a36e8a6fa684f3c0af8814b531e3f88262047bad"
+    },
+    {
+      "slot": 3,
+      "seed": "2932d220b86986b9714015842a3c061f32e68764d40ed134e08b90ff0d538025",
+      "runId": "registered-e02-v3-3",
+      "slotSha256": "1ee508e0361cef1cb3365ab9a6b4b95b17afe0a5b8e3b160f372c802a74e8651",
+      "containerIds": [
+        "cfe09ccfc0b4",
+        "d54f677bc6c4"
+      ],
+      "resourceUsage": {
+        "userCPUTime": 933070916,
+        "systemCPUTime": 38150732,
+        "maxRSS": 529952,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 2880602,
+        "majorPageFault": 33,
+        "swappedOut": 0,
+        "fsRead": 22408,
+        "fsWrite": 2086616,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 400190,
+        "involuntaryContextSwitches": 16978
+      },
+      "containerResourceUsage": {
+        "peakBytes": 634937344,
+        "cpuUsageMicroseconds": 971020149,
+        "scope": "Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit"
+      },
+      "wallMilliseconds": 29160272.237312,
+      "classification": "prospectively-registered-software-qualification",
+      "researchFinding": false,
+      "probesRecomputed": 12,
+      "independentWilsonReference": "R qnorm and direct Wilson formula",
+      "estimatorReplay": "same implementation, not independent model training",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e02-v3/registered-e02-v3-3/bundles/runs/registered-e02-v3-3",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 20902,
+        "checkpointCount": 29,
+        "attachmentCount": 7,
+        "issues": []
+      },
+      "passed": true,
+      "probes": [
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 115,
+          "kp": 502,
+          "rBounds": [
+            0.19973301187745718,
+            0.26133888731649474,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 116,
+          "kp": 502,
+          "rBounds": [
+            0.20162143278667863,
+            0.2634131730308471,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 127,
+          "kp": 502,
+          "rBounds": [
+            0.22245573100871777,
+            0.2861686476681207,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 125,
+          "kp": 502,
+          "rBounds": [
+            0.21865950107261073,
+            0.2820394643570801,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 136,
+          "kp": 502,
+          "rBounds": [
+            0.23958143317630234,
+            0.30470730511270117,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 127,
+          "kp": 502,
+          "rBounds": [
+            0.22245573100871777,
+            0.2861686476681207,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 503,
+          "k": 129,
+          "kp": 503,
+          "rBounds": [
+            0.225797156807973,
+            0.28973119131613756,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 503,
+          "k": 128,
+          "kp": 503,
+          "rBounds": [
+            0.22390075131315687,
+            0.2876727261833954,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 503,
+          "k": 134,
+          "kp": 503,
+          "rBounds": [
+            0.23529197480446265,
+            0.30001072645743926,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 503,
+          "k": 134,
+          "kp": 503,
+          "rBounds": [
+            0.23529197480446265,
+            0.30001072645743926,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 503,
+          "k": 134,
+          "kp": 503,
+          "rBounds": [
+            0.23529197480446265,
+            0.30001072645743926,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        }
+      ],
+      "bundleManifestHash": "sha256:cd6d126ad81421ba9d7a8a9da4118789acacf490c18c7742ac6f48d74dbf9796"
+    },
+    {
+      "slot": 4,
+      "seed": "c23aa45feff6f52bbc91956c6c4a4900022b3bc899e640afd57719c338215fd8",
+      "runId": "registered-e02-v3-4",
+      "slotSha256": "1d8517cba68330177a623f28d35009f8bc74c041c2c5e051b04f55c134b6a78e",
+      "containerIds": [
+        "d121bae7bd7b",
+        "e753c8b524fd"
+      ],
+      "resourceUsage": {
+        "userCPUTime": 882624702,
+        "systemCPUTime": 34239265,
+        "maxRSS": 447368,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 2759081,
+        "majorPageFault": 25,
+        "swappedOut": 0,
+        "fsRead": 26080,
+        "fsWrite": 2085456,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 308908,
+        "involuntaryContextSwitches": 12057
+      },
+      "containerResourceUsage": {
+        "peakBytes": 557428736,
+        "cpuUsageMicroseconds": 916701307,
+        "scope": "Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit"
+      },
+      "wallMilliseconds": 29172049.852196,
+      "classification": "prospectively-registered-software-qualification",
+      "researchFinding": false,
+      "probesRecomputed": 12,
+      "independentWilsonReference": "R qnorm and direct Wilson formula",
+      "estimatorReplay": "same implementation, not independent model training",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e02-v3/registered-e02-v3-4/bundles/runs/registered-e02-v3-4",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 20873,
+        "checkpointCount": 29,
+        "attachmentCount": 7,
+        "issues": []
+      },
+      "passed": true,
+      "probes": [
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 128,
+          "kp": 502,
+          "rBounds": [
+            0.22435516505020178,
+            0.2882319202502106,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 153,
+          "kp": 502,
+          "rBounds": [
+            0.2721085687806901,
+            0.3395461821090694,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 146,
+          "kp": 502,
+          "rBounds": [
+            0.2586879097389706,
+            0.32522789478577174,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 148,
+          "kp": 502,
+          "rBounds": [
+            0.262518600994277,
+            0.32932261677761315,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 131,
+          "kp": 502,
+          "rBounds": [
+            0.2300586630920724,
+            0.2944165420790617,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 503,
+          "k": 138,
+          "kp": 503,
+          "rBounds": [
+            0.24290281203343445,
+            0.3082193717387006,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 503,
+          "k": 122,
+          "kp": 503,
+          "rBounds": [
+            0.2125407813743732,
+            0.2753034723568294,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 503,
+          "k": 151,
+          "kp": 503,
+          "rBounds": [
+            0.26772560307347915,
+            0.3348098988569136,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        }
+      ],
+      "bundleManifestHash": "sha256:a19acaa7506dcf86f0b4c4c2b1b252ad5fb231ffa9b33da6b3dbe8184bc7cd46"
+    },
+    {
+      "slot": 5,
+      "seed": "0cdb75799add000babe091060aa3930d14949c819721599259fc12f3b8c7db72",
+      "runId": "registered-e02-v3-5",
+      "slotSha256": "93892cdd1072cf64f2616f98a380b59d66c1d4db078cf5ce40bc35a7221cdf91",
+      "containerIds": [
+        "f1bb8d21b570",
+        "6f4f9cb9bcb5"
+      ],
+      "resourceUsage": {
+        "userCPUTime": 947641621,
+        "systemCPUTime": 39528611,
+        "maxRSS": 510008,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 2975632,
+        "majorPageFault": 54,
+        "swappedOut": 0,
+        "fsRead": 27992,
+        "fsWrite": 2091640,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 403301,
+        "involuntaryContextSwitches": 22572
+      },
+      "containerResourceUsage": {
+        "peakBytes": 618110976,
+        "cpuUsageMicroseconds": 986613348,
+        "scope": "Nursery cgroup sampled after bundle verification, before cleanup/final-summary serialization; excludes learner containers and host-side audit"
+      },
+      "wallMilliseconds": 29175891.211412,
+      "classification": "prospectively-registered-software-qualification",
+      "researchFinding": false,
+      "probesRecomputed": 12,
+      "independentWilsonReference": "R qnorm and direct Wilson formula",
+      "estimatorReplay": "same implementation, not independent model training",
+      "rust": {
+        "schemaVersion": 1,
+        "implementation": "ald-integrity-auditor-rust-v1",
+        "bundle": "evidence/qualification/e02-v3/registered-e02-v3-5/bundles/runs/registered-e02-v3-5",
+        "integrityPass": true,
+        "anchored": true,
+        "streamCount": 5,
+        "eventCount": 20901,
+        "checkpointCount": 29,
+        "attachmentCount": 7,
+        "issues": []
+      },
+      "passed": true,
+      "probes": [
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 502,
+          "k": 138,
+          "kp": 502,
+          "rBounds": [
+            0.24339633062793664,
+            0.30881782090821464,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 502,
+          "k": 129,
+          "kp": 502,
+          "rBounds": [
+            0.22625546945048902,
+            0.2902943224734973,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 502,
+          "k": 129,
+          "kp": 502,
+          "rBounds": [
+            0.22625546945048902,
+            0.2902943224734973,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 502,
+          "k": 141,
+          "kp": 502,
+          "rBounds": [
+            0.24912473974624982,
+            0.31497753166062303,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 502,
+          "k": 128,
+          "kp": 502,
+          "rBounds": [
+            0.22435516505020178,
+            0.2882319202502106,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "before-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 502,
+          "k": 129,
+          "kp": 502,
+          "rBounds": [
+            0.22625546945048902,
+            0.2902943224734973,
+            0.9946393625170445,
+            0.9999999999999999
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "metadata",
+          "n": 503,
+          "k": 131,
+          "kp": 503,
+          "rBounds": [
+            0.22959254485093786,
+            0.2938455445282892,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "identifier",
+          "n": 503,
+          "k": 132,
+          "kp": 503,
+          "rBounds": [
+            0.23149151463722822,
+            0.29590144536955715,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-a",
+          "probe": "timing",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "metadata",
+          "n": 503,
+          "k": 138,
+          "kp": 503,
+          "rBounds": [
+            0.24290281203343445,
+            0.3082193717387006,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "identifier",
+          "n": 503,
+          "k": 137,
+          "kp": 503,
+          "rBounds": [
+            0.24099887744615273,
+            0.30616843569842406,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        },
+        {
+          "stage": "after-restore",
+          "role": "baby-b",
+          "probe": "timing",
+          "n": 503,
+          "k": 133,
+          "kp": 503,
+          "rBounds": [
+            0.23339132664204104,
+            0.2979565039923026,
+            0.9946499628309079,
+            1
+          ],
+          "passed": true
+        }
+      ],
+      "bundleManifestHash": "sha256:a74550d487a170a0f2860d2d2894cf5c594fd8e3a415061a9a72f496f9741900"
+    }
+  ],
+  "failure": null,
+  "wallMilliseconds": 149965766.639414,
+  "passed": true,
+  "claimBoundary": "Asset-free numeric scratch-learner topology and registered linear feature probes only. No behavioral finding, image encoder qualification, independent operator review, or public timestamp."
+}

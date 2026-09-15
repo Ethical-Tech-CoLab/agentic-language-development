@@ -95,29 +95,25 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.139 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.140 · 257/261 backlog acceptance criteria verified.
 
-Research status: 2 qualified (software), 2 failed qualification attempts, 1 in progress, 16 not started; 9 open campaign blockers.
+Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 
 The verifiable core, communication runtime, Mode R isolation, experiment-readiness
-scaffolds, and operator preflight are implemented and tested. E00 and E01 have
-qualified within their registered software scope. E02 v1 stopped at its safety
-pause after 465 turns. E02 v2 then stopped after 161 recorded turns when one
-post-action turn-path timeout escaped without a forfeited turn record. Neither
-attempt reached restore or probe evaluation; both are preserved and will not be
-restarted. The current candidate converts all turn-path method deadlines into
-audited forfeits, records the exact method, and quarantines a timed-out remote
-adapter so late completion cannot enter a later turn. A quarantined attempt pauses
-and may only abort; the five-rejection ceiling remains for non-remote timeout
-rejections. Exact v0.1.115 passed 1,959 tests and the ordinary two-container Mode R
-gate; its [pre-registration receipt](reports/research/e02-v3-readiness-qualification.md)
-binds the source, fault cases, raw logs, results, and limitations. Prospective v3
-packet and five fresh seed identifiers are repository-registered under hash
-`sha256:d35e6b1…f979f248`. Its matching deterministic simulated commitment has three
-confirmations and zero currency. Exact v0.1.119 passed the clean 1,963-test and
-real-container execution gates. One sequential v3 qualification attempt started on
-exact clean commit `9ec08ec`; slot 1 is in progress with zero service restarts. This
-start is not a completed slot or result. The remaining
+scaffolds, and operator preflight are implemented and tested. E00, E01, and E02
+qualified within distinct, bounded registered **software** scopes. E02 v1 stopped
+after 465 turns at its five-timeout safety pause; v2 stopped after 161 committed
+turns when a post-action timeout escaped. Neither reached restore or probes, and
+both failed attempts remain retained. The prospectively amended v3 attempt ran
+once on five fresh numeric scratch-learner slots, passed all before/after-restore
+checks and 60 fixed probes, and passed a separate full live audit of the original
+evidence. Its [terminal receipt](reports/research/e02-v3-qualification-receipt.json)
+and [audit receipt](reports/research/e02-v3-full-audit-receipt.json) close the local
+reliability gate without establishing a behavioral finding, image-encoder safety,
+independent review, or a public timestamp. E03 controls now face a measured
+pilot-stage topology/resource/packet gate; the dependent behavioral campaign
+remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
+explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
@@ -235,7 +231,8 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 
 | Document | Purpose |
 |---|---|
-| [Phase-one research update](reports/phase-one-research-update.md) | Concise September 4–13 progress account, current evidence, failure disclosure, and next milestone |
+| [Phase-one research update](reports/phase-one-research-update.md) | Dated September 4–13 progress snapshot, inherited-versus-added work, and then-current evidence |
+| [Phase-two execution update](reports/research/phase-two-execution-update.md) | Dated September 15 E02 reliability qualification, preserved failures, evidence scope, and next E03 gate |
 | [Phase-one evidence appendix](reports/phase-one-evidence-appendix.md) | Claim-to-commit, receipt, evidence-availability, and verification-command map |
 | [Phase-one demonstration guide](docs/phase-one-demonstration-guide.md) | Short, evidence-preserving walkthrough for a research review |
 | [CONCEPT-IDEA.md](CONCEPT-IDEA.md) | Research premise, architecture, literature, safeguards, experiments, and open decisions |
@@ -250,7 +247,7 @@ decisions are in [CONCEPT-IDEA.md](CONCEPT-IDEA.md).
 | [docs/evidence-bundle-format.md](docs/evidence-bundle-format.md) | Byte-level evidence bundle contract shared by the exporter, checkpoint service, and verifier |
 | [docs/cryptographic-separation-policy.md](docs/cryptographic-separation-policy.md) | Mandatory boundary between E40 research encodings and production hashing/signing/anchoring |
 | [reports/README.md](reports/README.md) | What the qualification reports are and are not |
-| [Research validation report](reports/research/research-validation-report.md) | Living evidence-class, validation, experiment, and claim-readiness report |
+| [Research validation report](reports/research/research-validation-report.md) | Historical September 13 evidence-class and methods snapshot; current status is in the phase-two update |
 | [Source-lineage register](reports/research/source-lineage-register.md) | Requirement origins and later normative amendments without personal attribution |
 | [Requirement conformance matrix](docs/requirement-conformance-matrix.md) | Provisional mapping from every backlog criterion and normative MUST-bearing line to executable evidence |
 
