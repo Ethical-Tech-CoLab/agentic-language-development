@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.143 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.144 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1216,6 +1216,9 @@ are that exact topology and a measured blinded-pilot allocation, not confirmator
 collection. The future E03 compiler refuses a pilot or full packet without a
 complete six-condition original-data Prototype-Mode audit and a digest-bound,
 prospective stage resource allocation within the authorized zero-spend ceiling.
+That allocation charges E02's prior conservative reservation and the measured
+development CPU/storage before reserving the new pilot capacity; a stage cannot
+reuse consumed capacity merely because its own projected cost fits the gross ceiling.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

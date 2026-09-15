@@ -33,6 +33,7 @@ function fixture() {
     schemaVersion: 1, experimentId: 'E03', classification: 'prospective-local-stage-allocation',
     stage: 'blinded-pilot', plannedRuns: 120,
     reservedCpuHours: 1, reservedWorkingStorageGiB: 1, maximumResidentGiB: 1,
+    priorCpuHoursCharged: 22, priorRetainedStorageGiB: 1,
     externalSpend: 0, measurementSourceSha256: sha256(readFileSync(topologyPath)),
     policySourceSha256: sha256(policyBytes), decision: 'ready',
   }));
@@ -96,7 +97,7 @@ describe('E03 draft CLI resource policy binding', () => {
   it('rejects an allocation that exceeds the local resource ceiling', () => {
     const { directory, receiptPath, topologyPath, allocationPath } = fixture();
     const allocation = JSON.parse(readFileSync(allocationPath, 'utf8'));
-    allocation.reservedCpuHours = 73;
+    allocation.reservedCpuHours = 51;
     writeFileSync(allocationPath, JSON.stringify(allocation));
     const result = run(receiptPath, directory, topologyPath, allocationPath);
     expect(result.status).not.toBe(0);

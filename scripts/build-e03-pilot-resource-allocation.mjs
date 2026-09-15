@@ -8,6 +8,8 @@ assert.deepEqual(process.argv.slice(2), ['--write'],
   'usage: node scripts/build-e03-pilot-resource-allocation.mjs --write');
 
 const rawRoot = 'evidence/qualification/e03-topology-prototype-v2';
+const priorTopologyRoot = 'evidence/qualification/e03-topology-development-v1';
+const e02Root = 'evidence/qualification/e02-v3';
 const rawReceiptPath = join(rawRoot, 'receipt.json');
 const topologyPath = 'reports/research/e03-prototype-topology-audit-receipt.json';
 const allocationPath = 'protocols/e03-pilot-resource-allocation.v1.json';
@@ -122,9 +124,28 @@ const reservedWorkingStorageGiB = Math.max(1, ceilingTenth(
 const maximumResidentGiB = Math.max(1, ceilingTenth(
   (maximumCombinedContainerResidentGiB + hostResidentGiB) * 1.5));
 const projectedSequentialWallHours = ceilingTenth(maximumPerSlotWallHours * plannedRuns * 1.25);
-assert.ok(reservedCpuHours <= policy.localCeiling.cpuHours,
+const priorTopology = read(join(priorTopologyRoot, 'receipt.json'));
+assert.equal(priorTopology.experimentId, 'E03');
+assert.equal(priorTopology.slots.length, 6);
+assert.equal(priorTopology.externalSpend, 0);
+const priorTopologyCpuHours = (priorTopology.hostResourceUsage.userCPUTime +
+  priorTopology.hostResourceUsage.systemCPUTime +
+  priorTopology.slots.reduce((total, slot) => total +
+    slot.containerResourceUsage.cpuUsageMicroseconds +
+    slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
+    slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0)) / 3_600_000_000;
+const prototypeCpuHours = hostCpuHours + rawReceipt.slots.reduce((total, slot) => total +
+  slot.containerResourceUsage.cpuUsageMicroseconds +
+  slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
+  slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0) / 3_600_000_000;
+const e02ConservativeCpuChargeHours = 22;
+const priorCpuHoursCharged = ceilingTenth(e02ConservativeCpuChargeHours +
+  priorTopologyCpuHours + prototypeCpuHours);
+const priorRetainedStorageGiB = ceilingTenth((originalBytes(e02Root) +
+  originalBytes(priorTopologyRoot) + originalBytes(rawRoot)) / gib);
+assert.ok(reservedCpuHours + priorCpuHoursCharged <= policy.localCeiling.cpuHours,
   'measured pilot CPU reserve exceeds the authorized local ceiling');
-assert.ok(reservedWorkingStorageGiB <= policy.localCeiling.workingStorageGiB,
+assert.ok(reservedWorkingStorageGiB + priorRetainedStorageGiB <= policy.localCeiling.workingStorageGiB,
   'measured pilot evidence reserve exceeds the authorized local ceiling');
 assert.ok(maximumResidentGiB <= policy.localCeiling.maximumResidentGiB,
   'measured pilot memory reserve exceeds the authorized local ceiling');
@@ -143,6 +164,8 @@ const allocation = {
   reservedCpuHours,
   reservedWorkingStorageGiB,
   maximumResidentGiB,
+  priorCpuHoursCharged,
+  priorRetainedStorageGiB,
   projectedSequentialWallHours,
   measurementSourcePath: topologyPath,
   measurementSourceSha256: topologySha256,
@@ -157,6 +180,7 @@ const allocation = {
     maximumPerSlotWallHours,
   },
   reserveMethod: 'double the measured worst-slot CPU and original-evidence rate across 120 runs; 1.5x the summed resident peaks; 1.25x sequential wall projection',
+  priorChargeMethod: 'charge E02 its 22-hour prospective CPU reservation; add measured v1/v2 controller and container CPU; retain original E02 and E03 development storage',
   authorizationScope: 'existing user-approved local synthetic research; no external spending',
   externalSpend: 0,
   publicChainTransaction: false,

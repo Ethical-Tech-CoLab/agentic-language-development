@@ -82,7 +82,8 @@ const input = {
       path: 'protocols/e03-pilot-resource-allocation.v1.json',
       sha256: hash('pilot-allocation'), stage: 'blinded-pilot', plannedRuns: 120,
       reservedCpuHours: 1, reservedWorkingStorageGiB: 1,
-      maximumResidentGiB: 1, externalSpend: 0,
+      maximumResidentGiB: 1, priorCpuHoursCharged: 22,
+      priorRetainedStorageGiB: 1, externalSpend: 0,
     },
     evidencePolicy: {
       anchorClass: 'simulated',

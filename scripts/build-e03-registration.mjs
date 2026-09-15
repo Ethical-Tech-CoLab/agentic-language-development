@@ -127,6 +127,12 @@ if (
   !(stageAllocation.maximumResidentGiB > 0) ||
   stageAllocation.reservedCpuHours > resourceAllocationSource.value.localCeiling.cpuHours ||
   stageAllocation.reservedWorkingStorageGiB > resourceAllocationSource.value.localCeiling.workingStorageGiB ||
+  !(stageAllocation.priorCpuHoursCharged >= 0) ||
+  !(stageAllocation.priorRetainedStorageGiB >= 0) ||
+  stageAllocation.reservedCpuHours + stageAllocation.priorCpuHoursCharged >
+    resourceAllocationSource.value.localCeiling.cpuHours ||
+  stageAllocation.reservedWorkingStorageGiB + stageAllocation.priorRetainedStorageGiB >
+    resourceAllocationSource.value.localCeiling.workingStorageGiB ||
   stageAllocation.maximumResidentGiB > resourceAllocationSource.value.localCeiling.maximumResidentGiB ||
   stageAllocation.externalSpend !== 0 ||
   stageAllocation.measurementSourceSha256 !== sha256(topologyAuditSource.bytes) ||
@@ -214,6 +220,8 @@ const executionBinding = {
     reservedCpuHours: stageAllocation.reservedCpuHours,
     reservedWorkingStorageGiB: stageAllocation.reservedWorkingStorageGiB,
     maximumResidentGiB: stageAllocation.maximumResidentGiB,
+    priorCpuHoursCharged: stageAllocation.priorCpuHoursCharged,
+    priorRetainedStorageGiB: stageAllocation.priorRetainedStorageGiB,
     externalSpend: 0,
   },
   evidencePolicy: {

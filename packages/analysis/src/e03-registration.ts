@@ -103,6 +103,8 @@ export interface E03ExecutionBinding {
     readonly reservedCpuHours: number;
     readonly reservedWorkingStorageGiB: number;
     readonly maximumResidentGiB: number;
+    readonly priorCpuHoursCharged: number;
+    readonly priorRetainedStorageGiB: number;
     readonly externalSpend: 0;
   };
   readonly evidencePolicy: {
@@ -273,6 +275,8 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
     !(binding.stageResourceAllocation.reservedCpuHours > 0) ||
     !(binding.stageResourceAllocation.reservedWorkingStorageGiB > 0) ||
     !(binding.stageResourceAllocation.maximumResidentGiB > 0) ||
+    !(binding.stageResourceAllocation.priorCpuHoursCharged >= 0) ||
+    !(binding.stageResourceAllocation.priorRetainedStorageGiB >= 0) ||
     binding.stageResourceAllocation.externalSpend !== 0 ||
     binding.evidencePolicy.anchorClass !== 'simulated' ||
     binding.evidencePolicy.publicTimestamp !== false ||
