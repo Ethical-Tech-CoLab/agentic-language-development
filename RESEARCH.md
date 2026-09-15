@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.152 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.153 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1893,6 +1893,9 @@ document agreement cannot conceal a failed or incomplete original attempt.
 Before the terminal receipt exists, a running status additionally requires
 the original start record and its matching live local controller process;
 a retained start file after controller failure is unresolved, not a pass.
+The lightweight project-status check and the campaign progression checker
+share that same original pilot-state rule; current prose cannot clear the gate
+by agreeing with itself while local execution evidence contradicts it.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.

@@ -1,4 +1,5 @@
 import { access, readFile } from 'node:fs/promises';
+import { checkE03LocalPilotState } from './e03-local-pilot-state.mjs';
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -18,6 +19,7 @@ const [pkg, backlog, readme, research, notebook, campaign] = await Promise.all([
   readFile('EXPERIMENT-NOTEBOOK.md', 'utf8'),
   readJson('protocols/campaign-readiness-review.v1.json'),
 ]);
+checkE03LocalPilotState(campaign.experiments.find((entry) => entry.id === 'E03'));
 
 if (pkg.engines?.pnpm !== '12.3.4') {
   throw new Error(`unexpected pnpm version policy: ${String(pkg.engines?.pnpm)}`);

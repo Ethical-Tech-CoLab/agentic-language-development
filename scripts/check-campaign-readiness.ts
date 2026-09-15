@@ -2,6 +2,7 @@
 
 import { accessSync, existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { checkE03LocalPilotState } from './e03-local-pilot-state.mjs';
 
 type ExecutionStage = 'qualification' | 'pilot' | 'confirmatory' | 'analysis' | 'exploratory' | 'replication' | 'reporting';
 type GateDecision = 'ready' | 'blocked' | 'complete';
@@ -162,60 +163,7 @@ for (const entry of review.experiments) {
     }
   }
 }
-const e03Pilot = review.experiments.find((entry) => entry.id === 'E03');
-const e03PilotTerminalPath = 'evidence/pilots/e03-blinded-v1/receipt.json';
-const e03PilotAttemptPath = 'evidence/pilots/e03-blinded-v1/attempt.json';
-if (e03Pilot?.executionReadiness.stage === 'pilot' && existsSync(e03PilotTerminalPath)) {
-  const packetPath = e03Pilot.evidence.find((item) => item.kind === 'prospective-registration-packet')?.path;
-  if (!packetPath || !e03Pilot.evidence.some((item) =>
-    item.path === e03PilotTerminalPath && item.statusAuthority)) {
-    throw new Error('E03 pilot terminal receipt exists but is not the status authority');
-  }
-  const packetBytes = readFileSync(packetPath);
-  const packet = JSON.parse(packetBytes.toString('utf8')) as { preRegistrationHash?: string };
-  const terminal = JSON.parse(readFileSync(e03PilotTerminalPath, 'utf8')) as Record<string, unknown>;
-  const packetSha256 = `sha256:${createHash('sha256').update(packetBytes).digest('hex')}`;
-  if (terminal.experimentId !== 'E03' || terminal.stage !== 'blinded-pilot' ||
-      terminal.registrationHash !== packet.preRegistrationHash ||
-      terminal.packetSha256 !== packetSha256 || terminal.plannedRuns !== 120 ||
-      terminal.researchFinding !== false || terminal.externalSpend !== 0 ||
-      terminal.publicChainTransaction !== false) {
-    throw new Error('E03 pilot terminal receipt contradicts its prospective packet or zero-spend scope');
-  }
-} else if (e03Pilot?.executionReadiness.stage === 'pilot' && existsSync(e03PilotAttemptPath)) {
-  const packetPath = e03Pilot.evidence.find((item) => item.kind === 'prospective-registration-packet')?.path;
-  if (e03Pilot.attempt.status !== 'running' || !packetPath ||
-      !e03Pilot.evidence.some((item) => item.path === e03PilotAttemptPath && item.statusAuthority)) {
-    throw new Error('E03 pilot attempt exists but is not an evidence-backed running state');
-  }
-  const packetBytes = readFileSync(packetPath);
-  const packet = JSON.parse(packetBytes.toString('utf8')) as { preRegistrationHash?: string };
-  const attempt = JSON.parse(readFileSync(e03PilotAttemptPath, 'utf8')) as Record<string, unknown>;
-  if (attempt.experimentId !== 'E03' || attempt.stage !== 'blinded-pilot' ||
-      attempt.classification !== 'registered-original-pilot-attempt' ||
-      attempt.registrationHash !== packet.preRegistrationHash ||
-      attempt.packetSha256 !== `sha256:${createHash('sha256').update(packetBytes).digest('hex')}` ||
-      attempt.plannedRuns !== 120 || attempt.researchFinding !== false ||
-      attempt.externalSpend !== 0 || attempt.publicChainTransaction !== false ||
-      !Number.isSafeInteger(attempt.controllerPid) || Number(attempt.controllerPid) <= 0 ||
-      typeof attempt.controllerStartTicks !== 'string' ||
-      !/^[0-9]+$/u.test(attempt.controllerStartTicks)) {
-    throw new Error('E03 pilot running receipt contradicts its prospective packet or controller identity');
-  }
-  const pid = Number(attempt.controllerPid);
-  const statPath = `/proc/${pid}/stat`;
-  const commandPath = `/proc/${pid}/cmdline`;
-  if (!existsSync(statPath) || !existsSync(commandPath)) {
-    throw new Error('E03 pilot running attempt has no live controller');
-  }
-  const stat = readFileSync(statPath, 'utf8');
-  const fields = stat.slice(stat.lastIndexOf(')') + 2).trim().split(/\s+/u);
-  const command = readFileSync(commandPath, 'utf8');
-  if (fields[0] === 'Z' || fields[19] !== attempt.controllerStartTicks ||
-      !command.includes('run-e03-registered-pilot.mjs')) {
-    throw new Error('E03 pilot running attempt has no live controller');
-  }
-}
+checkE03LocalPilotState(review.experiments.find((entry) => entry.id === 'E03'));
 const e02 = review.experiments.find((entry) => entry.id === 'E02');
 if ((e02?.executionReadiness.stage === 'qualification' &&
      e02.executionReadiness.decision === 'complete' && e02.attempt.status === 'completed') !==

@@ -134,6 +134,26 @@ describe('current project status', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it('rejects a stale E03 status when original pilot terminal evidence exists', () => {
+    const directory = statusFixture();
+    const path = join(directory, 'evidence/pilots/e03-blinded-v1/receipt.json');
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot terminal receipt exists but is not the status authority');
+  });
+
+  it('rejects a stale E03 status when original pilot collection has started', () => {
+    const directory = statusFixture();
+    const path = join(directory, 'evidence/pilots/e03-blinded-v1/attempt.json');
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot attempt exists but is not an evidence-backed running state');
+  });
+
   it('rejects stale current counts in README.md', () => {
     const directory = statusFixture();
     const path = 'README.md';
