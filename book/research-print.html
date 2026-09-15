@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.146 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.147 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -2119,7 +2119,10 @@ proposal exists.</p>
 Only the signed original turn stream supplies the episode tally and paired
 scenario hashes. Operational slot summaries must reconcile to that stream and
 to the verified channel transcript before entering the pilot reduction or a
-registered analysis.</p>
+registered analysis.
+An attempted failed pilot slot retains its partial evidence and measured
+learner/Nursery CPU charges. Missing cgroup measurements leave capacity
+unresolved rather than treating the failed slot as free or replaceable.</p>
 <ol>
 <li><strong>Control equivalence:</strong> For each of disabled, constant, random, shuffled, and
 normal no-learning, perform two one-sided one-sample tests on seed-level success

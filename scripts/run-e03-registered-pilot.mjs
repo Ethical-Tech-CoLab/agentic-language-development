@@ -8,6 +8,7 @@ import { join, resolve } from 'node:path';
 import { verifyBundle } from '@ald/verifier';
 import { validateE03PilotAdmission } from './check-e03-pilot-admission.mjs';
 import { reconcileE03OriginalPilotData } from './e03-original-pilot-data.mjs';
+import { reconcileE03PilotAttemptResources } from './e03-pilot-resource-accounting.mjs';
 
 const mode = process.argv[2];
 assert.ok(process.argv.length === 3 && ['--run', '--audit'].includes(mode));
@@ -216,6 +217,7 @@ if (mode === '--audit') {
   let failureStage = 'container-build';
   let failedRunId = null;
   let lastChildExitStatus = null;
+  let failureResourceCaptureDiagnostic = null;
   try {
     command([...compose, 'build', 'baby-a', 'baby-b', 'nursery-study']);
     for (const registered of packet.runs) {
@@ -283,6 +285,12 @@ if (mode === '--audit') {
     }
   } catch (error) {
     failure = `${error.name}: ${error.message}`;
+    if (failedRunId && !existsSync(join(root, failedRunId, 'learner-resources.json'))) {
+      try { captureLearnerResources(failedRunId); }
+      catch (resourceError) {
+        failureResourceCaptureDiagnostic = `${resourceError.name}: ${resourceError.message}`;
+      }
+    }
   } finally {
     if (spawnSync('docker', ['inspect', `${project}-nursery`],
       { stdio: 'ignore' }).status === 0) {
@@ -293,11 +301,10 @@ if (mode === '--audit') {
     catch (error) { failure = `${failure ?? ''} cleanup failed: ${error.message}`; }
   }
   const passed = failure === null && attemptedRuns === 120 && slots.length === 120;
-  const measuredCpuHours = slots.reduce((total, slot) => total +
-    slot.nurseryResourceUsage.cpuUsageMicroseconds +
-    slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
-    slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0) / 3_600_000_000 +
-    (process.resourceUsage().userCPUTime + process.resourceUsage().systemCPUTime) / 3_600_000_000;
+  const attemptedResourceAccounting = reconcileE03PilotAttemptResources(root,
+    packet.runs.slice(0, attemptedRuns).map((run) => run.config.runId),
+    slots, process.resourceUsage());
+  const measuredCpuHours = attemptedResourceAccounting.measuredCpuHoursLowerBound;
   const evidenceBytesBeforeTerminalReceipt = originalBytes(root);
   writeFileSync(join(root, 'receipt.json'), `${JSON.stringify({
     schemaVersion: 1, experimentId: 'E03', stage: 'blinded-pilot',
@@ -317,11 +324,13 @@ if (mode === '--audit') {
     unattemptedRuns: 120 - attemptedRuns,
     sampleSizeEligible: passed, slots, failure, failureStage, failedRunId,
     lastChildExitStatus,
+    failureResourceCaptureDiagnostic, attemptedResourceAccounting,
     wallMilliseconds: performance.now() - started,
     measuredCpuHours,
     evidenceBytesBeforeTerminalReceipt,
-    remainingCpuHours: policy.localCeiling.cpuHours -
-      allocation.priorCpuHoursCharged - measuredCpuHours,
+    remainingCpuHours: attemptedResourceAccounting.completeMeasurement
+      ? policy.localCeiling.cpuHours - allocation.priorCpuHoursCharged - measuredCpuHours
+      : null,
     remainingWorkingStorageGiB: policy.localCeiling.workingStorageGiB -
       allocation.priorRetainedStorageGiB - evidenceBytesBeforeTerminalReceipt / gib,
     hostResourceUsage: process.resourceUsage(),

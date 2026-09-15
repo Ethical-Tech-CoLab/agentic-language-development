@@ -526,6 +526,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
       outcome-blind pilot tallies to variance estimation.
 - [ ] Re-audit the original pilot bundles and recompute the single-use
       dispersion input before sample-size power selection.
+- [ ] Charge failed attempted slots where CPU is measured, and leave capacity
+      unresolved where a required measurement is missing.
 
 ### Acceptance Criteria
 
