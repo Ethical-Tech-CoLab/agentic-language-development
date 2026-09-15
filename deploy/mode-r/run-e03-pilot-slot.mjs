@@ -103,6 +103,24 @@ try {
   assert.ok(evaluation.every((record) => record.communicationCondition === condition));
   const channel = production.runtime.transcript(runId);
   assert.ok(channel.every((event) => event.communicationCondition === condition));
+  const accepted = channel.filter((event) => event.gatewayValidationResult === 'accepted');
+  assert.ok(accepted.length > 0, 'a registered control must carry accepted channel events');
+  if (condition === 'oracle') {
+    assert.ok(accepted.every((event) => event.origin === 'gateway-control'));
+  } else {
+    assert.ok(accepted.every((event) => event.origin === 'baby'));
+  }
+  if (condition === 'disabled') {
+    assert.ok(accepted.every((event) => event.deliveryReceipt === undefined));
+  } else {
+    assert.ok(accepted.every((event) => event.deliveryReceipt !== undefined));
+  }
+  if (condition === 'constant') {
+    assert.equal(new Set(accepted.map((event) => event.publicArtifactHash)).size, 1);
+  }
+  if (condition === 'random') {
+    assert.ok(new Set(accepted.map((event) => event.publicArtifactHash)).size > 1);
+  }
   const receipts = production.runtime.writerFor(runId).readAnchorReceipts(runId);
   assert.equal(receipts.length, 1);
   assert.equal(receipts[0].status, 'confirmed');
@@ -116,7 +134,7 @@ try {
     scenarioStateHashes: evaluation.map((record) => record.scenarioStateHash),
     evaluationTurns: evaluation.length,
     agreements: evaluation.filter((record) => record.outcome.success === true).length,
-    channelEvents: channel.length,
+    channelEvents: channel.length, acceptedChannelEvents: accepted.length,
     checkpoints: production.runtime.checkpoints(runId).length,
     containerIds, anchorReceiptCount: receipts.length, verifierExitCode: verification.exitCode,
     state: summary.state,

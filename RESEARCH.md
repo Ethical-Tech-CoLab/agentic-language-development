@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.145 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.146 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1224,6 +1224,9 @@ audits each original bundle with the TypeScript and retained Rust verifiers,
 reconciles paired scenarios and resource charges after each run, and stops on
 failure without replacement. It has not executed: no pilot variance or
 behavioral finding is reported.
+The prepared, single-use pilot reduction re-audits all 120 original bundles and
+binds the five non-oracle seed tallies to the pilot receipt; a separate audit
+recomputes the design-row input. Neither check has run on pilot data.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).
@@ -1870,6 +1873,10 @@ proposal exists.
 ### D.6 Primary Outcomes and Tests
 
 The unit of analysis is the run/seed success proportion across 200 episodes.
+Only the signed original turn stream supplies the episode tally and paired
+scenario hashes. Operational slot summaries must reconcile to that stream and
+to the verified channel transcript before entering the pilot reduction or a
+registered analysis.
 
 1. **Control equivalence:** For each of disabled, constant, random, shuffled, and
    normal no-learning, perform two one-sided one-sample tests on seed-level success

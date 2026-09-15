@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.145",
+  "version": "0.1.146",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -27,6 +27,8 @@
     "admit:e03-pilot:live": "node scripts/check-e03-pilot-admission.mjs --live",
     "run:e03-pilot": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-registered-pilot.mjs --run",
     "audit:e03-pilot:live": "node scripts/run-e03-registered-pilot.mjs --audit",
+    "reduce:e03-pilot:live": "node scripts/reduce-e03-registered-pilot.mjs --write",
+    "audit:e03-pilot-reduction:live": "node scripts/reduce-e03-registered-pilot.mjs --audit",
     "preflight:research": "pnpm run build && node scripts/check-research-preflight.mjs",
     "qualify:frozen-model": "pnpm run build && node scripts/run-frozen-model-qualification.mjs",
     "qualify:generative-carriers": "pnpm run build && node scripts/run-generative-carrier-qualification.mjs",

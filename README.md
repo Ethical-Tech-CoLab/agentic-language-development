@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.145 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.146 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 
@@ -128,6 +128,12 @@ packet and simulated binding are committed and the E03 pilot stage is ready,
 topology and resource evidence. `pnpm run run:e03-pilot` then executes the
 single-use, zero-reserve pilot; failure is retained. A separate live audit is
 required before pilot tallies can enter the sample-size selector.
+The prepared `reduce:e03-pilot:live` command also reruns the 120-bundle audit
+before writing a single-use, outcome-blind dispersion input. Its separate
+`audit:e03-pilot-reduction:live` check recomputes that input from retained
+original records. Neither command has run on pilot data.
+The audit cross-checks unsigned operational tallies against the signed,
+verified turn and channel streams before admitting a sample-size input.
 
 - `@ald/hashing`, `@ald/merkle`, `@ald/evidence`: domain-separated hashing, RFC 8785
   canonical JSON, per-run Ed25519 signers and key store, hash-chain validation, RFC

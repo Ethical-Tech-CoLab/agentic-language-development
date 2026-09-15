@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# Independent, base-R-only bounded power calculation for the E03 full numeric
+# Separately implemented, base-R-only bounded power calculation for the E03 full numeric
 # qualification rule. This consumes one outcome-blind pilot dispersion value;
 # it does not read experiment outcomes or evaluate a scientific hypothesis.
 

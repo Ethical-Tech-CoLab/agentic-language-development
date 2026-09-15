@@ -117,7 +117,7 @@ try {
     externalSpend: 0,
     publicChainTransaction: false,
     claimBoundary:
-      'Independent outcome-blind E03 power calculation only; no experiment outcome, ' +
+      'Separately implemented outcome-blind E03 power calculation only; no experiment outcome, ' +
       'qualification decision, behavioral finding, or public timestamp.',
   };
   await mkdir(dirname(outputPath), { recursive: true });

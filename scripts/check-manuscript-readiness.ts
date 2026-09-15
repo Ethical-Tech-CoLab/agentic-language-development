@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const outputPath = 'reports/research/manuscript-readiness-audit.json';
 const read = (path: string): string => readFileSync(path, 'utf8');
@@ -35,7 +35,9 @@ const sources = JSON.parse(read('reports/research/source-verification-register.j
   existingReferences: unknown[];
   updatedSearch: unknown[];
 };
-const book = JSON.parse(read('book/pages/manifest.json')) as { pages: unknown[]; sourceSha256: string };
+const book = JSON.parse(read('book/pages/manifest.json')) as {
+  pageCount: number; pages: unknown[]; sourceSha256: string;
+};
 
 const [body, references = ''] = manuscript.split('\n## References\n');
 const definedReferences = [...references.matchAll(/^\[(\d+)\]/gmu)].map((match) => Number(match[1]));
@@ -85,7 +87,11 @@ if (registration.totals['compiledPackets'] !== 3 || registration.totals['unresol
 if (claims.totals['researchIncluded'] !== 0 || claims.totals['confirmedPublicChainAnchors'] !== 0) {
   throw new Error('pre-results manuscript status contradicts the eligible-data or public-chain inventory');
 }
-if (book.pages.length !== 51 || book.sourceSha256 !== sha256(manuscript.replace(/\r\n?/gu, '\n'))) {
+if (book.pageCount < 1 || book.pages.length !== book.pageCount ||
+    !book.pages.every((page) => typeof page === 'string' &&
+      /^pages\/p\d{2}\.webp$/u.test(page) && existsSync(`book/${page}`)) ||
+    !existsSync('book/research.pdf') ||
+    book.sourceSha256 !== sha256(manuscript.replace(/\r\n?/gu, '\n'))) {
   throw new Error('rendered research book is missing pages or does not bind the current manuscript');
 }
 exact(

@@ -112,7 +112,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.145 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.146 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1252,7 +1252,10 @@ The prepared registered pilot path checks all 120 exact run configurations,
 audits each original bundle with the TypeScript and retained Rust verifiers,
 reconciles paired scenarios and resource charges after each run, and stops on
 failure without replacement. It has not executed: no pilot variance or
-behavioral finding is reported.</p>
+behavioral finding is reported.
+The prepared, single-use pilot reduction re-audits all 120 original bundles and
+binds the five non-oracle seed tallies to the pilot receipt; a separate audit
+recomputes the design-row input. Neither check has run on pilot data.</p>
 <p>The implementation backlog is maintained in <a href="BACKLOG.md">BACKLOG.md</a>, while normative
 requirements are in <a href="SPECIFICATION.md">SPECIFICATION.md</a>.</p>
 <hr>
@@ -2112,7 +2115,11 @@ artifact from researcher-only ground truth.</li>
 <p>The channel event records proposal and delivered-artifact hashes where a learner
 proposal exists.</p>
 <h3>D.6 Primary Outcomes and Tests</h3>
-<p>The unit of analysis is the run/seed success proportion across 200 episodes.</p>
+<p>The unit of analysis is the run/seed success proportion across 200 episodes.
+Only the signed original turn stream supplies the episode tally and paired
+scenario hashes. Operational slot summaries must reconcile to that stream and
+to the verified channel transcript before entering the pilot reduction or a
+registered analysis.</p>
 <ol>
 <li><strong>Control equivalence:</strong> For each of disabled, constant, random, shuffled, and
 normal no-learning, perform two one-sided one-sample tests on seed-level success

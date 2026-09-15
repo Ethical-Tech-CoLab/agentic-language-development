@@ -7,6 +7,7 @@ import { join, resolve } from 'node:path';
 
 import { verifyBundle } from '@ald/verifier';
 import { validateE03PilotAdmission } from './check-e03-pilot-admission.mjs';
+import { reconcileE03OriginalPilotData } from './e03-original-pilot-data.mjs';
 
 const mode = process.argv[2];
 assert.ok(process.argv.length === 3 && ['--run', '--audit'].includes(mode));
@@ -80,6 +81,7 @@ async function auditSlot(registered, executionCommit, registrationHash) {
   assert.equal(record.passed, true, `${runId}: ${record.failure ?? record.resourceMeasurementFailure}`);
   assert.equal(record.observations.state, 'sealed');
   assert.equal(record.observations.evaluationTurns, 200);
+  assert.ok(record.observations.acceptedChannelEvents > 0);
   assert.equal(record.observations.scenarioStateHashes.length, 200);
   assert.ok(record.observations.agreements >= 0 && record.observations.agreements <= 200);
   assert.equal(record.observations.anchorReceiptCount, 1);
@@ -111,12 +113,13 @@ async function auditSlot(registered, executionCommit, registrationHash) {
     { encoding: 'utf8', timeout: 120_000, maxBuffer: 1024 * 1024 }));
   assert.equal(rust.integrityPass, true);
   assert.equal(rust.anchored, true);
+  const original = reconcileE03OriginalPilotData(bundle, record, condition, runId);
   return {
     runId, condition, slot: slotNumber,
     slotPath: path, slotSha256: sha256(path),
     learnerResourceSha256: sha256(join(root, runId, 'learner-resources.json')),
-    scenarioStateHashes: record.observations.scenarioStateHashes,
-    agreements: record.observations.agreements,
+    scenarioStateHashes: original.scenarioStateHashes,
+    agreements: original.agreements,
     containerIds: Object.values(record.observations.containerIds),
     wallMilliseconds: record.wallMilliseconds,
     nurseryResourceUsage: record.nurseryResourceUsage,
