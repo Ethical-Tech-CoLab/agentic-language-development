@@ -29,6 +29,10 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
                 : 'protocols/e03-pilot-resource-allocation.v1.json',
   )]));
   mutate(campaign, receipts);
+  if (campaign.experiments.find((entry: any) => entry.id === 'E03')?.evidence.some(
+    (entry: any) => entry.kind === 'prospective-registration-packet') && !receipts.e03Packet) {
+    receipts.e03Packet = source('protocols/e03-pilot-registration.v1.json');
+  }
   const values: Record<string, unknown> = {
     'protocols/campaign-readiness-review.v1.json': campaign,
     'protocols/research-protocol-cards.v1.json': source('protocols/research-protocol-cards.v1.json'),

@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.160 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.161 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1364,7 +1364,8 @@ and analysis plan before execution. The run configuration stores the protocol co
 and pre-registration hash. Changes create appended amendments rather than rewriting
 the original record.
 
-No complete experiment packet has yet been repository-registered. Before each
+The E02 software-qualification packets have been repository-registered, but no
+behavioral study packet or E03 pilot has begun. Before each later
 confirmatory run, its canonical packet will be committed unchanged in a Git ancestor
 of the execution commit. Preflight will load those historical bytes, reproduce the
 `preRegistrationHash`, and require a matching deterministic simulated commitment

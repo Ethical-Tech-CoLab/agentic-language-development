@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- deliberately malformed JSON fixtures exercise CLI validation */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -120,6 +120,8 @@ describe('current project status', () => {
       'reports/research/research-validation-report.md',
       'reports/research/research-critical-review.md',
       'reports/research/methods-readiness-review.md',
+      ...(existsSync(join(root, 'protocols/e03-pilot-registration.v1.json'))
+        ? ['protocols/e03-pilot-registration.v1.json'] : []),
     ]) {
       mkdirSync(dirname(join(directory, path)), { recursive: true });
       writeFileSync(join(directory, path), readFileSync(join(root, path)));
@@ -140,7 +142,7 @@ describe('current project status', () => {
       'protocols/campaign-readiness-review.v1.json'), 'utf8'));
     const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
     expect(e03.attempt.status).toBe('not-started');
-    expect(e03.evidence).toHaveLength(2);
+    expect(e03.evidence.some((item: { kind: string }) => item.kind === 'prospective-stage-allocation')).toBe(true);
     const result = check(directory);
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('16 not started');
