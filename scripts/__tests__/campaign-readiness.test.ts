@@ -142,6 +142,8 @@ function blockedPilotPacketFixture(mutatePacket: (packet: any) => void = () => u
   version: 'v1' | 'v2' = 'v1') {
   return fixture((campaign, receipts) => {
     const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+    e03.evidence = e03.evidence.filter((entry: any) =>
+      entry.kind !== 'prospective-registration-packet');
     e03.evidence.push({ kind: 'prospective-registration-packet',
       path: `protocols/e03-pilot-registration.${version}.json`, statusAuthority: false });
     receipts.e03Packet = {

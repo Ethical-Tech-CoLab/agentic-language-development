@@ -132,6 +132,14 @@ describe('current project status', () => {
   }
   const check = (directory: string) => spawnSync(process.execPath,
     [join(root, 'scripts/check-project-status.mjs')], { cwd: directory, encoding: 'utf8' });
+  const activePilotRoot = (directory: string) => {
+    const campaign = JSON.parse(readFileSync(join(directory,
+      'protocols/campaign-readiness-review.v1.json'), 'utf8'));
+    const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
+    const packetPath = e03.evidence.find((entry: { kind: string }) =>
+      entry.kind === 'prospective-registration-packet')?.path;
+    return `evidence/pilots/e03-blinded-${packetPath?.endsWith('.v2.json') ? 'v2' : 'v1'}`;
+  };
 
   it('works without any local plans', () => {
     const result = check(statusFixture());
@@ -152,7 +160,7 @@ describe('current project status', () => {
 
   it('rejects a stale E03 status when original pilot terminal evidence exists', () => {
     const directory = statusFixture();
-    const path = join(directory, 'evidence/pilots/e03-blinded-v1/receipt.json');
+    const path = join(directory, activePilotRoot(directory), 'receipt.json');
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
     const result = check(directory);
@@ -162,9 +170,28 @@ describe('current project status', () => {
 
   it('rejects a stale E03 status when original pilot collection has started', () => {
     const directory = statusFixture();
-    const path = join(directory, 'evidence/pilots/e03-blinded-v1/attempt.json');
+    const path = join(directory, activePilotRoot(directory), 'attempt.json');
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot attempt exists but is not an evidence-backed running state');
+  });
+
+  it('rejects a stale v2 pilot attempt using its prospective evidence root', () => {
+    const directory = statusFixture();
+    const campaignPath = join(directory, 'protocols/campaign-readiness-review.v1.json');
+    const campaign = JSON.parse(readFileSync(campaignPath, 'utf8'));
+    const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
+    e03.evidence.push({ kind: 'prospective-registration-packet',
+      path: 'protocols/e03-pilot-registration.v2.json', statusAuthority: false });
+    writeFileSync(campaignPath, `${JSON.stringify(campaign)}\n`);
+    const packetPath = join(directory, 'protocols/e03-pilot-registration.v2.json');
+    mkdirSync(dirname(packetPath), { recursive: true });
+    writeFileSync(packetPath, '{"preRegistrationHash":"sha256:fixture","artifact":{}}\n');
+    const attemptPath = join(directory, activePilotRoot(directory), 'attempt.json');
+    mkdirSync(dirname(attemptPath), { recursive: true });
+    writeFileSync(attemptPath, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 pilot attempt exists but is not an evidence-backed running state');
