@@ -42,6 +42,9 @@ importers:
       '@ald/types':
         specifier: workspace:*
         version: link:packages/types
+      '@ald/verifier':
+        specifier: workspace:*
+        version: link:packages/verifier
       '@napi-rs/canvas':
         specifier: 1.0.9
         version: 1.0.9
