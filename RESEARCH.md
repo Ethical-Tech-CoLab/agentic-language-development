@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.144 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.145 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1219,6 +1219,11 @@ prospective stage resource allocation within the authorized zero-spend ceiling.
 That allocation charges E02's prior conservative reservation and the measured
 development CPU/storage before reserving the new pilot capacity; a stage cannot
 reuse consumed capacity merely because its own projected cost fits the gross ceiling.
+The prepared registered pilot path checks all 120 exact run configurations,
+audits each original bundle with the TypeScript and retained Rust verifiers,
+reconciles paired scenarios and resource charges after each run, and stops on
+failure without replacement. It has not executed: no pilot variance or
+behavioral finding is reported.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

@@ -520,6 +520,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
 - [ ] Preserve identical observation and action interfaces.
 - [ ] Calculate confidence intervals and effect sizes.
 - [ ] Verify all evidence bundles before analysis.
+- [ ] Reconcile all 120 pilot runs with zero reserves and admit only verified,
+      outcome-blind pilot tallies to variance estimation.
 
 ### Acceptance Criteria
 

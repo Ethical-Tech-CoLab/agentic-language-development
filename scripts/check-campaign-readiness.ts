@@ -205,6 +205,66 @@ if (resolvedIds.has('B16')) {
     throw new Error('B16 closure contradicts the complete audited E02 software qualification');
   }
 }
+const e03 = review.experiments.find((entry) => entry.id === 'E03');
+if (e03 && e03.executionReadiness.stage === 'pilot' &&
+    (e03.executionReadiness.decision !== 'blocked' || e03.attempt.status !== 'not-started')) {
+  const evidencePath = (kind: string): string | undefined =>
+    e03.evidence.find((item) => item.kind === kind)?.path;
+  const packetPath = evidencePath('prospective-registration-packet');
+  const bindingPath = evidencePath('simulated-registration-binding');
+  const topologyPath = evidencePath('development-topology-audit');
+  const stageAllocationPath = evidencePath('prospective-stage-allocation');
+  if (!packetPath || !bindingPath || !topologyPath || !stageAllocationPath) {
+    throw new Error('E03 pilot progression lacks packet, simulated binding, original-topology audit, or measured allocation evidence');
+  }
+  const packet = JSON.parse(readFileSync(packetPath, 'utf8')) as {
+    preRegistrationHash: string; runs: unknown[];
+    artifact: { parameters: { stage?: string; seedManifest?: { entries?: unknown[]; reserveSeeds?: number };
+      executionBinding?: { prototypeTopology?: { sha256?: string }; stageResourceAllocation?: { sha256?: string } } } };
+  };
+  const binding = JSON.parse(readFileSync(bindingPath, 'utf8')) as {
+    preRegistrationHash?: string; repositoryRegistration?: { path?: string };
+    preRunAnchor?: { anchorClass?: string; status?: string };
+  };
+  const topology = JSON.parse(readFileSync(topologyPath, 'utf8')) as {
+    experimentId?: string; profile?: string; classification?: string; conditionsAudited?: number;
+    roleContainerCount?: number; auditExitStatus?: number; passed?: boolean; researchFinding?: boolean;
+  };
+  const stageAllocation = JSON.parse(readFileSync(stageAllocationPath, 'utf8')) as {
+    experimentId?: string; stage?: string; classification?: string; decision?: string;
+    plannedRuns?: number; reserveSlots?: number; measurementSourceSha256?: string;
+    policySourceSha256?: string; priorCpuHoursCharged?: number; reservedCpuHours?: number;
+    priorRetainedStorageGiB?: number; reservedWorkingStorageGiB?: number; externalSpend?: number;
+  };
+  const sourceSha = (path: string): string => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+  if (
+    packet.artifact.parameters.stage !== 'blinded-pilot' ||
+    packet.artifact.parameters.seedManifest?.entries?.length !== 20 ||
+    packet.artifact.parameters.seedManifest?.reserveSeeds !== 0 ||
+    packet.runs.length !== 120 ||
+    binding.preRegistrationHash !== packet.preRegistrationHash ||
+    binding.repositoryRegistration?.path !== packetPath ||
+    binding.preRunAnchor?.anchorClass !== 'simulated' ||
+    binding.preRunAnchor?.status !== 'confirmed' ||
+    topology.experimentId !== 'E03' || topology.profile !== 'prototype-v2' ||
+    topology.classification !== 'original-prototype-development-audit' ||
+    topology.conditionsAudited !== 6 || topology.roleContainerCount !== 12 ||
+    topology.auditExitStatus !== 0 || topology.passed !== true || topology.researchFinding !== false ||
+    stageAllocation.experimentId !== 'E03' || stageAllocation.stage !== 'blinded-pilot' ||
+    stageAllocation.classification !== 'prospective-local-stage-allocation' ||
+    stageAllocation.decision !== 'ready' || stageAllocation.plannedRuns !== 120 ||
+    stageAllocation.reserveSlots !== 0 || stageAllocation.externalSpend !== 0 ||
+    stageAllocation.measurementSourceSha256 !== sourceSha(topologyPath) ||
+    stageAllocation.policySourceSha256 !== sourceSha('protocols/seed-and-resource-allocation.v1.json') ||
+    packet.artifact.parameters.executionBinding?.prototypeTopology?.sha256 !== sourceSha(topologyPath) ||
+    packet.artifact.parameters.executionBinding?.stageResourceAllocation?.sha256 !== sourceSha(stageAllocationPath) ||
+    !(Number(stageAllocation.priorCpuHoursCharged) + Number(stageAllocation.reservedCpuHours) <= allocation.localCeiling.cpuHours) ||
+    !(Number(stageAllocation.priorRetainedStorageGiB) + Number(stageAllocation.reservedWorkingStorageGiB) <=
+      allocation.localCeiling.workingStorageGiB)
+  ) {
+    throw new Error('E03 pilot progression contradicts its exact registered topology, simulated commitment, or measured zero-spend allocation');
+  }
+}
 if (
   allocation.planningAccounting.projectedUncompressedGiBAtMeasuredRate <= allocation.localCeiling.workingStorageGiB ||
   allocation.planningAccounting.projectedSingleCoreHoursAtMeasuredRate <= allocation.localCeiling.cpuHours ||

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- malformed status fixtures intentionally cross the JSON boundary */
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -10,6 +11,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const temporaryDirectories: string[] = [];
 const source = (path: string) => JSON.parse(readFileSync(join(root, path), 'utf8'));
+const syntheticSha = (value: unknown) => `sha256:${createHash('sha256')
+  .update(`${JSON.stringify(value, null, 2)}\n`).digest('hex')}`;
 
 function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void = () => undefined) {
   const directory = mkdtempSync(join(tmpdir(), 'ald-campaign-readiness-'));
@@ -44,6 +47,10 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'reports/research/e02-v3-full-audit-receipt.json': receipts.fullAudit,
   };
   if (receipts.e03) values['reports/research/e03-pilot-v1-status-receipt.json'] = receipts.e03;
+  if (receipts.e03Packet) values['protocols/e03-pilot-registration.v1.json'] = receipts.e03Packet;
+  if (receipts.e03Binding) values['protocols/e03-pilot-registration-binding.v1.json'] = receipts.e03Binding;
+  if (receipts.e03Topology) values['reports/research/e03-prototype-topology-audit-receipt.json'] = receipts.e03Topology;
+  if (receipts.e03Allocation) values['protocols/e03-pilot-resource-allocation.v1.json'] = receipts.e03Allocation;
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -69,7 +76,7 @@ describe('stage-specific campaign progress', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
-  it('allows a gate to advance from its receipt instead of a hard-coded experiment list', () => {
+  it('rejects an apparently complete pilot without prospective registration', () => {
     const result = run(fixture((campaign, receipts) => {
       const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
       e03.executionReadiness = { stage: 'pilot', decision: 'complete', reasonCodes: [] };
@@ -79,7 +86,61 @@ describe('stage-specific campaign progress', () => {
         plannedSlots: 120, attemptedSlots: 120, completedSlots: 120,
         slots: Array.from({ length: 120 }, (_, index) => ({ slot: index + 1 })) };
     }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot progression lacks packet');
+  });
+
+  it('can mark the pilot stage ready while broader research blockers remain open', () => {
+    const directory = fixture((campaign, receipts) => {
+      const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+      e03.executionReadiness = { stage: 'pilot', decision: 'ready', reasonCodes: [] };
+      e03.evidence = [
+        { kind: 'prospective-registration-packet', path: 'protocols/e03-pilot-registration.v1.json', statusAuthority: false },
+        { kind: 'simulated-registration-binding', path: 'protocols/e03-pilot-registration-binding.v1.json', statusAuthority: false },
+        { kind: 'development-topology-audit', path: 'reports/research/e03-prototype-topology-audit-receipt.json', statusAuthority: false },
+        { kind: 'prospective-stage-allocation', path: 'protocols/e03-pilot-resource-allocation.v1.json', statusAuthority: false },
+      ];
+      receipts.e03Topology = {
+        experimentId: 'E03', profile: 'prototype-v2', classification: 'original-prototype-development-audit',
+        conditionsAudited: 6, roleContainerCount: 12, auditExitStatus: 0,
+        passed: true, researchFinding: false,
+      };
+      receipts.e03Allocation = {
+        experimentId: 'E03', stage: 'blinded-pilot',
+        classification: 'prospective-local-stage-allocation', decision: 'ready',
+        plannedRuns: 120, reserveSlots: 0, externalSpend: 0,
+        measurementSourceSha256: syntheticSha(receipts.e03Topology),
+        policySourceSha256: syntheticSha(source('protocols/seed-and-resource-allocation.v1.json')),
+        priorCpuHoursCharged: 22, reservedCpuHours: 1,
+        priorRetainedStorageGiB: 1, reservedWorkingStorageGiB: 1,
+      };
+      receipts.e03Packet = {
+        preRegistrationHash: `sha256:${'a'.repeat(64)}`,
+        artifact: { parameters: {
+          stage: 'blinded-pilot', seedManifest: { entries: Array(20).fill({}), reserveSeeds: 0 },
+          executionBinding: {
+            prototypeTopology: { sha256: syntheticSha(receipts.e03Topology) },
+            stageResourceAllocation: { sha256: syntheticSha(receipts.e03Allocation) },
+          },
+        } },
+        runs: Array(120).fill({}),
+      };
+      receipts.e03Binding = {
+        preRegistrationHash: receipts.e03Packet.preRegistrationHash,
+        repositoryRegistration: { path: 'protocols/e03-pilot-registration.v1.json' },
+        preRunAnchor: { anchorClass: 'simulated', status: 'confirmed' },
+      };
+    });
+    const result = run(directory);
     expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('1 ready');
+    const allocationPath = join(directory, 'protocols/e03-pilot-resource-allocation.v1.json');
+    const allocation = JSON.parse(readFileSync(allocationPath, 'utf8'));
+    allocation.reservedCpuHours = 51;
+    writeFileSync(allocationPath, `${JSON.stringify(allocation, null, 2)}\n`);
+    const contradicted = run(directory);
+    expect(contradicted.status).not.toBe(0);
+    expect(contradicted.stderr).toContain('E03 pilot progression contradicts');
   });
 
   it('rejects closing B16 without completed E02 qualification', () => {

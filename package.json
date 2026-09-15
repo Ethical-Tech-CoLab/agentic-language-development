@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.144",
+  "version": "0.1.145",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -24,6 +24,9 @@
     "qualify:e03-prototype-topology-dev": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-topology-qualification.mjs --run-prototype-v2",
     "audit:e03-prototype-topology-dev:live": "node scripts/run-e03-topology-qualification.mjs --audit-prototype-v2",
     "build:e03-pilot-allocation": "node scripts/build-e03-pilot-resource-allocation.mjs --write",
+    "admit:e03-pilot:live": "node scripts/check-e03-pilot-admission.mjs --live",
+    "run:e03-pilot": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-registered-pilot.mjs --run",
+    "audit:e03-pilot:live": "node scripts/run-e03-registered-pilot.mjs --audit",
     "preflight:research": "pnpm run build && node scripts/check-research-preflight.mjs",
     "qualify:frozen-model": "pnpm run build && node scripts/run-frozen-model-qualification.mjs",
     "qualify:generative-carriers": "pnpm run build && node scripts/run-generative-carrier-qualification.mjs",
