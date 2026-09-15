@@ -76,8 +76,10 @@ if (
 }
 if (
   resourceAllocationSource.value.schemaVersion !== 1 ||
-  resourceAllocationSource.value.externalSpend !== 0 ||
-  resourceAllocationSource.value.publicChainTransaction !== false
+  resourceAllocationSource.value.localCeiling?.externalSpend !== 0 ||
+  !(resourceAllocationSource.value.localCeiling.cpuHours > 0) ||
+  !(resourceAllocationSource.value.localCeiling.workingStorageGiB > 0) ||
+  !(resourceAllocationSource.value.localCeiling.maximumResidentGiB > 0)
 ) {
   throw new Error('E03 registration requires the zero-spend resource allocation policy');
 }
