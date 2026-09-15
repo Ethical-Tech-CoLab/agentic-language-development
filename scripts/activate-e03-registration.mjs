@@ -6,13 +6,16 @@ import { FakeChainTransport } from '@ald/anchor';
 import { hashCanonical } from '@ald/hashing';
 import { HASH_DOMAINS, PreRegistrationArtifactSchema, PreRegistrationBindingSchema } from '@ald/types';
 
-const [stage, mode] = process.argv.slice(2);
-assert.equal(process.argv.length, 4, 'usage: activate-e03-registration.mjs <pilot|full> <--activate|--check>');
+const [stage, mode, attemptVersion = 'v1'] = process.argv.slice(2);
+assert.ok([4, 5].includes(process.argv.length),
+  'usage: activate-e03-registration.mjs <pilot|full> <--activate|--check> [v1|v2]');
 assert.ok(['pilot', 'full'].includes(stage));
 assert.ok(['--activate', '--check'].includes(mode));
+assert.ok(['v1', 'v2'].includes(attemptVersion));
+assert.ok(stage === 'pilot' || attemptVersion === 'v1');
 
-const packetPath = `protocols/e03-${stage}-registration.v1.json`;
-const bindingPath = `protocols/e03-${stage}-registration-binding.v1.json`;
+const packetPath = `protocols/e03-${stage}-registration.${attemptVersion}.json`;
+const bindingPath = `protocols/e03-${stage}-registration-binding.${attemptVersion}.json`;
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const commit = git('log', '-1', '--format=%H', '--', packetPath);
 assert.match(commit, /^[a-f0-9]{40}$/u, 'E03 packet must have a repository commit');

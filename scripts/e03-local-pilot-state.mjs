@@ -1,14 +1,15 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 
-const terminalPath = 'evidence/pilots/e03-blinded-v1/receipt.json';
-const attemptPath = 'evidence/pilots/e03-blinded-v1/attempt.json';
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
 export function checkE03LocalPilotState(entry) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
+  const attemptVersion = packetPath?.endsWith('.v2.json') ? 'v2' : 'v1';
+  const terminalPath = `evidence/pilots/e03-blinded-${attemptVersion}/receipt.json`;
+  const attemptPath = `evidence/pilots/e03-blinded-${attemptVersion}/attempt.json`;
   const isAuthority = (path) => entry.evidence.some((item) =>
     item.path === path && item.statusAuthority);
 

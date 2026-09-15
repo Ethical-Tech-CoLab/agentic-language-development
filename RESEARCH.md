@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.162 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.163 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1231,9 +1231,11 @@ packet. The allocation charges prior E02 and development CPU/storage before
 reserving 1 CPU-hour, 1 GiB evidence, and 1 GiB resident memory. Its
 prospective 0.7-hour sequential wall projection includes full-service startup/
 audit overhead; the unregistered 0.2-hour slot-only projection is retained in
-dated correction provenance. A [prospective pilot packet](protocols/e03-pilot-registration.v1.json)
-now fixes 120 runs and fresh seeds against clean v0.1.161; it has no simulated
-activation or execution yet. The prepared
+dated correction provenance. The unused [v1 pilot packet](protocols/e03-pilot-registration.v1.json)
+and [simulated binding](protocols/e03-pilot-registration-binding.v1.json)
+are retained after tracked test-fixture changes altered their exact source
+digest. A [prospective v2 amendment](protocols/e03-pilot-registration-amendment.v2.json)
+requires fresh IDs/seeds and binding before admission. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
 Its reducer and separate recomputation audit are also prepared, not executed.
@@ -1366,7 +1368,7 @@ and analysis plan before execution. The run configuration stores the protocol co
 and pre-registration hash. Changes create appended amendments rather than rewriting
 the original record.
 
-The E02 software-qualification packets and E03 pilot packet have been
+The E02 software-qualification packets and unused E03 v1 pilot packet have been
 repository-registered, but the E03 pilot has not begun. Before each later
 confirmatory run, its canonical packet will be committed unchanged in a Git ancestor
 of the execution commit. Preflight will load those historical bytes, reproduce the

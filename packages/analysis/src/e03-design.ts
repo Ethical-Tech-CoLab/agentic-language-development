@@ -123,6 +123,7 @@ export interface E03SeedManifest {
   readonly seedRoot: typeof E03_SEED_ROOT;
   readonly stage: E03RegistrationStage;
   readonly seedDomain: 'blinded-pilot' | 'confirmatory';
+  readonly attemptVersion?: 'v2';
   readonly primarySeeds: number;
   readonly reserveSeeds: number;
   readonly conditions: typeof E03_COMMUNICATION_CONDITIONS;
@@ -277,6 +278,7 @@ function seedCondition(condition: E03CommunicationCondition): string {
 export function buildE03SeedManifest(
   stage: E03RegistrationStage,
   primarySeeds: number,
+  attemptVersion: 'v1' | 'v2' = 'v1',
 ): E03SeedManifest {
   positiveInteger(primarySeeds, 'primarySeeds');
   if (stage === 'blinded-pilot' && primarySeeds !== 20) {
@@ -288,7 +290,8 @@ export function buildE03SeedManifest(
     { length: primarySeeds + reserveSeeds },
     (_, index): E03SeedManifestEntry => {
       const slot = index + 1;
-      const prefix = [E03_SEED_ROOT, seedDomain, 'E03'] as const;
+      const prefix = [E03_SEED_ROOT, seedDomain, 'E03',
+        ...(attemptVersion === 'v2' ? ['v2'] : [])] as const;
       const scenarioSeed = deriveSeedHex(...prefix, String(slot), 'scenario');
       const conditionSeeds = Object.fromEntries(
         E03_COMMUNICATION_CONDITIONS.map((condition) => {
@@ -315,6 +318,7 @@ export function buildE03SeedManifest(
     seedRoot: E03_SEED_ROOT,
     stage,
     seedDomain,
+    ...(attemptVersion === 'v2' ? { attemptVersion } : {}),
     primarySeeds,
     reserveSeeds,
     conditions: E03_COMMUNICATION_CONDITIONS,

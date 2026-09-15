@@ -57,6 +57,17 @@ describe('E03 primary and reserve seed manifest', () => {
     expect(manifest.entries.every((entry) => entry.use === 'primary')).toBe(true);
   });
 
+  it('allocates a disjoint prospective v2 pilot namespace without changing v1', () => {
+    const original = buildE03SeedManifest('blinded-pilot', 20);
+    const amended = buildE03SeedManifest('blinded-pilot', 20, 'v2');
+    expect(amended.attemptVersion).toBe('v2');
+    expect(amended.reserveSeeds).toBe(0);
+    const allSeeds = (manifest: typeof original) => manifest.entries.flatMap((entry) =>
+      [entry.scenarioSeed, ...Object.values(entry.conditionSeeds).flatMap(Object.values)]);
+    expect(new Set([...allSeeds(original), ...allSeeds(amended)]).size).toBe(
+      allSeeds(original).length + allSeeds(amended).length);
+  });
+
   it('derives full component bindings and ten-percent ordered reserves', () => {
     const manifest = buildE03SeedManifest('full-qualification', 75);
     expect(manifest.primarySeeds).toBe(75);

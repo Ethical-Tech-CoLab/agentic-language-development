@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -18,6 +19,7 @@ const { values } = parseArgs({
       default: 'evidence/preregistration/e03-pilot-v1-draft.json',
     },
     stage: { type: 'string', default: 'pilot' },
+    'attempt-version': { type: 'string', default: 'v1' },
     'primary-seeds': { type: 'string', default: '20' },
     'sample-size-decision': { type: 'string' },
     'e02-receipt': {
@@ -42,6 +44,10 @@ const stage = values.stage === 'pilot'
     : undefined;
 if (stage === undefined) {
   throw new Error('--stage must be pilot or full');
+}
+if (!['v1', 'v2'].includes(values['attempt-version']) ||
+    (stage !== 'blinded-pilot' && values['attempt-version'] !== 'v1')) {
+  throw new Error('--attempt-version must be v1 or v2; v2 is currently pilot-only');
 }
 const primarySeeds = Number(values['primary-seeds']);
 if (!Number.isInteger(primarySeeds) || primarySeeds < 1) {
@@ -81,6 +87,24 @@ const e02ReceiptSource = await readJson(e02ReceiptPath);
 const resourceAllocationSource = await readJson(resourceAllocationPath);
 const topologyAuditSource = await readJson(topologyAuditPath);
 const stageAllocationSource = await readJson(stageAllocationPath);
+const amendmentPath = 'protocols/e03-pilot-registration-amendment.v2.json';
+const amendmentSource = values['attempt-version'] === 'v2'
+  ? await readJson(amendmentPath) : undefined;
+if (amendmentSource) {
+  const priorPacket = await readJson('protocols/e03-pilot-registration.v1.json');
+  const priorBinding = await readJson('protocols/e03-pilot-registration-binding.v1.json');
+  if (amendmentSource.value.classification !== 'prospective-unused-registration-supersession' ||
+      amendmentSource.value.priorPacketPath !== 'protocols/e03-pilot-registration.v1.json' ||
+      amendmentSource.value.priorBindingPath !== 'protocols/e03-pilot-registration-binding.v1.json' ||
+      amendmentSource.value.newPacketPath !== 'protocols/e03-pilot-registration.v2.json' ||
+      amendmentSource.value.priorPilotEvidenceRoot !== 'evidence/pilots/e03-blinded-v1' ||
+      amendmentSource.value.priorRegistrationHash !== priorPacket.value.preRegistrationHash ||
+      priorBinding.value.preRegistrationHash !== priorPacket.value.preRegistrationHash ||
+      amendmentSource.value.priorSeedsUsed !== false ||
+      existsSync(amendmentSource.value.priorPilotEvidenceRoot)) {
+    throw new Error('E03 v2 pilot registration requires a retained unused v1 packet and prospective amendment');
+  }
+}
 if (
   e02ReceiptSource.value.experimentId !== 'E02' ||
   e02ReceiptSource.value.passed !== true ||
@@ -238,6 +262,10 @@ const executionBinding = {
     priorRetainedStorageGiB: stageAllocation.priorRetainedStorageGiB,
     externalSpend: 0,
   },
+  ...(amendmentSource ? { registrationAmendment: {
+    path: amendmentPath,
+    sha256: sha256(amendmentSource.bytes),
+  } } : {}),
   evidencePolicy: {
     anchorClass: 'simulated',
     publicTimestamp: false,
@@ -345,6 +373,7 @@ const result = compileE03Registration({
   baseConfig,
   stage,
   primarySeeds,
+  attemptVersion: values['attempt-version'],
   executionBinding,
   ...(sampleSizeDecision === undefined ? {} : { sampleSizeDecision }),
   hypothesis:

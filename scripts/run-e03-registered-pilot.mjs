@@ -11,11 +11,14 @@ import { reconcileE03OriginalPilotData } from './e03-original-pilot-data.mjs';
 import { reconcileE03PilotAttemptResources } from './e03-pilot-resource-accounting.mjs';
 
 const mode = process.argv[2];
-assert.ok(process.argv.length === 3 && ['--run', '--audit'].includes(mode));
-const root = 'evidence/pilots/e03-blinded-v1';
-const project = 'ald-e03-pilot-v1';
-const packetPath = 'protocols/e03-pilot-registration.v1.json';
-const bindingPath = 'protocols/e03-pilot-registration-binding.v1.json';
+assert.ok(['--run', '--audit'].includes(mode) &&
+  (process.argv.length === 3 ||
+    (process.argv.length === 4 && process.argv[3] === '--v2')));
+const attemptVersion = process.argv[3] === '--v2' ? 'v2' : 'v1';
+const root = `evidence/pilots/e03-blinded-${attemptVersion}`;
+const project = `ald-e03-pilot-${attemptVersion}`;
+const packetPath = `protocols/e03-pilot-registration.${attemptVersion}.json`;
+const bindingPath = `protocols/e03-pilot-registration-binding.${attemptVersion}.json`;
 const allocationPath = 'protocols/e03-pilot-resource-allocation.v1.json';
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;

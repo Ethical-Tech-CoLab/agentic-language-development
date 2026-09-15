@@ -44,6 +44,7 @@ export interface CompileE03RegistrationInput {
   readonly hypothesis: string;
   readonly analysisPlan: string;
   readonly primarySeeds: number;
+  readonly attemptVersion?: 'v1' | 'v2';
   readonly executionBinding: E03ExecutionBinding;
   readonly sampleSizeDecision?: E03SampleSizeDecision;
 }
@@ -107,6 +108,10 @@ export interface E03ExecutionBinding {
     readonly priorCpuHoursCharged: number;
     readonly priorRetainedStorageGiB: number;
     readonly externalSpend: 0;
+  };
+  readonly registrationAmendment?: {
+    readonly path: string;
+    readonly sha256: string;
   };
   readonly evidencePolicy: {
     readonly anchorClass: 'simulated';
@@ -230,7 +235,7 @@ function assertSampleSizeDecision(
 }
 
 function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03RegistrationStage,
-  plannedRuns: number): void {
+  plannedRuns: number, attemptVersion: 'v1' | 'v2'): void {
   const sourcePaths = new Set(binding.sourceFiles.map((source) => source.path));
   if (
     binding.version !== 1 ||
@@ -280,6 +285,11 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
     !(binding.stageResourceAllocation.priorCpuHoursCharged >= 0) ||
     !(binding.stageResourceAllocation.priorRetainedStorageGiB >= 0) ||
     binding.stageResourceAllocation.externalSpend !== 0 ||
+    (attemptVersion === 'v2' &&
+      (!binding.registrationAmendment ||
+        !safeRepositoryPath(binding.registrationAmendment.path) ||
+        !SHA256_PATTERN.test(binding.registrationAmendment.sha256))) ||
+    (attemptVersion === 'v1' && binding.registrationAmendment !== undefined) ||
     binding.evidencePolicy.anchorClass !== 'simulated' ||
     binding.evidencePolicy.publicTimestamp !== false ||
     binding.evidencePolicy.originalEvidenceImmutable !== true ||
@@ -334,9 +344,11 @@ export function compileE03Registration(
   const baseConfig = RunConfigSchema.parse(input.baseConfig);
   assertE03Base(baseConfig);
   assertSampleSizeDecision(input);
-  const seedManifest = buildE03SeedManifest(input.stage, input.primarySeeds);
+  const seedManifest = buildE03SeedManifest(input.stage, input.primarySeeds,
+    input.attemptVersion ?? 'v1');
   assertExecutionBinding(input.executionBinding, input.stage,
-    seedManifest.entries.length * E03_COMMUNICATION_CONDITIONS.length);
+    seedManifest.entries.length * E03_COMMUNICATION_CONDITIONS.length,
+    input.attemptVersion ?? 'v1');
   if (baseConfig.evaluationSeeds !== input.primarySeeds) {
     throw new AnalysisError(
       'domain',
@@ -372,7 +384,7 @@ export function compileE03Registration(
         condition,
         config: RunConfigSchema.parse({
           ...baseConfig,
-          runId: `e03-${runStage}-${condition}-s${String(entry.slot).padStart(3, '0')}`,
+          runId: `e03-${runStage}-${input.attemptVersion === 'v2' ? 'v2-' : ''}${condition}-s${String(entry.slot).padStart(3, '0')}`,
           randomSeed: entry.scenarioSeed,
           seedBindings: {
             version: 1,

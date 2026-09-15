@@ -122,6 +122,8 @@ describe('current project status', () => {
       'reports/research/methods-readiness-review.md',
       ...(existsSync(join(root, 'protocols/e03-pilot-registration.v1.json'))
         ? ['protocols/e03-pilot-registration.v1.json'] : []),
+      ...(existsSync(join(root, 'protocols/e03-pilot-registration.v2.json'))
+        ? ['protocols/e03-pilot-registration.v2.json'] : []),
     ]) {
       mkdirSync(dirname(join(directory, path)), { recursive: true });
       writeFileSync(join(directory, path), readFileSync(join(root, path)));

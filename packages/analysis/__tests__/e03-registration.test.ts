@@ -151,6 +151,31 @@ describe('E03 pre-registration compiler', () => {
     })).size).toBe(24);
   });
 
+  it('compiles a v2 pilot with fresh registered IDs and seeds', () => {
+    const original = compileE03Registration(input);
+    const amended = compileE03Registration({ ...input, attemptVersion: 'v2',
+      executionBinding: { ...input.executionBinding,
+        registrationAmendment: {
+          path: 'protocols/e03-pilot-registration-amendment.v2.json',
+          sha256: hash('prospective-amendment'),
+        },
+      },
+    });
+    expect(amended.runs).toHaveLength(120);
+    expect(amended.seedManifest.attemptVersion).toBe('v2');
+    expect(amended.runs[0]?.config.runId).toMatch(/^e03-pilot-v2-/u);
+    expect(new Set([...original.runs.map((run) => run.config.runId),
+      ...amended.runs.map((run) => run.config.runId)]).size).toBe(240);
+    expect(new Set([...original.seedManifest.entries.map((entry) => entry.scenarioSeed),
+      ...amended.seedManifest.entries.map((entry) => entry.scenarioSeed)]).size).toBe(40);
+    expect(amended.preRegistrationHash).not.toBe(original.preRegistrationHash);
+  });
+
+  it('rejects a v2 pilot that does not bind its prospective amendment', () => {
+    expect(() => compileE03Registration({ ...input, attemptVersion: 'v2' }))
+      .toThrow(/execution binding is incomplete/u);
+  });
+
   it('is byte-identical on repeat and changes hash when a registered field changes', () => {
     const first = compileE03Registration(input);
     const second = compileE03Registration(input);

@@ -29,9 +29,19 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
                 : 'protocols/e03-pilot-resource-allocation.v1.json',
   )]));
   mutate(campaign, receipts);
-  if (campaign.experiments.find((entry: any) => entry.id === 'E03')?.evidence.some(
-    (entry: any) => entry.kind === 'prospective-registration-packet') && !receipts.e03Packet) {
-    receipts.e03Packet = source('protocols/e03-pilot-registration.v1.json');
+  const e03Evidence = campaign.experiments.find((entry: any) => entry.id === 'E03')?.evidence;
+  const packetPath = e03Evidence?.find((entry: any) =>
+    entry.kind === 'prospective-registration-packet')?.path ?? 'protocols/e03-pilot-registration.v1.json';
+  const bindingPath = e03Evidence?.find((entry: any) =>
+    entry.kind === 'simulated-registration-binding')?.path ??
+    'protocols/e03-pilot-registration-binding.v1.json';
+  if (e03Evidence?.some((entry: any) => entry.kind === 'prospective-registration-packet') &&
+      !receipts.e03Packet) {
+    receipts.e03Packet = source(packetPath);
+  }
+  if (e03Evidence?.some((entry: any) => entry.kind === 'simulated-registration-binding') &&
+      !receipts.e03Binding) {
+    receipts.e03Binding = source(bindingPath);
   }
   const values: Record<string, unknown> = {
     'protocols/campaign-readiness-review.v1.json': campaign,
@@ -56,8 +66,8 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'protocols/e03-pilot-resource-allocation.v1.json': receipts.e03CurrentAllocation,
   };
   if (receipts.e03) values['reports/research/e03-pilot-v1-status-receipt.json'] = receipts.e03;
-  if (receipts.e03Packet) values['protocols/e03-pilot-registration.v1.json'] = receipts.e03Packet;
-  if (receipts.e03Binding) values['protocols/e03-pilot-registration-binding.v1.json'] = receipts.e03Binding;
+  if (receipts.e03Packet) values[packetPath] = receipts.e03Packet;
+  if (receipts.e03Binding) values[bindingPath] = receipts.e03Binding;
   if (receipts.e03Topology) values['reports/research/e03-prototype-topology-audit-receipt.json'] = receipts.e03Topology;
   if (receipts.e03Allocation) values['protocols/e03-pilot-resource-allocation.v1.json'] = receipts.e03Allocation;
   if (receipts.e03Terminal) values['evidence/pilots/e03-blinded-v1/receipt.json'] = receipts.e03Terminal;
@@ -77,13 +87,13 @@ function run(directory: string) {
   ], { cwd: directory, encoding: 'utf8' });
 }
 
-function readyPilotFixture() {
+function readyPilotFixture(version: 'v1' | 'v2' = 'v1') {
   return fixture((campaign, receipts) => {
     const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
     e03.executionReadiness = { stage: 'pilot', decision: 'ready', reasonCodes: [] };
     e03.evidence = [
-      { kind: 'prospective-registration-packet', path: 'protocols/e03-pilot-registration.v1.json', statusAuthority: false },
-      { kind: 'simulated-registration-binding', path: 'protocols/e03-pilot-registration-binding.v1.json', statusAuthority: false },
+      { kind: 'prospective-registration-packet', path: `protocols/e03-pilot-registration.${version}.json`, statusAuthority: false },
+      { kind: 'simulated-registration-binding', path: `protocols/e03-pilot-registration-binding.${version}.json`, statusAuthority: false },
       { kind: 'development-topology-audit', path: 'reports/research/e03-prototype-topology-audit-receipt.json', statusAuthority: false },
       { kind: 'prospective-stage-allocation', path: 'protocols/e03-pilot-resource-allocation.v1.json', statusAuthority: false },
     ];
@@ -122,17 +132,18 @@ function readyPilotFixture() {
     };
     receipts.e03Binding = {
       preRegistrationHash: receipts.e03Packet.preRegistrationHash,
-      repositoryRegistration: { path: 'protocols/e03-pilot-registration.v1.json' },
+      repositoryRegistration: { path: `protocols/e03-pilot-registration.${version}.json` },
       preRunAnchor: { anchorClass: 'simulated', status: 'confirmed' },
     };
   });
 }
 
-function blockedPilotPacketFixture(mutatePacket: (packet: any) => void = () => undefined) {
+function blockedPilotPacketFixture(mutatePacket: (packet: any) => void = () => undefined,
+  version: 'v1' | 'v2' = 'v1') {
   return fixture((campaign, receipts) => {
     const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
     e03.evidence.push({ kind: 'prospective-registration-packet',
-      path: 'protocols/e03-pilot-registration.v1.json', statusAuthority: false });
+      path: `protocols/e03-pilot-registration.${version}.json`, statusAuthority: false });
     receipts.e03Packet = {
       preRegistrationHash: `sha256:${'a'.repeat(64)}`,
       artifact: { experimentId: 'E03', protocolGitCommit: 'a'.repeat(40), parameters: {
@@ -257,6 +268,16 @@ describe('stage-specific campaign progress', () => {
 
   it('accepts a frozen packet as blocked preparation before simulated activation', () => {
     const result = run(blockedPilotPacketFixture());
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('accepts a fresh v2 packet as blocked preparation before its own activation', () => {
+    const result = run(blockedPilotPacketFixture(() => undefined, 'v2'));
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('accepts the v2 pilot-ready stage with a separate packet and binding', () => {
+    const result = run(readyPilotFixture('v2'));
     expect(result.status, result.stderr).toBe(0);
   });
 

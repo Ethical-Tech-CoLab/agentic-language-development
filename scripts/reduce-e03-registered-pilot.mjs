@@ -7,11 +7,12 @@ import { fileURLToPath } from 'node:url';
 import { reduceE03Pilot } from '@ald/analysis';
 
 const mode = process.argv[2];
-assert.deepEqual(process.argv.slice(2), [mode]);
+const attemptVersion = process.argv[3] === '--v2' ? 'v2' : 'v1';
+assert.deepEqual(process.argv.slice(2), attemptVersion === 'v2' ? [mode, '--v2'] : [mode]);
 assert.ok(['--write', '--audit'].includes(mode),
   'usage: node scripts/reduce-e03-registered-pilot.mjs --write|--audit');
 
-const root = 'evidence/pilots/e03-blinded-v1';
+const root = `evidence/pilots/e03-blinded-${attemptVersion}`;
 const receiptPath = `${root}/receipt.json`;
 const packetPath = `${root}/registration.json`;
 const outputPath = `${root}/sample-size-input.json`;
@@ -26,7 +27,8 @@ else assert.equal(existsSync(outputPath), true,
   'original pilot reduction is absent');
 
 const audit = spawnSync(process.execPath,
-  [fileURLToPath(new URL('./run-e03-registered-pilot.mjs', import.meta.url)), '--audit'],
+  [fileURLToPath(new URL('./run-e03-registered-pilot.mjs', import.meta.url)), '--audit',
+    ...(attemptVersion === 'v2' ? ['--v2'] : [])],
   { encoding: 'utf8', timeout: 2 * 60 * 60_000, maxBuffer: 8 * 1024 * 1024 });
 assert.equal(audit.status, 0, audit.error?.message ?? audit.stderr);
 assert.match(audit.stdout, /120-run original blinded-pilot audit passed/u);

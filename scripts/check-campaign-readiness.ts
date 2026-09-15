@@ -319,7 +319,8 @@ if (e03 && e03.attempt.status === 'not-started' &&
     throw new Error('E03 blocked packet preparation cannot claim an activated binding');
   }
   if (packetEvidence) {
-    if (packetEvidence.path !== 'protocols/e03-pilot-registration.v1.json') {
+    if (!['protocols/e03-pilot-registration.v1.json',
+      'protocols/e03-pilot-registration.v2.json'].includes(packetEvidence.path)) {
       throw new Error('E03 blocked pilot packet uses an unexpected registration path');
     }
     const packet = JSON.parse(readFileSync(packetEvidence.path, 'utf8')) as {

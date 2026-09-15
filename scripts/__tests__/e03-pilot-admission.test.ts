@@ -53,4 +53,12 @@ describe('registered E03 pilot live admission', () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('e03-pilot-registration.v1.json');
   });
+
+  it('requires the separately committed v2 packet before its own pilot', () => {
+    const directory = fixture();
+    const result = spawnSync(process.execPath, [script, '--live', '--v2'],
+      { cwd: directory, encoding: 'utf8' });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('e03-pilot-registration.v2.json');
+  });
 });

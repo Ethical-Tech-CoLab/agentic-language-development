@@ -38,6 +38,15 @@ describe('E03 registered pilot runner preconditions', () => {
     expect(existsSync(join(directory, 'evidence/pilots/e03-blinded-v1'))).toBe(false);
   });
 
+  it('uses a fresh v2 namespace and does not create evidence on missing admission', () => {
+    const directory = fixture();
+    const result = spawnSync(process.execPath, [script, '--run', '--v2'],
+      { cwd: directory, encoding: 'utf8' });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('e03-pilot-registration.v2.json');
+    expect(existsSync(join(directory, 'evidence/pilots/e03-blinded-v2'))).toBe(false);
+  });
+
   it('refuses a dirty execution commit before launching containers', () => {
     const directory = fixture();
     writeFileSync(join(directory, 'dirty.txt'), 'uncommitted fixture change\n');

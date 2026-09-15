@@ -14,10 +14,12 @@ const script = join(root, 'scripts/activate-e03-registration.mjs');
 const git = (directory: string, ...args: string[]) => spawnSync('git', args, {
   cwd: directory, encoding: 'utf8',
 });
-const run = (directory: string, mode: '--activate' | '--check') => spawnSync(process.execPath,
-  [script, 'pilot', mode], { cwd: directory, encoding: 'utf8' });
+const run = (directory: string, mode: '--activate' | '--check', version: 'v1' | 'v2' = 'v1') =>
+  spawnSync(process.execPath,
+    [script, 'pilot', mode, ...(version === 'v2' ? ['v2'] : [])],
+    { cwd: directory, encoding: 'utf8' });
 
-function fixture() {
+function fixture(version: 'v1' | 'v2' = 'v1') {
   const directory = mkdtempSync(join(tmpdir(), 'ald-e03-activation-'));
   directories.push(directory);
   expect(git(directory, 'init', '-q').status).toBe(0);
@@ -35,10 +37,11 @@ function fixture() {
   const packet = {
     artifact, preRegistrationHash: hashCanonical(HASH_DOMAINS.preRegistration, artifact),
   };
-  const path = join(directory, 'protocols/e03-pilot-registration.v1.json');
+  const packetPath = `protocols/e03-pilot-registration.${version}.json`;
+  const path = join(directory, packetPath);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(packet, null, 2)}\n`);
-  expect(git(directory, 'add', 'protocols/e03-pilot-registration.v1.json').status).toBe(0);
+  expect(git(directory, 'add', packetPath).status).toBe(0);
   expect(git(directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
     'commit', '-qm', 'fixture packet').status).toBe(0);
   return { directory, path, packet };
@@ -58,6 +61,16 @@ describe('E03 repository-native simulated activation', () => {
     expect(binding.preRegistrationHash).toBe(packet.preRegistrationHash);
     expect(binding.preRunAnchor.anchorClass).toBe('simulated');
     expect(run(directory, '--check').status).toBe(0);
+  });
+
+  it('activates a distinct v2 packet without overwriting v1', () => {
+    const { directory, packet } = fixture('v2');
+    expect(run(directory, '--activate', 'v2').status).toBe(0);
+    const binding = JSON.parse(readFileSync(join(directory,
+      'protocols/e03-pilot-registration-binding.v2.json'), 'utf8'));
+    expect(binding.preRegistrationHash).toBe(packet.preRegistrationHash);
+    expect(binding.preRunAnchor.anchorClass).toBe('simulated');
+    expect(run(directory, '--check', 'v2').status).toBe(0);
   });
 
   it('rejects a working packet that differs from its repository commitment', () => {
