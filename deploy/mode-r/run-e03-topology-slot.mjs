@@ -8,16 +8,23 @@ import { createIsolatedAdapterFactory } from '@ald/isolation';
 import { buildRunConfig } from '@ald/lifecycle';
 import { createProductionRuntime } from '@ald/orchestrator';
 
-const [condition, softwareCommit] = process.argv.slice(2);
+const [condition, softwareCommit, profile = 'v1'] = process.argv.slice(2);
 const conditions = ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle'];
-assert.equal(process.argv.length, 4, 'usage: run-e03-topology-slot.mjs <condition> <commit>');
+assert.ok([4, 5].includes(process.argv.length),
+  'usage: run-e03-topology-slot.mjs <condition> <commit> [v1|prototype-v2]');
 assert.ok(conditions.includes(condition));
 assert.match(softwareCommit, /^[a-f0-9]{40}$/u);
+assert.ok(['v1', 'prototype-v2'].includes(profile));
 
-const root = `/evidence/e03-topology-development-${condition}`;
-const runId = `e03-topology-development-${condition}`;
-const scenarioSeed = deriveSeedHex('ald-e03-topology-development-v1', 'scenario');
-const seed = (component) => deriveSeedHex('ald-e03-topology-development-v1', `${condition}/${component}`);
+const runId = profile === 'v1'
+  ? `e03-topology-development-${condition}`
+  : `e03-topology-prototype-v2-${condition}`;
+const root = `/evidence/${runId}`;
+const seedRoot = profile === 'v1'
+  ? 'ald-e03-topology-development-v1'
+  : 'ald-e03-topology-prototype-v2';
+const scenarioSeed = deriveSeedHex(seedRoot, 'scenario');
+const seed = (component) => deriveSeedHex(seedRoot, `${condition}/${component}`);
 const clock = { now: () => new Date().toISOString() };
 const factories = [];
 let production;
@@ -74,7 +81,8 @@ try {
       version: 1, scenario: scenarioSeed,
       babyA: seed('baby-a'), babyB: seed('baby-b'), gateway: seed('gateway'), analysis: seed('analysis'),
     },
-    deploymentMode: 'research-grade', registrationClass: 'qualification',
+    deploymentMode: profile === 'v1' ? 'research-grade' : 'prototype',
+    registrationClass: 'qualification',
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1', trainingIsolation: 'independent' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1', trainingIsolation: 'independent' },
     learningSignal: 'none', communicationCondition: condition,
@@ -128,7 +136,7 @@ try {
   const verification = JSON.parse(await readFile(join(bundleDir, 'verification-report.json'), 'utf8'));
   assert.equal(verification.exitCode, 0);
   const manifest = JSON.parse(await readFile(join(bundleDir, 'run-manifest.json'), 'utf8'));
-  assert.equal(manifest.deploymentMode, 'research-grade');
+  assert.equal(manifest.deploymentMode, profile === 'v1' ? 'research-grade' : 'prototype');
   observations = {
     runId, condition, scenarioSeed, seedBindings: config.seedBindings,
     configurationHash: production.runtime.getRun(runId).configurationHash,
@@ -156,11 +164,14 @@ try {
   await writeFile(join(root, 'slot.json'), `${JSON.stringify({
     schemaVersion: 1, experimentId: 'E03', classification: 'development-only-topology-qualification',
     researchFinding: false, externalSpend: 0, publicChainTransaction: false,
-    softwareCommit, condition, failure, failureStage, observations,
+    softwareCommit, condition, ...(profile === 'v1' ? {} : { profile }),
+    failure, failureStage, observations,
     resourceMeasurementFailure, containerResourceUsage,
     processResourceUsage: process.resourceUsage(), wallMilliseconds: performance.now() - started,
     passed,
-    claimBoundary: 'Six-condition transport, control, anchor, and verifier mechanics only; no E03 pilot or research finding.',
+    claimBoundary: profile === 'v1'
+      ? 'Six-condition transport, control, anchor, and verifier mechanics only; no E03 pilot or research finding; not full Research-Grade writer/signer isolation.'
+      : 'Prototype-Mode control, oracle, transport, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, pilot, or research finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }

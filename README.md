@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.141 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.142 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 
@@ -115,7 +115,9 @@ does not establish the specification's separate writer/signer process boundary,
 so it cannot qualify full Research-Grade isolation. E03 controls will use the
 permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v1.json)
 without an isolation claim and face an exact development topology, measured
-resource allocation, and registered packet gate; the dependent behavioral campaign
+resource allocation, and registered packet gate. The prospective six-condition
+Prototype-Mode development runner has fresh IDs and seeds but has not executed;
+the dependent behavioral campaign
 remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
 explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:

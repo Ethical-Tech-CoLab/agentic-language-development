@@ -5,18 +5,29 @@ import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, w
 import { join, resolve } from 'node:path';
 import { verifyBundle } from '@ald/verifier';
 
-const evidenceRoot = 'evidence/qualification/e03-topology-development-v1';
 const conditions = ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle'];
 const mode = process.argv[2];
-assert.ok(process.argv.length === 3 && ['--run', '--audit'].includes(mode));
+assert.ok(process.argv.length === 3 &&
+  ['--run', '--audit', '--run-prototype-v2', '--audit-prototype-v2'].includes(mode));
+const profile = mode.endsWith('prototype-v2') ? 'prototype-v2' : 'v1';
+const evidenceRoot = profile === 'v1'
+  ? 'evidence/qualification/e03-topology-development-v1'
+  : 'evidence/qualification/e03-topology-prototype-v2';
+const projectName = profile === 'v1'
+  ? 'ald-e03-topology-development-v1'
+  : 'ald-e03-topology-prototype-v2';
+const slotName = (condition) => profile === 'v1'
+  ? `e03-topology-development-${condition}`
+  : `e03-topology-prototype-v2-${condition}`;
+const deploymentMode = profile === 'v1' ? 'research-grade' : 'prototype';
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const resourcePath = (condition) => join(evidenceRoot,
-  `e03-topology-development-${condition}`, 'learner-resources.json');
+  slotName(condition), 'learner-resources.json');
 
 function captureLearnerResources(condition) {
-  const slot = read(join(evidenceRoot, `e03-topology-development-${condition}`, 'slot.json'));
+  const slot = read(join(evidenceRoot, slotName(condition), 'slot.json'));
   const resources = {};
   let failure = null;
   try {
@@ -42,7 +53,7 @@ function captureLearnerResources(condition) {
 }
 
 async function auditSlot(condition, executionCommit) {
-  const path = join(evidenceRoot, `e03-topology-development-${condition}`, 'slot.json');
+  const path = join(evidenceRoot, slotName(condition), 'slot.json');
   const slot = read(path);
   assert.equal(slot.experimentId, 'E03');
   assert.equal(slot.classification, 'development-only-topology-qualification');
@@ -50,6 +61,7 @@ async function auditSlot(condition, executionCommit) {
   assert.equal(slot.externalSpend, 0);
   assert.equal(slot.publicChainTransaction, false);
   assert.equal(slot.softwareCommit, executionCommit);
+  if (profile !== 'v1') assert.equal(slot.profile, profile);
   assert.equal(slot.condition, condition);
   assert.equal(slot.passed, true, `${condition}: ${slot.failure ?? slot.resourceMeasurementFailure}`);
   assert.equal(slot.observations.condition, condition);
@@ -67,17 +79,18 @@ async function auditSlot(condition, executionCommit) {
     assert.ok(learnerResources.resources[role].cpuUsageMicroseconds > 0);
     assert.ok(learnerResources.resources[role].peakBytes > 0);
   }
-  const bundle = join(evidenceRoot, `e03-topology-development-${condition}`, 'bundles', 'runs', slot.observations.runId);
+  const bundle = join(evidenceRoot, slotName(condition), 'bundles', 'runs', slot.observations.runId);
   const verification = await verifyBundle(bundle, {
     verifierVersion: 'e03-topology-development-audit',
     now: () => new Date().toISOString(), writeReport: false,
   });
   assert.equal(verification.exitCode, 0);
   const manifest = read(join(bundle, 'run-manifest.json'));
-  assert.equal(manifest.deploymentMode, 'research-grade');
+  assert.equal(manifest.deploymentMode, deploymentMode);
   assert.equal(manifest.softwareCommit, executionCommit);
   assert.equal(manifest.runId, slot.observations.runId);
   const config = read(join(bundle, 'configuration', 'run-config.json'));
+  assert.equal(config.deploymentMode, deploymentMode);
   assert.equal(config.communicationCondition, condition);
   assert.deepEqual(config.seedBindings, slot.observations.seedBindings);
   const rustPath = join(evidenceRoot, 'ald-integrity-auditor');
@@ -112,7 +125,7 @@ async function auditMatrix(executionCommit) {
   return slots;
 }
 
-if (mode === '--audit') {
+if (mode.startsWith('--audit')) {
   const receipt = read(join(evidenceRoot, 'receipt.json'));
   assert.equal(receipt.classification, 'development-only-topology-qualification');
   assert.equal(receipt.researchFinding, false);
@@ -123,10 +136,11 @@ if (mode === '--audit') {
   assert.deepEqual(receipt.conditions, conditions);
   assert.equal(receipt.failure, null);
   assert.equal(receipt.passed, true);
+  if (profile !== 'v1') assert.equal(receipt.profile, profile);
   assert.equal(receipt.auditorSha256, sha256(join(evidenceRoot, 'ald-integrity-auditor')));
   const slots = await auditMatrix(receipt.executionCommit);
   assert.deepEqual(receipt.slots, slots);
-  console.log('E03 six-condition development topology audit passed; no research finding');
+  console.log(`E03 six-condition ${profile} development topology audit passed; no research finding`);
 } else {
   assert.equal(git('status', '--porcelain'), '', 'development topology execution requires a clean source commit');
   assert.equal(existsSync(evidenceRoot), false, 'development evidence is single-use');
@@ -138,6 +152,7 @@ if (mode === '--audit') {
   const auditorSha256 = sha256(join(evidenceRoot, 'ald-integrity-auditor'));
   writeFileSync(join(evidenceRoot, 'attempt.json'), `${JSON.stringify({
     experimentId: 'E03', classification: 'development-only-topology-qualification',
+    ...(profile === 'v1' ? {} : { profile }),
     executionCommit, conditions, startedAt: new Date().toISOString(),
     noPilotSeedsUsed: true, externalSpend: 0, publicChainTransaction: false,
     auditorSha256,
@@ -147,7 +162,7 @@ if (mode === '--audit') {
     ALD_MODE_R_NURSERY_UID: String(process.getuid()), ALD_MODE_R_NURSERY_GID: String(process.getgid()),
     ALD_MODE_R_EVIDENCE_DIR: resolve(evidenceRoot),
   };
-  const compose = ['compose', '--project-name', 'ald-e03-topology-development-v1',
+  const compose = ['compose', '--project-name', projectName,
     '--file', 'deploy/mode-r/docker-compose.yml', '--file', 'deploy/mode-r/docker-compose.e02.yml'];
   const command = (args) => {
     const result = spawnSync('docker', args, {
@@ -165,8 +180,9 @@ if (mode === '--audit') {
       const log = createWriteStream(join(evidenceRoot, `slot-${condition}.log`), { flags: 'wx' });
       const status = await new Promise((resolveStatus, reject) => {
         const child = spawn('docker', [...compose, 'run', '--rm', '--no-deps',
-          '--name', 'ald-e03-topology-development-v1-nursery', '--entrypoint', '/usr/local/bin/node',
-          'nursery-study', '/app/deploy/mode-r/run-e03-topology-slot.mjs', condition, executionCommit],
+          '--name', `${projectName}-nursery`, '--entrypoint', '/usr/local/bin/node',
+          'nursery-study', '/app/deploy/mode-r/run-e03-topology-slot.mjs', condition, executionCommit,
+          ...(profile === 'v1' ? [] : [profile])],
         { env: environment, timeout: 2 * 60 * 60 * 1_000 });
         for (const stream of [child.stdout, child.stderr]) {
           stream.on('data', (chunk) => { log.write(chunk); process.stdout.write(chunk); });
@@ -185,9 +201,9 @@ if (mode === '--audit') {
   } catch (error) {
     failure = `${error.name}: ${error.message}`;
   } finally {
-    if (spawnSync('docker', ['inspect', 'ald-e03-topology-development-v1-nursery'],
+    if (spawnSync('docker', ['inspect', `${projectName}-nursery`],
       { stdio: 'ignore' }).status === 0) {
-      try { command(['stop', '--time', '30', 'ald-e03-topology-development-v1-nursery']); }
+      try { command(['stop', '--time', '30', `${projectName}-nursery`]); }
       catch (error) { failure = `${failure ?? ''} stop failed: ${error.message}`; }
     }
     try { command([...compose, 'down', '--remove-orphans']); }
@@ -197,10 +213,13 @@ if (mode === '--audit') {
   writeFileSync(join(evidenceRoot, 'receipt.json'), `${JSON.stringify({
     schemaVersion: 1, experimentId: 'E03', classification: 'development-only-topology-qualification',
     researchFinding: false, externalSpend: 0, publicChainTransaction: false,
-    executionCommit, auditorSha256, conditions, slots, failure, wallMilliseconds: performance.now() - started,
+    executionCommit, auditorSha256, ...(profile === 'v1' ? {} : { profile }),
+    conditions, slots, failure, wallMilliseconds: performance.now() - started,
     hostResourceUsage: process.resourceUsage(),
     passed,
-    claimBoundary: 'Control, oracle, isolation, simulated-anchor, and verifier mechanics only; no registered pilot or research finding.',
+    claimBoundary: profile === 'v1'
+      ? 'Control, oracle, learner-transport, simulated-anchor, and verifier mechanics only; not full Research-Grade writer/signer isolation, a registered pilot, or a research finding.'
+      : 'Prototype-Mode control, oracle, learner-transport, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, registered pilot, or research finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }

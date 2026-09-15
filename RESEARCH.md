@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.141 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.142 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1210,8 +1210,10 @@ transport and network boundaries but does not establish the specification's sepa
 ledger-writer/signer process boundary; it cannot support a full Research-Grade
 isolation claim. The prospective [E03 infrastructure-mode amendment](protocols/e03-prototype-mode-amendment.v1.json)
 uses the specification's permitted Prototype Mode for control qualification without
-an isolation claim. Its next gates are an exact Prototype-Mode development topology
-and a measured blinded-pilot allocation, not confirmatory collection.
+an isolation claim. A fresh six-condition development-only Prototype-Mode runner is
+prepared with disjoint identifiers and seeds; it has not executed. Its next gates
+are that exact topology and a measured blinded-pilot allocation, not confirmatory
+collection.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).
