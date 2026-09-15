@@ -132,8 +132,9 @@ describe('current project status', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
-  it.each(['README.md', 'reports/research/methods-readiness-review.md'])('rejects stale counts in %s', (path) => {
+  it('rejects stale current counts in README.md', () => {
     const directory = statusFixture();
+    const path = 'README.md';
     const target = join(directory, path);
     const original = readFileSync(target, 'utf8');
     const changed = original.replace(/\d+ not started;/u, '99 not started;');
@@ -142,6 +143,22 @@ describe('current project status', () => {
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain(path);
+  });
+
+  it('keeps a dated methods review as a historical snapshot', () => {
+    const directory = statusFixture();
+    const target = join(directory, 'reports/research/methods-readiness-review.md');
+    writeFileSync(target, readFileSync(target, 'utf8').replace('1 in progress', '99 in progress'));
+    expect(check(directory).status).toBe(0);
+  });
+
+  it('rejects an undated historical methods snapshot', () => {
+    const directory = statusFixture();
+    const target = join(directory, 'reports/research/methods-readiness-review.md');
+    writeFileSync(target, readFileSync(target, 'utf8').replace('Review date: 2026-09-13', 'Review date: unknown'));
+    const result = check(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(target.split('/').slice(-3).join('/'));
   });
 
   it('rejects an E02 notebook attempt that contradicts campaign progress', () => {

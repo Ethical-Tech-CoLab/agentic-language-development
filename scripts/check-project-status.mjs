@@ -100,12 +100,12 @@ const researchStatus = `Research status: ${qualifiedSoftware} qualified (softwar
   `${running} in progress, ${notStarted} not started; ` +
   `${campaign.blockingFindings.length} open campaign blockers.`;
 requireText(readme, researchStatus, 'README.md');
-for (const path of [
-  'reports/research/research-validation-report.md',
-  'reports/research/research-critical-review.md',
-  'reports/research/methods-readiness-review.md',
+for (const [path, cutoff] of [
+  ['reports/research/research-validation-report.md', 'Evidence cutoff: 2026-09-13'],
+  ['reports/research/research-critical-review.md', 'Review date: 2026-09-13'],
+  ['reports/research/methods-readiness-review.md', 'Review date: 2026-09-13'],
 ]) {
-  requireText(await readFile(path, 'utf8'), researchStatus, path);
+  requireText(await readFile(path, 'utf8'), cutoff, path);
 }
 
 console.log(
