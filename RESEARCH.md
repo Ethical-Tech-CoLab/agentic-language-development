@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.151 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.152 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1890,6 +1890,9 @@ slot summary alone is insufficient.
 After a pilot terminal receipt exists, progression checks bind it to the
 registered packet and reconcile planned, attempted, and completed run counts;
 document agreement cannot conceal a failed or incomplete original attempt.
+Before the terminal receipt exists, a running status additionally requires
+the original start record and its matching live local controller process;
+a retained start file after controller failure is unresolved, not a pass.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.

@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.151 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.152 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -143,6 +143,9 @@ unsigned slot summaries alone cannot clear the topology gate.
 The pilot status gate also discovers its fixed terminal receipt and checks the
 packet identity and planned, attempted, and completed run counts; a stale
 ready or running summary cannot override that terminal evidence.
+Before a terminal receipt exists, a running pilot status requires the original
+start record plus the matching live local controller PID and process-start
+identity; a crashed controller leaves readiness unresolved, not running.
 On collector failure, the terminal receipt charges any measured CPU from the
 attempted slot and marks remaining CPU capacity unresolved if a required
 container measurement is missing; the attempt cannot be replaced silently.

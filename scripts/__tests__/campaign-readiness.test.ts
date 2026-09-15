@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- malformed status fixtures intentionally cross the JSON boundary */
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const temporaryDirectories: string[] = [];
+const controllers: ChildProcess[] = [];
 const source = (path: string) => JSON.parse(readFileSync(join(root, path), 'utf8'));
 const syntheticSha = (value: unknown) => `sha256:${createHash('sha256')
   .update(`${JSON.stringify(value, null, 2)}\n`).digest('hex')}`;
@@ -144,7 +145,48 @@ function terminalPilotFixture(status: 'completed' | 'failed' = 'completed') {
   return { directory, terminalPath, campaignPath };
 }
 
-afterEach(() => {
+function runningPilotFixture() {
+  const directory = readyPilotFixture();
+  const controller = spawn(process.execPath,
+    ['-e', 'setInterval(() => {}, 1000)', '--', 'run-e03-registered-pilot.mjs'],
+    { stdio: 'ignore' });
+  controllers.push(controller);
+  expect(controller.pid).toBeTypeOf('number');
+  const pid = controller.pid!;
+  const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+  const ticks = stat.slice(stat.lastIndexOf(')') + 2).trim().split(/\s+/u)[19];
+  const campaignPath = join(directory, 'protocols/campaign-readiness-review.v1.json');
+  const campaign = JSON.parse(readFileSync(campaignPath, 'utf8'));
+  const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+  e03.attempt = { version: 'v1', status: 'running', planned: 120, attempted: 0, completed: 0 };
+  e03.evidence.push({ kind: 'execution-start',
+    path: 'evidence/pilots/e03-blinded-v1/attempt.json', statusAuthority: true });
+  writeFileSync(campaignPath, `${JSON.stringify(campaign, null, 2)}\n`);
+  const packetPath = join(directory, 'protocols/e03-pilot-registration.v1.json');
+  const registration = JSON.parse(readFileSync(packetPath, 'utf8'));
+  const attempt = {
+    experimentId: 'E03', stage: 'blinded-pilot',
+    classification: 'registered-original-pilot-attempt', attemptStatus: 'running',
+    plannedSlots: 120, attemptedSlots: 0, completedSlots: 0, plannedRuns: 120,
+    controllerPid: pid, controllerStartTicks: ticks,
+    registrationHash: registration.preRegistrationHash,
+    packetSha256: `sha256:${createHash('sha256').update(readFileSync(packetPath)).digest('hex')}`,
+    researchFinding: false, scientificDisposition: 'not-tested',
+    externalSpend: 0, publicChainTransaction: false,
+  };
+  const attemptPath = join(directory, 'evidence/pilots/e03-blinded-v1/attempt.json');
+  mkdirSync(dirname(attemptPath), { recursive: true });
+  writeFileSync(attemptPath, `${JSON.stringify(attempt, null, 2)}\n`);
+  return { directory, attemptPath, campaignPath, controller };
+}
+
+afterEach(async () => {
+  for (const controller of controllers.splice(0)) {
+    if (controller.exitCode === null && controller.signalCode === null) {
+      controller.kill('SIGTERM');
+      await new Promise((resolveExit) => controller.once('exit', resolveExit));
+    }
+  }
   for (const directory of temporaryDirectories.splice(0)) rmSync(directory, { recursive: true, force: true });
 });
 
@@ -180,6 +222,39 @@ describe('stage-specific campaign progress', () => {
     const contradicted = run(directory);
     expect(contradicted.status).not.toBe(0);
     expect(contradicted.stderr).toContain('E03 pilot progression contradicts');
+  });
+
+  it('accepts a source-bound running pilot only while its exact controller is live', async () => {
+    const { directory, controller } = runningPilotFixture();
+    const running = run(directory);
+    expect(running.status, running.stderr).toBe(0);
+    controller.kill('SIGTERM');
+    await new Promise((resolveExit) => controller.once('exit', resolveExit));
+    const crashed = run(directory);
+    expect(crashed.status).not.toBe(0);
+    expect(crashed.stderr).toContain('E03 pilot running attempt has no live controller');
+  });
+
+  it('rejects a running pilot with a controller start identity mismatch', () => {
+    const { directory, attemptPath } = runningPilotFixture();
+    const attempt = JSON.parse(readFileSync(attemptPath, 'utf8'));
+    attempt.controllerStartTicks = '0';
+    writeFileSync(attemptPath, `${JSON.stringify(attempt, null, 2)}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot running attempt has no live controller');
+  });
+
+  it('rejects a stale ready pilot status after original collection has started', () => {
+    const { directory, campaignPath } = runningPilotFixture();
+    const campaign = JSON.parse(readFileSync(campaignPath, 'utf8'));
+    const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+    e03.attempt = { status: 'not-started', planned: null, attempted: 0, completed: 0 };
+    e03.evidence = e03.evidence.filter((item: any) => item.kind !== 'execution-start');
+    writeFileSync(campaignPath, `${JSON.stringify(campaign, null, 2)}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot attempt exists but is not an evidence-backed running state');
   });
 
   it('accepts a complete pilot as design input without a scientific disposition', () => {

@@ -532,6 +532,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
       outcome-blind pilot tallies to variance estimation.
 - [ ] Reconcile the terminal pilot receipt and its attempt counts to the
       prospective packet before updating current progression status.
+- [ ] Require a matching live controller for any pre-terminal running claim;
+      a stale start record alone does not establish execution progress.
 - [ ] Re-audit the original pilot bundles and recompute the single-use
       dispersion input before sample-size power selection.
 - [ ] Charge failed attempted slots where CPU is measured, and leave capacity

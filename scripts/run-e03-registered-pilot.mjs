@@ -23,6 +23,13 @@ const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const gib = 1024 ** 3;
 const bundleFor = (runId) => join(root, runId, 'bundles', 'runs', runId);
 
+function controllerStartTicks(pid) {
+  const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+  const fields = stat.slice(stat.lastIndexOf(')') + 2).trim().split(/\s+/u);
+  assert.match(fields[19], /^[0-9]+$/u);
+  return fields[19];
+}
+
 function originalBytes(path) {
   const stat = lstatSync(path);
   assert.equal(stat.isSymbolicLink(), false, `${path}: original evidence must not be a symlink`);
@@ -178,6 +185,7 @@ if (mode === '--audit') {
   const packet = read(packetPath);
   const allocation = read(allocationPath);
   const policy = read('protocols/seed-and-resource-allocation.v1.json');
+  const controllerTicks = controllerStartTicks(process.pid);
   const started = performance.now();
   mkdirSync(root, { recursive: true });
   copyFileSync(packetPath, join(root, 'registration.json'));
@@ -188,11 +196,14 @@ if (mode === '--audit') {
   writeFileSync(join(root, 'attempt.json'), `${JSON.stringify({
     schemaVersion: 1, experimentId: 'E03', stage: 'blinded-pilot',
     classification: 'registered-original-pilot-attempt',
+    attemptStatus: 'running', plannedSlots: 120, attemptedSlots: 0, completedSlots: 0,
+    controllerPid: process.pid, controllerStartTicks: controllerTicks,
     executionCommit, registrationHash: packet.preRegistrationHash,
     packetSha256: sha256(join(root, 'registration.json')),
     admissionSha256: sha256(join(root, 'admission.json')),
     plannedRuns: 120, primarySlotsPerCondition: 20, reserves: 0,
     startedAt: new Date().toISOString(), researchFinding: false,
+    scientificDisposition: 'not-tested',
     externalSpend: 0, publicChainTransaction: false,
   }, null, 2)}\n`, { flag: 'wx' });
   const environment = {
