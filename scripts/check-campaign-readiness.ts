@@ -246,7 +246,7 @@ if (!e03Preparation || !/^2026-09-15T\d{2}:\d{2}:\d{2}Z$/u.test(e03Preparation.r
   throw new Error('E03 pilot-preparation progress lacks bounded historical provenance');
 }
 if (e03 && e03.attempt.status === 'not-started' &&
-    !e03.evidence.some((item) => item.kind === 'prospective-registration-packet')) {
+    e03.executionReadiness.decision === 'blocked') {
   if (e03.executionReadiness.stage !== 'pilot' || e03.executionReadiness.decision !== 'blocked' ||
       JSON.stringify(e03.executionReadiness.reasonCodes) !== JSON.stringify(['B11']) ||
       e03.attempt.status !== 'not-started' ||
@@ -265,7 +265,8 @@ if (e03 && e03.attempt.status === 'not-started' &&
     rawReceiptPath?: string; rawReceiptSha256?: string;
     originalSlots?: Array<{ nurseryContainerId?: string; signedOriginalDataReconciled?: boolean }>;
   };
-  const stage = JSON.parse(readFileSync(e03Preparation.stageAllocationPath, 'utf8')) as {
+  const stageBytes = readFileSync(e03Preparation.stageAllocationPath);
+  const stage = JSON.parse(stageBytes.toString('utf8')) as {
     stage?: string; decision?: string; plannedRuns?: number; reserveSlots?: number;
     externalSpend?: number; publicChainTransaction?: boolean; priorCpuHoursCharged?: number;
     reservedCpuHours?: number; priorRetainedStorageGiB?: number;
@@ -311,6 +312,31 @@ if (e03 && e03.attempt.status === 'not-started' &&
     const rawDigest = `sha256:${createHash('sha256').update(readFileSync(topology.rawReceiptPath)).digest('hex')}`;
     if (rawDigest !== topology.rawReceiptSha256) {
       throw new Error('E03 development audit contradicts retained original receipt bytes');
+    }
+  }
+  const packetEvidence = e03.evidence.find((item) => item.kind === 'prospective-registration-packet');
+  if (e03.evidence.some((item) => item.kind === 'simulated-registration-binding')) {
+    throw new Error('E03 blocked packet preparation cannot claim an activated binding');
+  }
+  if (packetEvidence) {
+    if (packetEvidence.path !== 'protocols/e03-pilot-registration.v1.json') {
+      throw new Error('E03 blocked pilot packet uses an unexpected registration path');
+    }
+    const packet = JSON.parse(readFileSync(packetEvidence.path, 'utf8')) as {
+      preRegistrationHash?: string; artifact?: { experimentId?: string; protocolGitCommit?: string;
+        parameters?: { stage?: string; executionBinding?: {
+          prototypeTopology?: { sha256?: string }; stageResourceAllocation?: { sha256?: string };
+        } } }; runs?: unknown[];
+    };
+    const allocationDigest = `sha256:${createHash('sha256').update(stageBytes).digest('hex')}`;
+    if (!/^sha256:[0-9a-f]{64}$/u.test(packet.preRegistrationHash ?? '') ||
+        packet.artifact?.experimentId !== 'E03' ||
+        !/^[0-9a-f]{40}$/u.test(packet.artifact?.protocolGitCommit ?? '') ||
+        packet.artifact.parameters?.stage !== 'blinded-pilot' ||
+        packet.artifact.parameters.executionBinding?.prototypeTopology?.sha256 !== topologyDigest ||
+        packet.artifact.parameters.executionBinding?.stageResourceAllocation?.sha256 !== allocationDigest ||
+        packet.runs?.length !== 120) {
+      throw new Error('E03 blocked pilot packet contradicts the measured prospective preparation');
     }
   }
 }

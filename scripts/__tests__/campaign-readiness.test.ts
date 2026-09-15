@@ -124,6 +124,25 @@ function readyPilotFixture() {
   });
 }
 
+function blockedPilotPacketFixture(mutatePacket: (packet: any) => void = () => undefined) {
+  return fixture((campaign, receipts) => {
+    const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+    e03.evidence.push({ kind: 'prospective-registration-packet',
+      path: 'protocols/e03-pilot-registration.v1.json', statusAuthority: false });
+    receipts.e03Packet = {
+      preRegistrationHash: `sha256:${'a'.repeat(64)}`,
+      artifact: { experimentId: 'E03', protocolGitCommit: 'a'.repeat(40), parameters: {
+        stage: 'blinded-pilot', executionBinding: {
+          prototypeTopology: { sha256: syntheticSha(receipts.e03CurrentTopology) },
+          stageResourceAllocation: { sha256: syntheticSha(receipts.e03CurrentAllocation) },
+        },
+      } },
+      runs: Array(120).fill({}),
+    };
+    mutatePacket(receipts.e03Packet);
+  });
+}
+
 function terminalPilotFixture(status: 'completed' | 'failed' = 'completed') {
   const directory = readyPilotFixture();
   const campaignPath = join(directory, 'protocols/campaign-readiness-review.v1.json');
@@ -230,6 +249,19 @@ describe('stage-specific campaign progress', () => {
     }));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 pilot preparation contradicts its retained topology/allocation gate');
+  });
+
+  it('accepts a frozen packet as blocked preparation before simulated activation', () => {
+    const result = run(blockedPilotPacketFixture());
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('rejects a blocked packet with the wrong measured allocation identity', () => {
+    const result = run(blockedPilotPacketFixture((packet) => {
+      packet.artifact.parameters.executionBinding.stageResourceAllocation.sha256 = `sha256:${'b'.repeat(64)}`;
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 blocked pilot packet contradicts the measured prospective preparation');
   });
 
   it('rejects an E10+ stage that omits the open selected-topology boundary', () => {
