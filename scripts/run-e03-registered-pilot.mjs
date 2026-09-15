@@ -38,37 +38,6 @@ function originalBytes(path) {
   return readdirSync(path).reduce((total, entry) => total + originalBytes(join(path, entry)), 0);
 }
 
-function captureLearnerResources(runId) {
-  const runRoot = join(root, runId);
-  mkdirSync(runRoot, { recursive: true });
-  const resources = {};
-  let failure = null;
-  try {
-    const slotPath = join(runRoot, 'slot.json');
-    const recordedIds = existsSync(slotPath) ? read(slotPath).observations?.containerIds : undefined;
-    for (const role of ['baby-a', 'baby-b']) {
-      const containerId = recordedIds?.[role] ?? execFileSync('docker', ['inspect',
-        '-f', '{{.Id}}', `${project}-${role}-1`], { encoding: 'utf8', timeout: 30_000 }).trim();
-      assert.match(containerId, /^[a-f0-9]{12,64}$/u);
-      const cpuStat = execFileSync('docker', ['exec', containerId,
-        'cat', '/sys/fs/cgroup/cpu.stat'], { encoding: 'utf8', timeout: 30_000 });
-      const peakBytes = Number(execFileSync('docker', ['exec', containerId,
-        'cat', '/sys/fs/cgroup/memory.peak'], { encoding: 'utf8', timeout: 30_000 }).trim());
-      const cpuUsageMicroseconds = Number(/^usage_usec (\d+)$/mu.exec(cpuStat)?.[1]);
-      assert.ok(Number.isSafeInteger(cpuUsageMicroseconds) && cpuUsageMicroseconds > 0);
-      assert.ok(Number.isSafeInteger(peakBytes) && peakBytes > 0);
-      resources[role] = { containerId, cpuUsageMicroseconds, peakBytes,
-        scope: 'learner-container-cgroup' };
-    }
-  } catch (error) {
-    failure = `${error.name}: ${error.message}`;
-  }
-  writeFileSync(join(runRoot, 'learner-resources.json'),
-    `${JSON.stringify({ runId, resources, failure, measuredAt: new Date().toISOString() }, null, 2)}\n`,
-    { flag: 'wx' });
-  assert.equal(failure, null, `${runId}: learner resource capture failed`);
-}
-
 async function auditSlot(registered, executionCommit, registrationHash) {
   const { config, condition, slot: slotNumber } = registered;
   const runId = config.runId;
@@ -96,15 +65,13 @@ async function auditSlot(registered, executionCommit, registrationHash) {
   assert.equal(record.observations.verifierExitCode, 0);
   assert.equal(record.observations.scenarioSeed, config.randomSeed);
   assert.deepEqual(record.observations.seedBindings, config.seedBindings);
-  const learner = read(join(root, runId, 'learner-resources.json'));
-  assert.equal(learner.runId, runId);
-  assert.equal(learner.failure, null);
-  assert.deepEqual(Object.keys(learner.resources).sort(), ['baby-a', 'baby-b']);
-  for (const role of ['baby-a', 'baby-b']) {
-    assert.equal(learner.resources[role].containerId, record.observations.containerIds[role]);
-    assert.ok(learner.resources[role].cpuUsageMicroseconds > 0);
-    assert.ok(learner.resources[role].peakBytes > 0);
-  }
+  assert.equal(existsSync(join(root, runId, 'learner-resources.json')), false);
+  assert.equal(record.observations.externalLearnerContainerCount, 0);
+  assert.match(record.observations.nurseryContainerId, /^[a-f0-9]{12}$/u);
+  assert.ok(Number.isSafeInteger(record.observations.nurseryProcessId));
+  assert.deepEqual(record.observations.roleProcessIds,
+    { 'baby-a': record.observations.nurseryProcessId,
+      'baby-b': record.observations.nurseryProcessId });
   const bundle = bundleFor(runId);
   const verification = await verifyBundle(bundle, {
     verifierVersion: 'e03-original-pilot-audit',
@@ -125,13 +92,16 @@ async function auditSlot(registered, executionCommit, registrationHash) {
   return {
     runId, condition, slot: slotNumber,
     slotPath: path, slotSha256: sha256(path),
-    learnerResourceSha256: sha256(join(root, runId, 'learner-resources.json')),
+    learnerResourceSha256: null,
     scenarioStateHashes: original.scenarioStateHashes,
     agreements: original.agreements,
-    containerIds: Object.values(record.observations.containerIds),
+    containerIds: [],
+    nurseryContainerId: record.observations.nurseryContainerId,
+    nurseryProcessId: record.observations.nurseryProcessId,
+    roleProcessIds: record.observations.roleProcessIds,
     wallMilliseconds: record.wallMilliseconds,
     nurseryResourceUsage: record.nurseryResourceUsage,
-    learnerContainerResourceUsage: learner.resources,
+    learnerContainerResourceUsage: {},
     originalEvidenceBytes: originalBytes(join(root, runId)),
     bundleManifestHash: verification.bundleManifestHash,
     rust, passed: true,
@@ -143,8 +113,9 @@ function checkPairedScenarios(slots, slotNumber) {
   assert.equal(paired.length, 6, `pilot scenario slot ${slotNumber} lacks six conditions`);
   for (const slot of paired.slice(1)) assert.deepEqual(slot.scenarioStateHashes,
     paired[0].scenarioStateHashes, `${slot.runId}: paired scenarios diverged`);
-  assert.equal(new Set(paired.flatMap((slot) => slot.containerIds)).size, 12,
-    `pilot scenario slot ${slotNumber} reused a role container`);
+  assert.ok(paired.every((slot) => slot.containerIds.length === 0));
+  assert.equal(new Set(paired.map((slot) => slot.nurseryContainerId)).size, 6,
+    `pilot scenario slot ${slotNumber} reused a Nursery container`);
 }
 
 if (mode === '--audit') {
@@ -174,6 +145,8 @@ if (mode === '--audit') {
   for (const registered of packet.runs) slots.push(await auditSlot(registered,
     receipt.executionCommit, receipt.registrationHash));
   for (let slot = 1; slot <= 20; slot += 1) checkPairedScenarios(slots, slot);
+  assert.equal(new Set(slots.map((slot) => slot.nurseryContainerId)).size, 120,
+    'every original pilot run needs a fresh Nursery container');
   assert.deepEqual(receipt.slots, slots);
   console.log('E03 120-run original blinded-pilot audit passed; no confirmatory result');
 } else {
@@ -228,13 +201,11 @@ if (mode === '--audit') {
   let failureStage = 'container-build';
   let failedRunId = null;
   let lastChildExitStatus = null;
-  let failureResourceCaptureDiagnostic = null;
   try {
-    command([...compose, 'build', 'baby-a', 'baby-b', 'nursery-study']);
+    command([...compose, 'build', 'nursery-study']);
     for (const registered of packet.runs) {
       const runId = registered.config.runId;
-      failureStage = 'slot-container-start';
-      command([...compose, 'up', '--detach', '--force-recreate', 'baby-a', 'baby-b']);
+      failureStage = 'slot-nursery-start';
       attemptedRuns += 1;
       failedRunId = runId;
       const log = createWriteStream(join(root, `${runId}.log`), { flags: 'wx' });
@@ -252,16 +223,15 @@ if (mode === '--audit') {
         log.once('error', reject);
       });
       lastChildExitStatus = status;
-      failureStage = 'resource-capture';
-      captureLearnerResources(runId);
       assert.equal(status, 0, `${runId}: collector failed; original evidence retained`);
       failureStage = 'original-slot-audit';
-      slots.push(await auditSlot(registered, executionCommit, packet.preRegistrationHash));
+      const audited = await auditSlot(registered, executionCommit, packet.preRegistrationHash);
+      assert.equal(slots.some((slot) => slot.nurseryContainerId === audited.nurseryContainerId), false,
+        `${runId}: original pilot Nursery container was reused`);
+      slots.push(audited);
       if (registered.condition === 'oracle') checkPairedScenarios(slots, registered.slot);
       const measuredCpuHours = slots.reduce((total, slot) => total +
-        slot.nurseryResourceUsage.cpuUsageMicroseconds +
-        slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
-        slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0) / 3_600_000_000 +
+        slot.nurseryResourceUsage.cpuUsageMicroseconds, 0) / 3_600_000_000 +
         (process.resourceUsage().userCPUTime + process.resourceUsage().systemCPUTime) / 3_600_000_000;
       assert.ok(measuredCpuHours <= allocation.reservedCpuHours,
         `${runId}: pilot measured CPU exceeded its prospective reserve`);
@@ -274,8 +244,6 @@ if (mode === '--audit') {
         policy.localCeiling.workingStorageGiB,
       `${runId}: total retained working evidence exceeded the local ceiling`);
       const observedPeakBytes = slots.at(-1).nurseryResourceUsage.peakBytes +
-        slots.at(-1).learnerContainerResourceUsage['baby-a'].peakBytes +
-        slots.at(-1).learnerContainerResourceUsage['baby-b'].peakBytes +
         process.resourceUsage().maxRSS * 1024;
       assert.ok(observedPeakBytes / gib <= allocation.maximumResidentGiB,
         `${runId}: pilot resident-memory peak exceeded its prospective reserve`);
@@ -296,12 +264,6 @@ if (mode === '--audit') {
     }
   } catch (error) {
     failure = `${error.name}: ${error.message}`;
-    if (failedRunId && !existsSync(join(root, failedRunId, 'learner-resources.json'))) {
-      try { captureLearnerResources(failedRunId); }
-      catch (resourceError) {
-        failureResourceCaptureDiagnostic = `${resourceError.name}: ${resourceError.message}`;
-      }
-    }
   } finally {
     if (spawnSync('docker', ['inspect', `${project}-nursery`],
       { stdio: 'ignore' }).status === 0) {
@@ -335,7 +297,7 @@ if (mode === '--audit') {
     unattemptedRuns: 120 - attemptedRuns,
     sampleSizeEligible: passed, slots, failure, failureStage, failedRunId,
     lastChildExitStatus,
-    failureResourceCaptureDiagnostic, attemptedResourceAccounting,
+    attemptedResourceAccounting,
     wallMilliseconds: performance.now() - started,
     measuredCpuHours,
     evidenceBytesBeforeTerminalReceipt,

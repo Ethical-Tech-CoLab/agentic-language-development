@@ -20,20 +20,16 @@ afterEach(() => {
 });
 
 describe('failed E03 pilot resource charges', () => {
-  it('charges a failed attempted slot when all three cgroups were retained', () => {
+  it('charges a failed attempted slot when its shared Nursery cgroup was retained', () => {
     const root = fixture();
     const runId = 'e03-pilot-disabled-s001';
     mkdirSync(join(root, runId));
     writeFileSync(join(root, runId, 'slot.json'), JSON.stringify({
       nurseryResourceUsage: { cpuUsageMicroseconds: 2_000_000 },
     }));
-    writeFileSync(join(root, runId, 'learner-resources.json'), JSON.stringify({
-      resources: { 'baby-a': { cpuUsageMicroseconds: 3_000_000 },
-        'baby-b': { cpuUsageMicroseconds: 4_000_000 } },
-    }));
     const result = reconcileE03PilotAttemptResources(root, [runId], [], host);
     expect(result.completeMeasurement).toBe(true);
-    expect(result.measuredCpuHoursLowerBound).toBeCloseTo(10_000_000 / 3_600_000_000);
+    expect(result.measuredCpuHoursLowerBound).toBeCloseTo(3_000_000 / 3_600_000_000);
     expect(result.attempted[0]?.verified).toBe(false);
   });
 
@@ -42,9 +38,7 @@ describe('failed E03 pilot resource charges', () => {
     const runId = 'e03-pilot-disabled-s001';
     const result = reconcileE03PilotAttemptResources(root, [runId], [], host);
     expect(result.completeMeasurement).toBe(false);
-    expect(result.missingComponents).toEqual([
-      `${runId}:nursery`, `${runId}:baby-a`, `${runId}:baby-b`,
-    ]);
+    expect(result.missingComponents).toEqual([`${runId}:nursery`]);
     expect(result.measuredCpuHoursLowerBound).toBeGreaterThan(0);
   });
 
@@ -53,13 +47,9 @@ describe('failed E03 pilot resource charges', () => {
     const runId = 'e03-pilot-disabled-s001';
     const result = reconcileE03PilotAttemptResources(root, [runId], [{
       runId, nurseryResourceUsage: { cpuUsageMicroseconds: 2_000_000 },
-      learnerContainerResourceUsage: {
-        'baby-a': { cpuUsageMicroseconds: 3_000_000 },
-        'baby-b': { cpuUsageMicroseconds: 4_000_000 },
-      },
     }], host);
     expect(result.completeMeasurement).toBe(true);
-    expect(result.measuredCpuHoursLowerBound).toBeCloseTo(10_000_000 / 3_600_000_000);
+    expect(result.measuredCpuHoursLowerBound).toBeCloseTo(3_000_000 / 3_600_000_000);
     expect(result.attempted[0]?.verified).toBe(true);
   });
 

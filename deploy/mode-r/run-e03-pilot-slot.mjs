@@ -4,7 +4,6 @@ import { join } from 'node:path';
 
 import { BaseAnchorPublisher, FakeChainTransport } from '@ald/anchor';
 import { hashCanonical } from '@ald/hashing';
-import { createIsolatedAdapterFactory } from '@ald/isolation';
 import { createProductionRuntime } from '@ald/orchestrator';
 import { HASH_DOMAINS, PreRegistrationArtifactSchema } from '@ald/types';
 
@@ -19,6 +18,15 @@ const registrationHash = hashCanonical(HASH_DOMAINS.preRegistration, artifact);
 assert.equal(registration.preRegistrationHash, registrationHash);
 assert.equal(artifact.experimentId, 'E03');
 assert.equal(artifact.parameters.stage, 'blinded-pilot');
+const topology = artifact.parameters.executionBinding?.topology;
+assert.equal(topology?.mode, 'prototype');
+assert.equal(topology.learnerContainersPerSlot, 0);
+assert.equal(topology.nurseryContainersPerSlot, 1);
+assert.equal(topology.sharedNurseryProcess, true);
+assert.equal(topology.adapterTransport, 'in-process');
+assert.equal(topology.adapterTiming, 'immediate');
+assert.equal(topology.turnResponseBudgetMs, 2_000);
+assert.match(process.env.HOSTNAME, /^[a-f0-9]{12}$/u);
 const registered = registration.runs.find((run) => run.config.runId === runId);
 assert.ok(registered && registered.use === 'primary');
 const { config, condition, slot } = registered;
@@ -33,7 +41,6 @@ assert.equal(config.babyB.track, 'no-learning');
 const root = join('/evidence', runId);
 await mkdir(root); // Original pilot evidence is single-use, including failed attempts.
 const clock = { now: () => new Date().toISOString() };
-const factories = [];
 let production;
 let failure = null;
 let failureStage = 'initialization';
@@ -69,23 +76,12 @@ try {
     databasePath: join(root, 'evidence.sqlite'), bundleRoot: join(root, 'bundles'),
     softwareCommit, clock, allowUnanchored: false, anchorPolicy: 'required',
     anchorPublisher: publisher,
-    adapterFactoryFor: (_config, role) => {
-      const factory = createIsolatedAdapterFactory({
-        track: 'no-learning', transport: 'container',
-        endpoint: { host: role, port: 4318, attempts: 40, retryDelayMs: 250,
-          timeoutMs: 1_000, hostLabel: role },
-        timing: 'normalized', deadlineMs: 2_000,
-      });
-      factories.push(factory);
-      return factory;
-    },
   });
   failureStage = 'run-creation';
   await production.runtime.createRun(config);
   const adapters = production.runtime.adaptersFor(runId);
-  const containerIds = Object.fromEntries(['baby-a', 'baby-b'].map((role) =>
-    [role, adapters[role].isolation.containerId]));
-  assert.equal(new Set(Object.values(containerIds)).size, 2);
+  assert.ok(Object.values(adapters).every((adapter) =>
+    adapter.isolation === undefined || adapter.isolation.boundary === 'in-process'));
   failureStage = 'collection';
   const summary = await production.runtime.runToCompletion(runId, {
     onTurn: (result) => {
@@ -136,7 +132,10 @@ try {
     agreements: evaluation.filter((record) => record.outcome.success === true).length,
     channelEvents: channel.length, acceptedChannelEvents: accepted.length,
     checkpoints: production.runtime.checkpoints(runId).length,
-    containerIds, anchorReceiptCount: receipts.length, verifierExitCode: verification.exitCode,
+    nurseryContainerId: process.env.HOSTNAME, nurseryProcessId: process.pid,
+    roleProcessIds: { 'baby-a': process.pid, 'baby-b': process.pid },
+    externalLearnerContainerCount: 0,
+    anchorReceiptCount: receipts.length, verifierExitCode: verification.exitCode,
     state: summary.state,
   };
 } catch (error) {
@@ -146,10 +145,6 @@ try {
   catch (error) { resourceMeasurementFailure = `${error.name}: ${error.message}`; }
   try { production?.close(); }
   catch (error) { failure = `${failure ?? ''} close failed: ${error.message}`; }
-  for (const factory of factories) {
-    try { await factory.dispose(); }
-    catch (error) { failure = `${failure ?? ''} adapter disposal failed: ${error.message}`; }
-  }
   const passed = failure === null && resourceMeasurementFailure === null && observations !== null;
   await writeFile(join(root, 'slot.json'), `${JSON.stringify({
     schemaVersion: 1, experimentId: 'E03', stage: 'blinded-pilot',
@@ -160,7 +155,7 @@ try {
     failure, failureStage, observations, resourceMeasurementFailure,
     nurseryResourceUsage, processResourceUsage: process.resourceUsage(),
     wallMilliseconds: performance.now() - started, passed,
-    claimBoundary: 'Registered E03 blinded-pilot feasibility/variance input only; not chance-control or language-emergence evidence.',
+    claimBoundary: 'Registered E03 Prototype-Mode blinded-pilot feasibility/variance input only; no Research-Grade isolation, chance-control, or language-emergence finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }

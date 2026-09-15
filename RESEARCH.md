@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.154 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.155 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1218,8 +1218,8 @@ isolation claim. The prospective [E03 infrastructure-mode correction](protocols/
 selects shared-process Prototype Mode for controls, without a Research-Grade
 isolation claim. Its unexecuted predecessor specified external adapters, which
 the runtime guard rejects; that record remains historical. The fresh six-condition
-development namespace is unused: its in-process runner is prepared, but the pilot
-collector still needs correction. A signed-original topology audit and measured,
+development namespace is unused: its in-process runner and pilot collector are
+prepared, not executed. A signed-original topology audit and measured,
 zero-spend allocation gate any 120-run pilot packet. The allocation charges prior
 E02 and development CPU/storage before reserving pilot capacity. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
