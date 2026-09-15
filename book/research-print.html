@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.173 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.174 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1313,7 +1313,13 @@ six-condition scenario slot from paired analysis; the next unused ordered
 reserve scenario slot is collected across all six conditions, at most three.
 Original invalid and valid-but-excluded companion runs remain indexed. This
 changes neither the 168-run maximum nor scientific thresholds. No full packet
-or full seed existed when the clarification was recorded.</p>
+or full seed existed when the clarification was recorded.
+The pure <a href="packages/analysis/src/e03-full.ts">full-stage paired-attempt reconciler</a>
+enforces complete six-condition scenario pairs, identical scenario histories,
+whole-slot ordered reserves, and explicit incomplete disposition when the
+three reserves cannot replace all invalid primary pairs. This is fixture-tested
+software accounting; verified original-bundle ingestion, the statistical
+decision harness, and a live full-stage execution remain open.</p>
 <h2>11. Results</h2>
 <p><strong>No empirical results are reported in this version.</strong> Results-table scaffolds are
 isolated in Appendix E so indexing systems do not mistake them for findings. They

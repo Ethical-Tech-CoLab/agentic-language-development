@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.173 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.174 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -187,6 +187,11 @@ ordered reserve slot is collected across all six conditions, at most three.
 Original invalid and valid-but-excluded companions remain indexed. No full
 packet or full seed existed when this was recorded, and the full packet
 compiler remains blocked until collector/statistics software qualification.
+The pure [paired-attempt reconciler](packages/analysis/src/e03-full.ts) now checks
+the complete six-condition primary matrix, shared-scenario histories, ordered
+whole-slot reserve attempts, excluded companions, and exhausted-reserve
+incompleteness. Its fixture tests do not verify a real full-stage bundle or
+qualify the not-yet-built collector and statistical harness.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.

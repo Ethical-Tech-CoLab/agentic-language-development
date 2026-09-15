@@ -159,6 +159,13 @@ export {
   type E03SampleSizeDecision,
 } from './e03-registration.js';
 export {
+  reconcileE03FullPairedRuns,
+  type E03FullAttemptedRun,
+  type E03FullIncludedPair,
+  type E03FullInvalidReason,
+  type E03FullPairedReconciliation,
+} from './e03-full.js';
+export {
   E03_CHANCE_RATE,
   e11Summary,
   type E11Summary,

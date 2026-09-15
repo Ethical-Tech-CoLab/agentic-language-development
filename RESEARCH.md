@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.173 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.174 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1282,6 +1282,12 @@ reserve scenario slot is collected across all six conditions, at most three.
 Original invalid and valid-but-excluded companion runs remain indexed. This
 changes neither the 168-run maximum nor scientific thresholds. No full packet
 or full seed existed when the clarification was recorded.
+The pure [full-stage paired-attempt reconciler](packages/analysis/src/e03-full.ts)
+enforces complete six-condition scenario pairs, identical scenario histories,
+whole-slot ordered reserves, and explicit incomplete disposition when the
+three reserves cannot replace all invalid primary pairs. This is fixture-tested
+software accounting; verified original-bundle ingestion, the statistical
+decision harness, and a live full-stage execution remain open.
 
 ## 11. Results
 
