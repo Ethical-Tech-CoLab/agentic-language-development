@@ -12,6 +12,34 @@ assert.ok(process.argv.length === 3 && ['--run', '--audit'].includes(mode));
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+const resourcePath = (condition) => join(evidenceRoot,
+  `e03-topology-development-${condition}`, 'learner-resources.json');
+
+function captureLearnerResources(condition) {
+  const slot = read(join(evidenceRoot, `e03-topology-development-${condition}`, 'slot.json'));
+  const resources = {};
+  let failure = null;
+  try {
+    for (const role of ['baby-a', 'baby-b']) {
+      const containerId = slot.observations.containerIds[role];
+      assert.match(containerId, /^[a-f0-9]{12,64}$/u);
+      const cpuStat = execFileSync('docker', ['exec', containerId, 'cat', '/sys/fs/cgroup/cpu.stat'],
+        { encoding: 'utf8', timeout: 30_000 });
+      const peakBytes = Number(execFileSync('docker', ['exec', containerId, 'cat',
+        '/sys/fs/cgroup/memory.peak'], { encoding: 'utf8', timeout: 30_000 }).trim());
+      const usage = Number(/^usage_usec (\d+)$/mu.exec(cpuStat)?.[1]);
+      assert.ok(Number.isSafeInteger(usage) && usage > 0);
+      assert.ok(Number.isSafeInteger(peakBytes) && peakBytes > 0);
+      resources[role] = { containerId, cpuUsageMicroseconds: usage, peakBytes,
+        scope: 'learner-container-cgroup' };
+    }
+  } catch (error) {
+    failure = `${error.name}: ${error.message}`;
+  }
+  writeFileSync(resourcePath(condition), `${JSON.stringify({ condition, resources, failure,
+    measuredAt: new Date().toISOString() }, null, 2)}\n`, { flag: 'wx' });
+  assert.equal(failure, null, `${condition}: learner resource measurement failed`);
+}
 
 async function auditSlot(condition, executionCommit) {
   const path = join(evidenceRoot, `e03-topology-development-${condition}`, 'slot.json');
@@ -30,6 +58,15 @@ async function auditSlot(condition, executionCommit) {
   assert.equal(slot.observations.scenarioStateHashes.length, 200);
   assert.equal(slot.observations.anchorReceiptCount, 1);
   assert.equal(slot.observations.verifierExitCode, 0);
+  const learnerResources = read(resourcePath(condition));
+  assert.equal(learnerResources.condition, condition);
+  assert.equal(learnerResources.failure, null);
+  assert.deepEqual(Object.keys(learnerResources.resources).sort(), ['baby-a', 'baby-b']);
+  for (const role of ['baby-a', 'baby-b']) {
+    assert.equal(learnerResources.resources[role].containerId, slot.observations.containerIds[role]);
+    assert.ok(learnerResources.resources[role].cpuUsageMicroseconds > 0);
+    assert.ok(learnerResources.resources[role].peakBytes > 0);
+  }
   const bundle = join(evidenceRoot, `e03-topology-development-${condition}`, 'bundles', 'runs', slot.observations.runId);
   const verification = await verifyBundle(bundle, {
     verifierVersion: 'e03-topology-development-audit',
@@ -55,6 +92,8 @@ async function auditSlot(condition, executionCommit) {
     containerIds: Object.values(slot.observations.containerIds),
     wallMilliseconds: slot.wallMilliseconds,
     containerResourceUsage: slot.containerResourceUsage,
+    learnerContainerResourceUsage: learnerResources.resources,
+    learnerResourceSha256: sha256(resourcePath(condition)),
     bundleManifestHash: verification.bundleManifestHash,
     rust,
     passed: true,
@@ -79,6 +118,8 @@ if (mode === '--audit') {
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.externalSpend, 0);
   assert.equal(receipt.publicChainTransaction, false);
+  assert.ok(receipt.hostResourceUsage.userCPUTime > 0);
+  assert.ok(receipt.hostResourceUsage.maxRSS > 0);
   assert.deepEqual(receipt.conditions, conditions);
   assert.equal(receipt.failure, null);
   assert.equal(receipt.passed, true);
@@ -134,6 +175,7 @@ if (mode === '--audit') {
         child.once('close', (code) => log.end(() => resolveStatus(code)));
         log.once('error', reject);
       });
+      captureLearnerResources(condition);
       assert.equal(status, 0, `${condition}: slot failed; retained log and evidence need diagnosis`);
       slots.push(await auditSlot(condition, executionCommit));
       command([...compose, 'down', '--remove-orphans']);
@@ -156,6 +198,7 @@ if (mode === '--audit') {
     schemaVersion: 1, experimentId: 'E03', classification: 'development-only-topology-qualification',
     researchFinding: false, externalSpend: 0, publicChainTransaction: false,
     executionCommit, auditorSha256, conditions, slots, failure, wallMilliseconds: performance.now() - started,
+    hostResourceUsage: process.resourceUsage(),
     passed,
     claimBoundary: 'Control, oracle, isolation, simulated-anchor, and verifier mechanics only; no registered pilot or research finding.',
   }, null, 2)}\n`, { flag: 'wx' });
