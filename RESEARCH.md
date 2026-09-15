@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.164 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.165 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1235,8 +1235,10 @@ dated correction provenance. The unused [v1 pilot packet](protocols/e03-pilot-re
 and [simulated binding](protocols/e03-pilot-registration-binding.v1.json)
 are retained after tracked test-fixture changes altered their exact source
 digest. A [prospective v2 amendment](protocols/e03-pilot-registration-amendment.v2.json)
-requires fresh IDs/seeds and binding before admission. No v2 packet,
-simulated activation, or pilot execution has begun. The prepared
+requires fresh IDs/seeds and binding before admission. A new
+[v2 pilot packet](protocols/e03-pilot-registration.v2.json) freezes 120
+run IDs and disjoint pilot seeds against clean v0.1.164, but has no simulated
+activation or execution. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
 Its reducer and separate recomputation audit are also prepared, not executed.

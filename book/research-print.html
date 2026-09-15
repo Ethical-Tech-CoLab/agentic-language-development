@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.164 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.165 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1267,8 +1267,10 @@ dated correction provenance. The unused <a href="protocols/e03-pilot-registratio
 and <a href="protocols/e03-pilot-registration-binding.v1.json">simulated binding</a>
 are retained after tracked test-fixture changes altered their exact source
 digest. A <a href="protocols/e03-pilot-registration-amendment.v2.json">prospective v2 amendment</a>
-requires fresh IDs/seeds and binding before admission. No v2 packet,
-simulated activation, or pilot execution has begun. The prepared
+requires fresh IDs/seeds and binding before admission. A new
+<a href="protocols/e03-pilot-registration.v2.json">v2 pilot packet</a> freezes 120
+run IDs and disjoint pilot seeds against clean v0.1.164, but has no simulated
+activation or execution. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
 Its reducer and separate recomputation audit are also prepared, not executed.
