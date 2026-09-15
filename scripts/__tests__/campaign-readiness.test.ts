@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- malformed status fixtures intentionally cross the JSON boundary */
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -39,6 +40,14 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'reports/research/e02-v3-execution-gate-receipt.json': source('reports/research/e02-v3-execution-gate-receipt.json'),
     'reports/research/e02-v3-execution-start.json': source('reports/research/e02-v3-execution-start.json'),
   };
+  if (receipts.e02v3) {
+    values['reports/research/e02-v3-qualification-receipt.json'] = receipts.e02v3;
+    values['reports/research/e02-v3-full-audit-receipt.json'] = {
+      experimentId: 'E02', classification: 'original-raw-evidence-recomputed-audit',
+      terminalReceiptSha256: `sha256:${createHash('sha256').update(`${JSON.stringify(receipts.e02v3, null, 2)}\n`).digest('hex')}`,
+      passed: true, slotsRecomputed: 5, probeReportsRecomputed: 60,
+    };
+  }
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -68,14 +77,30 @@ describe('stage-specific campaign progress', () => {
     const result = run(fixture((campaign, receipts) => {
       const e02 = campaign.experiments.find((entry: any) => entry.id === 'E02');
       e02.executionReadiness = { stage: 'qualification', decision: 'complete', reasonCodes: [] };
-      e02.attempt = { status: 'completed', planned: 5, attempted: 5, completed: 5 };
+      e02.attempt = { version: 'v3', status: 'completed', planned: 5, attempted: 5, completed: 5 };
       e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v3-execution-start.json').statusAuthority = false;
-      e02.evidence.find((entry: any) => entry.path === 'reports/research/e02-v2-qualification-receipt.json').statusAuthority = true;
-      receipts.e02.passed = true;
-      receipts.e02.failure = null;
-      receipts.e02.slots = Array.from({ length: 5 }, (_, index) => ({ slot: index + 1 }));
+      e02.evidence.push({ kind: 'post-run-full-raw-audit', path: 'reports/research/e02-v3-full-audit-receipt.json', statusAuthority: false });
+      e02.evidence.push({ kind: 'terminal-receipt', path: 'reports/research/e02-v3-qualification-receipt.json', statusAuthority: true });
+      campaign.resolvedFindings.push({ id: 'B16', owner: 'D08',
+        resolution: 'The complete E02 v3 five-slot terminal and full raw-evidence audit passed.',
+        boundary: 'Software qualification only; no behavioral finding or independent review is claimed.' });
+      campaign.blockingFindings = campaign.blockingFindings.filter((finding: any) => finding.id !== 'B16');
+      receipts.e02v3 = { experimentId: 'E02', registrationHash: source('protocols/e02-registration.v3.json').preRegistrationHash,
+        classification: 'prospectively-registered-software-qualification', passed: true, failure: null,
+        slots: Array.from({ length: 5 }, (_, index) => ({ slot: index + 1, passed: true, probesRecomputed: 12 })) };
     }));
     expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('rejects closing B16 without completed E02 qualification', () => {
+    const result = run(fixture((campaign) => {
+      campaign.resolvedFindings.push({ id: 'B16', owner: 'D08',
+        resolution: 'A reported terminal receipt is available, but no complete qualification was audited.',
+        boundary: 'No software qualification or behavioral finding is established by this report.' });
+      campaign.blockingFindings = campaign.blockingFindings.filter((finding: any) => finding.id !== 'B16');
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('B16 disposition contradicts the terminal E02 qualification gate');
   });
 
   it('rejects a missing terminal disposition instead of inferring a running attempt', () => {

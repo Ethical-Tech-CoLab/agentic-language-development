@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
 import { accessSync, existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 type ExecutionStage = 'qualification' | 'pilot' | 'confirmatory' | 'analysis' | 'exploratory' | 'replication' | 'reporting';
 type GateDecision = 'ready' | 'blocked' | 'complete';
@@ -52,12 +53,16 @@ for (const finding of review.blockingFindings) {
     throw new Error(`${finding.id} lacks an evidence-bearing finding or closure test`);
   }
 }
-for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14','B16']) {
+for (const required of ['B07','B08','B09','B10','B11','B12','B13','B14']) {
   if (!findingIds.has(required)) throw new Error(`campaign review omits ${required}`);
 }
 const resolvedIds = new Set(review.resolvedFindings.map((finding) => finding.id));
-if (JSON.stringify([...resolvedIds].sort()) !== JSON.stringify(['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B15'])) {
-  throw new Error('campaign review must record B01-B06 and B15 as the seven resolved findings');
+for (const required of ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B15']) {
+  if (!resolvedIds.has(required)) throw new Error(`campaign review omits resolved finding ${required}`);
+}
+if ([...resolvedIds].some((id) => findingIds.has(id)) ||
+    (findingIds.has('B16') === resolvedIds.has('B16'))) {
+  throw new Error('campaign review has contradictory blocking/resolved findings');
 }
 if (review.resolvedFindings.some((finding) => finding.resolution.length < 40 || finding.boundary.length < 40)) {
   throw new Error('a resolved finding lacks a complete resolution or claim boundary');
@@ -152,6 +157,35 @@ for (const entry of review.experiments) {
     ) {
       throw new Error(`${entry.id} accounting contradicts its status-authority receipt`);
     }
+  }
+}
+const e02 = review.experiments.find((entry) => entry.id === 'E02');
+if ((e02?.executionReadiness.stage === 'qualification' &&
+     e02.executionReadiness.decision === 'complete' && e02.attempt.status === 'completed') !==
+    resolvedIds.has('B16')) {
+  throw new Error('B16 disposition contradicts the terminal E02 qualification gate');
+}
+if (resolvedIds.has('B16')) {
+  const terminalPath = e02?.evidence.find((evidence) => evidence.statusAuthority)?.path;
+  const fullAuditPath = e02?.evidence.find((evidence) => evidence.kind === 'post-run-full-raw-audit')?.path;
+  if (!terminalPath || !fullAuditPath) throw new Error('B16 closure lacks terminal and full-audit evidence');
+  const terminalBytes = readFileSync(terminalPath);
+  const terminal = JSON.parse(terminalBytes.toString('utf8')) as {
+    classification?: string; passed?: boolean; failure?: string | null;
+    slots?: Array<{ passed?: boolean; probesRecomputed?: number }>;
+  };
+  const audit = JSON.parse(readFileSync(fullAuditPath, 'utf8')) as {
+    experimentId?: string; classification?: string; terminalReceiptSha256?: string;
+    passed?: boolean; slotsRecomputed?: number; probeReportsRecomputed?: number;
+  };
+  if (terminal.classification !== 'prospectively-registered-software-qualification' ||
+      terminal.passed !== true || terminal.failure !== null ||
+      terminal.slots?.length !== 5 || terminal.slots.some((slot) =>
+        slot.passed !== true || slot.probesRecomputed !== 12) ||
+      audit.experimentId !== 'E02' || audit.classification !== 'original-raw-evidence-recomputed-audit' ||
+      audit.terminalReceiptSha256 !== `sha256:${createHash('sha256').update(terminalBytes).digest('hex')}` ||
+      audit.passed !== true || audit.slotsRecomputed !== 5 || audit.probeReportsRecomputed !== 60) {
+    throw new Error('B16 closure contradicts the complete audited E02 software qualification');
   }
 }
 if (
