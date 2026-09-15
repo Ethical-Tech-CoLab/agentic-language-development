@@ -116,6 +116,7 @@ describe('current project status', () => {
       'reports/research/e02-qualification-receipt.json',
       'reports/research/e02-v3-qualification-receipt.json',
       'reports/research/e02-v3-full-audit-receipt.json',
+      'reports/research/e03-v3-pilot-status-receipt.json',
       'reports/phase-one-research-update.md',
       'reports/research/research-validation-report.md',
       'reports/research/research-critical-review.md',
@@ -126,6 +127,12 @@ describe('current project status', () => {
         ? ['protocols/e03-pilot-registration.v2.json'] : []),
       ...(existsSync(join(root, 'protocols/e03-pilot-registration.v3.json'))
         ? ['protocols/e03-pilot-registration.v3.json'] : []),
+      ...(existsSync(join(root, 'evidence/pilots/e03-blinded-v3/receipt.json'))
+        ? ['evidence/pilots/e03-blinded-v3/receipt.json'] : []),
+      ...(existsSync(join(root, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'))
+        ? ['evidence/pilots/e03-blinded-v3/sample-size-input.json'] : []),
+      ...(existsSync(join(root, 'evidence/pilots/e03-blinded-v3/power-selection.json'))
+        ? ['evidence/pilots/e03-blinded-v3/power-selection.json'] : []),
     ]) {
       mkdirSync(dirname(join(directory, path)), { recursive: true });
       writeFileSync(join(directory, path), readFileSync(join(root, path)));
@@ -149,23 +156,38 @@ describe('current project status', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
-  it('counts an unstarted E03 pilot even when preparation receipts exist', () => {
+  it('checks the tracked E03 status from a clean checkout without the ignored raw directory', () => {
+    const directory = statusFixture();
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    const result = check(directory);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('15 not started');
+  });
+
+  it('counts a completed E03 design pilot without promoting its scientific status', () => {
     const directory = statusFixture();
     const campaign = JSON.parse(readFileSync(join(directory,
       'protocols/campaign-readiness-review.v1.json'), 'utf8'));
     const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
-    expect(e03.attempt.status).toBe('not-started');
+    expect(e03.attempt.status).toBe('completed');
+    expect(e03.scientificDisposition).toBe('not-tested');
     expect(e03.evidence.some((item: { kind: string }) => item.kind === 'prospective-stage-allocation')).toBe(true);
     const result = check(directory);
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('16 not started');
+    expect(result.stdout).toContain('15 not started');
   });
 
   it('rejects a stale E03 status when original pilot terminal evidence exists', () => {
     const directory = statusFixture();
-    const path = join(directory, activePilotRoot(directory), 'receipt.json');
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
+    const path = join(directory, 'protocols/campaign-readiness-review.v1.json');
+    const campaign = JSON.parse(readFileSync(path, 'utf8'));
+    const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
+    e03.executionReadiness.decision = 'ready';
+    e03.attempt = { version: 'v3', status: 'not-started', planned: 120, attempted: 0, completed: 0 };
+    e03.evidence.find((entry: { kind: string }) => entry.kind === 'terminal-receipt').statusAuthority = false;
+    writeFileSync(path, `${JSON.stringify(campaign)}\n`);
     const result = check(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 pilot terminal receipt exists but is not the status authority');
@@ -173,12 +195,14 @@ describe('current project status', () => {
 
   it('rejects a stale E03 status when original pilot collection has started', () => {
     const directory = statusFixture();
+    rmSync(join(directory, activePilotRoot(directory), 'receipt.json'));
+    rmSync(join(directory, activePilotRoot(directory), 'sample-size-input.json'));
     const path = join(directory, activePilotRoot(directory), 'attempt.json');
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, '{"experimentId":"E03","stage":"blinded-pilot"}\n');
     const result = check(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 pilot attempt exists but is not an evidence-backed running state');
+    expect(result.stderr).toContain('E03 completed pilot has start evidence but no original terminal receipt');
   });
 
   it('rejects a stale v2 pilot attempt using its prospective evidence root', () => {
@@ -186,9 +210,12 @@ describe('current project status', () => {
     const campaignPath = join(directory, 'protocols/campaign-readiness-review.v1.json');
     const campaign = JSON.parse(readFileSync(campaignPath, 'utf8'));
     const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
-    e03.evidence.push({ kind: 'prospective-registration-packet',
-      path: 'protocols/e03-pilot-registration.v2.json', statusAuthority: false });
+    e03.executionReadiness.decision = 'ready';
+    e03.attempt = { version: 'v2', status: 'not-started', planned: 120, attempted: 0, completed: 0 };
+    e03.evidence = [{ kind: 'prospective-registration-packet',
+      path: 'protocols/e03-pilot-registration.v2.json', statusAuthority: false }];
     writeFileSync(campaignPath, `${JSON.stringify(campaign)}\n`);
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
     const packetPath = join(directory, 'protocols/e03-pilot-registration.v2.json');
     mkdirSync(dirname(packetPath), { recursive: true });
     writeFileSync(packetPath, '{"preRegistrationHash":"sha256:fixture","artifact":{}}\n');

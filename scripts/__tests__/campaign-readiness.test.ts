@@ -71,10 +71,24 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   if (receipts.e03Topology) values['reports/research/e03-prototype-topology-audit-receipt.json'] = receipts.e03Topology;
   if (receipts.e03Allocation) values['protocols/e03-pilot-resource-allocation.v1.json'] = receipts.e03Allocation;
   if (receipts.e03Terminal) values['evidence/pilots/e03-blinded-v1/receipt.json'] = receipts.e03Terminal;
+  const currentTerminal = e03Evidence?.find((entry: any) =>
+    entry.kind === 'terminal-receipt' && entry.statusAuthority)?.path;
+  if (currentTerminal?.startsWith('evidence/pilots/') && !receipts.e03Terminal) {
+    values[currentTerminal] = source(currentTerminal);
+  }
+  const currentReduction = e03Evidence?.find((entry: any) =>
+    entry.kind === 'outcome-blind-sample-size-input')?.path;
+  if (currentReduction) values[currentReduction] = source(currentReduction);
+  const portableSummary = e03Evidence?.find((entry: any) =>
+    entry.kind === 'portable-terminal-summary')?.path;
+  if (portableSummary) values[portableSummary] = source(portableSummary);
+  if (portableSummary) values['evidence/pilots/e03-blinded-v3/power-selection.json'] =
+    source('evidence/pilots/e03-blinded-v3/power-selection.json');
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, path === 'protocols/seed-and-resource-allocation.v1.json'
+    writeFileSync(target, path === 'protocols/seed-and-resource-allocation.v1.json' ||
+      path.startsWith('evidence/pilots/e03-blinded-v3/')
       ? readFileSync(join(root, path)) : `${JSON.stringify(value, null, 2)}\n`);
   }
   return directory;
@@ -108,6 +122,7 @@ function readyPilotFixture(version: 'v1' | 'v2' | 'v3' = 'v1') {
   return fixture((campaign, receipts) => {
     const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
     e03.executionReadiness = { stage: 'pilot', decision: 'ready', reasonCodes: [] };
+    e03.attempt = { version, status: 'not-started', planned: 120, attempted: 0, completed: 0 };
     e03.evidence = [
       { kind: 'prospective-registration-packet', path: `protocols/e03-pilot-registration.${version}.json`, statusAuthority: false },
       { kind: 'simulated-registration-binding', path: `protocols/e03-pilot-registration-binding.${version}.json`, statusAuthority: false },
@@ -258,6 +273,48 @@ describe('stage-specific campaign progress', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it('accepts the portable E03 status from a clean checkout without claiming a raw audit', () => {
+    const directory = fixture();
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    const result = run(directory);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('4 completed gates');
+  });
+
+  it('rejects retained E03 raw evidence whose bytes disagree with the portable digest', () => {
+    const directory = fixture();
+    const path = join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json');
+    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 retained original terminal receipt contradicts the portable digest');
+  });
+
+  it('rejects altered retained E03 power bytes without changing the reported design row', () => {
+    const directory = fixture();
+    const path = join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json');
+    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 retained power calculation contradicts its dated supplement');
+  });
+
+  it('rejects a corrupt portable E03 selected row when raw evidence is absent', () => {
+    const directory = fixture();
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    const path = join(directory, 'reports/research/e03-v3-pilot-status-receipt.json');
+    const portable = JSON.parse(readFileSync(path, 'utf8'));
+    portable.selectedPrimarySeeds = 0;
+    writeFileSync(path, `${JSON.stringify(portable)}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 portable pilot status contradicts its packet or campaign state');
+  });
+
   it('rejects a slot-only wall projection after measured host overhead', () => {
     const result = run(preparationFixture((_campaign, receipts) => {
       receipts.e03CurrentAllocation.projectedSequentialWallHours = 0.2;
@@ -344,7 +401,7 @@ describe('stage-specific campaign progress', () => {
         slots: Array.from({ length: 120 }, (_, index) => ({ slot: index + 1 })) };
     }));
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 pilot progression lacks packet');
+    expect(result.stderr).toContain('E03 completed pilot lacks its original authority or tracked portable summary');
   });
 
   it('can mark the pilot stage ready while broader research blockers remain open', () => {

@@ -30,6 +30,12 @@ interface Review {
     recordedAt: string; sourceCommit: string; priorReasonCodes: string[];
     topologyAuditPath: string; stageAllocationPath: string; boundary: string;
   };
+  e03PilotCompletionSupplement: { terminalSha256: string; sampleSizeInputSha256: string; selectedPrimarySeeds: number };
+  e03PowerSelectionSupplement: {
+    originalPath: string; originalSha256: string; primarySeeds: number;
+    repetitions: number; nominalCompleteRuleLower95: number;
+    invalidAsFailureSensitivitySuccesses: number;
+  };
   resolvedFindings: Array<{ id: string; owner: string; resolution: string; boundary: string }>;
   blockingFindings: Array<{ id: string; severity: string; owner: string; finding: string; closure: string }>;
   experiments: ExperimentProgress[];
@@ -139,7 +145,15 @@ for (const entry of review.experiments) {
   if (attempt.status === 'not-started' ? authorities.length !== 0 : authorities.length !== 1) {
     throw new Error(`${entry.id} must have exactly one status-authority receipt after starting`);
   }
-  for (const evidence of entry.evidence) accessSync(evidence.path);
+  for (const evidence of entry.evidence) {
+    const separatelyRetainedE03 = entry.id === 'E03' && attempt.status === 'completed' &&
+      !existsSync(evidence.path) &&
+      ((evidence.kind === 'terminal-receipt' &&
+        evidence.path === 'evidence/pilots/e03-blinded-v3/receipt.json') ||
+       (evidence.kind === 'outcome-blind-sample-size-input' &&
+        evidence.path === 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    if (!separatelyRetainedE03) accessSync(evidence.path);
+  }
   const packetEvidence = entry.evidence.find((evidence) => evidence.kind === 'prospective-registration-packet');
   if (packetEvidence) {
     const packet = JSON.parse(readFileSync(packetEvidence.path, 'utf8')) as {
@@ -159,9 +173,18 @@ for (const entry of review.experiments) {
     }
   }
   if (authorities.length === 1) {
-    const receipt = JSON.parse(readFileSync(authorities[0]!.path, 'utf8')) as Record<string, unknown>;
+    const authorityPath = authorities[0]!.path;
+    const portablePath = entry.evidence.find((evidence) =>
+      evidence.kind === 'portable-terminal-summary')?.path;
+    const receiptPath = !existsSync(authorityPath) && entry.id === 'E03' &&
+      attempt.status === 'completed' &&
+      authorityPath === 'evidence/pilots/e03-blinded-v3/receipt.json' && portablePath
+      ? portablePath : authorityPath;
+    const receipt = JSON.parse(readFileSync(receiptPath, 'utf8')) as Record<string, unknown>;
     if (receipt.experimentId !== entry.id) throw new Error(`${entry.id} status receipt belongs to another experiment`);
-    const slots = Array.isArray(receipt.slots) ? receipt.slots.length : 0;
+    const slots = Array.isArray(receipt.slots) ? receipt.slots.length :
+      receipt.classification === 'portable-original-pilot-status-summary' &&
+      typeof receipt.completedRuns === 'number' ? receipt.completedRuns : 0;
     let receiptStatus: AttemptStatus | 'unresolved' = 'unresolved';
     if (
       receipt.attemptStatus === 'running' &&
@@ -188,7 +211,8 @@ for (const entry of review.experiments) {
     }
   }
 }
-checkE03LocalPilotState(review.experiments.find((entry) => entry.id === 'E03'));
+checkE03LocalPilotState(review.experiments.find((entry) => entry.id === 'E03'),
+  review.e03PilotCompletionSupplement, review.e03PowerSelectionSupplement);
 const e02 = review.experiments.find((entry) => entry.id === 'E02');
 if ((e02?.executionReadiness.stage === 'qualification' &&
      e02.executionReadiness.decision === 'complete' && e02.attempt.status === 'completed') !==

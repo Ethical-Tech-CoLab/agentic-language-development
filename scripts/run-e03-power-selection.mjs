@@ -13,6 +13,7 @@ const { values } = parseArgs({
     'pilot-receipt': { type: 'string', required: true },
     'pilot-reduction': { type: 'string', required: true },
     out: { type: 'string', required: true },
+    audit: { type: 'boolean', default: false },
   },
 });
 const sha256 = (bytes) =>
@@ -31,7 +32,9 @@ const relativeEvidencePath = (path, label) => {
 const pilotReceiptPath = relativeEvidencePath(values['pilot-receipt'], '--pilot-receipt');
 const pilotReductionPath = relativeEvidencePath(values['pilot-reduction'], '--pilot-reduction');
 const outputPath = relativeEvidencePath(values.out, '--out');
-assert.equal(existsSync(outputPath), false, 'refusing to overwrite a power receipt');
+assert.equal(existsSync(outputPath), values.audit, values.audit
+  ? 'power receipt is missing for recomputation audit'
+  : 'refusing to overwrite a power receipt');
 
 const pilot = readJson(pilotReceiptPath);
 const reduction = readJson(pilotReductionPath);
@@ -76,11 +79,13 @@ try {
   const [header, row, ...extra] = readFileSync(tsvPath, 'utf8').trim().split('\n');
   assert.equal(extra.length, 0, 'power calculation must emit exactly one row');
   const keys = header.split('\t');
-  const values = row.split('\t').map(Number);
-  assert.equal(keys.length, values.length);
-  assert.ok(values.every(Number.isFinite), 'power calculation emitted a non-finite value');
-  const fields = Object.fromEntries(keys.map((key, index) => [key, values[index]]));
-  assert.equal(fields['largest_latent_pilot_sd'], reduction.value.largestLatentPilotSd);
+  const numbers = row.split('\t').map(Number);
+  assert.equal(keys.length, numbers.length);
+  assert.ok(numbers.every(Number.isFinite), 'power calculation emitted a non-finite value');
+  const fields = Object.fromEntries(keys.map((key, index) => [key, numbers[index]]));
+  assert.ok(Math.abs(fields['largest_latent_pilot_sd'] -
+    reduction.value.largestLatentPilotSd) <= 1e-14,
+  'R TSV pilot SD differs beyond decimal serialization precision');
   assert.equal(fields['primary_seeds'], reduction.value.selectedPrimarySeeds);
   assert.equal(fields['repetitions'], 30_000);
 
@@ -95,7 +100,7 @@ try {
     pilotReceipt: { path: pilotReceiptPath, sha256: sha256(pilot.bytes) },
     pilotReduction: { path: pilotReductionPath, sha256: sha256(reduction.bytes) },
     implementation: { path: scriptPath, sha256: sha256(scriptBytes), runtime: 'Homebrew base R' },
-    largestLatentPilotSd: fields['largest_latent_pilot_sd'],
+    largestLatentPilotSd: reduction.value.largestLatentPilotSd,
     selectedPrimarySeeds: fields['primary_seeds'],
     monteCarloRepetitions: fields['repetitions'],
     simulationSeed: fields['simulation_seed'],
@@ -120,9 +125,16 @@ try {
       'Separately implemented outcome-blind E03 power calculation only; no experiment outcome, ' +
       'qualification decision, behavioral finding, or public timestamp.',
   };
-  await mkdir(dirname(outputPath), { recursive: true });
-  writeFileSync(outputPath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
-  console.log(`wrote ${outputPath}`);
+  const rendered = `${JSON.stringify(receipt, null, 2)}\n`;
+  if (values.audit) {
+    assert.equal(readFileSync(outputPath, 'utf8'), rendered,
+      'power receipt does not reproduce from the retained pilot input and R source');
+    console.log(`audited ${outputPath}`);
+  } else {
+    await mkdir(dirname(outputPath), { recursive: true });
+    writeFileSync(outputPath, rendered, { flag: 'wx' });
+    console.log(`wrote ${outputPath}`);
+  }
   console.log(`E03 bounded numeric-rule lower95=${String(receipt.monteCarloLower95)}; passed=${String(receipt.passed)}`);
   if (!receipt.passed) process.exitCode = 1;
 } finally {

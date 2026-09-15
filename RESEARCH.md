@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.169 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.170 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1224,7 +1224,7 @@ the runtime guard rejects; that record remains historical. The fresh six-conditi
 development namespace ran once on clean v0.1.158 and its six original bundles
 passed the separate TypeScript/Rust live audit with signed-original control
 pairing. It remains bounded Mode P development mechanics, not a pilot finding.
-The unexecuted pilot collector is prepared. A signed-original
+The pilot collector was prepared prospectively. A signed-original
 [topology audit](reports/research/e03-prototype-topology-audit-receipt.json) and measured,
 zero-spend [allocation](protocols/e03-pilot-resource-allocation.v1.json) now precede any 120-run pilot
 packet. The allocation charges prior E02 and development CPU/storage before
@@ -1247,12 +1247,19 @@ requires a fresh packet, IDs/seeds, and binding. A new
 distinct run IDs and disjoint pilot seeds against clean v0.1.167. Its
 separately committed [simulated binding](protocols/e03-pilot-registration-binding.v3.json)
 records three local confirmations without real funds or an independent
-timestamp. The active pilot is ready for live admission but has not executed.
-The prepared
-pilot path verifies every original bundle with TypeScript and Rust, reconciles
-paired scenarios and resource charges, and stops on failure without replacement.
-Its reducer and separate recomputation audit are also prepared, not executed.
-No pilot variance or behavioral finding is reported.
+timestamp. The active v3 pilot ran once on clean v0.1.169 and completed all
+120 planned original runs without invalid, aborted, or replacement runs.
+Its separate full-bundle TypeScript/Rust audit passed. The outcome-blind
+reducer and separate recomputation audit selected the frozen 25-primary-seed
+E03 design row from pilot dispersion. The retained original receipt and
+reduction hashes are mapped in the [pilot progress update](reports/research/e03-v3-pilot-progress-update.md).
+No E03 chance-control qualification or behavioral finding is reported.
+The separately retained Homebrew-base-R 30,000-repetition bounded design
+calculation passed the nominal complete numeric rule at 25 seeds, with lower
+95% power bound `0.999872`. Its forced two-invalid-primary-per-condition
+sensitivity passed zero repetitions; this fragility must be reported and
+reserve/replacement mechanics qualified before full collection. Neither
+simulation establishes an observed control effect.
 
 ## 11. Results
 
@@ -1382,7 +1389,8 @@ and pre-registration hash. Changes create appended amendments rather than rewrit
 the original record.
 
 The E02 software-qualification packets and unused E03 v1/v2 pilot packets have been
-repository-registered, but the E03 pilot has not begun. Before each later
+repository-registered; the separate E03 v3 pilot was registered and completed.
+Before each later
 confirmatory run, its canonical packet will be committed unchanged in a Git ancestor
 of the execution commit. Preflight will load those historical bytes, reproduce the
 `preRegistrationHash`, and require a matching deterministic simulated commitment

@@ -21,7 +21,7 @@ const campaign = JSON.parse(read('protocols/campaign-readiness-review.v1.json'))
   decision: string;
   independentHumanReview: boolean;
   blockingFindings: unknown[];
-  experiments: unknown[];
+  experiments: Array<{ attempt: { status: string } }>;
 };
 const external = JSON.parse(read('reports/research/external-prerequisite-readiness.json')) as {
   decision: string;
@@ -63,8 +63,11 @@ if (uniqueCitations.join('|') !== definedReferences.join('|')) {
 if (sources.existingReferences.length !== 50 || sources.updatedSearch.length !== 5) {
   throw new Error('source register counts differ from the manuscript audit scope');
 }
-if (experimentRows.length !== 19 || notStartedExperimentRows.length !== 16 || campaign.experiments.length !== 19) {
-  throw new Error('experiment inventory must contain 19 experiments with 16 not started');
+const campaignNotStarted = campaign.experiments.filter((entry) =>
+  entry.attempt.status === 'not-started').length;
+if (experimentRows.length !== 19 || campaign.experiments.length !== 19 ||
+    notStartedExperimentRows.length !== campaignNotStarted) {
+  throw new Error('manuscript experiment inventory contradicts current campaign attempt status');
 }
 if (notebook.includes('Ready for pre-registration')) {
   throw new Error('notebook contradicts the fail-closed campaign decision');

@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.169",
+  "version": "0.1.170",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -23,6 +23,7 @@
     "activate:registration-e03-full": "node scripts/activate-e03-registration.mjs full --activate",
     "audit:registration-e03-full": "node scripts/activate-e03-registration.mjs full --check",
     "select:e03-power": "node scripts/run-e03-power-selection.mjs",
+    "audit:e03-power:live": "node scripts/run-e03-power-selection.mjs --audit",
     "qualify:e03-topology-dev": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-topology-qualification.mjs --run",
     "audit:e03-topology-dev:live": "node scripts/run-e03-topology-qualification.mjs --audit",
     "qualify:e03-prototype-topology-dev": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-e03-topology-qualification.mjs --run-prototype-v2",

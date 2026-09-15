@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
-export function checkE03LocalPilotState(entry) {
+export function checkE03LocalPilotState(entry, completionSupplement, powerSupplement) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
@@ -11,8 +11,89 @@ export function checkE03LocalPilotState(entry) {
     packetPath?.endsWith('.v2.json') ? 'v2' : 'v1';
   const terminalPath = `evidence/pilots/e03-blinded-${attemptVersion}/receipt.json`;
   const attemptPath = `evidence/pilots/e03-blinded-${attemptVersion}/attempt.json`;
+  const inputPath = `evidence/pilots/e03-blinded-${attemptVersion}/sample-size-input.json`;
+  const portablePath = entry.evidence.find((item) =>
+    item.kind === 'portable-terminal-summary')?.path;
   const isAuthority = (path) => entry.evidence.some((item) =>
     item.path === path && item.statusAuthority);
+
+  if (entry.attempt.status === 'completed' &&
+      (portablePath || !existsSync(terminalPath))) {
+    if (!packetPath || !portablePath || !existsSync(portablePath) || !isAuthority(terminalPath)) {
+      throw new Error('E03 completed pilot lacks its original authority or tracked portable summary');
+    }
+    const packetBytes = readFileSync(packetPath);
+    const packet = JSON.parse(packetBytes.toString('utf8'));
+    const portable = JSON.parse(readFileSync(portablePath, 'utf8'));
+    if (portable.classification !== 'portable-original-pilot-status-summary' ||
+        portable.experimentId !== 'E03' || portable.stage !== 'blinded-pilot' ||
+        portable.version !== attemptVersion || portable.executionCommit !==
+          '666402503a5ed21c8cc2a9eadf762af4199bffdb' ||
+        portable.registrationHash !== packet.preRegistrationHash ||
+        portable.packetSha256 !== sha256(packetBytes) ||
+        portable.originalReceiptPath !== terminalPath ||
+        portable.sampleSizeInputPath !== inputPath ||
+        !/^sha256:[0-9a-f]{64}$/u.test(portable.originalReceiptSha256) ||
+        !/^sha256:[0-9a-f]{64}$/u.test(portable.sampleSizeInputSha256) ||
+        portable.plannedRuns !== 120 || portable.attemptedRuns !== 120 ||
+        portable.completedRuns !== 120 || portable.validRuns !== 120 ||
+        portable.invalidRuns !== 0 || portable.abortedRuns !== 0 ||
+        portable.unattemptedRuns !== 0 || portable.replacedRuns !== 0 ||
+        portable.passed !== true || portable.failure !== null ||
+        portable.selectedPrimarySeeds !== 25 || portable.researchFinding !== false ||
+        portable.scientificDisposition !== 'not-tested' || portable.externalSpend !== 0 ||
+        portable.publicChainTransaction !== false || entry.attempt.planned !== 120 ||
+        entry.attempt.attempted !== 120 || entry.attempt.completed !== 120 ||
+        entry.executionReadiness.decision !== 'complete' ||
+        entry.scientificDisposition !== 'not-tested') {
+      throw new Error('E03 portable pilot status contradicts its packet or campaign state');
+    }
+    if (completionSupplement &&
+        (completionSupplement.terminalSha256 !== portable.originalReceiptSha256 ||
+         completionSupplement.sampleSizeInputSha256 !== portable.sampleSizeInputSha256 ||
+         completionSupplement.selectedPrimarySeeds !== portable.selectedPrimarySeeds)) {
+      throw new Error('E03 portable pilot status contradicts the dated completion supplement');
+    }
+    if (existsSync(terminalPath) &&
+        sha256(readFileSync(terminalPath)) !== portable.originalReceiptSha256) {
+      throw new Error('E03 retained original terminal receipt contradicts the portable digest');
+    }
+    if (existsSync(inputPath) && !existsSync(terminalPath)) {
+      throw new Error('E03 retained reduction exists without its original terminal receipt');
+    }
+    if (existsSync(inputPath)) {
+      if (sha256(readFileSync(inputPath)) !== portable.sampleSizeInputSha256 ||
+          JSON.parse(readFileSync(inputPath, 'utf8')).selectedPrimarySeeds !== 25) {
+        throw new Error('E03 retained reduction contradicts the portable digest or selected row');
+      }
+    } else if (existsSync(terminalPath)) {
+      throw new Error('E03 retained original terminal receipt lacks its audited reduction');
+    }
+    if (powerSupplement && attemptVersion === 'v3') {
+      if (powerSupplement.originalPath !==
+          'evidence/pilots/e03-blinded-v3/power-selection.json' ||
+          !/^sha256:[0-9a-f]{64}$/u.test(powerSupplement.originalSha256) ||
+          powerSupplement.primarySeeds !== 25 ||
+          powerSupplement.repetitions !== 30000 ||
+          powerSupplement.invalidAsFailureSensitivitySuccesses !== 0) {
+        throw new Error('E03 power supplement has an invalid evidence identity or boundary');
+      }
+      if (existsSync(powerSupplement.originalPath)) {
+        const powerBytes = readFileSync(powerSupplement.originalPath);
+        const power = JSON.parse(powerBytes.toString('utf8'));
+        if (sha256(powerBytes) !== powerSupplement.originalSha256 ||
+            power.experimentId !== 'E03' || power.selectedPrimarySeeds !== 25 ||
+            power.monteCarloRepetitions !== 30000 ||
+            power.numericRule?.lower95 !== powerSupplement.nominalCompleteRuleLower95 ||
+            power.invalidAsFailureSensitivity?.successes !== 0 ||
+            power.researchFinding !== false || power.scientificDisposition !== 'not-tested') {
+          throw new Error('E03 retained power calculation contradicts its dated supplement');
+        }
+      } else if (existsSync(terminalPath)) {
+        throw new Error('E03 retained original pilot lacks its separately recorded power calculation');
+      }
+    }
+  }
 
   if (existsSync(terminalPath)) {
     if (!packetPath || !isAuthority(terminalPath)) {
@@ -47,10 +128,14 @@ export function checkE03LocalPilotState(entry) {
   }
 
   if (!existsSync(attemptPath)) {
+    if (entry.attempt.status === 'completed') return;
     if (entry.attempt.status === 'running') {
       throw new Error('E03 pilot running status has no original start evidence');
     }
     return;
+  }
+  if (entry.attempt.status === 'completed') {
+    throw new Error('E03 completed pilot has start evidence but no original terminal receipt');
   }
   if (entry.attempt.status !== 'running' || !packetPath || !isAuthority(attemptPath)) {
     throw new Error('E03 pilot attempt exists but is not an evidence-backed running state');

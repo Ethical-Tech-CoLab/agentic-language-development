@@ -95,9 +95,9 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.169 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.170 · 257/261 backlog acceptance criteria verified.
 
-Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
+Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
 resolves a later sample-size wording conflict; it supplies no pilot variance,
 30,000-repetition simulation, selected N, or behavioral result.
@@ -154,7 +154,21 @@ requires fresh IDs/seeds, packet, and binding. The new
 run IDs and disjoint pilot seeds against clean v0.1.167. Its separately
 committed [simulated binding](protocols/e03-pilot-registration-binding.v3.json)
 records three local confirmations without currency or a public transaction.
-The pilot stage is ready for exact live admission, but no run has started.
+The one prospectively registered v3 pilot attempt ran on clean v0.1.169:
+120 planned, attempted, completed, and original-bundle-audited runs; no invalid,
+aborted, or replacement runs. Its separate outcome-blind reduction and recomputation
+audit selected the prespecified 25-primary-seed E03 design row. The
+[pilot progress update](reports/research/e03-v3-pilot-progress-update.md) binds
+the retained original receipt and reduction hashes. The tracked
+[portable status receipt](reports/research/e03-v3-pilot-status-receipt.json)
+allows clean-checkout status inspection; raw-data re-audit still requires the
+separately retained ignored evidence. These are Prototype-Mode
+design inputs, not E03 chance-control or behavioral findings.
+The Homebrew-R 30,000-repetition nominal complete-rule simulation passed at
+25 seeds (lower 95% power bound `0.999872`), but its forced two-invalid-primary-
+per-condition sensitivity passed zero repetitions. Registered reserve and
+invalid-run handling therefore need explicit full-stage qualification; the
+nominal design calculation is not a robustness or experiment pass.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.
@@ -163,16 +177,12 @@ the dependent behavioral campaign remains unstarted. The [phase-two update](repo
 explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:
 
-The prospective original-pilot collector is prepared but has not run. Once its
-v3 packet and simulated binding are committed and the E03 pilot stage is ready,
-`pnpm run admit:e03-pilot-v3:live` checks all registered runs against original
-topology and resource evidence. `pnpm run run:e03-pilot-v3` then executes the
-single-use, zero-reserve pilot; failure is retained. A separate live audit is
-required before pilot tallies can enter the sample-size selector.
-The prepared `reduce:e03-pilot-v3:live` command also reruns the 120-bundle audit
-before writing a single-use, outcome-blind dispersion input. Its separate
-`audit:e03-pilot-reduction:live` check recomputes that input from retained
-original records. Neither command has run on pilot data.
+The exact live admission preceded the single-use v3 run. The collector and
+separate `audit:e03-pilot-v3:live` check verified all original bundles. The
+`reduce:e03-pilot-v3:live` command then reran that audit before writing the
+outcome-blind dispersion input; `audit:e03-pilot-v3-reduction:live` independently
+recomputed it from retained original records. All four gates passed on the
+original v3 evidence. E03's full control qualification remains unexecuted.
 The audit cross-checks unsigned operational tallies against the signed,
 verified turn and channel streams before admitting a sample-size input.
 The prospective Prototype-Mode development audit now derives its paired
