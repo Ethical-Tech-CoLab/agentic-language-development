@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.140 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.141 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1205,8 +1205,13 @@ thresholds. The [terminal receipt](reports/research/e02-v3-qualification-receipt
 and separate [full live audit](reports/research/e02-v3-full-audit-receipt.json)
 bind the original evidence. This closes bounded local E02 software reliability,
 not the behavioral ledger-value hypotheses, image-encoder qualification, or
-independent human review. E03's next gate is development topology and a measured
-blinded-pilot allocation, not confirmatory collection.
+independent human review. The ordinary two-container preflight exercises learner
+transport and network boundaries but does not establish the specification's separate
+ledger-writer/signer process boundary; it cannot support a full Research-Grade
+isolation claim. The prospective [E03 infrastructure-mode amendment](protocols/e03-prototype-mode-amendment.v1.json)
+uses the specification's permitted Prototype Mode for control qualification without
+an isolation claim. Its next gates are an exact Prototype-Mode development topology
+and a measured blinded-pilot allocation, not confirmatory collection.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

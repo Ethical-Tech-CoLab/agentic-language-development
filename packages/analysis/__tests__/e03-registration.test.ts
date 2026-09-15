@@ -13,7 +13,7 @@ function baseConfig(primarySeeds = 3) {
     runId: 'e03-registration-template',
     experimentId: 'E03',
     randomSeed: 'unrealized-seed',
-    deploymentMode: 'research-grade',
+    deploymentMode: 'prototype',
     registrationClass: 'qualification',
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
@@ -46,7 +46,7 @@ const input = {
       buildCommand: 'pnpm build',
     },
     topology: {
-      mode: 'research-grade',
+      mode: 'prototype',
       learnerContainersPerSlot: 2,
       nurseryContainersPerSlot: 1,
       maximumParallelSlots: 1,
@@ -56,8 +56,8 @@ const input = {
       learnerTrack: 'no-learning',
     },
     signing: {
-      provider: 'si-fort-files',
-      exactRunAuthorization: true,
+      provider: 'controller-ephemeral-per-run',
+      exactRunAuthorization: false,
       learnerAccess: false,
     },
     dependency: {
@@ -151,13 +151,13 @@ describe('E03 pre-registration compiler', () => {
     ]);
   });
 
-  it('fails closed on a non-research or mismatched seed-count base', () => {
+  it('fails closed on a mislabeled isolation mode or mismatched seed-count base', () => {
     expect(() =>
       compileE03Registration({
         ...input,
-        baseConfig: { ...baseConfig(), deploymentMode: 'prototype' },
+        baseConfig: { ...baseConfig(), deploymentMode: 'research-grade' },
       }),
-    ).toThrow(/research-grade/u);
+    ).toThrow(/Prototype Mode/u);
     expect(() => compileE03Registration({ ...input, baseConfig: baseConfig(19) })).toThrow(
       /must equal primarySeeds/u,
     );

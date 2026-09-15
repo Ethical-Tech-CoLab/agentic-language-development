@@ -24,7 +24,7 @@ export const RESEARCH_PREFLIGHT_CLAIM_BOUNDARY =
 
 export type ResearchPreflightCheckId =
   | 'run-config-valid'
-  | 'research-grade-mode'
+  | 'deployment-mode-eligible'
   | 'independent-training'
   | 'non-placeholder-input-hashes'
   | 'registered-seed-count'
@@ -185,10 +185,12 @@ export function evaluateResearchPreflight(
       'RunConfig is invalid.',
     ),
     check(
-      'research-grade-mode',
-      parsedConfig.success && config.deploymentMode === 'research-grade',
-      'Research-Grade Mode is selected.',
-      'Registered research collection requires Research-Grade Mode.',
+      'deployment-mode-eligible',
+      parsedConfig.success && (config.deploymentMode === 'research-grade' ||
+        (config.experimentId === 'E03' && config.registrationClass === 'qualification' &&
+          config.deploymentMode === 'prototype')),
+      'Deployment mode is eligible for this registered stage.',
+      'Research collection requires Research-Grade Mode; E03 infrastructure qualification may use Prototype Mode without an isolation claim.',
     ),
     check(
       'independent-training',

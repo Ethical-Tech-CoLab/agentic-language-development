@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E03",
+  "classification": "prospective-infrastructure-mode-amendment",
+  "registrationStage": "before-blinded-pilot",
+  "researchFinding": false,
+  "reason": "The current controller keeps evidence writers and per-run signer key material in one trust process. Separate learner containers and network namespaces alone do not satisfy the specification's complete Research-Grade writer/signer isolation boundary.",
+  "decision": {
+    "deploymentMode": "prototype",
+    "physicalLearnerTransport": "two-isolated-container-tcp-adapters",
+    "signingProvider": "controller-ephemeral-per-run",
+    "researchGradeIsolationClaim": false,
+    "allowedScope": "E03 infrastructure control, oracle, feasibility, and sample-size qualification without a side-channel-isolation claim",
+    "laterRequirement": "E10 onward requires a separately qualified Research-Grade signer/writer process boundary whenever its registered claim depends on channel isolation"
+  },
+  "unchangedDesign": {
+    "conditions": ["disabled", "constant", "random", "shuffled", "normal", "oracle"],
+    "pilotSlotsPerCondition": 20,
+    "pilotReserves": 0,
+    "episodesPerSlot": 200,
+    "normalizedAdapterDeadlineMs": 2000,
+    "checkpointEventInterval": 1024,
+    "chanceEquivalenceBounds": [0.2, 0.3],
+    "oracleAdequacyAndSeparationRules": "unchanged from the frozen E03 analysis plan",
+    "seedDomains": "development, blinded pilot, full qualification, and replication remain disjoint",
+    "externalSpend": 0,
+    "publicChainTransaction": false
+  },
+  "evidenceAccounting": {
+    "existingDevelopmentAttempt": "e03-topology-development-v1",
+    "existingAttemptTreatment": "retain original mechanics and resource observations; do not classify it as full Research-Grade qualification or a pilot",
+    "requiredExactModeBinding": "fresh development-only Prototype-Mode topology identifier and source commit before E03 pilot packet activation",
+    "pilotOutcomeTreatment": "pilot tallies feed only prespecified feasibility and variance selection; no confirmatory claim"
+  },
+  "claimBoundary": "Prospective E03 infrastructure-mode correction before registered collection. This amendment does not supply original data, full Research-Grade isolation, independent review, or behavioral results."
+}

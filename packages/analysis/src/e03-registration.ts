@@ -23,9 +23,10 @@ import { AnalysisError } from './errors.js';
 
 export const E03_REGISTRATION_COMPILER_VERSION = 3;
 export const E03_REGISTRATION_CLAIM_BOUNDARY =
-  'Draft E03 qualification artifact only: an immutable repository registration, ' +
-  'matching pre-run simulated commitment, qualified E02 dependency, and sufficient ' +
-  'authorized resources are still required before collection.';
+  'Draft Prototype-Mode E03 infrastructure qualification only: an immutable ' +
+  'repository registration, matching pre-run simulated commitment, qualified ' +
+  'dependencies, and sufficient authorized resources are still required before ' +
+  'collection. This topology does not establish Research-Grade signer/writer isolation.';
 
 const E03_CANDIDATE_PRIMARY_SEEDS = new Set([25, 75, 155, 300]);
 const SHA256_PATTERN = /^(?:sha256:)?[a-f0-9]{64}$/u;
@@ -60,7 +61,7 @@ export interface E03ExecutionBinding {
     readonly buildCommand: 'pnpm build';
   };
   readonly topology: {
-    readonly mode: 'research-grade';
+    readonly mode: 'prototype';
     readonly learnerContainersPerSlot: 2;
     readonly nurseryContainersPerSlot: 1;
     readonly maximumParallelSlots: 1;
@@ -70,8 +71,8 @@ export interface E03ExecutionBinding {
     readonly learnerTrack: 'no-learning';
   };
   readonly signing: {
-    readonly provider: 'si-fort-files';
-    readonly exactRunAuthorization: true;
+    readonly provider: 'controller-ephemeral-per-run';
+    readonly exactRunAuthorization: false;
     readonly learnerAccess: false;
   };
   readonly dependency: {
@@ -132,8 +133,8 @@ export interface CompiledE03Registration {
 function assertE03Base(config: RunConfig): void {
   const problems: string[] = [];
   if (config.experimentId !== 'E03') problems.push('experimentId must be E03');
-  if (config.deploymentMode !== 'research-grade') {
-    problems.push('deploymentMode must be research-grade');
+  if (config.deploymentMode !== 'prototype') {
+    problems.push('E03 infrastructure qualification must use Prototype Mode until isolated signer/writer boundaries qualify');
   }
   if (config.registrationClass !== 'qualification') {
     problems.push('registrationClass must be qualification');
@@ -222,7 +223,7 @@ function assertExecutionBinding(binding: E03ExecutionBinding): void {
     !SHA256_PATTERN.test(binding.rootBuildInputs.lockfileSha256) ||
     !SHA256_PATTERN.test(binding.rootBuildInputs.sourceTreeSha256) ||
     binding.rootBuildInputs.buildCommand !== 'pnpm build' ||
-    binding.topology.mode !== 'research-grade' ||
+    binding.topology.mode !== 'prototype' ||
     binding.topology.learnerContainersPerSlot !== 2 ||
     binding.topology.nurseryContainersPerSlot !== 1 ||
     binding.topology.maximumParallelSlots !== 1 ||
@@ -230,8 +231,8 @@ function assertExecutionBinding(binding: E03ExecutionBinding): void {
     binding.topology.adapterTiming !== 'normalized' ||
     binding.topology.adapterDeadlineMs !== 2_000 ||
     binding.topology.learnerTrack !== 'no-learning' ||
-    binding.signing.provider !== 'si-fort-files' ||
-    binding.signing.exactRunAuthorization !== true ||
+    binding.signing.provider !== 'controller-ephemeral-per-run' ||
+    binding.signing.exactRunAuthorization !== false ||
     binding.signing.learnerAccess !== false ||
     binding.dependency.experimentId !== 'E02' ||
     binding.dependency.disposition !== 'software-qualified' ||

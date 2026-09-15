@@ -95,11 +95,11 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.140 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.141 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 
-The verifiable core, communication runtime, Mode R isolation, experiment-readiness
+The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02
 qualified within distinct, bounded registered **software** scopes. E02 v1 stopped
 after 465 turns at its five-timeout safety pause; v2 stopped after 161 committed
@@ -110,8 +110,12 @@ checks and 60 fixed probes, and passed a separate full live audit of the origina
 evidence. Its [terminal receipt](reports/research/e02-v3-qualification-receipt.json)
 and [audit receipt](reports/research/e02-v3-full-audit-receipt.json) close the local
 reliability gate without establishing a behavioral finding, image-encoder safety,
-independent review, or a public timestamp. E03 controls now face a measured
-pilot-stage topology/resource/packet gate; the dependent behavioral campaign
+independent review, or a public timestamp. The ordinary two-container preflight
+does not establish the specification's separate writer/signer process boundary,
+so it cannot qualify full Research-Grade isolation. E03 controls will use the
+permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v1.json)
+without an isolation claim and face an exact development topology, measured
+resource allocation, and registered packet gate; the dependent behavioral campaign
 remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
 explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:
@@ -310,8 +314,9 @@ pnpm run preflight:research \
   --binding /absolute/path/repository-registration-and-commitment-binding.json
 ```
 
-This draft is a design demonstration. It is not executable until E02 passes and
-the pilot packet is immutably registered and simulation-committed. After that pilot,
+This draft is a design demonstration. E02's bounded software gate has passed, but
+the exact Prototype-Mode topology, measured allocation, immutable pilot packet, and
+simulated pre-run commitment remain required before collection. After that pilot,
 compile the full E03 qualification only with the retained sample-size decision:
 
 ```bash

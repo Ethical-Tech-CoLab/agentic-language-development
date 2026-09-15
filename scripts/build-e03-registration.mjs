@@ -89,6 +89,7 @@ const bindingSourcePaths = [
   'packages/analysis/src/e03-registration.ts',
   'packages/ops/src/research-preflight.ts',
   'packages/orchestrator/src/index.ts',
+  'protocols/e03-prototype-mode-amendment.v1.json',
   'scripts/build-e03-registration.mjs',
   'scripts/run-e03-power-selection.mjs',
   'scripts/e03-power-selection.R',
@@ -121,7 +122,7 @@ const executionBinding = {
     buildCommand: 'pnpm build',
   },
   topology: {
-    mode: 'research-grade',
+    mode: 'prototype',
     learnerContainersPerSlot: 2,
     nurseryContainersPerSlot: 1,
     maximumParallelSlots: 1,
@@ -131,8 +132,8 @@ const executionBinding = {
     learnerTrack: 'no-learning',
   },
   signing: {
-    provider: 'si-fort-files',
-    exactRunAuthorization: true,
+    provider: 'controller-ephemeral-per-run',
+    exactRunAuthorization: false,
     learnerAccess: false,
   },
   dependency: {
@@ -235,7 +236,7 @@ const baseConfig = buildRunConfig({
   runId: 'e03-registration-template',
   experimentId: 'E03',
   randomSeed: 'unrealized-seed',
-  deploymentMode: 'research-grade',
+  deploymentMode: 'prototype',
   registrationClass: 'qualification',
   babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
   babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },

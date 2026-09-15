@@ -18,7 +18,7 @@ function registration() {
     runId: 'e03-preflight',
     experimentId: 'E03',
     randomSeed: 'unrealized',
-    deploymentMode: 'research-grade',
+    deploymentMode: 'prototype',
     registrationClass: 'qualification',
     babyA: { track: 'no-learning', modelRef: 'uniform-random-v1' },
     babyB: { track: 'no-learning', modelRef: 'uniform-random-v1' },
@@ -49,12 +49,12 @@ function registration() {
         buildCommand: 'pnpm build',
       },
       topology: {
-        mode: 'research-grade', learnerContainersPerSlot: 2,
+        mode: 'prototype', learnerContainersPerSlot: 2,
         nurseryContainersPerSlot: 1, maximumParallelSlots: 1,
         adapterTransport: 'container-tcp', adapterTiming: 'normalized',
         adapterDeadlineMs: 2_000, learnerTrack: 'no-learning',
       },
-      signing: { provider: 'si-fort-files', exactRunAuthorization: true, learnerAccess: false },
+      signing: { provider: 'controller-ephemeral-per-run', exactRunAuthorization: false, learnerAccess: false },
       dependency: {
         experimentId: 'E02', disposition: 'software-qualified',
         receiptPath: 'reports/research/e02-v3-qualification-receipt.json',
@@ -113,6 +113,16 @@ describe('registered research preflight', () => {
     expect(report.blockers).toEqual([]);
     expect(report.checks.every((item) => item.pass)).toBe(true);
     expect(formatResearchPreflight(report)).toContain('Research preflight: READY');
+  });
+
+  it('allows Prototype Mode only for E03 infrastructure qualification', () => {
+    const input = passingInput();
+    expect(input.config.deploymentMode).toBe('prototype');
+    expect(evaluateResearchPreflight(input).ready).toBe(true);
+    const mislabeled = evaluateResearchPreflight({
+      ...input, config: { ...input.config, experimentId: 'E10' },
+    });
+    expect(mislabeled.blockers).toContain('deployment-mode-eligible');
   });
 
   it('reports every missing registration prerequisite instead of stopping at the first', () => {

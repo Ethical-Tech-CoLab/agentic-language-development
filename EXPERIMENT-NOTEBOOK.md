@@ -494,6 +494,13 @@ Its D05 amendment uses seed-level primary tests, treats high-rate seeds as manda
 leakage-review triggers rather than an uncalibrated count rejection, and is backed by
 the independent bounded simulation in
 [`docs/statistical-validation-and-power.md`](docs/statistical-validation-and-power.md).
+The prospective [infrastructure-mode amendment](protocols/e03-prototype-mode-amendment.v1.json)
+binds E03 pilot and qualification to Prototype Mode, which the specification permits
+for E00–E03. Separate learner containers may still be used for transport mechanics,
+but controller-held writer/signer keys do not qualify the full Research-Grade process
+boundary or a side-channel-isolation claim. The current six-condition development
+attempt remains mechanics/resource evidence only; an exact Prototype-Mode topology
+binding and measured pilot allocation are required before a pilot packet is activated.
 
 ### Conditions
 

@@ -44,7 +44,7 @@ describe('E03 draft CLI resource policy binding', () => {
     expect(packet.runs[0].config.turnResponseBudgetMs).toBe(2_000);
     expect(packet.runs[0].config.maxTurnsPerRun).toBe(1);
     expect(packet.runs[0].config.checkpointEventInterval).toBe(1_024);
-    expect(packet.claimBoundary).toContain('Draft E03 qualification artifact only');
+    expect(packet.claimBoundary).toContain('Draft Prototype-Mode E03 infrastructure qualification only');
   });
 
   it('rejects a resource policy that permits external spending', () => {

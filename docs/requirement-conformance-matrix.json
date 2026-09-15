@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.140"
+    "version": "0.1.141"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -62,7 +62,7 @@
         "builds one canonical artifact and binds every condition/slot to its hash",
         "is byte-identical on repeat and changes hash when a registered field changes",
         "excludes realized run identity, seed, condition, and hash from the parameter template",
-        "fails closed on a non-research or mismatched seed-count base",
+        "fails closed on a mislabeled isolation mode or mismatched seed-count base",
         "requires a qualifying pilot decision before full qualification"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/analysis/__tests__/e03-registration.test.ts"
@@ -983,6 +983,7 @@
     "packages/ops/__tests__/research-preflight.test.ts": {
       "selectors": [
         "passes only when every immutable input and registration binding agrees",
+        "allows Prototype Mode only for E03 infrastructure qualification",
         "reports every missing registration prerequisite instead of stopping at the first",
         "accepts a matching ancestral repository-native registration",
         "rejects a repository registration whose historical record does not match"
