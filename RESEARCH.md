@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.147 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.148 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1880,6 +1880,10 @@ registered analysis.
 An attempted failed pilot slot retains its partial evidence and measured
 learner/Nursery CPU charges. Missing cgroup measurements leave capacity
 unresolved rather than treating the failed slot as free or replaceable.
+Before original collection, the packet's protocol-base commit and execution
+commit must have no intervening source changes in packages, twins, deployment
+code, or scripts. A changed implementation requires a new prospective
+packet, not a retroactive hash match.
 
 1. **Control equivalence:** For each of disabled, constant, random, shuffled, and
    normal no-learning, perform two one-sided one-sample tests on seed-level success

@@ -41,6 +41,15 @@ function sourceTreeDigest() {
     `${path}\t${digest(path)}\n`).sort().join(''), 'utf8'));
 }
 
+export function assertFrozenE03Sources(protocolCommit, executionCommit) {
+  assert.match(protocolCommit, /^[a-f0-9]{40}$/u);
+  assert.match(executionCommit, /^[a-f0-9]{40}$/u);
+  const sourceDiff = spawnSync('git', ['diff', '--quiet', '--no-ext-diff',
+    protocolCommit, executionCommit, '--', 'packages', 'twins', 'deploy', 'scripts']);
+  assert.equal(sourceDiff.status, 0,
+    'E03 execution sources changed after the protocol base commit; amend and register fresh allocations');
+}
+
 function checkOriginalTopology(topology) {
   assert.equal(topology.classification, 'original-prototype-development-audit');
   assert.equal(topology.profile, 'prototype-v2');
@@ -159,6 +168,7 @@ export function validateE03PilotAdmission() {
   const packetCommit = git('log', '-1', '--format=%H', '--', packetPath);
   assert.ok(ancestor(artifact.protocolGitCommit, packetCommit));
   assert.ok(ancestor(packetCommit, head));
+  assertFrozenE03Sources(artifact.protocolGitCommit, head);
   assert.equal(packetBytes.toString('utf8'),
     execFileSync('git', ['show', `${packetCommit}:${packetPath}`], { encoding: 'utf8' }));
   const activation = spawnSync(process.execPath,

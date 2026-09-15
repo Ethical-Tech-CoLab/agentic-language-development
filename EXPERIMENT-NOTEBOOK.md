@@ -528,6 +528,8 @@ under-reserved design, or an allocation beyond the local zero-spend ceiling.
       dispersion input before sample-size power selection.
 - [ ] Charge failed attempted slots where CPU is measured, and leave capacity
       unresolved where a required measurement is missing.
+- [ ] Verify that no execution source changed after the packet's protocol-base
+      commit before admitting a registered pilot allocation.
 
 ### Acceptance Criteria
 
