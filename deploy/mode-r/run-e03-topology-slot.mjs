@@ -64,7 +64,7 @@ try {
     databasePath: join(root, 'evidence.sqlite'), bundleRoot: join(root, 'bundles'),
     softwareCommit, clock, allowUnanchored: false, anchorPolicy: 'required',
     anchorPublisher: publisher,
-    adapterFactoryFor: (_config, role) => {
+    ...(profile === 'v1' ? { adapterFactoryFor: (_config, role) => {
       const factory = createIsolatedAdapterFactory({
         track: 'no-learning', transport: 'container',
         endpoint: { host: role, port: 4318, attempts: 40, retryDelayMs: 250, timeoutMs: 1_000, hostLabel: role },
@@ -72,7 +72,7 @@ try {
       });
       factories.push(factory);
       return factory;
-    },
+    } } : {}),
   });
   failureStage = 'run-creation';
   const config = buildRunConfig({
@@ -92,8 +92,15 @@ try {
   });
   await production.runtime.createRun(config);
   const adapters = production.runtime.adaptersFor(runId);
-  const containerIds = Object.fromEntries(['baby-a', 'baby-b'].map((role) => [role, adapters[role].isolation.containerId]));
-  assert.equal(new Set(Object.values(containerIds)).size, 2);
+  const containerIds = profile === 'v1'
+    ? Object.fromEntries(['baby-a', 'baby-b'].map((role) => [role, adapters[role].isolation.containerId]))
+    : null;
+  if (profile === 'v1') assert.equal(new Set(Object.values(containerIds)).size, 2);
+  else {
+    assert.ok(Object.values(adapters).every((adapter) =>
+      adapter.isolation === undefined || adapter.isolation.boundary === 'in-process'));
+    assert.match(process.env.HOSTNAME, /^[a-f0-9]{12}$/u);
+  }
   failureStage = 'collection';
   const summary = await production.runtime.runToCompletion(runId, {
     onTurn: (result) => {
@@ -146,7 +153,12 @@ try {
     rejectedChannelEvents: channel.filter((event) => event.gatewayValidationResult === 'rejected').length,
     successes: evaluation.filter((record) => record.outcome.success === true).length,
     checkpoints: production.runtime.checkpoints(runId).length,
-    containerIds, anchorReceiptCount: receipts.length, verifierExitCode: verification.exitCode,
+    ...(profile === 'v1'
+      ? { containerIds }
+      : { nurseryContainerId: process.env.HOSTNAME, nurseryProcessId: process.pid,
+        roleProcessIds: { 'baby-a': process.pid, 'baby-b': process.pid },
+        externalLearnerContainerCount: 0 }),
+    anchorReceiptCount: receipts.length, verifierExitCode: verification.exitCode,
     state: summary.state,
   };
 } catch (error) {
@@ -171,7 +183,7 @@ try {
     passed,
     claimBoundary: profile === 'v1'
       ? 'Six-condition transport, control, anchor, and verifier mechanics only; no E03 pilot or research finding; not full Research-Grade writer/signer isolation.'
-      : 'Prototype-Mode control, oracle, transport, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, pilot, or research finding.',
+      : 'Prototype-Mode in-process control, oracle, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, pilot, or research finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }

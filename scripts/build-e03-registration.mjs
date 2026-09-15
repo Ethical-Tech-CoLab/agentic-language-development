@@ -108,13 +108,20 @@ if (
   topologyAudit.passed !== true ||
   topologyAudit.auditExitStatus !== 0 ||
   topologyAudit.conditionsAudited !== 6 ||
-  topologyAudit.roleContainerCount !== 12 ||
+  topologyAudit.roleContainerCount !== 0 ||
+  topologyAudit.nurseryContainerCount !== 6 ||
+  topologyAudit.sharedProcessCheck !== true ||
   topologyAudit.pairedScenarioCheck !== true ||
   topologyAudit.typescriptVerifierPassed !== true ||
   topologyAudit.rustAuditorPassed !== true ||
   !Array.isArray(topologyAudit.originalSlots) ||
   topologyAudit.originalSlots.length !== 6 ||
-  topologyAudit.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true) ||
+  topologyAudit.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true ||
+    !/^[a-f0-9]{12}$/u.test(slot.nurseryContainerId) ||
+    !Number.isSafeInteger(slot.nurseryProcessId) ||
+    slot.roleProcessIds?.['baby-a'] !== slot.nurseryProcessId ||
+    slot.roleProcessIds?.['baby-b'] !== slot.nurseryProcessId) ||
+  new Set(topologyAudit.originalSlots.map((slot) => slot.nurseryContainerId)).size !== 6 ||
   topologyAudit.researchFinding !== false ||
   topologyAudit.externalSpend !== 0 ||
   topologyAudit.publicChainTransaction !== false
@@ -153,7 +160,7 @@ const bindingSourcePaths = [
   'packages/analysis/src/e03-registration.ts',
   'packages/ops/src/research-preflight.ts',
   'packages/orchestrator/src/index.ts',
-  'protocols/e03-prototype-mode-amendment.v1.json',
+  'protocols/e03-prototype-mode-amendment.v2.json',
   'scripts/build-e03-registration.mjs',
   'scripts/run-e03-power-selection.mjs',
   'scripts/e03-power-selection.R',
@@ -187,12 +194,13 @@ const executionBinding = {
   },
   topology: {
     mode: 'prototype',
-    learnerContainersPerSlot: 2,
+    learnerContainersPerSlot: 0,
     nurseryContainersPerSlot: 1,
+    sharedNurseryProcess: true,
     maximumParallelSlots: 1,
-    adapterTransport: 'container-tcp',
-    adapterTiming: 'normalized',
-    adapterDeadlineMs: 2_000,
+    adapterTransport: 'in-process',
+    adapterTiming: 'immediate',
+    turnResponseBudgetMs: 2_000,
     learnerTrack: 'no-learning',
   },
   signing: {

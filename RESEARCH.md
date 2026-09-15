@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.153 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.154 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1214,25 +1214,18 @@ not the behavioral ledger-value hypotheses, image-encoder qualification, or
 independent human review. The ordinary two-container preflight exercises learner
 transport and network boundaries but does not establish the specification's separate
 ledger-writer/signer process boundary; it cannot support a full Research-Grade
-isolation claim. The prospective [E03 infrastructure-mode amendment](protocols/e03-prototype-mode-amendment.v1.json)
-uses the specification's permitted Prototype Mode for control qualification without
-an isolation claim. A fresh six-condition development-only Prototype-Mode runner is
-prepared with disjoint identifiers and seeds; it has not executed. Its next gates
-are that exact topology and a measured blinded-pilot allocation, not confirmatory
-collection. The future E03 compiler refuses a pilot or full packet without a
-complete six-condition original-data Prototype-Mode audit and a digest-bound,
-prospective stage resource allocation within the authorized zero-spend ceiling.
-That allocation charges E02's prior conservative reservation and the measured
-development CPU/storage before reserving the new pilot capacity; a stage cannot
-reuse consumed capacity merely because its own projected cost fits the gross ceiling.
-The prepared registered pilot path checks all 120 exact run configurations,
-audits each original bundle with the TypeScript and retained Rust verifiers,
-reconciles paired scenarios and resource charges after each run, and stops on
-failure without replacement. It has not executed: no pilot variance or
-behavioral finding is reported.
-The prepared, single-use pilot reduction re-audits all 120 original bundles and
-binds the five non-oracle seed tallies to the pilot receipt; a separate audit
-recomputes the design-row input. Neither check has run on pilot data.
+isolation claim. The prospective [E03 infrastructure-mode correction](protocols/e03-prototype-mode-amendment.v2.json)
+selects shared-process Prototype Mode for controls, without a Research-Grade
+isolation claim. Its unexecuted predecessor specified external adapters, which
+the runtime guard rejects; that record remains historical. The fresh six-condition
+development namespace is unused: its in-process runner is prepared, but the pilot
+collector still needs correction. A signed-original topology audit and measured,
+zero-spend allocation gate any 120-run pilot packet. The allocation charges prior
+E02 and development CPU/storage before reserving pilot capacity. The prepared
+pilot path verifies every original bundle with TypeScript and Rust, reconciles
+paired scenarios and resource charges, and stops on failure without replacement.
+Its reducer and separate recomputation audit are also prepared, not executed.
+No pilot variance or behavioral finding is reported.
 
 The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
 requirements are in [SPECIFICATION.md](SPECIFICATION.md).

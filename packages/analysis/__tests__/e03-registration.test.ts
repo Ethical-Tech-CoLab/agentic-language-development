@@ -47,12 +47,13 @@ const input = {
     },
     topology: {
       mode: 'prototype',
-      learnerContainersPerSlot: 2,
+      learnerContainersPerSlot: 0,
       nurseryContainersPerSlot: 1,
+      sharedNurseryProcess: true,
       maximumParallelSlots: 1,
-      adapterTransport: 'container-tcp',
-      adapterTiming: 'normalized',
-      adapterDeadlineMs: 2_000,
+      adapterTransport: 'in-process',
+      adapterTiming: 'immediate',
+      turnResponseBudgetMs: 2_000,
       learnerTrack: 'no-learning',
     },
     signing: {

@@ -49,10 +49,11 @@ function registration() {
         buildCommand: 'pnpm build',
       },
       topology: {
-        mode: 'prototype', learnerContainersPerSlot: 2,
-        nurseryContainersPerSlot: 1, maximumParallelSlots: 1,
-        adapterTransport: 'container-tcp', adapterTiming: 'normalized',
-        adapterDeadlineMs: 2_000, learnerTrack: 'no-learning',
+        mode: 'prototype', learnerContainersPerSlot: 0,
+        nurseryContainersPerSlot: 1, sharedNurseryProcess: true,
+        maximumParallelSlots: 1,
+        adapterTransport: 'in-process', adapterTiming: 'immediate',
+        turnResponseBudgetMs: 2_000, learnerTrack: 'no-learning',
       },
       signing: { provider: 'controller-ephemeral-per-run', exactRunAuthorization: false, learnerAccess: false },
       dependency: {

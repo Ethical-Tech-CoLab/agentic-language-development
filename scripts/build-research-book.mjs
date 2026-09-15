@@ -154,6 +154,9 @@ function printableHtml(markdown) {
       vertical-align: top;
       border: 0.5pt solid #bdc9d8;
     }
+    h2:last-of-type ~ table { margin: 0.08in 0 0.10in; line-height: 1.15; }
+    h2:last-of-type ~ table th,
+    h2:last-of-type ~ table td { padding: 2pt 5pt; }
     th { background: #e9f0f8; color: #17253d; text-align: left; }
     hr {
       margin: 0.24in 0;

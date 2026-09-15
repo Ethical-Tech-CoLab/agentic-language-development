@@ -28,6 +28,7 @@ const resourcePath = (condition) => join(evidenceRoot,
   slotName(condition), 'learner-resources.json');
 
 function captureLearnerResources(condition) {
+  if (profile !== 'v1') return;
   const slot = read(join(evidenceRoot, slotName(condition), 'slot.json'));
   const resources = {};
   let failure = null;
@@ -71,14 +72,24 @@ async function auditSlot(condition, executionCommit) {
   assert.equal(slot.observations.scenarioStateHashes.length, 200);
   assert.equal(slot.observations.anchorReceiptCount, 1);
   assert.equal(slot.observations.verifierExitCode, 0);
-  const learnerResources = read(resourcePath(condition));
-  assert.equal(learnerResources.condition, condition);
-  assert.equal(learnerResources.failure, null);
-  assert.deepEqual(Object.keys(learnerResources.resources).sort(), ['baby-a', 'baby-b']);
-  for (const role of ['baby-a', 'baby-b']) {
-    assert.equal(learnerResources.resources[role].containerId, slot.observations.containerIds[role]);
-    assert.ok(learnerResources.resources[role].cpuUsageMicroseconds > 0);
-    assert.ok(learnerResources.resources[role].peakBytes > 0);
+  const learnerResources = profile === 'v1' ? read(resourcePath(condition)) : null;
+  if (profile === 'v1') {
+    assert.equal(learnerResources.condition, condition);
+    assert.equal(learnerResources.failure, null);
+    assert.deepEqual(Object.keys(learnerResources.resources).sort(), ['baby-a', 'baby-b']);
+    for (const role of ['baby-a', 'baby-b']) {
+      assert.equal(learnerResources.resources[role].containerId, slot.observations.containerIds[role]);
+      assert.ok(learnerResources.resources[role].cpuUsageMicroseconds > 0);
+      assert.ok(learnerResources.resources[role].peakBytes > 0);
+    }
+  } else {
+    assert.equal(existsSync(resourcePath(condition)), false);
+    assert.equal(slot.observations.externalLearnerContainerCount, 0);
+    assert.match(slot.observations.nurseryContainerId, /^[a-f0-9]{12}$/u);
+    assert.ok(Number.isSafeInteger(slot.observations.nurseryProcessId));
+    assert.deepEqual(slot.observations.roleProcessIds,
+      { 'baby-a': slot.observations.nurseryProcessId,
+        'baby-b': slot.observations.nurseryProcessId });
   }
   const bundle = join(evidenceRoot, slotName(condition), 'bundles', 'runs', slot.observations.runId);
   const verification = await verifyBundle(bundle, {
@@ -111,11 +122,14 @@ async function auditSlot(condition, executionCommit) {
     condition, slotPath: path, slotSha256: sha256(path),
     scenarioStateHashes: original.scenarioStateHashes,
     signedOriginalDataReconciled: true,
-    containerIds: Object.values(slot.observations.containerIds),
+    containerIds: profile === 'v1' ? Object.values(slot.observations.containerIds) : [],
+    ...(profile === 'v1' ? {} : { nurseryContainerId: slot.observations.nurseryContainerId,
+      nurseryProcessId: slot.observations.nurseryProcessId,
+      roleProcessIds: slot.observations.roleProcessIds }),
     wallMilliseconds: slot.wallMilliseconds,
     containerResourceUsage: slot.containerResourceUsage,
-    learnerContainerResourceUsage: learnerResources.resources,
-    learnerResourceSha256: sha256(resourcePath(condition)),
+    learnerContainerResourceUsage: profile === 'v1' ? learnerResources.resources : {},
+    learnerResourceSha256: profile === 'v1' ? sha256(resourcePath(condition)) : null,
     bundleManifestHash: verification.bundleManifestHash,
     rust,
     passed: true,
@@ -129,8 +143,14 @@ async function auditMatrix(executionCommit) {
     assert.deepEqual(slot.scenarioStateHashes, slots[0].scenarioStateHashes,
       `${slot.condition}: paired scenarios diverged`);
   }
-  assert.equal(new Set(slots.flatMap((slot) => slot.containerIds)).size, 12,
-    'every condition needs fresh role containers');
+  if (profile === 'v1') {
+    assert.equal(new Set(slots.flatMap((slot) => slot.containerIds)).size, 12,
+      'every condition needs fresh role containers');
+  } else {
+    assert.ok(slots.every((slot) => slot.containerIds.length === 0));
+    assert.equal(new Set(slots.map((slot) => slot.nurseryContainerId)).size, 6,
+      'every Prototype-Mode condition needs a fresh Nursery container');
+  }
   return slots;
 }
 
@@ -155,6 +175,13 @@ if (mode.startsWith('--audit')) {
   assert.equal(existsSync(evidenceRoot), false, 'development evidence is single-use');
   const auditorPath = '.artifacts/cargo-target/release/ald-integrity-auditor';
   assert.equal(existsSync(auditorPath), true, 'build the Rust integrity auditor before collection');
+  if (profile !== 'v1') {
+    const amendment = read('protocols/e03-prototype-mode-amendment.v2.json');
+    assert.equal(amendment.decision.deploymentMode, 'prototype');
+    assert.equal(amendment.decision.physicalLearnerTransport,
+      'two-in-process-no-learning-adapters-one-nursery-process');
+    assert.equal(amendment.decision.externalLearnerContainersPerSlot, 0);
+  }
   const executionCommit = git('rev-parse', 'HEAD');
   mkdirSync(evidenceRoot, { recursive: true });
   copyFileSync(auditorPath, join(evidenceRoot, 'ald-integrity-auditor'));
@@ -183,9 +210,12 @@ if (mode.startsWith('--audit')) {
   let failure = null;
   let slots = [];
   try {
-    command([...compose, 'build', 'baby-a', 'baby-b', 'nursery-study']);
+    command([...compose, 'build', ...(profile === 'v1'
+      ? ['baby-a', 'baby-b', 'nursery-study'] : ['nursery-study'])]);
     for (const condition of conditions) {
-      command([...compose, 'up', '--detach', '--force-recreate', 'baby-a', 'baby-b']);
+      if (profile === 'v1') {
+        command([...compose, 'up', '--detach', '--force-recreate', 'baby-a', 'baby-b']);
+      }
       const log = createWriteStream(join(evidenceRoot, `slot-${condition}.log`), { flags: 'wx' });
       const status = await new Promise((resolveStatus, reject) => {
         const child = spawn('docker', [...compose, 'run', '--rm', '--no-deps',
@@ -228,7 +258,7 @@ if (mode.startsWith('--audit')) {
     passed,
     claimBoundary: profile === 'v1'
       ? 'Control, oracle, learner-transport, simulated-anchor, and verifier mechanics only; not full Research-Grade writer/signer isolation, a registered pilot, or a research finding.'
-      : 'Prototype-Mode control, oracle, learner-transport, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, registered pilot, or research finding.',
+      : 'Prototype-Mode in-process control, oracle, simulated-anchor, and verifier mechanics only; no Research-Grade isolation claim, registered pilot, or research finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }

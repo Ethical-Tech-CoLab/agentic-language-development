@@ -233,9 +233,11 @@ if (e03 && e03.executionReadiness.stage === 'pilot' &&
   };
   const topology = JSON.parse(readFileSync(topologyPath, 'utf8')) as {
     experimentId?: string; profile?: string; classification?: string; conditionsAudited?: number;
-    roleContainerCount?: number; auditExitStatus?: number; passed?: boolean; researchFinding?: boolean;
+    roleContainerCount?: number; nurseryContainerCount?: number; sharedProcessCheck?: boolean;
+    auditExitStatus?: number; passed?: boolean; researchFinding?: boolean;
     pairedScenarioCheck?: boolean; typescriptVerifierPassed?: boolean; rustAuditorPassed?: boolean;
-    originalSlots?: Array<{ signedOriginalDataReconciled?: boolean }>;
+    originalSlots?: Array<{ signedOriginalDataReconciled?: boolean; nurseryContainerId?: string;
+      nurseryProcessId?: number; roleProcessIds?: Record<string, number> }>;
   };
   const stageAllocation = JSON.parse(readFileSync(stageAllocationPath, 'utf8')) as {
     experimentId?: string; stage?: string; classification?: string; decision?: string;
@@ -255,10 +257,16 @@ if (e03 && e03.executionReadiness.stage === 'pilot' &&
     binding.preRunAnchor?.status !== 'confirmed' ||
     topology.experimentId !== 'E03' || topology.profile !== 'prototype-v2' ||
     topology.classification !== 'original-prototype-development-audit' ||
-    topology.conditionsAudited !== 6 || topology.roleContainerCount !== 12 ||
+    topology.conditionsAudited !== 6 || topology.roleContainerCount !== 0 ||
+    topology.nurseryContainerCount !== 6 || topology.sharedProcessCheck !== true ||
     topology.pairedScenarioCheck !== true || topology.typescriptVerifierPassed !== true ||
     topology.rustAuditorPassed !== true || !topology.originalSlots || topology.originalSlots.length !== 6 ||
-    topology.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true) ||
+    topology.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true ||
+      !/^[a-f0-9]{12}$/u.test(slot.nurseryContainerId ?? '') ||
+      !Number.isInteger(slot.nurseryProcessId) ||
+      slot.roleProcessIds?.['baby-a'] !== slot.nurseryProcessId ||
+      slot.roleProcessIds?.['baby-b'] !== slot.nurseryProcessId) ||
+    new Set(topology.originalSlots.map((slot) => slot.nurseryContainerId)).size !== 6 ||
     topology.auditExitStatus !== 0 || topology.passed !== true || topology.researchFinding !== false ||
     stageAllocation.experimentId !== 'E03' || stageAllocation.stage !== 'blinded-pilot' ||
     stageAllocation.classification !== 'prospective-local-stage-allocation' ||

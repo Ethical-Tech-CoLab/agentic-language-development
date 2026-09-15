@@ -80,9 +80,14 @@ function readyPilotFixture() {
     ];
     receipts.e03Topology = {
       experimentId: 'E03', profile: 'prototype-v2', classification: 'original-prototype-development-audit',
-      conditionsAudited: 6, roleContainerCount: 12, auditExitStatus: 0,
+      conditionsAudited: 6, roleContainerCount: 0, nurseryContainerCount: 6,
+      sharedProcessCheck: true, auditExitStatus: 0,
       pairedScenarioCheck: true, typescriptVerifierPassed: true, rustAuditorPassed: true,
-      originalSlots: Array(6).fill({ signedOriginalDataReconciled: true }),
+      originalSlots: Array.from({ length: 6 }, (_, index) => ({
+        signedOriginalDataReconciled: true,
+        nurseryContainerId: index.toString(16).padStart(12, '0'), nurseryProcessId: 1,
+        roleProcessIds: { 'baby-a': 1, 'baby-b': 1 },
+      })),
       passed: true, researchFinding: false,
     };
     receipts.e03Allocation = {

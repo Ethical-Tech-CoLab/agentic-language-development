@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "experimentId": "E03",
+  "classification": "prospective-infrastructure-topology-correction",
+  "registrationStage": "before-blinded-pilot",
+  "status": "design correction only; no v2 development or pilot seed has been used",
+  "researchFinding": false,
+  "supersedes": {
+    "path": "protocols/e03-prototype-mode-amendment.v1.json",
+    "sha256": "sha256:67b60dfc0abdfaf5cd5837cef8510e00e402b1ef5cecd4c814c05bb6c4a78349",
+    "reason": "The unexecuted v1 amendment paired Prototype Mode with external container adapters, contradicting the specification's shared-process Mode-P boundary and the runtime guard. The original amendment remains historical design evidence."
+  },
+  "decision": {
+    "deploymentMode": "prototype",
+    "physicalLearnerTransport": "two-in-process-no-learning-adapters-one-nursery-process",
+    "evidenceWriterAndSignerBoundary": "logical service objects and controller-ephemeral per-run keys in the same Nursery process",
+    "externalLearnerContainersPerSlot": 0,
+    "nurseryContainersPerSlot": 1,
+    "turnResponseBudgetMs": 2000,
+    "adapterTiming": "in-process; no side-channel timing-normalization claim",
+    "researchGradeIsolationClaim": false,
+    "allowedScope": "E03 control, oracle, feasibility, and sample-size infrastructure qualification only",
+    "laterRequirement": "E10 onward needs its own exact Research-Grade learner, network, writer, and signer process-boundary qualification for any channel-isolation claim"
+  },
+  "unchangedDesign": {
+    "conditions": ["disabled", "constant", "random", "shuffled", "normal", "oracle"],
+    "pilotSlotsPerCondition": 20,
+    "pilotReserves": 0,
+    "episodesPerSlot": 200,
+    "checkpointEventInterval": 1024,
+    "chanceEquivalenceBounds": [0.2, 0.3],
+    "oracleAdequacyAndSeparationRules": "unchanged from the frozen E03 analysis plan",
+    "developmentSeedDomain": "the prototype-v2 development namespace remains unused before this correction",
+    "pilotAndConfirmatorySeedDomains": "remain prospective, disjoint from development and each other",
+    "externalSpend": 0,
+    "publicChainTransaction": false
+  },
+  "evidenceAccounting": {
+    "v1DevelopmentAttempt": "retain original partial Research-Grade-mode mechanics/resource evidence without a full Mode-R isolation or E03 pilot claim",
+    "v2DevelopmentAttempt": "execute only after this correction is bound to a clean source commit; use the untouched development-only prototype-v2 namespace once",
+    "pilotOutcomeTreatment": "actual registered pilot tallies may feed prespecified feasibility and variance design inputs only; they are not behavioral findings"
+  },
+  "claimBoundary": "Prospective correction of an unexecuted E03 design. It changes no control threshold or sample count, supplies no research outcome, and cannot qualify E10+ Research-Grade isolation."
+}

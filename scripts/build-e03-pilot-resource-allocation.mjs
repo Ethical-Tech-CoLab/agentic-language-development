@@ -58,12 +58,14 @@ const observedSlots = rawReceipt.slots.map((slot) => {
   assert.equal(slot.rust.anchored, true);
   const runPath = join(rawRoot,
     `e03-topology-prototype-v2-${slot.condition}`);
-  const learner = slot.learnerContainerResourceUsage;
-  assert.deepEqual(Object.keys(learner).sort(), ['baby-a', 'baby-b']);
-  const cpuUsageMicroseconds = slot.containerResourceUsage.cpuUsageMicroseconds +
-    learner['baby-a'].cpuUsageMicroseconds + learner['baby-b'].cpuUsageMicroseconds;
-  const combinedPeakBytes = slot.containerResourceUsage.peakBytes +
-    learner['baby-a'].peakBytes + learner['baby-b'].peakBytes;
+  assert.deepEqual(slot.learnerContainerResourceUsage, {});
+  assert.equal(slot.learnerResourceSha256, null);
+  assert.deepEqual(slot.containerIds, []);
+  assert.match(slot.nurseryContainerId, /^[a-f0-9]{12}$/u);
+  assert.deepEqual(slot.roleProcessIds,
+    { 'baby-a': slot.nurseryProcessId, 'baby-b': slot.nurseryProcessId });
+  const cpuUsageMicroseconds = slot.containerResourceUsage.cpuUsageMicroseconds;
+  const combinedPeakBytes = slot.containerResourceUsage.peakBytes;
   return {
     condition: slot.condition,
     originalEvidenceBytes: originalBytes(runPath),
@@ -73,12 +75,16 @@ const observedSlots = rawReceipt.slots.map((slot) => {
     slotSha256: slot.slotSha256,
     learnerResourceSha256: slot.learnerResourceSha256,
     bundleManifestHash: slot.bundleManifestHash,
+    nurseryContainerId: slot.nurseryContainerId,
+    nurseryProcessId: slot.nurseryProcessId,
+    roleProcessIds: slot.roleProcessIds,
     signedOriginalDataReconciled: true,
   };
 });
 assert.deepEqual(observedSlots.map((slot) => slot.condition), conditions);
 const uniqueRoleContainers = new Set(rawReceipt.slots.flatMap((slot) => slot.containerIds));
-assert.equal(uniqueRoleContainers.size, 12);
+assert.equal(uniqueRoleContainers.size, 0);
+assert.equal(new Set(rawReceipt.slots.map((slot) => slot.nurseryContainerId)).size, 6);
 
 const topology = {
   schemaVersion: 1,
@@ -94,7 +100,9 @@ const topology = {
   auditCommand: 'node scripts/run-e03-topology-qualification.mjs --audit-prototype-v2',
   auditExitStatus: 0,
   conditionsAudited: 6,
-  roleContainerCount: 12,
+  roleContainerCount: 0,
+  nurseryContainerCount: 6,
+  sharedProcessCheck: true,
   pairedScenarioCheck: true,
   typescriptVerifierPassed: true,
   rustAuditorPassed: true,
@@ -138,9 +146,7 @@ const priorTopologyCpuHours = (priorTopology.hostResourceUsage.userCPUTime +
     slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
     slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0)) / 3_600_000_000;
 const prototypeCpuHours = hostCpuHours + rawReceipt.slots.reduce((total, slot) => total +
-  slot.containerResourceUsage.cpuUsageMicroseconds +
-  slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
-  slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0) / 3_600_000_000;
+  slot.containerResourceUsage.cpuUsageMicroseconds, 0) / 3_600_000_000;
 const e02ConservativeCpuChargeHours = 22;
 const priorCpuHoursCharged = ceilingTenth(e02ConservativeCpuChargeHours +
   priorTopologyCpuHours + prototypeCpuHours);
@@ -182,7 +188,7 @@ const allocation = {
     hostResidentGiB,
     maximumPerSlotWallHours,
   },
-  reserveMethod: 'double the measured worst-slot CPU and original-evidence rate across 120 runs; 1.5x the summed resident peaks; 1.25x sequential wall projection',
+  reserveMethod: 'double the measured worst-slot Nursery CPU and original-evidence rate across 120 runs; 1.5x the Nursery-plus-controller resident peaks; 1.25x sequential wall projection',
   priorChargeMethod: 'charge E02 its 22-hour prospective CPU reservation; add measured v1/v2 controller and container CPU; retain original E02 and E03 development storage',
   authorizationScope: 'existing user-approved local synthetic research; no external spending',
   externalSpend: 0,

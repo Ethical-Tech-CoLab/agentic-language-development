@@ -55,7 +55,9 @@ function checkOriginalTopology(topology) {
   assert.equal(topology.profile, 'prototype-v2');
   assert.equal(topology.auditExitStatus, 0);
   assert.equal(topology.conditionsAudited, 6);
-  assert.equal(topology.roleContainerCount, 12);
+  assert.equal(topology.roleContainerCount, 0);
+  assert.equal(topology.nurseryContainerCount, 6);
+  assert.equal(topology.sharedProcessCheck, true);
   assert.equal(topology.pairedScenarioCheck, true);
   assert.equal(topology.typescriptVerifierPassed, true);
   assert.equal(topology.rustAuditorPassed, true);
@@ -76,7 +78,11 @@ function checkOriginalTopology(topology) {
     const path = join('evidence/qualification/e03-topology-prototype-v2',
       `e03-topology-prototype-v2-${slot.condition}`);
     assert.equal(digest(join(path, 'slot.json')), slot.slotSha256);
-    assert.equal(digest(join(path, 'learner-resources.json')), slot.learnerResourceSha256);
+    assert.equal(slot.learnerResourceSha256, null);
+    assert.equal(existsSync(join(path, 'learner-resources.json')), false);
+    assert.match(slot.nurseryContainerId, /^[a-f0-9]{12}$/u);
+    assert.deepEqual(slot.roleProcessIds,
+      { 'baby-a': slot.nurseryProcessId, 'baby-b': slot.nurseryProcessId });
     assert.equal(originalBytes(path), slot.originalEvidenceBytes);
   }
   const audit = spawnSync(process.execPath,
@@ -135,9 +141,7 @@ function checkResourceAllocation(allocation, policy, topology, original) {
       slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
       slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0)) / 3_600_000_000;
   const prototypeCpuHours = hostCpuHours + original.slots.reduce((total, slot) => total +
-    slot.containerResourceUsage.cpuUsageMicroseconds +
-    slot.learnerContainerResourceUsage['baby-a'].cpuUsageMicroseconds +
-    slot.learnerContainerResourceUsage['baby-b'].cpuUsageMicroseconds, 0) / 3_600_000_000;
+    slot.containerResourceUsage.cpuUsageMicroseconds, 0) / 3_600_000_000;
   assert.ok(allocation.priorCpuHoursCharged >= tenth(22 + priorCpuHours + prototypeCpuHours),
     'prior CPU charge understates retained attempts');
   const retainedGiB = (originalBytes('evidence/qualification/e02-v3') +
@@ -183,7 +187,13 @@ export function validateE03PilotAdmission() {
 
   const execution = artifact.parameters.executionBinding;
   assert.equal(execution.topology.mode, 'prototype');
+  assert.equal(execution.topology.learnerContainersPerSlot, 0);
+  assert.equal(execution.topology.nurseryContainersPerSlot, 1);
+  assert.equal(execution.topology.sharedNurseryProcess, true);
   assert.equal(execution.topology.maximumParallelSlots, 1);
+  assert.equal(execution.topology.adapterTransport, 'in-process');
+  assert.equal(execution.topology.adapterTiming, 'immediate');
+  assert.equal(execution.topology.turnResponseBudgetMs, 2_000);
   assert.equal(execution.signing.provider, 'controller-ephemeral-per-run');
   assert.equal(execution.signing.exactRunAuthorization, false);
   assert.equal(sourceTreeDigest(), execution.rootBuildInputs.sourceTreeSha256);

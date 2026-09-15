@@ -62,12 +62,13 @@ export interface E03ExecutionBinding {
   };
   readonly topology: {
     readonly mode: 'prototype';
-    readonly learnerContainersPerSlot: 2;
+    readonly learnerContainersPerSlot: 0;
     readonly nurseryContainersPerSlot: 1;
+    readonly sharedNurseryProcess: true;
     readonly maximumParallelSlots: 1;
-    readonly adapterTransport: 'container-tcp';
-    readonly adapterTiming: 'normalized';
-    readonly adapterDeadlineMs: 2_000;
+    readonly adapterTransport: 'in-process';
+    readonly adapterTiming: 'immediate';
+    readonly turnResponseBudgetMs: 2_000;
     readonly learnerTrack: 'no-learning';
   };
   readonly signing: {
@@ -244,12 +245,13 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
     !SHA256_PATTERN.test(binding.rootBuildInputs.sourceTreeSha256) ||
     binding.rootBuildInputs.buildCommand !== 'pnpm build' ||
     binding.topology.mode !== 'prototype' ||
-    binding.topology.learnerContainersPerSlot !== 2 ||
+    binding.topology.learnerContainersPerSlot !== 0 ||
     binding.topology.nurseryContainersPerSlot !== 1 ||
+    binding.topology.sharedNurseryProcess !== true ||
     binding.topology.maximumParallelSlots !== 1 ||
-    binding.topology.adapterTransport !== 'container-tcp' ||
-    binding.topology.adapterTiming !== 'normalized' ||
-    binding.topology.adapterDeadlineMs !== 2_000 ||
+    binding.topology.adapterTransport !== 'in-process' ||
+    binding.topology.adapterTiming !== 'immediate' ||
+    binding.topology.turnResponseBudgetMs !== 2_000 ||
     binding.topology.learnerTrack !== 'no-learning' ||
     binding.signing.provider !== 'controller-ephemeral-per-run' ||
     binding.signing.exactRunAuthorization !== false ||

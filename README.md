@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.153 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.154 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -116,10 +116,16 @@ reliability gate without establishing a behavioral finding, image-encoder safety
 independent review, or a public timestamp. The ordinary two-container preflight
 does not establish the specification's separate writer/signer process boundary,
 so it cannot qualify full Research-Grade isolation. E03 controls will use the
-permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v1.json)
+permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v2.json)
 without an isolation claim and face an exact development topology, measured
 resource allocation, and registered packet gate. The prospective six-condition
-Prototype-Mode development runner has fresh IDs and seeds but has not executed;
+Prototype-Mode development namespace has fresh IDs and seeds but has not executed.
+The unexecuted predecessor paired Prototype Mode with external container adapters,
+which the runtime correctly rejects. The prospective correction requires two
+in-process no-learning adapters in one Nursery process. The corrected
+development runner is prepared but unexecuted; the pilot collector still
+needs the same correction before any registered pilot may run.
+The frozen v1 development matrix alone is collecting mechanics evidence;
 the dependent behavioral campaign
 remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
 explains the attempt accounting and next acceptance checks. The remaining

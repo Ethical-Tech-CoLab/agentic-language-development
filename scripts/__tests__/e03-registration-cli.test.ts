@@ -23,10 +23,15 @@ function fixture() {
   const topology = {
     schemaVersion: 1, experimentId: 'E03', classification: 'original-prototype-development-audit',
     profile: 'prototype-v2', passed: true, auditExitStatus: 0,
-    conditionsAudited: 6, roleContainerCount: 12,
+    conditionsAudited: 6, roleContainerCount: 0, nurseryContainerCount: 6,
+    sharedProcessCheck: true,
     pairedScenarioCheck: true, typescriptVerifierPassed: true, rustAuditorPassed: true,
     originalSlots: ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle']
-      .map((condition) => ({ condition, signedOriginalDataReconciled: true })),
+      .map((condition, index) => ({
+        condition, signedOriginalDataReconciled: true,
+        nurseryContainerId: index.toString(16).padStart(12, '0'), nurseryProcessId: 1,
+        roleProcessIds: { 'baby-a': 1, 'baby-b': 1 },
+      })),
     researchFinding: false, externalSpend: 0, publicChainTransaction: false,
   };
   writeFileSync(topologyPath, JSON.stringify(topology));
@@ -101,6 +106,16 @@ describe('E03 draft CLI resource policy binding', () => {
     const { directory, receiptPath, topologyPath, allocationPath } = fixture();
     const topology = JSON.parse(readFileSync(topologyPath, 'utf8'));
     topology.originalSlots[0].signedOriginalDataReconciled = false;
+    writeFileSync(topologyPath, JSON.stringify(topology));
+    const result = run(receiptPath, directory, topologyPath, allocationPath);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('complete original Prototype-Mode topology audit');
+  });
+
+  it('rejects reused Nursery identity disguised as six Prototype-Mode slots', () => {
+    const { directory, receiptPath, topologyPath, allocationPath } = fixture();
+    const topology = JSON.parse(readFileSync(topologyPath, 'utf8'));
+    topology.originalSlots[1].nurseryContainerId = topology.originalSlots[0].nurseryContainerId;
     writeFileSync(topologyPath, JSON.stringify(topology));
     const result = run(receiptPath, directory, topologyPath, allocationPath);
     expect(result.status).not.toBe(0);
