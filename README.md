@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.161 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.162 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -136,8 +136,10 @@ terminal and separate live raw audits. The prospective
 1 GiB evidence, and 1 GiB resident memory for 120 planned runs after prior
 charges. Its 0.7-hour sequential wall projection includes observed Docker/
 startup/audit overhead; an unregistered 0.2-hour slot-only projection is
-preserved as a dated correction. A new pilot still requires its prospective
-packet, simulated activation, and live admission.
+preserved as a dated correction. A prospective
+[pilot packet](protocols/e03-pilot-registration.v1.json) now freezes 120 runs and
+fresh condition/component seeds against clean v0.1.161. It is not activated;
+simulated activation and live admission remain required before any pilot run.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.
