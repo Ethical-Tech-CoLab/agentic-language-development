@@ -26,6 +26,10 @@ interface Review {
     recordedAt: string; sourceCommit: string; priorB12Finding: string;
     priorB12Closure: string; basis: string; boundary: string;
   };
+  e03PilotPreparationSupplement: {
+    recordedAt: string; sourceCommit: string; priorReasonCodes: string[];
+    topologyAuditPath: string; stageAllocationPath: string; boundary: string;
+  };
   resolvedFindings: Array<{ id: string; owner: string; resolution: string; boundary: string }>;
   blockingFindings: Array<{ id: string; severity: string; owner: string; finding: string; closure: string }>;
   experiments: ExperimentProgress[];
@@ -232,6 +236,84 @@ if (resolvedIds.has('B16')) {
   }
 }
 const e03 = review.experiments.find((entry) => entry.id === 'E03');
+const e03Preparation = review.e03PilotPreparationSupplement;
+if (!e03Preparation || !/^2026-09-15T\d{2}:\d{2}:\d{2}Z$/u.test(e03Preparation.recordedAt) ||
+    !/^[0-9a-f]{7}$/u.test(e03Preparation.sourceCommit) ||
+    JSON.stringify(e03Preparation.priorReasonCodes) !== JSON.stringify(['E03-topology', 'B07', 'B11']) ||
+    e03Preparation.topologyAuditPath !== 'reports/research/e03-prototype-topology-audit-receipt.json' ||
+    e03Preparation.stageAllocationPath !== 'protocols/e03-pilot-resource-allocation.v1.json' ||
+    !e03Preparation.boundary.includes('B07 remains open for the full campaign')) {
+  throw new Error('E03 pilot-preparation progress lacks bounded historical provenance');
+}
+if (e03 && e03.attempt.status === 'not-started' &&
+    !e03.evidence.some((item) => item.kind === 'prospective-registration-packet')) {
+  if (e03.executionReadiness.stage !== 'pilot' || e03.executionReadiness.decision !== 'blocked' ||
+      JSON.stringify(e03.executionReadiness.reasonCodes) !== JSON.stringify(['B11']) ||
+      e03.attempt.status !== 'not-started' ||
+      !e03.evidence.some((item) => item.kind === 'development-topology-audit' &&
+        item.path === e03Preparation.topologyAuditPath) ||
+      !e03.evidence.some((item) => item.kind === 'prospective-stage-allocation' &&
+        item.path === e03Preparation.stageAllocationPath)) {
+    throw new Error('E03 pilot preparation contradicts its retained topology/allocation gate');
+  }
+  const topologyBytes = readFileSync(e03Preparation.topologyAuditPath);
+  const topology = JSON.parse(topologyBytes.toString('utf8')) as {
+    executionCommit?: string; profile?: string; classification?: string; passed?: boolean;
+    researchFinding?: boolean; externalSpend?: number; conditionsAudited?: number;
+    nurseryContainerCount?: number; roleContainerCount?: number; pairedScenarioCheck?: boolean;
+    sharedProcessCheck?: boolean; typescriptVerifierPassed?: boolean; rustAuditorPassed?: boolean;
+    rawReceiptPath?: string; rawReceiptSha256?: string;
+    originalSlots?: Array<{ nurseryContainerId?: string; signedOriginalDataReconciled?: boolean }>;
+  };
+  const stage = JSON.parse(readFileSync(e03Preparation.stageAllocationPath, 'utf8')) as {
+    stage?: string; decision?: string; plannedRuns?: number; reserveSlots?: number;
+    externalSpend?: number; publicChainTransaction?: boolean; priorCpuHoursCharged?: number;
+    reservedCpuHours?: number; priorRetainedStorageGiB?: number;
+    reservedWorkingStorageGiB?: number; maximumResidentGiB?: number;
+    projectedSequentialWallHours?: number; measurementSourceSha256?: string;
+    policySourceSha256?: string;
+    measuredMaximums?: { maximumPerSlotWallHours?: number; maximumPerSlotHostOverheadHours?: number };
+    projectionCorrectionProvenance?: { priorProjectedSequentialWallHours?: number;
+      rawServiceWallMilliseconds?: number; aggregateCollectorWallMilliseconds?: number;
+      boundary?: string };
+  };
+  const topologyDigest = `sha256:${createHash('sha256').update(topologyBytes).digest('hex')}`;
+  const policyDigest = `sha256:${createHash('sha256').update(
+    readFileSync('protocols/seed-and-resource-allocation.v1.json')).digest('hex')}`;
+  const hostOverhead = ((stage.projectionCorrectionProvenance?.rawServiceWallMilliseconds ?? NaN) -
+    (stage.projectionCorrectionProvenance?.aggregateCollectorWallMilliseconds ?? NaN)) / 6 / 3_600_000;
+  const requiredWall = Math.ceil(((stage.measuredMaximums?.maximumPerSlotWallHours ?? NaN) +
+    hostOverhead) * 120 * 1.25 * 10) / 10;
+  if (!topology.executionCommit?.startsWith(e03Preparation.sourceCommit) ||
+      topology.profile !== 'prototype-v2' || topology.classification !== 'original-prototype-development-audit' ||
+      topology.passed !== true || topology.researchFinding !== false || topology.externalSpend !== 0 ||
+      topology.conditionsAudited !== 6 || topology.nurseryContainerCount !== 6 ||
+      topology.roleContainerCount !== 0 || topology.sharedProcessCheck !== true ||
+      topology.pairedScenarioCheck !== true || topology.typescriptVerifierPassed !== true ||
+      topology.rustAuditorPassed !== true || topology.originalSlots?.length !== 6 ||
+      topology.originalSlots.some((slot) => slot.signedOriginalDataReconciled !== true) ||
+      new Set(topology.originalSlots.map((slot) => slot.nurseryContainerId)).size !== 6 ||
+      stage.stage !== 'blinded-pilot' || stage.decision !== 'ready' || stage.plannedRuns !== 120 ||
+      stage.reserveSlots !== 0 || stage.externalSpend !== 0 || stage.publicChainTransaction !== false ||
+      stage.measurementSourceSha256 !== topologyDigest || stage.policySourceSha256 !== policyDigest ||
+      !(stage.priorCpuHoursCharged! + stage.reservedCpuHours! <= allocation.localCeiling.cpuHours) ||
+      !(stage.priorRetainedStorageGiB! + stage.reservedWorkingStorageGiB! <= allocation.localCeiling.workingStorageGiB) ||
+      !(stage.maximumResidentGiB! <= allocation.localCeiling.maximumResidentGiB) ||
+      stage.projectionCorrectionProvenance?.priorProjectedSequentialWallHours !== 0.2 ||
+      !stage.projectionCorrectionProvenance.boundary?.includes('before packet creation or seed use') ||
+      !(hostOverhead > 0) ||
+      !Number.isFinite(stage.measuredMaximums?.maximumPerSlotHostOverheadHours ?? NaN) ||
+      Math.abs((stage.measuredMaximums?.maximumPerSlotHostOverheadHours ?? NaN) - hostOverhead) > 1e-12 ||
+      !(stage.projectedSequentialWallHours! >= requiredWall)) {
+    throw new Error('E03 pilot preparation contradicts original development receipts or measured allocation');
+  }
+  if (topology.rawReceiptPath && existsSync(topology.rawReceiptPath)) {
+    const rawDigest = `sha256:${createHash('sha256').update(readFileSync(topology.rawReceiptPath)).digest('hex')}`;
+    if (rawDigest !== topology.rawReceiptSha256) {
+      throw new Error('E03 development audit contradicts retained original receipt bytes');
+    }
+  }
+}
 if (e03 && e03.executionReadiness.stage === 'pilot' &&
     (e03.executionReadiness.decision !== 'blocked' || e03.attempt.status !== 'not-started')) {
   const evidencePath = (kind: string): string | undefined =>

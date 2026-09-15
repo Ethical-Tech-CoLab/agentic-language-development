@@ -191,7 +191,7 @@ E01 Channel isolation ---- E02 Observation leakage
 | E00 | Ledger integrity and simulated commitment | None | Completed | Not tested | Qualification complete | V2/v4 failures preserved; v5 passed |
 | E01 | Channel isolation and side-channel red team | E00 | Completed | Not tested | Qualification complete | V2 passed five registered slots with 560 signed records and both verifiers |
 | E02 | Observation and metadata leakage audit | E00 | Completed | Not tested | Qualification complete | V1/v2 failures retained; v3 passed five numeric software slots, recovery stages, 60 probes, and full raw audit; no behavioral finding |
-| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Pilot blocked | E02 qualified; development topology, measured pilot allocation, and exact packet remain |
+| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Pilot blocked | E02 qualified; v1/v2 bounded development audits and measured pilot allocation exist; prospective packet and simulated binding remain |
 | E10 | Frozen pretrained-LLM protocol baseline | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E11 | From-scratch RL Naming Game | E03 | Not started | Not tested | Confirmatory blocked | — |
 | E12 | Self-supervised ungrounded baseline | E11 infrastructure | Not started | Not tested | Confirmatory blocked | — |

@@ -120,6 +120,9 @@ function checkResourceAllocation(allocation, policy, topology, original) {
   const hostResidentGiB = original.hostResourceUsage.maxRSS * 1024 / gib;
   const maxWallHours = Math.max(...observed.map((slot) =>
     slot.wallMilliseconds / 3_600_000));
+  const maxHostOverheadHours = Math.max(0,
+    original.wallMilliseconds - original.slots.reduce((total, slot) =>
+      total + slot.wallMilliseconds, 0)) / 6 / 3_600_000;
   assert.ok(allocation.reservedCpuHours >= Math.max(1,
     tenth((maxContainerCpuHours + hostCpuHours / 6) * 120 * 2)),
   'pilot CPU reserve is below the measured prospective rule');
@@ -129,7 +132,11 @@ function checkResourceAllocation(allocation, policy, topology, original) {
   assert.ok(allocation.maximumResidentGiB >= Math.max(1,
     tenth((maxResidentGiB + hostResidentGiB) * 1.5)),
   'pilot resident-memory reserve is below the measured prospective rule');
-  assert.ok(allocation.projectedSequentialWallHours >= tenth(maxWallHours * 120 * 1.25));
+  assert.ok(allocation.measuredMaximums.maximumPerSlotHostOverheadHours >= maxHostOverheadHours,
+    'pilot host startup/audit wall overhead is below the measured topology');
+  assert.ok(allocation.projectedSequentialWallHours >=
+    tenth((maxWallHours + maxHostOverheadHours) * 120 * 1.25),
+  'pilot sequential wall projection omits observed host overhead');
 
   const prior = read('evidence/qualification/e03-topology-development-v1/receipt.json');
   assert.equal(prior.experimentId, 'E03');

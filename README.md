@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.158 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.159 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -122,18 +122,26 @@ gate E03 Prototype controls. E03 controls will use the
 permitted [Prototype-Mode infrastructure path](protocols/e03-prototype-mode-amendment.v2.json)
 without an isolation claim and face an exact development topology, measured
 resource allocation, and registered packet gate. The prospective six-condition
-Prototype-Mode development namespace has fresh IDs and seeds but has not executed.
+Prototype-Mode development namespace ran once on clean v0.1.158 and sealed all
+six development conditions; its [original-data audit](reports/research/e03-prototype-topology-audit-receipt.json)
+and separate live replay passed. This is bounded Mode P mechanics/resource
+qualification, not a pilot or chance-control statistical result.
 The unexecuted predecessor paired Prototype Mode with external container adapters,
 which the runtime correctly rejects. The prospective correction requires two
 in-process no-learning adapters in one Nursery process. The corrected
-development runner and original pilot collector now use that shared-process
-topology, but neither has executed. A new pilot still requires the terminal v1
-audit, a complete v2 development audit, measured allocation, and prospective
-packet admission.
+development runner and original pilot collector use that shared-process
+topology. The original v1 and corrected v2 development attempts both reached
+terminal and separate live raw audits. The prospective
+[pilot allocation](protocols/e03-pilot-resource-allocation.v1.json) reserves 1 CPU-hour,
+1 GiB evidence, and 1 GiB resident memory for 120 planned runs after prior
+charges. Its 0.7-hour sequential wall projection includes observed Docker/
+startup/audit overhead; an unregistered 0.2-hour slot-only projection is
+preserved as a dated correction. A new pilot still requires its prospective
+packet, simulated activation, and live admission.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
-smoke check, not the six-condition v2 qualification or a pilot.
-The frozen v1 development matrix alone is collecting mechanics evidence;
+smoke check, not the separate six-condition v2 qualification or a pilot.
+The frozen v1 matrix and corrected v2 matrix supply development mechanics only;
 the dependent behavioral campaign remains unstarted. The [phase-two update](reports/research/phase-two-execution-update.md)
 explains the attempt accounting and next acceptance checks. The remaining
 research gates precede the dependent behavioral campaign:

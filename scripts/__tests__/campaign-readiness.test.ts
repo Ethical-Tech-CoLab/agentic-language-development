@@ -19,12 +19,14 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   const directory = mkdtempSync(join(tmpdir(), 'ald-campaign-readiness-'));
   temporaryDirectories.push(directory);
   const campaign = source('protocols/campaign-readiness-review.v1.json');
-  const receipts = Object.fromEntries(['e00', 'e01', 'e02', 'e02v3', 'fullAudit'].map((id) => [id, source(
+  const receipts = Object.fromEntries(['e00', 'e01', 'e02', 'e02v3', 'fullAudit', 'e03CurrentTopology', 'e03CurrentAllocation'].map((id) => [id, source(
     id === 'e00' ? 'reports/research/e00-integrity-qualification-receipt.json'
       : id === 'e01' ? 'reports/research/e01-isolation-qualification-receipt.json'
         : id === 'e02' ? 'reports/research/e02-v2-qualification-receipt.json'
           : id === 'e02v3' ? 'reports/research/e02-v3-qualification-receipt.json'
-            : 'reports/research/e02-v3-full-audit-receipt.json',
+            : id === 'fullAudit' ? 'reports/research/e02-v3-full-audit-receipt.json'
+              : id === 'e03CurrentTopology' ? 'reports/research/e03-prototype-topology-audit-receipt.json'
+                : 'protocols/e03-pilot-resource-allocation.v1.json',
   )]));
   mutate(campaign, receipts);
   const values: Record<string, unknown> = {
@@ -46,6 +48,8 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     'reports/research/e02-v3-execution-start.json': source('reports/research/e02-v3-execution-start.json'),
     'reports/research/e02-v3-qualification-receipt.json': receipts.e02v3,
     'reports/research/e02-v3-full-audit-receipt.json': receipts.fullAudit,
+    'reports/research/e03-prototype-topology-audit-receipt.json': receipts.e03CurrentTopology,
+    'protocols/e03-pilot-resource-allocation.v1.json': receipts.e03CurrentAllocation,
   };
   if (receipts.e03) values['reports/research/e03-pilot-v1-status-receipt.json'] = receipts.e03;
   if (receipts.e03Packet) values['protocols/e03-pilot-registration.v1.json'] = receipts.e03Packet;
@@ -56,7 +60,8 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`);
+    writeFileSync(target, path === 'protocols/seed-and-resource-allocation.v1.json'
+      ? readFileSync(join(root, path)) : `${JSON.stringify(value, null, 2)}\n`);
   }
   return directory;
 }
@@ -95,7 +100,8 @@ function readyPilotFixture() {
       classification: 'prospective-local-stage-allocation', decision: 'ready',
       plannedRuns: 120, reserveSlots: 0, externalSpend: 0,
       measurementSourceSha256: syntheticSha(receipts.e03Topology),
-      policySourceSha256: syntheticSha(source('protocols/seed-and-resource-allocation.v1.json')),
+      policySourceSha256: `sha256:${createHash('sha256').update(
+        readFileSync(join(root, 'protocols/seed-and-resource-allocation.v1.json'))).digest('hex')}`,
       priorCpuHoursCharged: 22, reservedCpuHours: 1,
       priorRetainedStorageGiB: 1, reservedWorkingStorageGiB: 1,
     };
@@ -199,6 +205,31 @@ describe('stage-specific campaign progress', () => {
   it('accepts the current evidence-backed progress record', () => {
     const result = run(fixture());
     expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('rejects a slot-only wall projection after measured host overhead', () => {
+    const result = run(fixture((_campaign, receipts) => {
+      receipts.e03CurrentAllocation.projectedSequentialWallHours = 0.2;
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot preparation contradicts original development receipts');
+  });
+
+  it('rejects an allocation without its measured host-overhead bound', () => {
+    const result = run(fixture((_campaign, receipts) => {
+      delete receipts.e03CurrentAllocation.measuredMaximums.maximumPerSlotHostOverheadHours;
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot preparation contradicts original development receipts');
+  });
+
+  it('rejects removal of the measured E03 preparation evidence', () => {
+    const result = run(fixture((campaign) => {
+      const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
+      e03.evidence = [];
+    }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 pilot preparation contradicts its retained topology/allocation gate');
   });
 
   it('rejects an E10+ stage that omits the open selected-topology boundary', () => {

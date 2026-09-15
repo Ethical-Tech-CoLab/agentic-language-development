@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.158 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.159 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1221,22 +1221,21 @@ The prospective [E03 infrastructure-mode correction](protocols/e03-prototype-mod
 selects shared-process Prototype Mode for controls, without a Research-Grade
 isolation claim. Its unexecuted predecessor specified external adapters, which
 the runtime guard rejects; that record remains historical. The fresh six-condition
-development namespace is unused: its in-process runner and pilot collector are
-prepared, not executed. A signed-original topology audit and measured,
-zero-spend allocation gate any 120-run pilot packet. The allocation charges prior
-E02 and development CPU/storage before reserving pilot capacity. The prepared
+development namespace ran once on clean v0.1.158 and its six original bundles
+passed the separate TypeScript/Rust live audit with signed-original control
+pairing. It remains bounded Mode P development mechanics, not a pilot finding.
+The unexecuted pilot collector is prepared. A signed-original
+[topology audit](reports/research/e03-prototype-topology-audit-receipt.json) and measured,
+zero-spend [allocation](protocols/e03-pilot-resource-allocation.v1.json) now precede any 120-run pilot
+packet. The allocation charges prior E02 and development CPU/storage before
+reserving 1 CPU-hour, 1 GiB evidence, and 1 GiB resident memory. Its
+prospective 0.7-hour sequential wall projection includes full-service startup/
+audit overhead; the unregistered 0.2-hour slot-only projection is retained in
+dated correction provenance. The prepared
 pilot path verifies every original bundle with TypeScript and Rust, reconciles
 paired scenarios and resource charges, and stops on failure without replacement.
-One disposable in-process fixture sealed with a simulated anchor and passed a
-separate TypeScript bundle replay; it does not substitute for the unexecuted
-six-condition audit.
 Its reducer and separate recomputation audit are also prepared, not executed.
 No pilot variance or behavioral finding is reported.
-
-The implementation backlog is maintained in [BACKLOG.md](BACKLOG.md), while normative
-requirements are in [SPECIFICATION.md](SPECIFICATION.md).
-
----
 
 ## 11. Results
 
@@ -1450,8 +1449,6 @@ This was not a systematic review. A final submission must repeat the search thro
 the manuscript-freeze date and record whether it changes the included corpus.
 
 All retrieved material was treated as untrusted evidence, not as instruction.
-
----
 
 ## References
 
@@ -1989,7 +1986,7 @@ separately registered protocol is justified.
 
 ## Appendix E. Future Results-Table Scaffolds
 
-E00/E01 report bounded software qualifications only. All behavioral tables remain
+E00–E02 report bounded software qualifications only. All behavioral tables remain
 unpopulated; no empirical hypothesis results are reported.
 
 ### E.1 Qualification
@@ -1998,7 +1995,7 @@ unpopulated; no empirical hypothesis results are reported.
 |---|---:|---:|---:|---|---|---|
 | E00 Integrity | 5 v5 slots | 0 in v5 | 5 | Detect all registered mutations | Software qualified | E00 v5 receipt |
 | E01 Isolation | 5 v2 topology slots | 0 in v2 | 5 | Enumerated local corpus only | Software qualified | E01 v2 receipt |
-| E02 Leakage | TBD | — | — | Rule out pre-registered leakage bound | Not run | — |
+| E02 Leakage | 5 v3 numeric scratch slots | 0 in v3 | 5 | Numeric probe leakage bound, restore stages, and 60 fixed reports | Software qualified (numeric scope) | [V3 receipt](reports/research/e02-v3-qualification-receipt.json) + [full audit](reports/research/e02-v3-full-audit-receipt.json) |
 | E03 Controls | 6 x selected N (not yet selected) | — | — | Equivalence and oracle bounds | Not run | — |
 
 ### E.2 Core Emergence

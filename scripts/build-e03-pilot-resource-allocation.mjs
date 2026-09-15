@@ -126,6 +126,9 @@ const maximumCombinedContainerResidentGiB = Math.max(...observedSlots.map((slot)
 const hostResidentGiB = rawReceipt.hostResourceUsage.maxRSS * 1024 / gib;
 const maximumPerSlotWallHours = Math.max(...observedSlots.map((slot) =>
   slot.wallMilliseconds / 3_600_000));
+const maximumPerSlotHostOverheadHours = Math.max(0,
+  rawReceipt.wallMilliseconds - rawReceipt.slots.reduce((total, slot) =>
+    total + slot.wallMilliseconds, 0)) / 6 / 3_600_000;
 const plannedRuns = 120;
 const reserveMultiplier = 2;
 const reservedCpuHours = Math.max(1, ceilingTenth(
@@ -134,7 +137,8 @@ const reservedWorkingStorageGiB = Math.max(1, ceilingTenth(
   maximumPerSlotEvidenceGiB * plannedRuns * reserveMultiplier));
 const maximumResidentGiB = Math.max(1, ceilingTenth(
   (maximumCombinedContainerResidentGiB + hostResidentGiB) * 1.5));
-const projectedSequentialWallHours = ceilingTenth(maximumPerSlotWallHours * plannedRuns * 1.25);
+const projectedSequentialWallHours = ceilingTenth(
+  (maximumPerSlotWallHours + maximumPerSlotHostOverheadHours) * plannedRuns * 1.25);
 const priorTopology = read(join(priorTopologyRoot, 'receipt.json'));
 assert.equal(priorTopology.experimentId, 'E03');
 assert.equal(priorTopology.slots.length, 6);
@@ -187,8 +191,9 @@ const allocation = {
     maximumCombinedContainerResidentGiB,
     hostResidentGiB,
     maximumPerSlotWallHours,
+    maximumPerSlotHostOverheadHours,
   },
-  reserveMethod: 'double the measured worst-slot Nursery CPU and original-evidence rate across 120 runs; 1.5x the Nursery-plus-controller resident peaks; 1.25x sequential wall projection',
+  reserveMethod: 'double the measured worst-slot Nursery CPU and original-evidence rate across 120 runs; 1.5x the Nursery-plus-controller resident peaks; 1.25x sequential wall projection including observed per-slot host startup/audit overhead',
   priorChargeMethod: 'charge E02 its 22-hour prospective CPU reservation; add measured v1/v2 controller and container CPU; retain original E02 and E03 development storage',
   authorizationScope: 'existing user-approved local synthetic research; no external spending',
   externalSpend: 0,

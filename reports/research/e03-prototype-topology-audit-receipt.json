@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E03",
+  "classification": "original-prototype-development-audit",
+  "profile": "prototype-v2",
+  "researchFinding": false,
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "executionCommit": "4f7fd0fa82f872555982c0efc6fe4b543d0c7d56",
+  "rawReceiptPath": "evidence/qualification/e03-topology-prototype-v2/receipt.json",
+  "rawReceiptSha256": "sha256:2fad0877dd2b8ac05a1619c70fe229e5f9afaeef7d11c86c1de2280794145e2d",
+  "auditCommand": "node scripts/run-e03-topology-qualification.mjs --audit-prototype-v2",
+  "auditExitStatus": 0,
+  "conditionsAudited": 6,
+  "roleContainerCount": 0,
+  "nurseryContainerCount": 6,
+  "sharedProcessCheck": true,
+  "pairedScenarioCheck": true,
+  "typescriptVerifierPassed": true,
+  "rustAuditorPassed": true,
+  "originalSlots": [
+    {
+      "condition": "disabled",
+      "originalEvidenceBytes": 2732026,
+      "containerCpuUsageMicroseconds": 2824651,
+      "combinedContainerPeakBytes": 150908928,
+      "wallMilliseconds": 1968.070439,
+      "slotSha256": "sha256:f17b8482cb3ec43b920b5ca509989352b0900a23ab7742dacac756ffc06956c4",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:475b4d67ffff8c9a006b24c6f1c2f479c9458dcd3992591c2b6738727142dc70",
+      "nurseryContainerId": "4e7f5c575043",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    },
+    {
+      "condition": "constant",
+      "originalEvidenceBytes": 3301617,
+      "containerCpuUsageMicroseconds": 2995512,
+      "combinedContainerPeakBytes": 150282240,
+      "wallMilliseconds": 2008.847567,
+      "slotSha256": "sha256:b78ee15301e30ebac67fbde4d1db96632395e087256266f98de8cdc6c9ca9fa4",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:18b431d4f895ee2edeba01cc8bfa71781a79226f06efdd1064f36398ca79ab95",
+      "nurseryContainerId": "23399bcd20ae",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    },
+    {
+      "condition": "random",
+      "originalEvidenceBytes": 3435690,
+      "containerCpuUsageMicroseconds": 3993311,
+      "combinedContainerPeakBytes": 150056960,
+      "wallMilliseconds": 3566.525229,
+      "slotSha256": "sha256:5b42c907220ddfde7cc4b02420543f617e690275669559d61b5b1bdd2680a82a",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:39b3c3ac187091810c7d2a596e40311bdd1b27b1d01cb87576ed50765f88693e",
+      "nurseryContainerId": "45cbac18a5e5",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    },
+    {
+      "condition": "shuffled",
+      "originalEvidenceBytes": 3423275,
+      "containerCpuUsageMicroseconds": 2979607,
+      "combinedContainerPeakBytes": 150175744,
+      "wallMilliseconds": 1994.806536,
+      "slotSha256": "sha256:151cf85a3e2540d62d9f42de209ea0944a7ce05344c9b898a14f45169afa046a",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:d6ef9edc63afa2d7114e0f11df3ad506081632393db6b6a4d872fbb1178b4a80",
+      "nurseryContainerId": "59524b714162",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    },
+    {
+      "condition": "normal",
+      "originalEvidenceBytes": 3427101,
+      "containerCpuUsageMicroseconds": 3059325,
+      "combinedContainerPeakBytes": 149118976,
+      "wallMilliseconds": 2014.9316179999998,
+      "slotSha256": "sha256:a978a27ce17965de2783f37fc1fbda7c6040f911aec8fc3178fd83ae9f2bb72e",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:27e80221e8b42fa9449c6da6e973d0739bc283d3ad0bc9aaa16aff8f1008b50d",
+      "nurseryContainerId": "0970d5fcea88",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    },
+    {
+      "condition": "oracle",
+      "originalEvidenceBytes": 1478581,
+      "containerCpuUsageMicroseconds": 2126412,
+      "combinedContainerPeakBytes": 142749696,
+      "wallMilliseconds": 977.002666,
+      "slotSha256": "sha256:61196df8a166ede4dcf1215d4846fe1359985c66bbeaddeb6349841aa7c1a0e3",
+      "learnerResourceSha256": null,
+      "bundleManifestHash": "sha256:c0b01cd2f661db125e13ee24a40c752969eba9df57063c0c456184efdf75108b",
+      "nurseryContainerId": "1600bb7fb756",
+      "nurseryProcessId": 1,
+      "roleProcessIds": {
+        "baby-a": 1,
+        "baby-b": 1
+      },
+      "signedOriginalDataReconciled": true
+    }
+  ],
+  "hostResourceUsage": {
+    "userCPUTime": 3719346,
+    "systemCPUTime": 285772,
+    "maxRSS": 173424,
+    "sharedMemorySize": 0,
+    "unsharedDataSize": 0,
+    "unsharedStackSize": 0,
+    "minorPageFault": 64091,
+    "majorPageFault": 0,
+    "swappedOut": 0,
+    "fsRead": 1968,
+    "fsWrite": 2072,
+    "ipcSent": 0,
+    "ipcReceived": 0,
+    "signalsCount": 0,
+    "voluntaryContextSwitches": 4623,
+    "involuntaryContextSwitches": 65
+  },
+  "passed": true,
+  "capturedAt": "2026-09-15T20:37:46.423Z",
+  "claimBoundary": "First-party raw Prototype-Mode development mechanics/resource audit only; not full Research-Grade writer/signer isolation, an E03 pilot, a behavioral result, or independent review."
+}

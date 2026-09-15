@@ -36,4 +36,4 @@ for (const field of ['conditions', 'pilotSlotsPerCondition', 'pilotReserves',
 }
 assert.match(amendment.status, /no v2 development or pilot seed has been used/u);
 assert.match(amendment.claimBoundary, /no research outcome/u);
-console.log('Prospective E03 Prototype-Mode topology correction aligned; no v2 or pilot result');
+console.log('Prospective E03 Prototype-Mode topology correction aligned; this design amendment alone establishes no execution result');

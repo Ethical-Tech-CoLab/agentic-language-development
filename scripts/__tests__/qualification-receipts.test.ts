@@ -134,6 +134,18 @@ describe('current project status', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it('counts an unstarted E03 pilot even when preparation receipts exist', () => {
+    const directory = statusFixture();
+    const campaign = JSON.parse(readFileSync(join(directory,
+      'protocols/campaign-readiness-review.v1.json'), 'utf8'));
+    const e03 = campaign.experiments.find((entry: { id: string }) => entry.id === 'E03');
+    expect(e03.attempt.status).toBe('not-started');
+    expect(e03.evidence).toHaveLength(2);
+    const result = check(directory);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('16 not started');
+  });
+
   it('rejects a stale E03 status when original pilot terminal evidence exists', () => {
     const directory = statusFixture();
     const path = join(directory, 'evidence/pilots/e03-blinded-v1/receipt.json');

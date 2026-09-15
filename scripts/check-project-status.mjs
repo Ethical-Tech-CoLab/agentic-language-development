@@ -96,7 +96,7 @@ const failedQualification = campaign.experiments.reduce((sum, entry) => {
 }, 0);
 const running = campaign.experiments.filter((entry) => entry.attempt.status === 'running').length;
 const notStarted = campaign.experiments.filter((entry) =>
-  entry.attempt.status === 'not-started' && entry.evidence.length === 0).length;
+  entry.attempt.status === 'not-started').length;
 const researchStatus = `Research status: ${qualifiedSoftware} qualified (software), ` +
   `${failedQualification} failed qualification ${failedQualification === 1 ? 'attempt' : 'attempts'}, ` +
   `${running} in progress, ${notStarted} not started; ` +
