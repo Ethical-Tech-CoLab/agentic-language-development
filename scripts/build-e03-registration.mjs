@@ -183,6 +183,20 @@ if (
 ) {
   throw new Error('E03 registration requires a measured prospective stage allocation within the zero-spend ceiling');
 }
+if (stage === 'full-qualification' &&
+    (sampleSizeDecisionSource === undefined ||
+     stageAllocation.primarySlotsPerCondition !== primarySeeds ||
+     stageAllocation.reserveSlotsPerCondition !== Math.ceil(0.1 * primarySeeds) ||
+     stageAllocation.plannedRuns !== 6 *
+       (primarySeeds + Math.ceil(0.1 * primarySeeds)) ||
+     stageAllocation.maximumParallelRuns !== 1 ||
+     stageAllocation.pilotMeasurementSourcePath !== sampleSizeDecision.pilotReceiptPath ||
+     stageAllocation.pilotMeasurementSourceSha256 !==
+       sampleSizeDecision.pilotReceiptSha256 ||
+     stageAllocation.sampleSizeDecisionPath !== values['sample-size-decision'] ||
+     stageAllocation.sampleSizeDecisionSha256 !== sha256(sampleSizeDecisionSource.bytes))) {
+  throw new Error('E03 full registration allocation contradicts the selected pilot decision or reserve matrix');
+}
 const bindingSourcePaths = [
   'packages/analysis/src/e03-design.ts',
   'packages/analysis/src/e03-pilot.ts',

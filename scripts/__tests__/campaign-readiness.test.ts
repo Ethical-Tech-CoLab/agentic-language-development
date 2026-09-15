@@ -87,6 +87,9 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   const selectedDecision = e03Evidence?.find((entry: any) =>
     entry.kind === 'outcome-blind-sample-size-decision')?.path;
   if (selectedDecision) values[selectedDecision] = source(selectedDecision);
+  const fullAllocation = e03Evidence?.find((entry: any) =>
+    entry.kind === 'prospective-full-stage-allocation')?.path;
+  if (fullAllocation) values[fullAllocation] = source(fullAllocation);
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -328,6 +331,18 @@ describe('stage-specific campaign progress', () => {
     const result = run(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 tracked design decision contradicts its source digests or limitation');
+  });
+
+  it('rejects an altered tracked full E03 allocation without separately retained raw files', () => {
+    const directory = fixture();
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    const path = join(directory, 'protocols/e03-full-resource-allocation.v1.json');
+    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 tracked full allocation contradicts its pilot or decision identity');
   });
 
   it('rejects a slot-only wall projection after measured host overhead', () => {

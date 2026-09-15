@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.171 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.172 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -174,6 +174,12 @@ binds the original pilot, reduction, and power hashes and carries that
 sensitivity. It can be inspected in a clean checkout; its live recomputation
 requires separately retained original evidence. The full E03 control stage
 has not yet been registered or run.
+The separately [measured full E03 allocation](protocols/e03-full-resource-allocation.v1.json)
+reserves all 168 possible primary/reserve runs under the existing local ceiling:
+1 CPU-hour, 1.1 GiB new evidence, 1 GiB resident, and 0.5 hours projected
+sequential wall time, after charging 22.3 prior CPU-hours and 4.0 GiB of all
+retained evidence. It covers only Prototype-Mode software qualification, not
+the E10+ campaign; full collector/analysis and live registration gates remain.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.

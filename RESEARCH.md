@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.171 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.172 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1265,6 +1265,14 @@ binds the original pilot, reduction, and power digests and carries the
 invalid-as-failure limitation into future packet compilation. Its live
 recomputation needs separately retained raw records; clean-checkout inspection
 does not rerun that audit. No full E03 packet or control outcome has been collected.
+The prospective [full E03 resource allocation](protocols/e03-full-resource-allocation.v1.json)
+uses the complete retained evidence tree and actual 120-run pilot maxima. It
+reserves all 168 possible primary/reserve slots at 1 CPU-hour, 1.1 GiB new
+evidence, 1 GiB resident, and 0.5 hours projected sequential wall time,
+after charging 22.3 prior CPU-hours and 4.0 GiB retained evidence. This is
+within the local synthetic software-qualification ceiling but does not fund
+or qualify the E10+ campaign. Full E03 collection still requires its own
+collector, statistical analysis, prospective packet, and live gate.
 
 ## 11. Results
 

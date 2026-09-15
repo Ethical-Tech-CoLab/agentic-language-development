@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.171 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.172 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1296,7 +1296,15 @@ The tracked <a href="protocols/e03-sample-size-decision.v1.json">outcome-blind E
 binds the original pilot, reduction, and power digests and carries the
 invalid-as-failure limitation into future packet compilation. Its live
 recomputation needs separately retained raw records; clean-checkout inspection
-does not rerun that audit. No full E03 packet or control outcome has been collected.</p>
+does not rerun that audit. No full E03 packet or control outcome has been collected.
+The prospective <a href="protocols/e03-full-resource-allocation.v1.json">full E03 resource allocation</a>
+uses the complete retained evidence tree and actual 120-run pilot maxima. It
+reserves all 168 possible primary/reserve slots at 1 CPU-hour, 1.1 GiB new
+evidence, 1 GiB resident, and 0.5 hours projected sequential wall time,
+after charging 22.3 prior CPU-hours and 4.0 GiB retained evidence. This is
+within the local synthetic software-qualification ceiling but does not fund
+or qualify the E10+ campaign. Full E03 collection still requires its own
+collector, statistical analysis, prospective packet, and live gate.</p>
 <h2>11. Results</h2>
 <p><strong>No empirical results are reported in this version.</strong> Results-table scaffolds are
 isolated in Appendix E so indexing systems do not mistake them for findings. They

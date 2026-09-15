@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
 export function checkE03LocalPilotState(entry, completionSupplement, powerSupplement,
-  decisionSupplement) {
+  decisionSupplement, fullAllocationSupplement) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
@@ -117,6 +117,38 @@ export function checkE03LocalPilotState(entry, completionSupplement, powerSupple
             decision.invalidAsFailureSensitivity?.forcedFailuresPerCondition !== 2 ||
             decision.invalidAsFailureSensitivity?.successes !== 0) {
           throw new Error('E03 tracked design decision contradicts its source digests or limitation');
+        }
+        if (fullAllocationSupplement) {
+          const allocationPath = entry.evidence.find((item) =>
+            item.kind === 'prospective-full-stage-allocation')?.path;
+          if (allocationPath !== fullAllocationSupplement.path ||
+              allocationPath !== 'protocols/e03-full-resource-allocation.v1.json' ||
+              !existsSync(allocationPath)) {
+            throw new Error('E03 full-stage allocation lacks its tracked evidence path');
+          }
+          const allocationBytes = readFileSync(allocationPath);
+          const allocation = JSON.parse(allocationBytes.toString('utf8'));
+          if (sha256(allocationBytes) !== fullAllocationSupplement.sha256 ||
+              allocation.experimentId !== 'E03' ||
+              allocation.classification !== 'prospective-local-stage-allocation' ||
+              allocation.stage !== 'full-qualification' ||
+              allocation.plannedRuns !== fullAllocationSupplement.plannedRuns ||
+              allocation.plannedRuns !== 168 ||
+              allocation.primarySlotsPerCondition !== 25 ||
+              allocation.reserveSlotsPerCondition !== 3 ||
+              allocation.maximumParallelRuns !== 1 ||
+              allocation.priorRetainedStorageGiB !==
+                fullAllocationSupplement.priorRetainedStorageGiB ||
+              allocation.sampleSizeDecisionSha256 !== decisionSupplement.sha256 ||
+              allocation.pilotMeasurementSourceSha256 !==
+                portable.originalReceiptSha256 ||
+              allocation.policySourceSha256 !==
+                sha256(readFileSync('protocols/seed-and-resource-allocation.v1.json')) ||
+              allocation.externalSpend !== 0 ||
+              allocation.publicChainTransaction !== false ||
+              allocation.researchFinding !== false) {
+            throw new Error('E03 tracked full allocation contradicts its pilot or decision identity');
+          }
         }
       }
     }
