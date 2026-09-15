@@ -124,6 +124,16 @@ const fullInput = {
   sampleSizeDecision,
   executionBinding: {
     ...input.executionBinding,
+    sourceFiles: [
+      ...input.executionBinding.sourceFiles,
+      { path: 'protocols/e03-full-paired-reserve-amendment.v1.json',
+        sha256: hash('paired-reserve-amendment') },
+    ],
+    reserveDesignAmendment: {
+      path: 'protocols/e03-full-paired-reserve-amendment.v1.json',
+      sha256: hash('paired-reserve-amendment'),
+      policy: 'paired-six-condition-scenario-slot',
+    },
     stageResourceAllocation: {
       ...input.executionBinding.stageResourceAllocation,
       path: 'protocols/e03-full-resource-allocation.v1.json',
@@ -269,6 +279,12 @@ describe('E03 pre-registration compiler', () => {
     expect(full.runs).toHaveLength(168);
     expect(full.seedManifest.reserveSeeds).toBe(3);
     expect(full.artifact.parameters['sampleSizeDecision']).toEqual(sampleSizeDecision);
+    expect(full.artifact.parameters['reservePolicy']).toContain('six-condition paired reserve slot');
+    expect(() => compileE03Registration({
+      ...fullInput,
+      executionBinding: { ...fullInput.executionBinding,
+        reserveDesignAmendment: undefined },
+    })).toThrow(/execution binding/u);
     expect(() => compileE03Registration({
       ...fullInput,
       sampleSizeDecision: undefined,

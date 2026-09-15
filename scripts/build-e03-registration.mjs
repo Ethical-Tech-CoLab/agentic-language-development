@@ -87,6 +87,26 @@ const e02ReceiptSource = await readJson(e02ReceiptPath);
 const resourceAllocationSource = await readJson(resourceAllocationPath);
 const topologyAuditSource = await readJson(topologyAuditPath);
 const stageAllocationSource = await readJson(stageAllocationPath);
+const reserveDesignPath = 'protocols/e03-full-paired-reserve-amendment.v1.json';
+const reserveDesignSource = stage === 'full-qualification'
+  ? await readJson(reserveDesignPath) : undefined;
+if (reserveDesignSource) {
+  const reserve = reserveDesignSource.value;
+  const pilotPacket = await readJson('protocols/e03-pilot-registration.v3.json');
+  if (reserve.classification !== 'prospective-full-e03-paired-reserve-clarification' ||
+      reserve.priorFullPacketExists !== false || reserve.fullSeedsUsed !== false ||
+      reserve.pilotRegistrationHash !== pilotPacket.value.preRegistrationHash ||
+      reserve.reserveUnit !== 'paired-six-condition-scenario-slot' ||
+      reserve.primaryPairedSlots !== 25 || reserve.orderedReservePairedSlots !== 3 ||
+      reserve.maximumPrimaryRuns !== 150 || reserve.maximumReserveRuns !== 18 ||
+      reserve.scientificThresholdsChanged !== false ||
+      reserve.externalSpend !== 0 || reserve.publicChainTransaction !== false ||
+      reserve.priorSourceCommit !==
+        '5bc008b712b6b38d474a5cbef7045607ff7ddc5c') {
+    throw new Error('E03 full registration requires the prospective paired-reserve design clarification');
+  }
+  execFileSync('git', ['merge-base', '--is-ancestor', reserve.priorSourceCommit, 'HEAD']);
+}
 const attemptVersion = values['attempt-version'];
 const priorVersion = attemptVersion === 'v3' ? 'v2' : 'v1';
 const amendmentPath = `protocols/e03-pilot-registration-amendment.${attemptVersion}.json`;
@@ -207,6 +227,7 @@ const bindingSourcePaths = [
   'scripts/build-e03-registration.mjs',
   'scripts/run-e03-power-selection.mjs',
   'scripts/e03-power-selection.R',
+  ...(reserveDesignSource ? [reserveDesignPath] : []),
 ];
 const sourceFiles = await Promise.all(bindingSourcePaths.map(async (path) => ({
   path,
@@ -285,6 +306,11 @@ const executionBinding = {
     path: amendmentPath,
     sha256: sha256(amendmentSource.bytes),
   } } : {}),
+  ...(reserveDesignSource ? { reserveDesignAmendment: {
+    path: reserveDesignPath,
+    sha256: sha256(reserveDesignSource.bytes),
+    policy: 'paired-six-condition-scenario-slot',
+  } } : {}),
   evidencePolicy: {
     anchorClass: 'simulated',
     publicTimestamp: false,
@@ -294,6 +320,9 @@ const executionBinding = {
 };
 
 if (stage === 'full-qualification') {
+  if (!existsSync('reports/research/e03-full-collector-qualification-receipt.json')) {
+    throw new Error('E03 full packet requires a retained collector and statistical-analysis software qualification receipt');
+  }
   if (sampleSizeDecision === undefined) {
     throw new Error('--sample-size-decision is required for --stage full');
   }

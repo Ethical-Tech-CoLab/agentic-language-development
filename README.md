@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.172 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.173 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -180,6 +180,13 @@ reserves all 168 possible primary/reserve runs under the existing local ceiling:
 sequential wall time, after charging 22.3 prior CPU-hours and 4.0 GiB of all
 retained evidence. It covers only Prototype-Mode software qualification, not
 the E10+ campaign; full collector/analysis and live registration gates remain.
+The [prospective paired-reserve clarification](protocols/e03-full-paired-reserve-amendment.v1.json)
+protects E03's shared-scenario seed and paired oracle-control estimand: one
+invalid primary run excludes its six-condition scenario slot; the next
+ordered reserve slot is collected across all six conditions, at most three.
+Original invalid and valid-but-excluded companions remain indexed. No full
+packet or full seed existed when this was recorded, and the full packet
+compiler remains blocked until collector/statistics software qualification.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.

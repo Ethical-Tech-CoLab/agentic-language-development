@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.172 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.173 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1304,7 +1304,16 @@ evidence, 1 GiB resident, and 0.5 hours projected sequential wall time,
 after charging 22.3 prior CPU-hours and 4.0 GiB retained evidence. This is
 within the local synthetic software-qualification ceiling but does not fund
 or qualify the E10+ campaign. Full E03 collection still requires its own
-collector, statistical analysis, prospective packet, and live gate.</p>
+collector, statistical analysis, prospective packet, and live gate.
+The prospective <a href="protocols/e03-full-paired-reserve-amendment.v1.json">paired-reserve clarification</a>
+resolves a pre-registration contradiction: E03&#39;s unit is a scenario seed
+shared across all six conditions, while condition-specific reserves could
+break the paired oracle-control estimand. An invalid primary run excludes its
+six-condition scenario slot from paired analysis; the next unused ordered
+reserve scenario slot is collected across all six conditions, at most three.
+Original invalid and valid-but-excluded companion runs remain indexed. This
+changes neither the 168-run maximum nor scientific thresholds. No full packet
+or full seed existed when the clarification was recorded.</p>
 <h2>11. Results</h2>
 <p><strong>No empirical results are reported in this version.</strong> Results-table scaffolds are
 isolated in Appendix E so indexing systems do not mistake them for findings. They
@@ -2254,16 +2263,22 @@ intervals are reported as sensitivity checks;</li>
 <li>invalid primary runs are treated as failures in a worst-case sensitivity analysis.</li>
 </ul>
 <h3>D.8 Exclusions, Invalid Runs, and Replacement</h3>
+<p>Before a full E03 packet existed, the prospective paired-reserve amendment
+superseded the condition-specific replacement wording. The independent unit
+is the complete six-condition scenario slot, so a single invalid primary run
+excludes that paired slot from the primary analysis. Its valid companions
+remain visible as valid-but-excluded records. The next registered reserve
+scenario slot replaces the entire pair across all six conditions, in order.</p>
 <p>A run is invalid only for a pre-specified verifier failure, wrong configuration hash,
 gateway-control mismatch, or infrastructure failure that prevents the planned 200
 episodes.</p>
 <ul>
 <li>Invalid runs remain in the public run index.</li>
-<li>The next unused reserve seed for that condition replaces the invalid primary slot.</li>
-<li>No more than the registered reserve count may be used per condition.</li>
-<li>If fewer than registered <code>N</code> valid runs remain, the primary analysis is incomplete;
+<li>The next unused ordered six-condition paired reserve scenario slot replaces an invalid primary paired slot.</li>
+<li>No more than three registered paired reserve slots may be used.</li>
+<li>If fewer than registered <code>N</code> complete verified paired slots remain, the primary analysis is incomplete;
 there is no unregistered additional collection.</li>
-<li>Invalid and aborted counts are reported by condition.</li>
+<li>Invalid, aborted, valid-but-excluded, and reserve counts are reported by condition and paired-slot mapping.</li>
 </ul>
 <h3>D.9 Stopping Rule</h3>
 <p>All registered primary slots are attempted. There is no efficacy-based early

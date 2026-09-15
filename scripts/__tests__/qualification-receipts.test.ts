@@ -119,6 +119,7 @@ describe('current project status', () => {
       'reports/research/e03-v3-pilot-status-receipt.json',
       'protocols/e03-sample-size-decision.v1.json',
       'protocols/e03-full-resource-allocation.v1.json',
+      'protocols/e03-full-paired-reserve-amendment.v1.json',
       'protocols/seed-and-resource-allocation.v1.json',
       'reports/phase-one-research-update.md',
       'reports/research/research-validation-report.md',

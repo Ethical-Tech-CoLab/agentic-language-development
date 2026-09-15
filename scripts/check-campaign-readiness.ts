@@ -43,6 +43,9 @@ interface Review {
     path: string; sha256: string; plannedRuns: number;
     priorRetainedStorageGiB: number;
   };
+  e03PairedReserveSupplement: {
+    path: string; sha256: string; priorSourceCommit: string;
+  };
   resolvedFindings: Array<{ id: string; owner: string; resolution: string; boundary: string }>;
   blockingFindings: Array<{ id: string; severity: string; owner: string; finding: string; closure: string }>;
   experiments: ExperimentProgress[];
@@ -220,7 +223,8 @@ for (const entry of review.experiments) {
 }
 checkE03LocalPilotState(review.experiments.find((entry) => entry.id === 'E03'),
   review.e03PilotCompletionSupplement, review.e03PowerSelectionSupplement,
-  review.e03SampleSizeDecisionSupplement, review.e03FullAllocationSupplement);
+  review.e03SampleSizeDecisionSupplement, review.e03FullAllocationSupplement,
+  review.e03PairedReserveSupplement);
 const e02 = review.experiments.find((entry) => entry.id === 'E02');
 if ((e02?.executionReadiness.stage === 'qualification' &&
      e02.executionReadiness.decision === 'complete' && e02.attempt.status === 'completed') !==

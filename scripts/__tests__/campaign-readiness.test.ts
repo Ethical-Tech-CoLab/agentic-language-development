@@ -90,10 +90,14 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   const fullAllocation = e03Evidence?.find((entry: any) =>
     entry.kind === 'prospective-full-stage-allocation')?.path;
   if (fullAllocation) values[fullAllocation] = source(fullAllocation);
+  const reserveAmendment = e03Evidence?.find((entry: any) =>
+    entry.kind === 'prospective-paired-reserve-amendment')?.path;
+  if (reserveAmendment) values[reserveAmendment] = source(reserveAmendment);
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, path === 'protocols/seed-and-resource-allocation.v1.json' ||
+      path === 'protocols/e03-full-paired-reserve-amendment.v1.json' ||
       path.startsWith('evidence/pilots/e03-blinded-v3/')
       ? readFileSync(join(root, path)) : `${JSON.stringify(value, null, 2)}\n`);
   }
@@ -343,6 +347,15 @@ describe('stage-specific campaign progress', () => {
     const result = run(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 tracked full allocation contradicts its pilot or decision identity');
+  });
+
+  it('rejects an altered prospective paired-reserve amendment before any full packet', () => {
+    const directory = fixture();
+    const path = join(directory, 'protocols/e03-full-paired-reserve-amendment.v1.json');
+    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    const result = run(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 tracked paired reserve design contradicts its dated amendment');
   });
 
   it('rejects a slot-only wall projection after measured host overhead', () => {

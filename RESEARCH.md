@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.172 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.173 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1273,6 +1273,15 @@ after charging 22.3 prior CPU-hours and 4.0 GiB retained evidence. This is
 within the local synthetic software-qualification ceiling but does not fund
 or qualify the E10+ campaign. Full E03 collection still requires its own
 collector, statistical analysis, prospective packet, and live gate.
+The prospective [paired-reserve clarification](protocols/e03-full-paired-reserve-amendment.v1.json)
+resolves a pre-registration contradiction: E03's unit is a scenario seed
+shared across all six conditions, while condition-specific reserves could
+break the paired oracle-control estimand. An invalid primary run excludes its
+six-condition scenario slot from paired analysis; the next unused ordered
+reserve scenario slot is collected across all six conditions, at most three.
+Original invalid and valid-but-excluded companion runs remain indexed. This
+changes neither the 168-run maximum nor scientific thresholds. No full packet
+or full seed existed when the clarification was recorded.
 
 ## 11. Results
 
@@ -1990,16 +1999,23 @@ Sensitivity analyses:
 
 ### D.8 Exclusions, Invalid Runs, and Replacement
 
+Before a full E03 packet existed, the prospective paired-reserve amendment
+superseded the condition-specific replacement wording. The independent unit
+is the complete six-condition scenario slot, so a single invalid primary run
+excludes that paired slot from the primary analysis. Its valid companions
+remain visible as valid-but-excluded records. The next registered reserve
+scenario slot replaces the entire pair across all six conditions, in order.
+
 A run is invalid only for a pre-specified verifier failure, wrong configuration hash,
 gateway-control mismatch, or infrastructure failure that prevents the planned 200
 episodes.
 
 - Invalid runs remain in the public run index.
-- The next unused reserve seed for that condition replaces the invalid primary slot.
-- No more than the registered reserve count may be used per condition.
-- If fewer than registered `N` valid runs remain, the primary analysis is incomplete;
+- The next unused ordered six-condition paired reserve scenario slot replaces an invalid primary paired slot.
+- No more than three registered paired reserve slots may be used.
+- If fewer than registered `N` complete verified paired slots remain, the primary analysis is incomplete;
   there is no unregistered additional collection.
-- Invalid and aborted counts are reported by condition.
+- Invalid, aborted, valid-but-excluded, and reserve counts are reported by condition and paired-slot mapping.
 
 ### D.9 Stopping Rule
 

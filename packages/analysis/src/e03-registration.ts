@@ -113,6 +113,11 @@ export interface E03ExecutionBinding {
     readonly path: string;
     readonly sha256: string;
   };
+  readonly reserveDesignAmendment?: {
+    readonly path: string;
+    readonly sha256: string;
+    readonly policy: 'paired-six-condition-scenario-slot';
+  };
   readonly evidencePolicy: {
     readonly anchorClass: 'simulated';
     readonly publicTimestamp: false;
@@ -307,6 +312,15 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
         !safeRepositoryPath(binding.registrationAmendment.path) ||
         !SHA256_PATTERN.test(binding.registrationAmendment.sha256))) ||
     (attemptVersion === 'v1' && binding.registrationAmendment !== undefined) ||
+    (stage === 'full-qualification' &&
+      (!binding.reserveDesignAmendment ||
+        !safeRepositoryPath(binding.reserveDesignAmendment.path) ||
+        !SHA256_PATTERN.test(binding.reserveDesignAmendment.sha256) ||
+        binding.reserveDesignAmendment.policy !== 'paired-six-condition-scenario-slot' ||
+        !binding.sourceFiles.some((source) =>
+          source.path === binding.reserveDesignAmendment?.path &&
+          source.sha256 === binding.reserveDesignAmendment?.sha256))) ||
+    (stage === 'blinded-pilot' && binding.reserveDesignAmendment !== undefined) ||
     binding.evidencePolicy.anchorClass !== 'simulated' ||
     binding.evidencePolicy.publicTimestamp !== false ||
     binding.evidencePolicy.originalEvidenceImmutable !== true ||
@@ -350,7 +364,7 @@ function registeredParameters(
     executionBinding,
     reservePolicy: stage === 'blinded-pilot'
       ? 'zero reserves; every attempted pilot slot remains accounted for'
-      : 'next unused ordered reserve slot for registered validity failures only',
+      : 'replace an invalid primary scenario slot with the next unused ordered six-condition paired reserve slot; at most three paired reserves',
     ...(sampleSizeDecision === undefined ? {} : { sampleSizeDecision }),
   };
 }

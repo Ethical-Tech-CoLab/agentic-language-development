@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
 export function checkE03LocalPilotState(entry, completionSupplement, powerSupplement,
-  decisionSupplement, fullAllocationSupplement) {
+  decisionSupplement, fullAllocationSupplement, pairedReserveSupplement) {
   if (entry?.executionReadiness.stage !== 'pilot') return;
   const packetPath = entry.evidence.find((item) =>
     item.kind === 'prospective-registration-packet')?.path;
@@ -148,6 +148,33 @@ export function checkE03LocalPilotState(entry, completionSupplement, powerSupple
               allocation.publicChainTransaction !== false ||
               allocation.researchFinding !== false) {
             throw new Error('E03 tracked full allocation contradicts its pilot or decision identity');
+          }
+        }
+        if (pairedReserveSupplement) {
+          const amendmentPath = entry.evidence.find((item) =>
+            item.kind === 'prospective-paired-reserve-amendment')?.path;
+          if (amendmentPath !== pairedReserveSupplement.path ||
+              amendmentPath !== 'protocols/e03-full-paired-reserve-amendment.v1.json' ||
+              !existsSync(amendmentPath)) {
+            throw new Error('E03 paired reserve amendment lacks its tracked evidence path');
+          }
+          const amendmentBytes = readFileSync(amendmentPath);
+          const amendment = JSON.parse(amendmentBytes.toString('utf8'));
+          if (sha256(amendmentBytes) !== pairedReserveSupplement.sha256 ||
+              amendment.classification !==
+                'prospective-full-e03-paired-reserve-clarification' ||
+              amendment.priorSourceCommit !== pairedReserveSupplement.priorSourceCommit ||
+              amendment.priorFullPacketExists !== false ||
+              amendment.fullSeedsUsed !== false ||
+              amendment.pilotRegistrationHash !== packet.preRegistrationHash ||
+              amendment.reserveUnit !== 'paired-six-condition-scenario-slot' ||
+              amendment.primaryPairedSlots !== 25 ||
+              amendment.orderedReservePairedSlots !== 3 ||
+              amendment.maximumReserveRuns !== 18 ||
+              amendment.scientificThresholdsChanged !== false ||
+              amendment.externalSpend !== 0 ||
+              amendment.publicChainTransaction !== false) {
+            throw new Error('E03 tracked paired reserve design contradicts its dated amendment');
           }
         }
       }
