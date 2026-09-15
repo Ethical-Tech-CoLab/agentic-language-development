@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.167 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.168 · 257/261 backlog acceptance criteria verified.
 
 Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -149,8 +149,11 @@ reconciles three local confirmations, zero currency, and no public transaction.
 Tracked ready-stage fixture corrections changed the v2 packet's exact source
 digest before seed use. Both earlier registrations remain unused; a
 [prospective v3 amendment](protocols/e03-pilot-registration-amendment.v3.json)
-requires fresh IDs/seeds, packet, and binding. The active pilot stage is
-blocked again, and no run has started.
+requires fresh IDs/seeds, packet, and binding. The new
+[v3 packet](protocols/e03-pilot-registration.v3.json) now fixes 120 distinct
+run IDs and disjoint pilot seeds against clean v0.1.167. It is not activated;
+the active pilot stage remains blocked until its own simulated binding and
+live admission pass. No run has started.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.
