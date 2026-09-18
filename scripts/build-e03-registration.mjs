@@ -236,7 +236,10 @@ const bindingSourcePaths = [
   ...(fullCollectorQualificationSource ? [
     'packages/analysis/src/e03-full.ts',
     'packages/analysis/src/e03-full-qualification.ts',
+    'scripts/check-e03-full-admission.mjs',
     'scripts/check-e03-full-collector-qualification.mjs',
+    'scripts/e03-full-collector-state.mjs',
+    'scripts/run-e03-registered-full.mjs',
   ] : []),
   ...(reserveDesignSource ? [reserveDesignPath] : []),
 ];

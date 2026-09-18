@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { deriveSeedHex } from '@ald/hashing';
 
 const conditions = ['disabled', 'constant', 'random', 'shuffled', 'normal', 'oracle'];
 
@@ -35,6 +36,15 @@ function validateAttempt(attempt, registrationById) {
   assert.equal(attempt.condition, registered.condition, `${attempt.runId}: condition binding changed`);
   assert.equal(attempt.use, registered.use, `${attempt.runId}: use binding changed`);
   assert.equal(typeof attempt.valid, 'boolean', `${attempt.runId}: validity is unresolved`);
+}
+
+export function deriveE03FullAnalysisSeed(registered) {
+  assert.equal(registered.length, 168,
+    'E03 full analysis seed requires the exact 168-run registration');
+  const seeds = registered.map((run) => run.config.seedBindings?.analysis);
+  assert.ok(seeds.every((seed) => typeof seed === 'string') && new Set(seeds).size === 168,
+    'E03 full analysis seed requires 168 distinct registered analysis seeds');
+  return deriveSeedHex('e03-full-statistical-analysis-v1', ...seeds);
 }
 
 /**
