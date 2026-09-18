@@ -1,0 +1,21 @@
+{
+  "registrationClass": "qualification",
+  "registrationAuthority": "repository-native",
+  "preRegistrationHash": "sha256:1a4cef0484a86e56e6784d6a6bd81f541c716815cf4609404369feda5db07d1d",
+  "repositoryRegistration": {
+    "commit": "1b5146478ad2b3d6667eaa5175c97f18d869e798",
+    "path": "protocols/e03-full-registration.v1.json",
+    "artifactSha256": "sha256:1a4cef0484a86e56e6784d6a6bd81f541c716815cf4609404369feda5db07d1d",
+    "committedAt": "2026-09-18T20:54:39+00:00"
+  },
+  "preRunAnchor": {
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "transactionHash": "0x88b5d02355eee8ba65a28343305d76a0748a8bb09e618dd53950cefabbf97305",
+    "inputData": "0x1a4cef0484a86e56e6784d6a6bd81f541c716815cf4609404369feda5db07d1d",
+    "blockNumber": 1,
+    "status": "confirmed"
+  },
+  "label": "E03 full qualification; simulation is not an independent public timestamp"
+}
