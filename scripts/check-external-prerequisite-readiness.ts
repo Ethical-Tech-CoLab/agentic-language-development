@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const readinessPath = 'reports/research/external-prerequisite-readiness.json';
 const campaignPath = 'protocols/campaign-readiness-review.v1.json';
@@ -163,7 +164,7 @@ if (
   upstream.latestDefaultBranchWorkflow.conclusion !== 'failure' ||
   upstream.localWorkflow.path !== '.github/workflows/book-integrity.yml' ||
   !/^[a-f0-9]{40}$/u.test(upstream.localCandidate.commit) ||
-  sha256(execFileSync('git', ['show', `${upstream.localCandidate.commit}:${upstream.localWorkflow.path}`])) !== upstream.localWorkflow.sha256 ||
+  sha256(execFileSync('git', ['show', `${resolveRewrittenCommit(upstream.localCandidate.commit)}:${upstream.localWorkflow.path}`])) !== upstream.localWorkflow.sha256 ||
   JSON.stringify(upstream.localWorkflow.requiredJobIds) !== JSON.stringify(['consolidated-suite', 'mode-r']) ||
   upstream.decision !== 'not-demonstrated'
 ) {

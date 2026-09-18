@@ -5,6 +5,7 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync, 
 import { join, resolve } from 'node:path';
 import { auditE02Observations } from '../deploy/mode-r/audit-e02-observations.mjs';
 import { e02RootBuildInputs, validateE02SlotContract } from '../deploy/mode-r/e02-slot-contract.mjs';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const evidenceRoot = 'evidence/qualification/e02-v3';
 const receiptPath = 'reports/research/e02-v3-qualification-receipt.json';
@@ -43,9 +44,11 @@ if (mode === '--audit') {
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.registrationHash, packet.preRegistrationHash);
   assert.equal(receipt.failure, null);
-  git('merge-base', '--is-ancestor', binding.repositoryRegistration.commit, receipt.executionCommit);
+  git('merge-base', '--is-ancestor', resolveRewrittenCommit(binding.repositoryRegistration.commit),
+    resolveRewrittenCommit(receipt.executionCommit));
   for (const source of bindings.analysisVersions) {
-    assert.equal(sha256(execFileSync('git', ['show', `${receipt.executionCommit}:${source.path}`])), source.sha256);
+    assert.equal(sha256(execFileSync('git',
+      ['show', `${resolveRewrittenCommit(receipt.executionCommit)}:${source.path}`])), source.sha256);
   }
   assert.deepEqual(e02RootBuildInputs(JSON.parse(git('show', `${receipt.executionCommit}:package.json`))), bindings.executionHost.rootBuildInputs);
   const slots = [];

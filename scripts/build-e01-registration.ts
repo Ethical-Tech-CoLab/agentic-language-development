@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 import { compileRegistrationPacket } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const outputPath = 'protocols/e01-registration.v1.json';
 const protocolBaseCommit = '156fb3e8e0b22afc4b6f0193523f1f04b4240286';
@@ -15,8 +16,9 @@ const derive = (...parts: Array<string | number>): string =>
   sha256(parts.map(String).join('\0'));
 // V1 is historical. Reproduce its committed inputs, not today's toolchain.
 const registrationCommit = '62dfd93e6e68cd52bed60701da6848b8292ccc4b';
+const resolvedRegistrationCommit = resolveRewrittenCommit(registrationCommit);
 const read = (path: string): Buffer =>
-  execFileSync('git', ['show', `${registrationCommit}:${path}`]);
+  execFileSync('git', ['show', `${resolvedRegistrationCommit}:${path}`]);
 
 const cardsPath = 'protocols/research-protocol-cards.v1.json';
 const allocationPath = 'protocols/seed-and-resource-allocation.v1.json';

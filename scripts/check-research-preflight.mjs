@@ -10,6 +10,7 @@ import {
 } from '@ald/ops';
 import { hashCanonical } from '@ald/hashing';
 import { HASH_DOMAINS } from '@ald/types';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const { values } = parseArgs({
   options: {
@@ -36,7 +37,7 @@ const headCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
 }).trim();
 const isAncestor = (commit) => {
   try {
-    execFileSync('git', ['merge-base', '--is-ancestor', commit, headCommit]);
+    execFileSync('git', ['merge-base', '--is-ancestor', resolveRewrittenCommit(commit), headCommit]);
     return true;
   } catch {
     return false;
@@ -51,14 +52,14 @@ const registrationRecordMatches = () => {
   if (registration === undefined || !isAncestor(registration.commit)) return false;
   try {
     const committed = JSON.parse(
-      execFileSync('git', ['show', `${registration.commit}:${registration.path}`], {
+      execFileSync('git', ['show', `${resolveRewrittenCommit(registration.commit)}:${registration.path}`], {
         encoding: 'utf8',
       }),
     );
     const artifact = committed.artifact ?? committed;
     const committedAt = execFileSync(
       'git',
-      ['show', '-s', '--format=%cI', registration.commit],
+      ['show', '-s', '--format=%cI', resolveRewrittenCommit(registration.commit)],
       { encoding: 'utf8' },
     ).trim();
     return (

@@ -6,6 +6,7 @@ import { compileRegistrationPacket } from '@ald/analysis';
 import { FakeChainTransport } from '@ald/anchor';
 import { PreRegistrationBindingSchema } from '@ald/types';
 import { e01AttemptIds, e01GatewayCorpus, E01_STORAGE_PATHS } from '../deploy/mode-r/e01-corpus.mjs';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const packetPath = 'protocols/e01-registration.v2.json';
 const bindingPath = 'protocols/e01-registration-binding.v2.json';
@@ -79,8 +80,12 @@ if (mode === '--compile') {
     chain.mineBlock(3);
     const receipt = await chain.getTransactionReceipt(tx.transactionHash);
     assert.equal(receipt.status, 'success');
+    const existing = mode === '--check' && existsSync(bindingPath) ? read(bindingPath) : undefined;
+    const bindingCommit = existing?.repositoryRegistration?.commit !== undefined &&
+      resolveRewrittenCommit(existing.repositoryRegistration.commit) === commit
+      ? existing.repositoryRegistration.commit : commit;
     const binding = PreRegistrationBindingSchema.parse({ registrationClass: 'qualification', registrationAuthority: 'repository-native',
-      preRegistrationHash: packet.preRegistrationHash, repositoryRegistration: { commit, path: packetPath,
+      preRegistrationHash: packet.preRegistrationHash, repositoryRegistration: { commit: bindingCommit, path: packetPath,
         artifactSha256: packet.preRegistrationHash, committedAt: git('show', '-s', '--format=%cI', commit) },
       preRunAnchor: { anchorClass: 'simulated', network: chain.network, chainId: chain.chainId,
         transactionHash: tx.transactionHash, inputData: tx.inputData, blockNumber: receipt.blockNumber, status: 'confirmed' },

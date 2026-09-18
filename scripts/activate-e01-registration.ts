@@ -6,15 +6,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { FakeChainTransport } from '@ald/anchor';
 import { compileRegistrationPacket } from '@ald/analysis';
 import { PreRegistrationBindingSchema } from '@ald/types';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const registrationCommit = '62dfd93e6e68cd52bed60701da6848b8292ccc4b';
+const resolvedRegistrationCommit = resolveRewrittenCommit(registrationCommit);
 const registrationPath = 'protocols/e01-registration.v1.json';
 const outputPath = 'protocols/e01-registration-binding.v1.json';
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-execFileSync('git', ['merge-base', '--is-ancestor', registrationCommit, head]);
+execFileSync('git', ['merge-base', '--is-ancestor', resolvedRegistrationCommit, head]);
 const committedBytes = execFileSync(
   'git',
-  ['show', `${registrationCommit}:${registrationPath}`],
+  ['show', `${resolvedRegistrationCommit}:${registrationPath}`],
   { encoding: 'utf8' },
 );
 if (committedBytes !== readFileSync(registrationPath, 'utf8')) {
@@ -58,7 +60,7 @@ if (
 }
 const committedAt = execFileSync(
   'git',
-  ['show', '-s', '--format=%cI', registrationCommit],
+  ['show', '-s', '--format=%cI', resolvedRegistrationCommit],
   { encoding: 'utf8' },
 ).trim();
 const binding = PreRegistrationBindingSchema.parse({

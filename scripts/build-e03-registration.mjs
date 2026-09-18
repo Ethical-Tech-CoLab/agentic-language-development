@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { compileE03Registration } from '@ald/analysis';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 import { hashCanonical } from '@ald/hashing';
 import { loadLearnerContract, promptBundleHash } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
@@ -105,7 +106,7 @@ if (reserveDesignSource) {
         '5bc008b712b6b38d474a5cbef7045607ff7ddc5c') {
     throw new Error('E03 full registration requires the prospective paired-reserve design clarification');
   }
-  execFileSync('git', ['merge-base', '--is-ancestor', reserve.priorSourceCommit, 'HEAD']);
+  execFileSync('git', ['merge-base', '--is-ancestor', resolveRewrittenCommit(reserve.priorSourceCommit), 'HEAD']);
 }
 const attemptVersion = values['attempt-version'];
 const priorVersion = attemptVersion === 'v3' ? 'v2' : 'v1';

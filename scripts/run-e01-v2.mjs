@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { auditE01Slot } from '../deploy/mode-r/audit-e01-v2-slot.mjs';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const evidenceRoot = 'evidence/qualification/e01-v2';
 const receiptPath = 'reports/research/e01-v2-qualification-receipt.json';
@@ -53,9 +54,11 @@ if (process.argv[2] === '--audit') {
   assert.equal(receipt.publicChainTransaction, false);
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.registrationHash, packet.preRegistrationHash);
-  git('merge-base', '--is-ancestor', binding.repositoryRegistration.commit, receipt.executionCommit);
+  git('merge-base', '--is-ancestor', resolveRewrittenCommit(binding.repositoryRegistration.commit),
+    resolveRewrittenCommit(receipt.executionCommit));
   for (const source of bindings.analysisVersions) {
-    assert.equal(sha256(execFileSync('git', ['show', `${receipt.executionCommit}:${source.path}`])), source.sha256);
+    assert.equal(sha256(execFileSync('git',
+      ['show', `${resolveRewrittenCommit(receipt.executionCommit)}:${source.path}`])), source.sha256);
   }
   const slots = [];
   for (const expected of expectedSlots) slots.push(await validateSlot(join(evidenceRoot, `registered-e01-v2-${expected.slot}`), expected, receipt.executionCommit));
@@ -71,7 +74,7 @@ if (process.argv[2] === '--audit') {
   for (const source of bindings.analysisVersions) assert.equal(sha256(readFileSync(source.path)), source.sha256, `source changed: ${source.path}`);
   const executionCommit = git('rev-parse', 'HEAD');
   const bindingCommit = git('log', '-1', '--format=%H', '--', bindingPath);
-  git('merge-base', '--is-ancestor', bindingCommit, executionCommit);
+  git('merge-base', '--is-ancestor', resolveRewrittenCommit(bindingCommit), executionCommit);
   mkdirSync(evidenceRoot, { recursive: true });
   copyFileSync(bindingPath, join(evidenceRoot, 'registration-binding.json'));
   const environment = { ALD_LEARNER_TRACK: 'no-learning', ALD_MODE_R_NURSERY_UID: String(process.getuid()),

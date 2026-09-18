@@ -7,6 +7,7 @@ import { FakeChainTransport } from '@ald/anchor';
 import { PreRegistrationBindingSchema } from '@ald/types';
 import { e02RootBuildInputs, validateE02SlotContract } from '../deploy/mode-r/e02-slot-contract.mjs';
 import { E02_REGISTERED_ROWS_PER_STAGE, E02_REGISTERED_ANALYSIS_VERSION, E02_PROBES, E02_LABELS } from '../deploy/mode-r/e02-observation-analysis.mjs';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const targets = {
   v1: {
@@ -46,7 +47,7 @@ if (mode === '--compile-v3') {
   const readiness = read('reports/research/e02-v3-readiness-qualification-receipt.json');
   assert.equal(readiness.passed, true);
   assert.equal(readiness.researchFinding, false);
-  git('merge-base', '--is-ancestor', readiness.candidate.commit, 'HEAD');
+  git('merge-base', '--is-ancestor', resolveRewrittenCommit(readiness.candidate.commit), 'HEAD');
   execFileSync(process.execPath, ['scripts/check-e02-resource-envelope.mjs', '--live-evidence'], { stdio: 'inherit' });
   const resource = read(resourcePath);
   assert.equal(resource.classification, 'development-resource-envelope');
@@ -132,8 +133,12 @@ if (mode === '--compile-v3') {
   chain.mineBlock(3);
   const receipt = await chain.getTransactionReceipt(tx.transactionHash);
   assert.equal(receipt.status, 'success');
+  const existing = mode.startsWith('--check') && existsSync(bindingPath) ? read(bindingPath) : undefined;
+  const bindingCommit = existing?.repositoryRegistration?.commit !== undefined &&
+    resolveRewrittenCommit(existing.repositoryRegistration.commit) === commit
+    ? existing.repositoryRegistration.commit : commit;
   const binding = PreRegistrationBindingSchema.parse({ registrationClass: 'qualification', registrationAuthority: 'repository-native',
-    preRegistrationHash: packet.preRegistrationHash, repositoryRegistration: { commit, path: packetPath,
+    preRegistrationHash: packet.preRegistrationHash, repositoryRegistration: { commit: bindingCommit, path: packetPath,
       artifactSha256: packet.preRegistrationHash, committedAt: git('show', '-s', '--format=%cI', commit) },
     preRunAnchor: { anchorClass: 'simulated', network: chain.network, chainId: chain.chainId,
       transactionHash: tx.transactionHash, inputData: tx.inputData, blockNumber: receipt.blockNumber, status: 'confirmed' },

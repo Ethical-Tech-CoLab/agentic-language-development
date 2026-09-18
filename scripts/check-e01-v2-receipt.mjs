@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 // Portable summary checks are not a replacement for the retained-evidence audit.
 export function validateE01V2Receipt(receipt, packet) {
@@ -60,10 +61,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   validateE01V2Receipt(receipt, packet);
   execFileSync(process.execPath, ['scripts/register-e01-v2.mjs', '--check']);
   const binding = read('protocols/e01-registration-binding.v2.json');
-  execFileSync('git', ['merge-base', '--is-ancestor', binding.repositoryRegistration.commit, receipt.executionCommit]);
+  execFileSync('git', ['merge-base', '--is-ancestor',
+    resolveRewrittenCommit(binding.repositoryRegistration.commit),
+    resolveRewrittenCommit(receipt.executionCommit)]);
   const sources = packet.artifact.bindings.find((entry) => entry.key === 'analysisVersions').content;
   for (const source of sources) {
-    const bytes = execFileSync('git', ['show', `${receipt.executionCommit}:${source.path}`]);
+    const bytes = execFileSync('git', ['show', `${resolveRewrittenCommit(receipt.executionCommit)}:${source.path}`]);
     assert.equal(createHash('sha256').update(bytes).digest('hex'), source.sha256);
   }
   console.log('E01 v2 portable receipt: five slots, 560 signed records, registered execution sources match; raw evidence replay is separate');

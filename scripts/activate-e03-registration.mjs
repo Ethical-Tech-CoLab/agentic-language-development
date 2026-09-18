@@ -5,6 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { FakeChainTransport } from '@ald/anchor';
 import { hashCanonical } from '@ald/hashing';
 import { HASH_DOMAINS, PreRegistrationArtifactSchema, PreRegistrationBindingSchema } from '@ald/types';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const [stage, mode, attemptVersion = 'v1'] = process.argv.slice(2);
 assert.ok([4, 5].includes(process.argv.length),
@@ -28,7 +29,7 @@ assert.equal(artifact.experimentId, 'E03');
 assert.equal(artifact.registrationClass, 'qualification');
 assert.equal(artifact.parameters.stage, stage === 'pilot' ? 'blinded-pilot' : 'full-qualification');
 assert.equal(packet.preRegistrationHash, hashCanonical(HASH_DOMAINS.preRegistration, artifact));
-git('merge-base', '--is-ancestor', artifact.protocolGitCommit, commit);
+git('merge-base', '--is-ancestor', resolveRewrittenCommit(artifact.protocolGitCommit), commit);
 
 const chain = new FakeChainTransport({ endpointLabel: `e03-${stage}-registration-simulation` });
 const transaction = await chain.sendAnchorTransaction({
@@ -44,12 +45,18 @@ assert.ok(record && receipt);
 assert.equal(record.input, transaction.inputData);
 assert.equal(receipt.status, 'success');
 assert.equal(latestBlock - receipt.blockNumber + 1, 3);
+const existingBinding = mode === '--check' && existsSync(bindingPath)
+  ? JSON.parse(readFileSync(bindingPath, 'utf8')) : undefined;
+const bindingCommit = existingBinding?.repositoryRegistration?.commit !== undefined &&
+  resolveRewrittenCommit(existingBinding.repositoryRegistration.commit) === commit
+  ? existingBinding.repositoryRegistration.commit : commit;
 
 const binding = PreRegistrationBindingSchema.parse({
   registrationClass: 'qualification', registrationAuthority: 'repository-native',
   preRegistrationHash: packet.preRegistrationHash,
   repositoryRegistration: {
-    commit, path: packetPath, artifactSha256: packet.preRegistrationHash,
+    commit: bindingCommit,
+    path: packetPath, artifactSha256: packet.preRegistrationHash,
     committedAt: git('show', '-s', '--format=%cI', commit),
   },
   preRunAnchor: {

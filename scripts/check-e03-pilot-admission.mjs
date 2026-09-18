@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { canonicalJson, hashCanonical } from '@ald/hashing';
 import { evaluateResearchPreflight } from '@ald/ops';
 import { HASH_DOMAINS, PreRegistrationArtifactSchema } from '@ald/types';
+import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 
 const attemptVersion = process.argv.includes('--v3') ? 'v3' :
   process.argv.includes('--v2') ? 'v2' : 'v1';
@@ -21,7 +22,7 @@ const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('h
 const digest = (path) => sha256(readFileSync(path));
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const ancestor = (left, right) => {
-  const result = spawnSync('git', ['merge-base', '--is-ancestor', left, right]);
+  const result = spawnSync('git', ['merge-base', '--is-ancestor', resolveRewrittenCommit(left), right]);
   return result.status === 0;
 };
 const tenth = (value) => Math.ceil(value * 10) / 10;
@@ -47,7 +48,7 @@ export function assertFrozenE03Sources(protocolCommit, executionCommit) {
   assert.match(protocolCommit, /^[a-f0-9]{40}$/u);
   assert.match(executionCommit, /^[a-f0-9]{40}$/u);
   const sourceDiff = spawnSync('git', ['diff', '--quiet', '--no-ext-diff',
-    protocolCommit, executionCommit, '--', 'packages', 'twins', 'deploy', 'scripts']);
+    resolveRewrittenCommit(protocolCommit), executionCommit, '--', 'packages', 'twins', 'deploy', 'scripts']);
   assert.equal(sourceDiff.status, 0,
     'E03 execution sources changed after the protocol base commit; amend and register fresh allocations');
 }
