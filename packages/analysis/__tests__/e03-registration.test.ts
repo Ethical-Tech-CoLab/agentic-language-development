@@ -134,6 +134,11 @@ const fullInput = {
       sha256: hash('paired-reserve-amendment'),
       policy: 'paired-six-condition-scenario-slot',
     },
+    fullCollectorQualification: {
+      path: 'reports/research/e03-full-collector-qualification-receipt.json',
+      sha256: hash('full-collector-qualification'),
+      executionCommit: '0123456789abcdef0123456789abcdef01234567',
+    },
     stageResourceAllocation: {
       ...input.executionBinding.stageResourceAllocation,
       path: 'protocols/e03-full-resource-allocation.v1.json',
@@ -284,6 +289,11 @@ describe('E03 pre-registration compiler', () => {
       ...fullInput,
       executionBinding: { ...fullInput.executionBinding,
         reserveDesignAmendment: undefined },
+    })).toThrow(/execution binding/u);
+    expect(() => compileE03Registration({
+      ...fullInput,
+      executionBinding: { ...fullInput.executionBinding,
+        fullCollectorQualification: undefined },
     })).toThrow(/execution binding/u);
     expect(() => compileE03Registration({
       ...fullInput,

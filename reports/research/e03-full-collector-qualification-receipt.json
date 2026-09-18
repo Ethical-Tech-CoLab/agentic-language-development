@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "E03",
+  "stage": "full-qualification",
+  "classification": "development-synthetic-e03-full-collector-and-analysis-software-qualification",
+  "passed": true,
+  "researchFinding": false,
+  "registeredExecution": false,
+  "scientificDisposition": "not-tested",
+  "syntheticFixturesOnly": true,
+  "fullRegistrationOrSeedUsed": false,
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "execution": {
+    "commit": "1458438dfab1b4fc80ca0528361b3ff8cd2e2282",
+    "tree": "0141ff751ffbb4ac2c11f5558f6a44c7db2880b8",
+    "version": "0.1.176"
+  },
+  "sourceArtifacts": [
+    {
+      "path": "packages/analysis/src/e03-design.ts",
+      "bytes": 11381,
+      "sha256": "sha256:8cd460398bbaec447c1ba5b1cbaabd200597fd46e78bf3cd9dfea1be91764f42"
+    },
+    {
+      "path": "packages/analysis/src/e03-full.ts",
+      "bytes": 8088,
+      "sha256": "sha256:1beb37390dda50ea63fcde6b71ff3d54d7cc16e917ba0f366a6e00b54e2b00b7"
+    },
+    {
+      "path": "packages/analysis/src/e03.ts",
+      "bytes": 22645,
+      "sha256": "sha256:788ab7304806296187b1a774065444e3bd1d92413a238b2f086815b369915009"
+    },
+    {
+      "path": "packages/analysis/src/e03-full-qualification.ts",
+      "bytes": 3848,
+      "sha256": "sha256:fe2b16e0c82e5184dc48cec2dd222fe631e573940f2e7e1ad608d7b1ee853c49"
+    },
+    {
+      "path": "scripts/check-e03-full-collector-qualification.mjs",
+      "bytes": 9308,
+      "sha256": "sha256:164128780c2f46d9a9e180e2c2670e69224f5f2b41c9c0908ac90233d2408433"
+    }
+  ],
+  "fixtures": {
+    "qualifyingNumericFixture": {
+      "disposition": "thresholds-met",
+      "pairs": 25
+    },
+    "numericFailureFixture": {
+      "disposition": "thresholds-not-met",
+      "pairs": 25
+    },
+    "pairedReserveFixture": {
+      "disposition": "thresholds-met",
+      "replacements": 1,
+      "validButExcludedCompanions": 5
+    },
+    "exhaustionFixture": {
+      "disposition": "incomplete",
+      "pairs": 24
+    }
+  },
+  "claimBoundary": "This is a synthetic development software qualification of full-stage collection, paired-reserve reconciliation, and numerical analysis. It is not a registered E03 execution or behavioral result; a fresh prospective packet, live admission, original evidence, and post-batch verification remain required."
+}

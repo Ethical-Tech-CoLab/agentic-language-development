@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { compileE03Registration } from '@ald/analysis';
+import { validateE03FullCollectorQualification } from './check-e03-full-collector-qualification.mjs';
 import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
 import { hashCanonical } from '@ald/hashing';
 import { loadLearnerContract, promptBundleHash } from '@ald/learners';
@@ -91,6 +92,10 @@ const stageAllocationSource = await readJson(stageAllocationPath);
 const reserveDesignPath = 'protocols/e03-full-paired-reserve-amendment.v1.json';
 const reserveDesignSource = stage === 'full-qualification'
   ? await readJson(reserveDesignPath) : undefined;
+const fullCollectorQualificationPath =
+  'reports/research/e03-full-collector-qualification-receipt.json';
+const fullCollectorQualificationSource = stage === 'full-qualification'
+  ? await readJson(fullCollectorQualificationPath) : undefined;
 if (reserveDesignSource) {
   const reserve = reserveDesignSource.value;
   const pilotPacket = await readJson('protocols/e03-pilot-registration.v3.json');
@@ -228,6 +233,11 @@ const bindingSourcePaths = [
   'scripts/build-e03-registration.mjs',
   'scripts/run-e03-power-selection.mjs',
   'scripts/e03-power-selection.R',
+  ...(fullCollectorQualificationSource ? [
+    'packages/analysis/src/e03-full.ts',
+    'packages/analysis/src/e03-full-qualification.ts',
+    'scripts/check-e03-full-collector-qualification.mjs',
+  ] : []),
   ...(reserveDesignSource ? [reserveDesignPath] : []),
 ];
 const sourceFiles = await Promise.all(bindingSourcePaths.map(async (path) => ({
@@ -312,6 +322,11 @@ const executionBinding = {
     sha256: sha256(reserveDesignSource.bytes),
     policy: 'paired-six-condition-scenario-slot',
   } } : {}),
+  ...(fullCollectorQualificationSource ? { fullCollectorQualification: {
+    path: fullCollectorQualificationPath,
+    sha256: sha256(fullCollectorQualificationSource.bytes),
+    executionCommit: fullCollectorQualificationSource.value.execution.commit,
+  } } : {}),
   evidencePolicy: {
     anchorClass: 'simulated',
     publicTimestamp: false,
@@ -321,8 +336,12 @@ const executionBinding = {
 };
 
 if (stage === 'full-qualification') {
-  if (!existsSync('reports/research/e03-full-collector-qualification-receipt.json')) {
-    throw new Error('E03 full packet requires a retained collector and statistical-analysis software qualification receipt');
+  try {
+    validateE03FullCollectorQualification(fullCollectorQualificationSource.value);
+    execFileSync('git', ['merge-base', '--is-ancestor',
+      resolveRewrittenCommit(fullCollectorQualificationSource.value.execution.commit), 'HEAD']);
+  } catch (error) {
+    throw new Error('E03 full packet requires a valid retained collector and statistical-analysis software qualification receipt', { cause: error });
   }
   if (sampleSizeDecision === undefined) {
     throw new Error('--sample-size-decision is required for --stage full');

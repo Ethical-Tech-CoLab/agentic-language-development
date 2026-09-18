@@ -118,6 +118,11 @@ export interface E03ExecutionBinding {
     readonly sha256: string;
     readonly policy: 'paired-six-condition-scenario-slot';
   };
+  readonly fullCollectorQualification?: {
+    readonly path: string;
+    readonly sha256: string;
+    readonly executionCommit: string;
+  };
   readonly evidencePolicy: {
     readonly anchorClass: 'simulated';
     readonly publicTimestamp: false;
@@ -321,6 +326,12 @@ function assertExecutionBinding(binding: E03ExecutionBinding, stage: E03Registra
           source.path === binding.reserveDesignAmendment?.path &&
           source.sha256 === binding.reserveDesignAmendment?.sha256))) ||
     (stage === 'blinded-pilot' && binding.reserveDesignAmendment !== undefined) ||
+    (stage === 'full-qualification' &&
+      (!binding.fullCollectorQualification ||
+        !safeRepositoryPath(binding.fullCollectorQualification.path) ||
+        !SHA256_PATTERN.test(binding.fullCollectorQualification.sha256) ||
+        !/^[a-f0-9]{40}$/u.test(binding.fullCollectorQualification.executionCommit))) ||
+    (stage === 'blinded-pilot' && binding.fullCollectorQualification !== undefined) ||
     binding.evidencePolicy.anchorClass !== 'simulated' ||
     binding.evidencePolicy.publicTimestamp !== false ||
     binding.evidencePolicy.originalEvidenceImmutable !== true ||
