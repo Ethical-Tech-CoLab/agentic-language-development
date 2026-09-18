@@ -9,7 +9,6 @@ import { HASH_DOMAINS, PreRegistrationArtifactSchema } from '@ald/types';
 
 const [runId, softwareCommit] = process.argv.slice(2);
 assert.equal(process.argv.length, 4, 'usage: run-e03-pilot-slot.mjs <run-id> <commit>');
-assert.match(runId, /^e03-pilot-(?:v[23]-)?(?:disabled|constant|random|shuffled|normal|oracle)-s\d{3}$/u);
 assert.match(softwareCommit, /^[a-f0-9]{40}$/u);
 
 const registration = JSON.parse(await readFile('/evidence/registration.json', 'utf8'));
@@ -17,7 +16,12 @@ const artifact = PreRegistrationArtifactSchema.parse(registration.artifact);
 const registrationHash = hashCanonical(HASH_DOMAINS.preRegistration, artifact);
 assert.equal(registration.preRegistrationHash, registrationHash);
 assert.equal(artifact.experimentId, 'E03');
-assert.equal(artifact.parameters.stage, 'blinded-pilot');
+const stage = artifact.parameters.stage;
+assert.ok(['blinded-pilot', 'full-qualification'].includes(stage));
+const runPattern = stage === 'blinded-pilot'
+  ? /^e03-pilot-(?:v[23]-)?(?:disabled|constant|random|shuffled|normal|oracle)-s\d{3}$/u
+  : /^e03-full-(?:disabled|constant|random|shuffled|normal|oracle)-s\d{3}$/u;
+assert.match(runId, runPattern);
 const topology = artifact.parameters.executionBinding?.topology;
 assert.equal(topology?.mode, 'prototype');
 assert.equal(topology.learnerContainersPerSlot, 0);
@@ -28,7 +32,7 @@ assert.equal(topology.adapterTiming, 'immediate');
 assert.equal(topology.turnResponseBudgetMs, 2_000);
 assert.match(process.env.HOSTNAME, /^[a-f0-9]{12}$/u);
 const registered = registration.runs.find((run) => run.config.runId === runId);
-assert.ok(registered && registered.use === 'primary');
+assert.ok(registered && (stage === 'full-qualification' || registered.use === 'primary'));
 const { config, condition, slot } = registered;
 assert.equal(config.communicationCondition, condition);
 assert.equal(config.preRegistrationHash, registrationHash);
@@ -59,7 +63,7 @@ async function measureNursery() {
 }
 
 try {
-  const transport = new FakeChainTransport({ endpointLabel: 'e03-pilot-simulated-commitment' });
+  const transport = new FakeChainTransport({ endpointLabel: `e03-${stage}-simulated-commitment` });
   const evidence = {
     listRuns: () => production.runtime.listRuns().map((run) => run.runId),
     insertAnchorReceipt: (receipt) => production.runtime.writerFor(receipt.runId).insertAnchorReceipt(receipt),
@@ -147,15 +151,19 @@ try {
   catch (error) { failure = `${failure ?? ''} close failed: ${error.message}`; }
   const passed = failure === null && resourceMeasurementFailure === null && observations !== null;
   await writeFile(join(root, 'slot.json'), `${JSON.stringify({
-    schemaVersion: 1, experimentId: 'E03', stage: 'blinded-pilot',
-    classification: 'original-registered-pilot-slot',
+    schemaVersion: 1, experimentId: 'E03', stage,
+    classification: stage === 'blinded-pilot'
+      ? 'original-registered-pilot-slot'
+      : 'original-registered-full-qualification-slot',
     researchFinding: false, scientificDisposition: 'not-tested',
     externalSpend: 0, publicChainTransaction: false,
     softwareCommit, registrationHash, runId, condition, slot,
     failure, failureStage, observations, resourceMeasurementFailure,
     nurseryResourceUsage, processResourceUsage: process.resourceUsage(),
     wallMilliseconds: performance.now() - started, passed,
-    claimBoundary: 'Registered E03 Prototype-Mode blinded-pilot feasibility/variance input only; no Research-Grade isolation, chance-control, or language-emergence finding.',
+    claimBoundary: stage === 'blinded-pilot'
+      ? 'Registered E03 Prototype-Mode blinded-pilot feasibility/variance input only; no Research-Grade isolation, chance-control, or language-emergence finding.'
+      : 'Registered E03 Prototype-Mode full control qualification input only; no Research-Grade isolation or language-emergence finding.',
   }, null, 2)}\n`, { flag: 'wx' });
   if (!passed) process.exitCode = 1;
 }
