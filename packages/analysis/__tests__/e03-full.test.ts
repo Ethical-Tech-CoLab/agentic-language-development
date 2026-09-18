@@ -127,6 +127,18 @@ describe('E03 full paired-reserve reconciliation', () => {
     expect(result.leakageReviewRunIds).toEqual([]);
   });
 
+  it('has a stable JSON representation when the oracle statistic is degenerate', () => {
+    const rows = qualifiedPrimary().map((run) => run.condition === 'oracle'
+      ? { ...run, agreements: 200 }
+      : run);
+    const result = analyzeE03FullQualification({ registered, attempted: rows,
+      analysisSeed: 'full-json-fixture', bootstrapIterations: 200 });
+    expect(result.numericAnalysis?.oracle.test.t).toBe(Infinity);
+    const recorded = JSON.parse(JSON.stringify(result));
+    expect(recorded.numericAnalysis.oracle.test.t).toBeNull();
+    expect(recorded.numericDisposition).toBe('thresholds-met');
+  });
+
   it('reports reserve exhaustion as incomplete without calculating an outcome', () => {
     const rows = qualifiedPrimary();
     for (const slot of [1, 2, 3, 4]) invalidate(rows, slot);

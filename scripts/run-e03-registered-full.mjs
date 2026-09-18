@@ -216,7 +216,10 @@ async function auditTerminal() {
   const analysis = analyzeE03FullQualification({ registered: packet.runs,
     attempted: attempts.map(analysisAttempt),
     analysisSeed: deriveE03FullAnalysisSeed(packet.runs) });
-  assert.deepEqual(receipt.analysis, analysis);
+  // The terminal receipt is JSON. Compare against the same JSON value space so
+  // degenerate statistics such as Infinity (serialized as null) audit exactly
+  // as they were sealed without weakening any finite-value comparison.
+  assert.deepEqual(receipt.analysis, JSON.parse(JSON.stringify(analysis)));
   const leakageReviews = resolveLeakageReviews(analysis, validSlots);
   assert.deepEqual(receipt.leakageReviews, leakageReviews);
   assert.equal(receipt.allIncludedEvidenceVerified, true);
