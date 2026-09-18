@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { E03_COMMUNICATION_CONDITIONS } from '../src/e03-design.js';
 import { reconcileE03FullPairedRuns, type E03FullAttemptedRun } from '../src/e03-full.js';
+import { analyzeE03FullQualification } from '../src/e03-full-qualification.js';
 import type { E03RegisteredRun } from '../src/e03-registration.js';
 
 const hashes = (slot: number) => Array.from({ length: 200 }, (_, episode) =>
@@ -26,6 +27,12 @@ const invalidate = (rows: E03FullAttemptedRun[], slot: number) => {
   rows[index] = { ...rows[index]!, valid: false, invalidReason: 'verifier-failure',
     bundleVerified: false, agreements: undefined, scenarioStateHashes: undefined };
 };
+const qualifiedPrimary = () => registered.filter((run) => run.use === 'primary').map((run) => ({
+  ...attempt(run),
+  agreements: run.condition === 'oracle'
+    ? 188 + (run.slot % 5)
+    : 46 + ((run.slot + E03_COMMUNICATION_CONDITIONS.indexOf(run.condition)) % 9),
+}));
 
 describe('E03 full paired-reserve reconciliation', () => {
   it('includes all 25 complete primary scenario pairs without using reserves', () => {
@@ -108,5 +115,26 @@ describe('E03 full paired-reserve reconciliation', () => {
     expect(() => reconcileE03FullPairedRuns(registered,
       [{ ...rows[0]!, scenarioStateHashes: ['malformed', ...hashes(1).slice(1)] },
         ...rows.slice(1)])).toThrow();
+  });
+
+  it('reduces complete verified pairs to the fixed E03 statistic without a scientific claim', () => {
+    const result = analyzeE03FullQualification({ registered, attempted: qualifiedPrimary(),
+      analysisSeed: 'full-analysis-fixture', bootstrapIterations: 200 });
+    expect(result.numericDisposition).toBe('thresholds-met');
+    expect(result.numericAnalysis?.conditions).toHaveLength(5);
+    expect(result.numericAnalysis?.oracle.n).toBe(25);
+    expect(result.scientificDisposition).toBe('not-tested');
+    expect(result.leakageReviewRunIds).toEqual([]);
+  });
+
+  it('reports reserve exhaustion as incomplete without calculating an outcome', () => {
+    const rows = qualifiedPrimary();
+    for (const slot of [1, 2, 3, 4]) invalidate(rows, slot);
+    const result = analyzeE03FullQualification({ registered,
+      attempted: [...rows, ...reserve(26), ...reserve(27), ...reserve(28)],
+      analysisSeed: 'exhausted-reserve-fixture', bootstrapIterations: 200 });
+    expect(result.numericDisposition).toBe('incomplete');
+    expect(result.numericAnalysis).toBeNull();
+    expect(result.scientificDisposition).toBe('not-tested');
   });
 });

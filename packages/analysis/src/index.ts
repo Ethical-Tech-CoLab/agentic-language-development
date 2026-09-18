@@ -166,6 +166,17 @@ export {
   type E03FullPairedReconciliation,
 } from './e03-full.js';
 export {
+  E03_FULL_ALPHA,
+  E03_FULL_CHANCE_LOWER,
+  E03_FULL_CHANCE_UPPER,
+  E03_FULL_EPISODES_PER_SEED,
+  E03_FULL_PRIMARY_PAIRS,
+  E03_FULL_QUALIFICATION_ANALYSIS_VERSION,
+  analyzeE03FullQualification,
+  type E03FullQualificationAnalysis,
+  type E03FullQualificationInput,
+} from './e03-full-qualification.js';
+export {
   E03_CHANCE_RATE,
   e11Summary,
   type E11Summary,
