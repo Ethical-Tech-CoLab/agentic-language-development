@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.190 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.191 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -911,9 +911,10 @@ its window and listening thresholds remain prospectively unset. H8 uses
 `negotiation-language/v1` on paired aligned/conflicting cases: message information
 about registered private state and normalized intended-action entropy conditional on
 message are separate components. Its state/action spaces must still be packet-bound.
-H6b's 0.02-bit leakage bound is the only frozen family margin; the
-other eight margins remain unset. Values used in packet-compiler tests are software
-fixtures, not policy. All nine pilot summaries remain explicitly uncollected, so
+The outcome-blind [practical-margin policy](protocols/confirmatory-practical-margins.v1.json)
+now freezes H5's rule, H8's spaces, and all nine scale-specific margins before any
+family pilot. Values used earlier in packet-compiler tests are not empirical support.
+All nine pilot summaries remain explicitly uncollected, so
 the inventory cannot yield a sample size or research finding.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from

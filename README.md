@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.190 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.191 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -103,10 +103,10 @@ resolves a later sample-size wording conflict; it supplies no pilot variance,
 30,000-repetition simulation, selected N, or behavioral result.
 The machine-checked [confirmatory design inventory](protocols/confirmatory-design-readiness.v1.json)
 now makes the remaining inputs explicit: all nine estimands have executable metrics;
-H5's window/listening rule and H8's registered private-state/action spaces still
-require prospective packet values, only H6b has a frozen raw-scale bound, and none of the nine
-blinded pilots has run. The `0.05` and `0.02` H2/H4
-values in registration-compiler tests remain software fixtures, not research policy.
+H5's rule, H8's registered spaces, and all nine raw-scale margins are now frozen
+outcome-blind in the [practical-margin policy](protocols/confirmatory-practical-margins.v1.json).
+None of the nine blinded pilots has run, so no variance, power, selected N, or result
+exists. Earlier H2/H4 compiler fixtures are not evidence for the policy.
 
 The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02

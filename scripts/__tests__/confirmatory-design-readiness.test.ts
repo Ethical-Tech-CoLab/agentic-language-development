@@ -16,7 +16,7 @@ describe('confirmatory design-readiness gate', () => {
     expect(result).toEqual({
       memberIds: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6a', 'H6b', 'H7', 'H8'],
       operationalized: 9,
-      frozen: 1,
+      frozen: 9,
     });
   });
 
@@ -30,10 +30,9 @@ describe('confirmatory design-readiness gate', () => {
     expect(() => validateConfirmatoryDesignReadiness(reordered)).toThrow(/reordered/u);
   });
 
-  it('rejects fixture values relabeled as frozen margins', () => {
+  it('rejects changing a frozen H2 margin after policy binding', () => {
     const readiness = source();
-    readiness.members[1].marginStatus = 'frozen';
-    readiness.members[1].practicalMargin = readiness.members[1].softwareFixtureCandidate;
+    readiness.members[1].practicalMargin.targetActionProbabilityDifferenceAtLeast = 0.06;
     expect(() => validateConfirmatoryDesignReadiness(readiness)).toThrow(/fixture values/u);
   });
 

@@ -105,11 +105,11 @@ The machine-checked
 [`confirmatory-design-readiness.v1.json`](../protocols/confirmatory-design-readiness.v1.json)
 inventory fails closed before that selector. It currently records all nine
 operationalized estimands. H5's `stable-convention/v1` still needs prospective
-window/listening thresholds, while H8's `negotiation-language/v1` still needs
-packet-bound private-state and intended-action spaces. It also records one frozen
-raw-scale bound (H6b), eight unfrozen margins, zero collected family
-pilots, and zero joint-family repetitions. The H2/H4 numbers in compiler tests
-are explicitly quarantined as software fixtures rather than scientific choices.
+window/listening thresholds and H8's `negotiation-language/v1` registered spaces are
+now fixed with all nine scale-specific margins in the outcome-blind
+[`confirmatory-practical-margins.v1.json`](../protocols/confirmatory-practical-margins.v1.json)
+policy. Zero family pilots and zero joint-family repetitions exist, so these choices
+are design commitments rather than empirical support.
 
 ## Prospective E03 pilot reduction
 

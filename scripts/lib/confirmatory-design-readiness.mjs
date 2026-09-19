@@ -41,8 +41,11 @@ export function validateConfirmatoryDesignReadiness(readiness) {
       typeof member.scale !== 'string' || member.scale.length === 0) {
       fail(`${member.id} metric scale contradicts its status`);
     }
+    const marginValues = member.practicalMargin !== null &&
+      typeof member.practicalMargin === 'object' ? Object.values(member.practicalMargin) : [];
     if (member.marginStatus === 'frozen' ?
-      !Number.isFinite(member.practicalMargin) : member.practicalMargin !== null) {
+      marginValues.length === 0 || marginValues.some((value) => !Number.isFinite(value)) :
+      member.practicalMargin !== null) {
       fail(`${member.id} practical margin contradicts its status`);
     }
     if (member.pilot?.status !== 'not-collected' || member.pilot.validSlots !== 0 ||
@@ -57,13 +60,14 @@ export function validateConfirmatoryDesignReadiness(readiness) {
   const h4 = readiness.members[3];
   const h6b = readiness.members[6];
   if (h2.softwareFixtureCandidate !== 0.05 || h4.softwareFixtureCandidate !== 0.02 ||
-      h2.marginStatus !== 'unfrozen' || h2.practicalMargin !== null ||
-      h4.marginStatus !== 'unfrozen' || h4.practicalMargin !== null ||
-      !h2.reasonCodes.includes('software-fixture-is-not-policy') ||
-      !h4.reasonCodes.includes('software-fixture-is-not-policy')) {
+      h2.marginStatus !== 'frozen' || h2.practicalMargin.targetActionProbabilityDifferenceAtLeast !== 0.05 ||
+      h4.marginStatus !== 'frozen' || h4.practicalMargin.brierImprovementAtLeast !== 0.02 ||
+      !h2.reasonCodes.includes('software-fixture-preceded-policy') ||
+      !h4.reasonCodes.includes('software-fixture-preceded-policy')) {
     fail('software-only H2/H4 fixture values are not quarantined from policy');
   }
-  if (h6b.marginStatus !== 'frozen' || h6b.practicalMargin !== 0.02 ||
+  if (h6b.marginStatus !== 'frozen' ||
+      h6b.practicalMargin.excessConditionalMutualInformationUpperBelowBits !== 0.02 ||
       h6b.scale !== 'bits' || h6b.direction !== 'upper-bound') {
     fail('the already-frozen H6b leakage bound changed');
   }

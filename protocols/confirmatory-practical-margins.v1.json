@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-practical-margin-policy",
+  "frozenAt": "2026-09-19",
+  "status": "frozen-before-confirmatory-family-pilots",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {"path":"protocols/research-protocol-cards.v1.json","sha256":"sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
+    {"path":"protocols/causal-ledger-and-leakage.v1.json","sha256":"sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"},
+    {"path":"protocols/confirmatory-design-readiness.v1.json","sha256":"sha256:3ccade150b19abfc8e6b0ae137b4cb31ce7d3683eca2a05b148a7bb6cfa66219"}
+  ],
+  "commonRationale": "Margins are smallest effects worth interpreting, fixed without pilot outcomes. Five-percentage-point behavioral margins reuse E03's already frozen practical equivalence scale. More specialized outcomes use declared scale-specific thresholds; pilots may estimate variance but cannot revise these values.",
+  "h5StableConventionRule": {
+    "analysisVersion": "stable-convention/v1",
+    "windowSize": 100,
+    "stepSize": 25,
+    "requiredConsecutiveWindows": 3,
+    "minimumFormConsistency": 0.80,
+    "minimumRepeatedUseShare": 0.80,
+    "minimumMeanCausalListening": 0.05
+  },
+  "h8RegisteredSpaces": {
+    "analysisVersion": "negotiation-language/v1",
+    "privateState": "sender top-utility candidate position in the scenario's committed candidate order; deterministic lowest-position tie break",
+    "privateStateIds": ["candidate-0","candidate-1","candidate-2","candidate-3"],
+    "intendedAction": "selected candidate position or explicit no-agreement action",
+    "actionIds": ["candidate-0","candidate-1","candidate-2","candidate-3","no-agreement"],
+    "pairedCaseRule": "aligned and conflicting conditions must use identical committed scenario/case IDs and candidate order"
+  },
+  "members": [
+    {"id":"H1","experiment":"E11","margin":{"allFourSuccessDifferencesAtLeast":0.05},"unit":"absolute success probability","direction":"greater","rationale":"Below five percentage points is not treated as meaningfully beyond the qualified control scale."},
+    {"id":"H2","experiment":"E16","margin":{"targetActionProbabilityDifferenceAtLeast":0.05},"unit":"absolute target-action probability","direction":"greater","rationale":"Requires a visible causal redistribution of at least five probability points on paired interventions."},
+    {"id":"H3","experiment":"E15","margin":{"heldOutSuccessDifferenceAtLeast":0.05},"unit":"absolute held-out success probability","direction":"greater","rationale":"Uses the same five-point task-success relevance scale under matched compute and capacity."},
+    {"id":"H4","experiment":"E16","margin":{"brierImprovementAtLeast":0.02},"unit":"multiclass Brier score","direction":"greater","rationale":"Requires a two-hundredths proper-score gain over the validation-selected strongest eligible comparator; zero-only superiority is insufficient."},
+    {"id":"H5","experiment":"E13","margin":{"stableAcquisitionRateAtLeast":0.50,"blankToFixedMedianFirstStableTurnRatioAtLeast":1.25},"unit":"seed acquisition probability and positive time ratio","direction":"conjunction","rationale":"At least half of seeds must acquire a persistent convention and blank carriers must take at least 25 percent longer than fixed tokens."},
+    {"id":"H6a","experiment":"E20","margin":{"declaredMinusNoneRestrictedMeanTurnsAtMost":-0.10},"unit":"turns","direction":"less","rationale":"A reduction smaller than one tenth of a turn over the fixed repair horizon is not interpreted as useful."},
+    {"id":"H6b","experiment":"E20","margin":{"excessConditionalMutualInformationUpperBelowBits":0.02},"unit":"bits","direction":"upper-bound","rationale":"Preserves the already frozen practical leakage bound."},
+    {"id":"H7","experiment":"E30","margin":{"degradationDifferenceAtLeast":0.05},"unit":"absolute success probability","direction":"greater","rationale":"Partner-varied training must reduce replacement degradation by at least five success-probability points."},
+    {"id":"H8","experiment":"E32","margin":{"informativenessDecreaseAtLeastBits":0.05,"normalizedStrategicAmbiguityIncreaseAtLeast":0.10},"unit":"bits and normalized conditional entropy","direction":"conjunction","rationale":"Requires both a nontrivial information loss and a ten-percentage-point increase in intended-action ambiguity on paired cases."}
+  ],
+  "amendmentRule": "Changing any metric, rule parameter, registered space, direction, or margin requires a prospective versioned amendment before the first family pilot; observed pilot values cannot justify a change.",
+  "claimBoundary": "This is an outcome-blind design policy, not pilot evidence, a power result, a selected seed count, a scientific finding, resource authorization, or independent review."
+}
