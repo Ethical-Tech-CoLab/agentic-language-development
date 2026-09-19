@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.187 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.188 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -972,6 +972,14 @@ are diagnostics, while the first shared candidate passing the complete joint
 nine-member lower-bound gate controls registration. The selector is implemented
 for complete simulation rows; no member-specific pilot inputs or 30,000-run
 joint-family receipt yet exist.</p>
+<p>The prospective <a href="protocols/confirmatory-design-readiness.v1.json">design-readiness inventory</a>
+separately audits the inputs needed before those pilots. Seven estimands have an
+operational scale, while H5&#39;s stable-convention conjunction and H8&#39;s
+informativeness/strategic-ambiguity conjunction do not yet have frozen executable
+definitions. H6b&#39;s 0.02-bit leakage bound is the only frozen family margin; the
+other eight margins remain unset. Values used in packet-compiler tests are software
+fixtures, not policy. All nine pilot summaries remain explicitly uncollected, so
+the inventory cannot yield a sample size or research finding.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
@@ -2060,20 +2068,22 @@ results.</li>
 evidence supports.</li>
 </ul>
 <hr>
-<h2>Appendix D. Worked Preregistration Example: E03 Controls</h2>
+<h2>Appendix D. Registered E03 Control Qualification</h2>
 <blockquote>
-<p><strong>Status:</strong> Complete worked example for methodological review; not yet registered
-or executed.</p>
+<p><strong>Status:</strong> The prospective pilot selected 25 primary seeds per condition. The
+separately registered full v1 qualification completed all 150 primaries, used no
+reserves, passed its fixed control/oracle thresholds, and passed a separate raw
+audit. This is control software qualification, not a behavioral finding.</p>
 </blockquote>
 <h3>D.1 Registration and Integrity</h3>
 <ul>
-<li>Registration target: a prospective clean Git packet commit and a matching
-pre-run simulated commitment; no external registry or public timestamp is claimed.</li>
-<li>The canonical registration JSON binds this manuscript commit, analysis-source
-hashes, and generated seed manifest before execution.</li>
-<li>The same <code>preRegistrationHash</code> will be committed through the deterministic
-simulation transport before any run enters <code>running</code>.</li>
-<li>No outcome will be inspected before registration and commitment complete.</li>
+<li>Registration used a prospective clean Git packet commit and a matching pre-run
+simulated commitment; no external registry or public timestamp is claimed.</li>
+<li>The canonical registration JSON bound the analysis-source hashes and generated
+seed manifest before execution.</li>
+<li>The same <code>preRegistrationHash</code> was committed through the deterministic simulation
+transport before any run entered <code>running</code>.</li>
+<li>The full-stage outcome was not inspected before registration and commitment.</li>
 </ul>
 <h3>D.2 Objective</h3>
 <p>Test whether a four-choice referential task can be solved above chance without
@@ -2132,11 +2142,11 @@ meaningful learned communication and establish an oracle upper bound.</p>
 </tr>
 <tr>
 <td>Primary seeds per condition</td>
-<td>Power-rule output; 75 when pilot SD is greater than 0.05 and at most 0.10</td>
+<td>25, selected prospectively from the blinded pilot</td>
 </tr>
 <tr>
 <td>Reserve seeds per condition</td>
-<td>10% of primary count, rounded up</td>
+<td>3 ordered paired slots (18 maximum runs); none attempted</td>
 </tr>
 <tr>
 <td>Conditions</td>
@@ -2224,10 +2234,10 @@ bounds and nominal paired seed-bootstrap intervals are reported.</li>
 <p>No episode is analyzed as an independent run.</p>
 <h3>D.7 Sensitivity and Power</h3>
 <p>Before final registration, a separate outcome-blind-for-confirmatory-use pilot of 20
-seeds per non-oracle condition will fit the beta-binomial model and estimate the
+seeds per non-oracle condition fit the beta-binomial model and estimated the
 largest latent between-seed standard deviation after accounting for 200-episode
-sampling. Pilot runs will not enter confirmatory estimates. The registered primary
-seed count is selected by this fixed rule:</p>
+sampling. Pilot runs did not enter the full-stage estimates. The registered primary
+seed count was selected by this fixed rule:</p>
 <table>
 <thead>
 <tr>
@@ -2308,9 +2318,17 @@ uncalibrated statistical rejection rule;</li>
 </ul>
 <p>Failure is a result and blocks downstream confirmatory claims until a new,
 separately registered protocol is justified.</p>
+<p>The v1 execution included 25 complete paired slots (150 valid runs), zero invalid
+runs, and zero attempted reserves. The five control means ranged from 0.2372 to
+0.2566 and all passed the registered equivalence decisions; the oracle mean and
+simultaneous lower bound were both 1.0, and all five registered separation decisions
+passed. The separate audit recomputed every original bundle and the fixed analysis.
+The tracked <a href="reports/research/e03-full-v1-status-receipt.json">portable receipt</a>
+binds the separately retained raw evidence and preserves the <code>not-tested</code> scientific
+disposition.</p>
 <hr>
 <h2>Appendix E. Future Results-Table Scaffolds</h2>
-<p>E00–E02 report bounded software qualifications only. All behavioral tables remain
+<p>E00–E03 report bounded software/control qualifications only. All behavioral tables remain
 unpopulated; no empirical hypothesis results are reported.</p>
 <h3>E.1 Qualification</h3>
 <table>
@@ -2354,12 +2372,12 @@ unpopulated; no empirical hypothesis results are reported.</p>
 </tr>
 <tr>
 <td>E03 Controls</td>
-<td align="right">6 x selected N (not yet selected)</td>
-<td align="right">—</td>
-<td align="right">—</td>
+<td align="right">150 primaries + 18 maximum reserves</td>
+<td align="right">0</td>
+<td align="right">150</td>
 <td>Equivalence and oracle bounds</td>
-<td>Not run</td>
-<td>—</td>
+<td>Software qualified; thresholds met</td>
+<td><a href="reports/research/e03-full-v1-status-receipt.json">Portable receipt</a></td>
 </tr>
 </tbody></table>
 <h3>E.2 Core Emergence</h3>

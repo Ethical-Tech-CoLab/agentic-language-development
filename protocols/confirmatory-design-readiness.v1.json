@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-design-readiness",
+  "frozenAt": "2026-09-19",
+  "status": "design-incomplete; no confirmatory-family pilot or power result exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {
+      "path": "protocols/research-protocol-cards.v1.json",
+      "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"
+    },
+    {
+      "path": "protocols/statistical-analysis-and-power.v1.json",
+      "sha256": "sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"
+    },
+    {
+      "path": "protocols/seed-and-resource-allocation.v1.json",
+      "sha256": "sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"
+    },
+    {
+      "path": "protocols/causal-ledger-and-leakage.v1.json",
+      "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"
+    }
+  ],
+  "pilotRule": {
+    "requiredValidSlotsPerMember": 20,
+    "stage": "blinded-pilot",
+    "outcomeUse": "variance and feasibility only",
+    "prohibitedUses": [
+      "changing a practical margin or direction",
+      "tuning an architecture or outcome",
+      "entering a confirmatory estimate",
+      "selecting a seed prefix before the complete joint-family simulation"
+    ]
+  },
+  "members": [
+    {
+      "id": "H1",
+      "experiment": "E11",
+      "metricStatus": "operationalized",
+      "metric": "four seed-paired absolute held-out-success differences: normal minus disabled, constant, random, and shuffled controls",
+      "scale": "probability difference in [-1, 1]",
+      "direction": "greater",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["raw-margin-not-frozen"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H2",
+      "experiment": "E16",
+      "metricStatus": "operationalized",
+      "metric": "seed-level mean within-case target-action probability change under ledger-consistent minus shuffled-valid substitution",
+      "scale": "probability difference in [-1, 1]",
+      "direction": "greater",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "softwareFixtureCandidate": 0.05,
+      "reasonCodes": ["raw-margin-not-frozen","software-fixture-is-not-policy"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H3",
+      "experiment": "E15",
+      "metricStatus": "operationalized",
+      "metric": "seed-level absolute held-out-success difference: 32-symbol/4-token minus 128-symbol/8-token",
+      "scale": "probability difference in [-1, 1]",
+      "direction": "greater",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["raw-margin-not-frozen"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H4",
+      "experiment": "E16",
+      "metricStatus": "operationalized",
+      "metric": "seed-level multiclass-Brier improvement: validation-selected non-ledger comparator minus native-ledger predictor on untouched cases",
+      "scale": "multiclass Brier-score difference",
+      "direction": "greater",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "softwareFixtureCandidate": 0.02,
+      "reasonCodes": ["raw-margin-not-frozen","software-fixture-is-not-policy"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H5",
+      "experiment": "E13",
+      "metricStatus": "unresolved",
+      "metric": "blank-carrier stable-form minimum and blank-versus-fixed-token time-to-stable-convention ratio conjunction",
+      "scale": null,
+      "direction": "conjunction",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["stable-convention-window-not-operationally-frozen","raw-margin-not-frozen"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H6a",
+      "experiment": "E20",
+      "metricStatus": "operationalized",
+      "metric": "seed-paired restricted-mean turns to successful repair: declared-six affect minus no affect",
+      "scale": "turn difference over the prospectively fixed censoring horizon",
+      "direction": "less",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["raw-margin-not-frozen","censoring-horizon-must-bind-packet"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H6b",
+      "experiment": "E20",
+      "metricStatus": "operationalized",
+      "metric": "seed-level permutation-calibrated excess conditional mutual information between affect and referent given binary outcome",
+      "scale": "bits",
+      "direction": "upper-bound",
+      "marginStatus": "frozen",
+      "practicalMargin": 0.02,
+      "reasonCodes": ["pilot-variance-not-measured"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H7",
+      "experiment": "E30",
+      "metricStatus": "operationalized",
+      "metric": "seed-level fixed-dyad replacement degradation minus equal-weight eight-partner-training degradation",
+      "scale": "probability difference in [-2, 2]",
+      "direction": "greater",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["raw-margin-not-frozen"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    },
+    {
+      "id": "H8",
+      "experiment": "E32",
+      "metricStatus": "unresolved",
+      "metric": "aligned-to-partially-conflicting message-informativeness decrease and strategic-ambiguity increase conjunction",
+      "scale": null,
+      "direction": "conjunction",
+      "marginStatus": "unfrozen",
+      "practicalMargin": null,
+      "reasonCodes": ["informativeness-estimator-not-operationally-frozen","strategic-ambiguity-estimator-not-operationally-frozen","raw-margin-not-frozen"],
+      "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
+      "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
+      "registrationEligible": false
+    }
+  ],
+  "summary": {
+    "members": 9,
+    "operationalizedMetrics": 7,
+    "unresolvedMetrics": 2,
+    "frozenMargins": 1,
+    "unfrozenMargins": 8,
+    "pilotsCollected": 0,
+    "jointSimulationRepetitions": 0,
+    "selectedPrimarySeeds": null,
+    "registrationReady": false
+  },
+  "nextGate": "Prospectively operationalize H5 and H8, freeze all eight remaining raw-scale margins before any blinded pilot, then collect prerequisite-qualified 20-slot pilots and run the complete 30000-repetition joint-family selector.",
+  "claimBoundary": "This inventory exposes design gaps. It is not a margin decision, pilot measurement, power result, selected sample size, experiment outcome, scientific finding, resource authorization, or independent review."
+}

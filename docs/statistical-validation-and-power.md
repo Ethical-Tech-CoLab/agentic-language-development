@@ -101,6 +101,14 @@ nine-member joint-decision Wilson lower bound reaches 0.90. Member-specific
 minima are diagnostics, not a replacement for that joint gate. Neither the
 ten-seed floor nor the historical 75-seed convention is evidence of power.
 
+The machine-checked
+[`confirmatory-design-readiness.v1.json`](../protocols/confirmatory-design-readiness.v1.json)
+inventory fails closed before that selector. It currently records seven
+operationalized estimands, two unresolved metric definitions (H5 and H8), one
+frozen raw-scale bound (H6b), eight unfrozen margins, zero collected family
+pilots, and zero joint-family repetitions. The H2/H4 numbers in compiler tests
+are explicitly quarantined as software fixtures rather than scientific choices.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

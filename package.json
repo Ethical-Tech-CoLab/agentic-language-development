@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.187",
+  "version": "0.1.188",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -89,8 +89,9 @@
     "audit:sources": "node scripts/check-source-register.mjs",
     "audit:protocol-cards": "node scripts/check-protocol-cards.mjs",
     "audit:scenario-design": "tsx scripts/check-scenario-design.ts",
-    "audit:statistics": "tsx scripts/check-statistical-validation.ts && node scripts/check-confirmatory-selection-amendment.mjs",
+    "audit:statistics": "tsx scripts/check-statistical-validation.ts && node scripts/check-confirmatory-selection-amendment.mjs && node scripts/check-confirmatory-design-readiness.mjs",
     "audit:confirmatory-selection": "node scripts/check-confirmatory-selection-amendment.mjs",
+    "audit:confirmatory-design-readiness": "node scripts/check-confirmatory-design-readiness.mjs",
     "audit:e03-mode-amendment": "node scripts/check-e03-prototype-mode-amendment.mjs",
     "audit:statistics:r": "tsx scripts/check-statistical-validation.ts --live-r",
     "audit:causal-leakage": "tsx scripts/check-causal-leakage-design.ts",

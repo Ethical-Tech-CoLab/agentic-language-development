@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.187 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.188 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -902,6 +902,15 @@ are diagnostics, while the first shared candidate passing the complete joint
 nine-member lower-bound gate controls registration. The selector is implemented
 for complete simulation rows; no member-specific pilot inputs or 30,000-run
 joint-family receipt yet exist.
+
+The prospective [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
+separately audits the inputs needed before those pilots. Seven estimands have an
+operational scale, while H5's stable-convention conjunction and H8's
+informativeness/strategic-ambiguity conjunction do not yet have frozen executable
+definitions. H6b's 0.02-bit leakage bound is the only frozen family margin; the
+other eight margins remain unset. Values used in packet-compiler tests are software
+fixtures, not policy. All nine pilot summaries remain explicitly uncollected, so
+the inventory cannot yield a sample size or research finding.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
@@ -1854,20 +1863,22 @@ not assigned a journal score because the fixed rubric is explicitly journal-base
 
 ---
 
-## Appendix D. Worked Preregistration Example: E03 Controls
+## Appendix D. Registered E03 Control Qualification
 
-> **Status:** Complete worked example for methodological review; not yet registered
-> or executed.
+> **Status:** The prospective pilot selected 25 primary seeds per condition. The
+> separately registered full v1 qualification completed all 150 primaries, used no
+> reserves, passed its fixed control/oracle thresholds, and passed a separate raw
+> audit. This is control software qualification, not a behavioral finding.
 
 ### D.1 Registration and Integrity
 
-- Registration target: a prospective clean Git packet commit and a matching
-  pre-run simulated commitment; no external registry or public timestamp is claimed.
-- The canonical registration JSON binds this manuscript commit, analysis-source
-  hashes, and generated seed manifest before execution.
-- The same `preRegistrationHash` will be committed through the deterministic
-  simulation transport before any run enters `running`.
-- No outcome will be inspected before registration and commitment complete.
+- Registration used a prospective clean Git packet commit and a matching pre-run
+  simulated commitment; no external registry or public timestamp is claimed.
+- The canonical registration JSON bound the analysis-source hashes and generated
+  seed manifest before execution.
+- The same `preRegistrationHash` was committed through the deterministic simulation
+  transport before any run entered `running`.
+- The full-stage outcome was not inspected before registration and commitment.
 
 ### D.2 Objective
 
@@ -1889,8 +1900,8 @@ meaningful learned communication and establish an oracle upper bound.
 | Candidate objects | 4 per episode |
 | Chance success | 0.25 |
 | Episodes per run | 200 |
-| Primary seeds per condition | Power-rule output; 75 when pilot SD is greater than 0.05 and at most 0.10 |
-| Reserve seeds per condition | 10% of primary count, rounded up |
+| Primary seeds per condition | 25, selected prospectively from the blinded pilot |
+| Reserve seeds per condition | 3 ordered paired slots (18 maximum runs); none attempted |
 | Conditions | Disabled, constant, random, shuffled, normal no-learning, oracle |
 | Alpha | 0.05 |
 | Within-family correction | Holm-Bonferroni |
@@ -1977,10 +1988,10 @@ No episode is analyzed as an independent run.
 ### D.7 Sensitivity and Power
 
 Before final registration, a separate outcome-blind-for-confirmatory-use pilot of 20
-seeds per non-oracle condition will fit the beta-binomial model and estimate the
+seeds per non-oracle condition fit the beta-binomial model and estimated the
 largest latent between-seed standard deviation after accounting for 200-episode
-sampling. Pilot runs will not enter confirmatory estimates. The registered primary
-seed count is selected by this fixed rule:
+sampling. Pilot runs did not enter the full-stage estimates. The registered primary
+seed count was selected by this fixed rule:
 
 | Largest latent pilot SD | Primary seeds per condition |
 |---:|---:|
@@ -2049,11 +2060,20 @@ E03 qualifies the downstream chance baseline only if:
 Failure is a result and blocks downstream confirmatory claims until a new,
 separately registered protocol is justified.
 
+The v1 execution included 25 complete paired slots (150 valid runs), zero invalid
+runs, and zero attempted reserves. The five control means ranged from 0.2372 to
+0.2566 and all passed the registered equivalence decisions; the oracle mean and
+simultaneous lower bound were both 1.0, and all five registered separation decisions
+passed. The separate audit recomputed every original bundle and the fixed analysis.
+The tracked [portable receipt](reports/research/e03-full-v1-status-receipt.json)
+binds the separately retained raw evidence and preserves the `not-tested` scientific
+disposition.
+
 ---
 
 ## Appendix E. Future Results-Table Scaffolds
 
-E00–E02 report bounded software qualifications only. All behavioral tables remain
+E00–E03 report bounded software/control qualifications only. All behavioral tables remain
 unpopulated; no empirical hypothesis results are reported.
 
 ### E.1 Qualification
@@ -2063,7 +2083,7 @@ unpopulated; no empirical hypothesis results are reported.
 | E00 Integrity | 5 v5 slots | 0 in v5 | 5 | Detect all registered mutations | Software qualified | E00 v5 receipt |
 | E01 Isolation | 5 v2 topology slots | 0 in v2 | 5 | Enumerated local corpus only | Software qualified | E01 v2 receipt |
 | E02 Leakage | 5 v3 numeric scratch slots | 0 in v3 | 5 | Numeric probe leakage bound, restore stages, and 60 fixed reports | Software qualified (numeric scope) | [V3 receipt](reports/research/e02-v3-qualification-receipt.json) + [full audit](reports/research/e02-v3-full-audit-receipt.json) |
-| E03 Controls | 6 x selected N (not yet selected) | — | — | Equivalence and oracle bounds | Not run | — |
+| E03 Controls | 150 primaries + 18 maximum reserves | 0 | 150 | Equivalence and oracle bounds | Software qualified; thresholds met | [Portable receipt](reports/research/e03-full-v1-status-receipt.json) |
 
 ### E.2 Core Emergence
 

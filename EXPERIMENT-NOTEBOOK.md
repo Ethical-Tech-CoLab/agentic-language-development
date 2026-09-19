@@ -103,6 +103,11 @@ The later nine-member confirmatory seed selection follows the prospective
 [joint-family clarification](protocols/confirmatory-family-selection-amendment.v1.json):
 the first shared candidate passing the complete lower-bound gate, not the
 largest qualifying candidate. No pilot has supplied that selection yet.
+The machine-checked [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
+records the earlier gate: H5 and H8 still lack executable metric definitions,
+eight raw-scale margins remain unfrozen, and every family pilot remains
+uncollected. It expressly prevents software-test fixture numbers from becoming
+research policy.
 The generated ledger contains design commitments only; it is not evidence that any
 pilot or study seed has run.
 
