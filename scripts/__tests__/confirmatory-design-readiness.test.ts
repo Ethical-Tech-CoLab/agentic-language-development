@@ -15,7 +15,7 @@ describe('confirmatory design-readiness gate', () => {
     const result = validateConfirmatoryDesignReadiness(source());
     expect(result).toEqual({
       memberIds: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6a', 'H6b', 'H7', 'H8'],
-      operationalized: 8,
+      operationalized: 9,
       frozen: 1,
     });
   });

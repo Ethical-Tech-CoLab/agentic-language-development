@@ -95,16 +95,16 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.189 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.190 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
 resolves a later sample-size wording conflict; it supplies no pilot variance,
 30,000-repetition simulation, selected N, or behavioral result.
 The machine-checked [confirmatory design inventory](protocols/confirmatory-design-readiness.v1.json)
-now makes the remaining inputs explicit: eight estimands are operationalized, H5's
-window/listening rule still requires prospective thresholds, H8 still requires an
-exact metric definition, only H6b has a frozen raw-scale bound, and none of the nine
+now makes the remaining inputs explicit: all nine estimands have executable metrics;
+H5's window/listening rule and H8's registered private-state/action spaces still
+require prospective packet values, only H6b has a frozen raw-scale bound, and none of the nine
 blinded pilots has run. The `0.05` and `0.02` H2/H4
 values in registration-compiler tests remain software fixtures, not research policy.
 

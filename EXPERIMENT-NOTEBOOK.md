@@ -104,8 +104,8 @@ The later nine-member confirmatory seed selection follows the prospective
 the first shared candidate passing the complete lower-bound gate, not the
 largest qualifying candidate. No pilot has supplied that selection yet.
 The machine-checked [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
-records the earlier gate: H5 now has an executable rolling-window metric but its
-rule thresholds remain unset, H8 still lacks an executable metric definition,
+records the earlier gate: all nine estimands now have executable metrics, but H5's
+rule thresholds and H8's private-state/action spaces remain unset packet parameters,
 eight raw-scale margins remain unfrozen, and every family pilot remains uncollected.
 It expressly prevents software-test fixture numbers from becoming research policy.
 The generated ledger contains design commitments only; it is not evidence that any

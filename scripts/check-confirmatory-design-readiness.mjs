@@ -19,4 +19,4 @@ for (const source of readiness.sourcePolicies) {
 assert.equal(readiness.pilotRule.requiredValidSlotsPerMember,
   allocation.sampleSizeRule.pilotSlotsPerCondition);
 
-console.log('Confirmatory design gate is incomplete by evidence: H8 metric definition, H5 rule thresholds, 8 margins, 9 pilots, and the joint simulation remain open');
+console.log('Confirmatory design gate is incomplete by evidence: H5/H8 packet parameters, 8 margins, 9 pilots, and the joint simulation remain open');

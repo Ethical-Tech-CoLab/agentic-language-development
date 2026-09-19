@@ -157,6 +157,14 @@ export {
   type StableConventionWindow,
 } from './stable-convention.js';
 export {
+  NEGOTIATION_LANGUAGE_ANALYSIS_VERSION,
+  evaluateNegotiationLanguage,
+  type NegotiationLanguageConditionResult,
+  type NegotiationLanguageInput,
+  type NegotiationLanguageObservation,
+  type NegotiationLanguageResult,
+} from './negotiation-language.js';
+export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,
   compileE03Registration,
