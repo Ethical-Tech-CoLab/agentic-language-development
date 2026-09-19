@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.188 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.189 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -904,10 +904,12 @@ for complete simulation rows; no member-specific pilot inputs or 30,000-run
 joint-family receipt yet exist.
 
 The prospective [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
-separately audits the inputs needed before those pilots. Seven estimands have an
-operational scale, while H5's stable-convention conjunction and H8's
-informativeness/strategic-ambiguity conjunction do not yet have frozen executable
-definitions. H6b's 0.02-bit leakage bound is the only frozen family margin; the
+separately audits the inputs needed before those pilots. Eight estimands now have an
+executable scale. H5 uses `stable-convention/v1`, a rolling-window calculation that
+requires form-to-meaning consistency, repeated use, and paired causal listening;
+its window and listening thresholds remain prospectively unset. H8's
+informativeness/strategic-ambiguity conjunction still lacks a frozen executable
+definition. H6b's 0.02-bit leakage bound is the only frozen family margin; the
 other eight margins remain unset. Values used in packet-compiler tests are software
 fixtures, not policy. All nine pilot summaries remain explicitly uncollected, so
 the inventory cannot yield a sample size or research finding.

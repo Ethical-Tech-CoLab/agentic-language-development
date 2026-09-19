@@ -103,9 +103,10 @@ ten-seed floor nor the historical 75-seed convention is evidence of power.
 
 The machine-checked
 [`confirmatory-design-readiness.v1.json`](../protocols/confirmatory-design-readiness.v1.json)
-inventory fails closed before that selector. It currently records seven
-operationalized estimands, two unresolved metric definitions (H5 and H8), one
-frozen raw-scale bound (H6b), eight unfrozen margins, zero collected family
+inventory fails closed before that selector. It currently records eight
+operationalized estimands; H5's `stable-convention/v1` rule still needs prospective
+window/listening thresholds, and H8 remains the unresolved metric definition. It
+also records one frozen raw-scale bound (H6b), eight unfrozen margins, zero collected family
 pilots, and zero joint-family repetitions. The H2/H4 numbers in compiler tests
 are explicitly quarantined as software fixtures rather than scientific choices.
 

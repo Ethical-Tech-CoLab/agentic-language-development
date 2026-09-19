@@ -98,13 +98,14 @@
     {
       "id": "H5",
       "experiment": "E13",
-      "metricStatus": "unresolved",
-      "metric": "blank-carrier stable-form minimum and blank-versus-fixed-token time-to-stable-convention ratio conjunction",
-      "scale": null,
+      "metricStatus": "operationalized",
+      "metric": "stable-convention/v1 blank-carrier acquisition rate and blank-versus-fixed-token first-stable-turn ratio conjunction",
+      "analysisVersion": "stable-convention/v1",
+      "scale": "seed-level acquisition proportion in [0, 1] and positive first-stable-turn ratio",
       "direction": "conjunction",
       "marginStatus": "unfrozen",
       "practicalMargin": null,
-      "reasonCodes": ["stable-convention-window-not-operationally-frozen","raw-margin-not-frozen"],
+      "reasonCodes": ["stable-convention-rule-thresholds-not-frozen","raw-margin-not-frozen"],
       "pilot": {"status":"not-collected","validSlots":0,"varianceUpper":null},
       "simulation": {"status":"not-run","repetitions":0,"memberMinimum":null},
       "registrationEligible": false
@@ -168,8 +169,8 @@
   ],
   "summary": {
     "members": 9,
-    "operationalizedMetrics": 7,
-    "unresolvedMetrics": 2,
+    "operationalizedMetrics": 8,
+    "unresolvedMetrics": 1,
     "frozenMargins": 1,
     "unfrozenMargins": 8,
     "pilotsCollected": 0,
@@ -177,6 +178,6 @@
     "selectedPrimarySeeds": null,
     "registrationReady": false
   },
-  "nextGate": "Prospectively operationalize H5 and H8, freeze all eight remaining raw-scale margins before any blinded pilot, then collect prerequisite-qualified 20-slot pilots and run the complete 30000-repetition joint-family selector.",
+  "nextGate": "Prospectively freeze H5's window/listening rule, operationalize H8, and freeze all eight remaining raw-scale margins before any blinded pilot; then collect prerequisite-qualified 20-slot pilots and run the complete 30000-repetition joint-family selector.",
   "claimBoundary": "This inventory exposes design gaps. It is not a margin decision, pilot measurement, power result, selected sample size, experiment outcome, scientific finding, resource authorization, or independent review."
 }

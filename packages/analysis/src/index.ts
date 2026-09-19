@@ -149,6 +149,14 @@ export {
   type ConfirmatoryFamilySimulationRow,
 } from './confirmatory-selection.js';
 export {
+  STABLE_CONVENTION_ANALYSIS_VERSION,
+  evaluateStableConvention,
+  type StableConventionObservation,
+  type StableConventionResult,
+  type StableConventionRule,
+  type StableConventionWindow,
+} from './stable-convention.js';
+export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,
   compileE03Registration,
