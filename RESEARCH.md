@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.186 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.187 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1264,15 +1264,14 @@ The tracked [outcome-blind E03 sample-size decision](protocols/e03-sample-size-d
 binds the original pilot, reduction, and power digests and carries the
 invalid-as-failure limitation into future packet compilation. Its live
 recomputation needs separately retained raw records; clean-checkout inspection
-does not rerun that audit. No full E03 packet or control outcome has been collected.
+does not rerun that audit.
 The prospective [full E03 resource allocation](protocols/e03-full-resource-allocation.v1.json)
 uses the complete retained evidence tree and actual 120-run pilot maxima. It
 reserves all 168 possible primary/reserve slots at 1 CPU-hour, 1.1 GiB new
 evidence, 1 GiB resident, and 0.5 hours projected sequential wall time,
 after charging 22.3 prior CPU-hours and 4.0 GiB retained evidence. This is
 within the local synthetic software-qualification ceiling but does not fund
-or qualify the E10+ campaign. Full E03 collection still requires its own
-collector, statistical analysis, prospective packet, and live gate.
+or qualify the E10+ campaign.
 The prospective [paired-reserve clarification](protocols/e03-full-paired-reserve-amendment.v1.json)
 resolves a pre-registration contradiction: E03's unit is a scenario seed
 shared across all six conditions, while condition-specific reserves could
@@ -1285,9 +1284,16 @@ or full seed existed when the clarification was recorded.
 The pure [full-stage paired-attempt reconciler](packages/analysis/src/e03-full.ts)
 enforces complete six-condition scenario pairs, identical scenario histories,
 whole-slot ordered reserves, and explicit incomplete disposition when the
-three reserves cannot replace all invalid primary pairs. This is fixture-tested
-software accounting; verified original-bundle ingestion, the statistical
-decision harness, and a live full-stage execution remain open.
+three reserves cannot replace all invalid primary pairs. The prospectively
+registered v1 full-stage attempt completed 150 required primary runs with 150
+verified original bundles and no invalid run. Because every primary pair was
+valid, all 18 reserves remained correctly unattempted. All registered control-
+equivalence, oracle-adequacy, and paired-separation criteria passed. A separate
+read-only audit recomputed every bundle and the fixed analysis; the tracked
+[portable receipt](reports/research/e03-full-v1-status-receipt.json) binds the
+ignored original terminal receipt. This is a Prototype-Mode control software
+qualification, not an empirical language-emergence result, Research-Grade
+isolation claim, independent review, or public timestamp.
 
 ## 11. Results
 

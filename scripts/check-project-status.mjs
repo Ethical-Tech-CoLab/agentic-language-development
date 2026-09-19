@@ -1,5 +1,6 @@
 import { access, readFile } from 'node:fs/promises';
 import { checkE03LocalPilotState } from './e03-local-pilot-state.mjs';
+import { checkE03FullState } from './e03-full-state.mjs';
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -19,6 +20,7 @@ const [pkg, backlog, readme, research, notebook, campaign] = await Promise.all([
   readFile('EXPERIMENT-NOTEBOOK.md', 'utf8'),
   readJson('protocols/campaign-readiness-review.v1.json'),
 ]);
+checkE03FullState(campaign.experiments.find((entry) => entry.id === 'E03'));
 checkE03LocalPilotState(campaign.experiments.find((entry) => entry.id === 'E03'),
   campaign.e03PilotCompletionSupplement, campaign.e03PowerSelectionSupplement,
   campaign.e03SampleSizeDecisionSupplement, campaign.e03FullAllocationSupplement,

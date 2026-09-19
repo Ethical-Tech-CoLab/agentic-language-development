@@ -95,9 +95,9 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.186 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.187 · 257/261 backlog acceptance criteria verified.
 
-Research status: 3 qualified (software), 2 failed qualification attempts, 0 in progress, 16 not started; 8 open campaign blockers.
+Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
 resolves a later sample-size wording conflict; it supplies no pilot variance,
 30,000-repetition simulation, selected N, or behavioral result.
@@ -172,26 +172,32 @@ nominal design calculation is not a robustness or experiment pass.
 The tracked [outcome-blind E03 design decision](protocols/e03-sample-size-decision.v1.json)
 binds the original pilot, reduction, and power hashes and carries that
 sensitivity. It can be inspected in a clean checkout; its live recomputation
-requires separately retained original evidence. The full E03 control stage
-has not yet been registered or run.
+requires separately retained original evidence.
 The separately [measured full E03 allocation](protocols/e03-full-resource-allocation.v1.json)
 reserves all 168 possible primary/reserve runs under the existing local ceiling:
 1 CPU-hour, 1.1 GiB new evidence, 1 GiB resident, and 0.5 hours projected
 sequential wall time, after charging 22.3 prior CPU-hours and 4.0 GiB of all
 retained evidence. It covers only Prototype-Mode software qualification, not
-the E10+ campaign; full collector/analysis and live registration gates remain.
+the E10+ campaign.
 The [prospective paired-reserve clarification](protocols/e03-full-paired-reserve-amendment.v1.json)
 protects E03's shared-scenario seed and paired oracle-control estimand: one
 invalid primary run excludes its six-condition scenario slot; the next
 ordered reserve slot is collected across all six conditions, at most three.
 Original invalid and valid-but-excluded companions remain indexed. No full
-packet or full seed existed when this was recorded, and the full packet
-compiler remains blocked until collector/statistics software qualification.
+packet or full seed existed when this clarification was recorded.
 The pure [paired-attempt reconciler](packages/analysis/src/e03-full.ts) now checks
 the complete six-condition primary matrix, shared-scenario histories, ordered
 whole-slot reserve attempts, excluded companions, and exhausted-reserve
-incompleteness. Its fixture tests do not verify a real full-stage bundle or
-qualify the not-yet-built collector and statistical harness.
+incompleteness. The subsequently registered v1 full-stage attempt completed
+all 150 required primary runs, each with a verified original bundle. All
+primary pairs were valid, so the scheduler correctly left all 18 reserve runs
+unattempted. The registered chance-equivalence, oracle-adequacy, and paired-
+separation thresholds passed, and a separate read-only audit recomputed all
+150 bundles and the fixed analysis. The tracked
+[portable full-stage receipt](reports/research/e03-full-v1-status-receipt.json)
+binds the retained original receipt and reports measured resources. This
+qualifies the E03 Prototype-Mode control baseline only; it is not a behavioral
+language-emergence finding, Research-Grade isolation, or independent review.
 A disposable one-evaluation Prototype fixture sealed with a simulated anchor
 and passed a separate TypeScript bundle replay; it is a software
 smoke check, not the separate six-condition v2 qualification or a pilot.
@@ -205,7 +211,8 @@ separate `audit:e03-pilot-v3:live` check verified all original bundles. The
 `reduce:e03-pilot-v3:live` command then reran that audit before writing the
 outcome-blind dispersion input; `audit:e03-pilot-v3-reduction:live` independently
 recomputed it from retained original records. All four gates passed on the
-original v3 evidence. E03's full control qualification remains unexecuted.
+original v3 evidence. E03's full control qualification then ran once and passed
+the original-evidence audit described above.
 The audit cross-checks unsigned operational tallies against the signed,
 verified turn and channel streams before admitting a sample-size input.
 The prospective Prototype-Mode development audit now derives its paired
@@ -298,12 +305,11 @@ qualification in Prototype Mode**: not pre-registered, not anchored, and never
 research findings.
 
 The committed E03 design simulation is an outcome-blind sensitivity check. The
-stage-aware registration compiler produces a canonical twenty-slot pilot packet
-with separated scenario, per-role learner, Gateway, and analysis seeds. It refuses
-to compile the full E03 qualification until a retained pilot decision selects a
-candidate seed count under the frozen 30,000-repetition rule. Research preflight
-then requires immutable registration and matching pre-run simulated-commitment
-bindings before either registered stage can execute.
+stage-aware registration compiler produced canonical pilot and full-stage packets
+with separated scenario, per-role learner, Gateway, and analysis seeds. The full
+packet was compiled only after the retained pilot selected a candidate seed count
+under the frozen 30,000-repetition rule. Research preflight required immutable
+registration and a matching pre-run simulated commitment before each stage ran.
 
 The frozen-LLM operator path also completed a real two-episode qualification
 against Qwen3-4B Q4_K_M through Homebrew llama.cpp 0.4.0. The retained
@@ -426,19 +432,19 @@ pnpm run preflight:research \
   --binding /absolute/path/repository-registration-and-commitment-binding.json
 ```
 
-This draft is a design demonstration. E02's bounded software gate has passed, but
-an immutable pilot packet, exact source/seed preflight, and simulated pre-run
-commitment remain required before collection. After that pilot,
-compile the full E03 qualification only with the retained sample-size decision:
+The historical commands above illustrate the design workflow. E02 and E03's bounded
+software gates have now passed. A fresh stage must still use an immutable packet,
+exact source/seed preflight, simulated pre-run commitment, and an unused evidence
+namespace. The executed full E03 packet was compiled from the retained sample-size
+decision; its current audit commands are:
 
 ```bash
-pnpm run registration:e03 --stage full --primary-seeds <N> \
-  --sample-size-decision <retained-decision.json> \
-  --out evidence/preregistration/e03-full-v1-draft.json
+pnpm run audit:e03-full:live
+pnpm run audit:e03-full-status:live
 ```
-Preflight also requires an unchanged packet in an ancestral Git commit and a
-matching pre-run simulated commitment; passing those identity checks alone does
-not satisfy the campaign's scientific prerequisites.
+The first command requires separately retained original evidence; the second
+checks the tracked portable receipt. Neither command supplies the E10+ campaign's
+remaining scientific prerequisites.
 
 Run the Prototype Mode qualification harness and verify a bundle independently:
 

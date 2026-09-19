@@ -93,6 +93,13 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
   const reserveAmendment = e03Evidence?.find((entry: any) =>
     entry.kind === 'prospective-paired-reserve-amendment')?.path;
   if (reserveAmendment) values[reserveAmendment] = source(reserveAmendment);
+  for (const kind of ['portable-pilot-terminal-summary', 'portable-full-terminal-summary']) {
+    const path = e03Evidence?.find((entry: any) => entry.kind === kind)?.path;
+    if (path) values[path] = source(path);
+  }
+  if (currentTerminal === 'evidence/qualification/e03-full-v1/receipt.json') {
+    values[currentTerminal] = source(currentTerminal);
+  }
   for (const [path, value] of Object.entries(values)) {
     const target = join(directory, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -115,8 +122,12 @@ function resetPilotPreparation(campaign: any) {
   const e03 = campaign.experiments.find((entry: any) => entry.id === 'E03');
   e03.executionReadiness = { stage: 'pilot', decision: 'blocked', reasonCodes: ['B11'] };
   e03.attempt = { status: 'not-started', planned: null, attempted: 0, completed: 0 };
-  e03.evidence = e03.evidence.filter((entry: any) =>
-    ['development-topology-audit', 'prospective-stage-allocation'].includes(entry.kind));
+  e03.evidence = [
+    { kind: 'development-topology-audit',
+      path: 'reports/research/e03-prototype-topology-audit-receipt.json', statusAuthority: false },
+    { kind: 'prospective-stage-allocation',
+      path: 'protocols/e03-pilot-resource-allocation.v1.json', statusAuthority: false },
+  ];
   return e03;
 }
 
@@ -283,79 +294,51 @@ describe('stage-specific campaign progress', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
-  it('accepts the portable E03 status from a clean checkout without claiming a raw audit', () => {
+  it('accepts the portable E03 full-stage status from a clean checkout', () => {
     const directory = fixture();
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
+    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'));
     const result = run(directory);
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('4 completed gates');
   });
 
-  it('rejects retained E03 raw evidence whose bytes disagree with the portable digest', () => {
+  it('rejects retained E03 full evidence whose bytes disagree with the portable digest', () => {
     const directory = fixture();
-    const path = join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json');
+    const path = join(directory, 'evidence/qualification/e03-full-v1/receipt.json');
     writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
     const result = run(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 retained original terminal receipt contradicts the portable digest');
+    expect(result.stderr).toContain('E03 retained original full-stage receipt contradicts the portable summary');
   });
 
-  it('rejects altered retained E03 power bytes without changing the reported design row', () => {
+  it('rejects a corrupt portable E03 full-stage run count without raw evidence', () => {
     const directory = fixture();
-    const path = join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json');
-    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
-    const result = run(directory);
-    expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 retained power calculation contradicts its dated supplement');
-  });
-
-  it('rejects a corrupt portable E03 selected row when raw evidence is absent', () => {
-    const directory = fixture();
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
-    const path = join(directory, 'reports/research/e03-v3-pilot-status-receipt.json');
+    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'));
+    const path = join(directory, 'reports/research/e03-full-v1-status-receipt.json');
     const portable = JSON.parse(readFileSync(path, 'utf8'));
-    portable.selectedPrimarySeeds = 0;
+    portable.completedRuns = 149;
     writeFileSync(path, `${JSON.stringify(portable)}\n`);
     const result = run(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 portable pilot status contradicts its packet or campaign state');
+    expect(result.stderr).toContain('E03 progress contradicts its status-authority receipt');
   });
 
-  it('rejects an altered tracked E03 design decision even from a clean checkout', () => {
+  it('rejects an altered tracked full E03 allocation', () => {
     const directory = fixture();
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
-    const path = join(directory, 'protocols/e03-sample-size-decision.v1.json');
-    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
-    const result = run(directory);
-    expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 tracked design decision contradicts its source digests or limitation');
-  });
-
-  it('rejects an altered tracked full E03 allocation without separately retained raw files', () => {
-    const directory = fixture();
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/power-selection.json'));
     const path = join(directory, 'protocols/e03-full-resource-allocation.v1.json');
     writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
     const result = run(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 tracked full allocation contradicts its pilot or decision identity');
+    expect(result.stderr).toContain('E03 portable full-stage status contradicts its packet or campaign state');
   });
 
-  it('rejects an altered prospective paired-reserve amendment before any full packet', () => {
+  it('rejects an altered prospective paired-reserve amendment after full qualification', () => {
     const directory = fixture();
     const path = join(directory, 'protocols/e03-full-paired-reserve-amendment.v1.json');
     writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
     const result = run(directory);
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('E03 tracked paired reserve design contradicts its dated amendment');
+    expect(result.stderr).toContain('E03 portable full-stage status contradicts its packet or campaign state');
   });
 
   it('rejects a slot-only wall projection after measured host overhead', () => {

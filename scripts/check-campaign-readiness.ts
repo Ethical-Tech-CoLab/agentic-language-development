@@ -3,6 +3,7 @@
 import { accessSync, existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { checkE03LocalPilotState } from './e03-local-pilot-state.mjs';
+import { checkE03FullState } from './e03-full-state.mjs';
 
 type ExecutionStage = 'qualification' | 'pilot' | 'confirmatory' | 'analysis' | 'exploratory' | 'replication' | 'reporting';
 type GateDecision = 'ready' | 'blocked' | 'complete';
@@ -159,7 +160,8 @@ for (const entry of review.experiments) {
     const separatelyRetainedE03 = entry.id === 'E03' && attempt.status === 'completed' &&
       !existsSync(evidence.path) &&
       ((evidence.kind === 'terminal-receipt' &&
-        evidence.path === 'evidence/pilots/e03-blinded-v3/receipt.json') ||
+        (evidence.path === 'evidence/pilots/e03-blinded-v3/receipt.json' ||
+         evidence.path === 'evidence/qualification/e03-full-v1/receipt.json')) ||
        (evidence.kind === 'outcome-blind-sample-size-input' &&
         evidence.path === 'evidence/pilots/e03-blinded-v3/sample-size-input.json'));
     if (!separatelyRetainedE03) accessSync(evidence.path);
@@ -185,15 +187,19 @@ for (const entry of review.experiments) {
   if (authorities.length === 1) {
     const authorityPath = authorities[0]!.path;
     const portablePath = entry.evidence.find((evidence) =>
-      evidence.kind === 'portable-terminal-summary')?.path;
-    const receiptPath = !existsSync(authorityPath) && entry.id === 'E03' &&
-      attempt.status === 'completed' &&
-      authorityPath === 'evidence/pilots/e03-blinded-v3/receipt.json' && portablePath
-      ? portablePath : authorityPath;
+      evidence.kind === 'portable-terminal-summary' ||
+      evidence.kind === 'portable-full-terminal-summary')?.path;
+    const usePortableE03 = entry.id === 'E03' && attempt.status === 'completed' &&
+      portablePath &&
+      ((!existsSync(authorityPath) &&
+        authorityPath === 'evidence/pilots/e03-blinded-v3/receipt.json') ||
+       authorityPath === 'evidence/qualification/e03-full-v1/receipt.json');
+    const receiptPath = usePortableE03 ? portablePath : authorityPath;
     const receipt = JSON.parse(readFileSync(receiptPath, 'utf8')) as Record<string, unknown>;
     if (receipt.experimentId !== entry.id) throw new Error(`${entry.id} status receipt belongs to another experiment`);
     const slots = Array.isArray(receipt.slots) ? receipt.slots.length :
-      receipt.classification === 'portable-original-pilot-status-summary' &&
+      (receipt.classification === 'portable-original-pilot-status-summary' ||
+       receipt.classification === 'portable-original-full-qualification-status-summary') &&
       typeof receipt.completedRuns === 'number' ? receipt.completedRuns : 0;
     let receiptStatus: AttemptStatus | 'unresolved' = 'unresolved';
     if (
@@ -202,6 +208,9 @@ for (const entry of review.experiments) {
       receipt.scientificDisposition === 'not-tested' &&
       receipt.completedSlots === 0
     ) receiptStatus = 'running';
+    else if (receipt.classification === 'portable-original-full-qualification-status-summary' &&
+      receipt.passed === true && receipt.failure === null && receipt.primaryRuns === 150 &&
+      receipt.completedRuns === 150 && receipt.unattemptedReserveRuns === 18) receiptStatus = 'completed';
     else if (receipt.allDispositionsMatched === true && slots === attempt.planned) receiptStatus = 'completed';
     else if (receipt.passed === true && receipt.failure === null && slots === attempt.planned) receiptStatus = 'completed';
     else if (receipt.passed === false && typeof receipt.failure === 'string' && receipt.failure.length > 0) receiptStatus = 'failed';
@@ -225,6 +234,7 @@ checkE03LocalPilotState(review.experiments.find((entry) => entry.id === 'E03'),
   review.e03PilotCompletionSupplement, review.e03PowerSelectionSupplement,
   review.e03SampleSizeDecisionSupplement, review.e03FullAllocationSupplement,
   review.e03PairedReserveSupplement);
+checkE03FullState(review.experiments.find((entry) => entry.id === 'E03'));
 const e02 = review.experiments.find((entry) => entry.id === 'E02');
 if ((e02?.executionReadiness.stage === 'qualification' &&
      e02.executionReadiness.decision === 'complete' && e02.attempt.status === 'completed') !==
