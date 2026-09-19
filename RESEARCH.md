@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.191 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.192 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -916,6 +916,10 @@ now freezes H5's rule, H8's spaces, and all nine scale-specific margins before a
 family pilot. Values used earlier in packet-compiler tests are not empirical support.
 All nine pilot summaries remain explicitly uncollected, so
 the inventory cannot yield a sample size or research finding.
+The `confirmatory-pilot-summary/v1` contract fixes fourteen component summaries
+across the nine members. Only a complete twenty-valid-slot pilot with a finite
+one-sided upper dispersion bound for every component is selection-eligible;
+partial or invalid pilots remain retained but cannot feed the joint selector.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded

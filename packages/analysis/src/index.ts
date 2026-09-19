@@ -165,6 +165,15 @@ export {
   type NegotiationLanguageResult,
 } from './negotiation-language.js';
 export {
+  CONFIRMATORY_PILOT_COMPONENTS,
+  CONFIRMATORY_PILOT_SUMMARY_VERSION,
+  validateConfirmatoryPilotSummary,
+  type ConfirmatoryMemberId,
+  type ConfirmatoryPilotComponentSummary,
+  type ConfirmatoryPilotMemberSummary,
+  type ConfirmatoryPilotSummary,
+} from './confirmatory-pilot.js';
+export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,
   compileE03Registration,

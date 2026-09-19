@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.191 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.192 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -107,6 +107,9 @@ H5's rule, H8's registered spaces, and all nine raw-scale margins are now frozen
 outcome-blind in the [practical-margin policy](protocols/confirmatory-practical-margins.v1.json).
 None of the nine blinded pilots has run, so no variance, power, selected N, or result
 exists. Earlier H2/H4 compiler fixtures are not evidence for the policy.
+The `confirmatory-pilot-summary/v1` contract fixes nine members and fourteen
+components, requires all twenty valid slots before selection eligibility, and
+rejects partial, invalid, optimistically bounded, or confirmatory-reused pilot data.
 
 The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02

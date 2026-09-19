@@ -111,6 +111,12 @@ now fixed with all nine scale-specific margins in the outcome-blind
 policy. Zero family pilots and zero joint-family repetitions exist, so these choices
 are design commitments rather than empirical support.
 
+The `confirmatory-pilot-summary/v1` software contract enumerates fourteen component
+summaries across the nine members. It distinguishes not-collected, incomplete, and
+complete states; requires twenty valid slots and a conservative upper dispersion
+bound for every component; and refuses selection eligibility for partial, invalid,
+or confirmatory-reused pilot data.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each
