@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { describe, expect, it } from 'vitest';
 
 interface BookManifest {
@@ -65,6 +66,22 @@ describe('research page-turn book', () => {
     expect(
       (await stat(join(bookDir, 'vendor', 'read-as-book.css'))).size,
     ).toBeGreaterThan(1_000);
+  });
+
+  it('contains readable text on every PDF page', async () => {
+    const pdf = new Uint8Array(await readFile(join(bookDir, 'research.pdf')));
+    const loadingTask = getDocument({ data: pdf });
+    const document = await loadingTask.promise;
+    try {
+      for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+        const page = await document.getPage(pageNumber);
+        const content = await page.getTextContent();
+        const text = content.items.map((item) => 'str' in item ? item.str : '').join('').trim();
+        expect(text.length, `PDF page ${pageNumber} is blank`).toBeGreaterThan(0);
+      }
+    } finally {
+      await loadingTask.destroy();
+    }
   });
 
   it('links the project site to an auto-opening book view', async () => {
