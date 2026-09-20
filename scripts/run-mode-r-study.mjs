@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -15,14 +15,24 @@ const outputDir = resolve(
   process.env['ALD_MODE_R_EVIDENCE_DIR'] ??
     `evidence/validation/mode-r-study-${String(process.pid)}`,
 );
-mkdirSync(outputDir, { recursive: true });
 const base = ['compose', '--project-name', project, '--file', composeFile];
 if (fortMode) {
   base.push('--file', fortComposeFile);
 }
-const commit = spawnSync('git', ['rev-parse', 'HEAD'], {
-  encoding: 'utf8',
-}).stdout.trim();
+function git(args) {
+  const result = spawnSync('git', args, { encoding: 'utf8' });
+  if (result.error !== undefined) throw result.error;
+  if (result.status !== 0) throw new Error(`git ${args[0]} failed`);
+  return result.stdout.trim();
+}
+
+if (git(['status', '--porcelain']) !== '') {
+  throw new Error('Mode R study qualification requires a clean exact source');
+}
+const commit = git(['rev-parse', 'HEAD']);
+const tree = git(['rev-parse', 'HEAD^{tree}']);
+const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
+mkdirSync(outputDir, { recursive: true });
 
 function verifyFortComposeBoundary() {
   const rendered = spawnSync(
@@ -141,6 +151,7 @@ function inspectContainer(id) {
 }
 
 const results = [];
+let currentTrack = 'preflight';
 try {
   verifyFortComposeBoundary();
   for (const track of [
@@ -149,6 +160,7 @@ try {
     'self-supervised',
     'hybrid',
   ]) {
+    currentTrack = track;
     const signerRoot = resolve(outputDir, 'signer-sockets', track);
     for (const domain of SIGNER_DOMAINS) {
       mkdirSync(resolve(signerRoot, domain), { recursive: true, mode: 0o700 });
@@ -202,20 +214,41 @@ try {
   ) {
     throw new Error('scratch-RL and self-supervised recurrent capacity differ');
   }
-  process.stdout.write(
-    `${JSON.stringify({
+  if (git(['status', '--porcelain']) !== '') {
+    throw new Error('Mode R study source changed during execution');
+  }
+  const terminal = {
       schemaVersion: 1,
-      classification: 'mode-r-topology-qualification',
+      classification: 'mode-r-signer-container-reference-terminal',
       researchFinding: false,
       publicChainTransaction: false,
-      softwareCommit: commit,
+      b12Closed: false,
+      execution: { commit, tree, version, cleanBeforeAndAfter: true },
       outputDir,
       fortComposeBoundaryVerified: true,
       recurrentCapacityMatched: true,
       runs: results,
       allSealedAndVerified: true,
-    })}\n`,
-  );
+      independentRustAuditCompleted: false,
+  };
+  writeFileSync(resolve(outputDir, 'terminal.json'), `${JSON.stringify(terminal, null, 2)}\n`,
+    { flag: 'wx' });
+  process.stdout.write(`${JSON.stringify(terminal)}\n`);
+} catch (error) {
+  try {
+    writeFileSync(resolve(outputDir, 'attempt-failure.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      classification: 'mode-r-signer-container-reference-failure',
+      executionCommit: commit,
+      currentTrack,
+      completedTracks: results.map((result) => result.track),
+      exceptionClass: error instanceof Error ? error.name : 'unknown',
+      researchFinding: false,
+    }, null, 2)}\n`, { flag: 'wx' });
+  } catch {
+    // Preserve the original failure if even supplemental accounting fails.
+  }
+  throw error;
 } finally {
   try {
     docker(['down', '--volumes', '--remove-orphans']);

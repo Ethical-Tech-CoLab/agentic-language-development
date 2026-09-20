@@ -59,6 +59,14 @@ ephemeral signer containers:
 pnpm run test:mode-r-study
 ```
 
+The wrapper now requires a clean source commit and writes one
+`terminal.json` under its ignored evidence directory before container cleanup.
+That original file records the source tree/version, all four results, and the
+host-inspected signer container identities. If collection fails, it retains a
+separate minimal `attempt-failure.json` without converting a partial attempt
+into a pass. A separate original-bundle audit is still needed before using
+the terminal as a bounded qualification receipt.
+
 This is a bounded software/topology qualification only, not the selected E10+
 process/key topology. Its receipt states
 `researchFinding: false` and `publicChainTransaction: false`; the local fake-chain
