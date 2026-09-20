@@ -111,11 +111,14 @@ now fixed with all nine scale-specific margins in the outcome-blind
 policy. Zero family pilots and zero joint-family repetitions exist, so these choices
 are design commitments rather than empirical support.
 
-The `confirmatory-pilot-summary/v1` software contract enumerates fourteen component
-summaries across the nine members. It distinguishes not-collected, incomplete, and
-complete states; requires twenty valid slots and a conservative upper dispersion
-bound for every component; and refuses selection eligibility for partial, invalid,
-or confirmatory-reused pilot data.
+The `confirmatory-pilot-summary/v2` software contract enumerates the seven distinct
+experiment pilots, their nine member mappings, and fourteen component summaries.
+It distinguishes not-collected, incomplete, and complete states; requires twenty
+valid primary slots and a conservative upper dispersion bound for every component;
+and refuses selection eligibility for partial, invalid, or confirmatory-reused pilot
+data. For every experiment it recomputes the one-sided 95% Wilson-score upper bound
+on invalid-run probability. With zero invalid runs in twenty slots that bound remains
+about 0.119, so zero observed failures cannot be entered as zero reserve risk.
 
 Marginal pilot SDs do not identify dependence among the fourteen component tests.
 The prospective

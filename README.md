@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.193 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.194 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -105,11 +105,13 @@ The machine-checked [confirmatory design inventory](protocols/confirmatory-desig
 now makes the remaining inputs explicit: all nine estimands have executable metrics;
 H5's rule, H8's registered spaces, and all nine raw-scale margins are now frozen
 outcome-blind in the [practical-margin policy](protocols/confirmatory-practical-margins.v1.json).
-None of the nine blinded pilots has run, so no variance, power, selected N, or result
+None of the seven experiment pilots has run, so no variance, power, selected N, or result
 exists. Earlier H2/H4 compiler fixtures are not evidence for the policy.
-The `confirmatory-pilot-summary/v1` contract fixes nine members and fourteen
-components, requires all twenty valid slots before selection eligibility, and
-rejects partial, invalid, optimistically bounded, or confirmatory-reused pilot data.
+The `confirmatory-pilot-summary/v2` contract fixes the seven experiment-to-nine-member
+mappings and fourteen components, requires all twenty valid primary slots in every
+experiment before selection eligibility, and independently checks each experiment's
+one-sided invalid-run upper bound. It rejects partial, invalid, optimistically bounded,
+or confirmatory-reused pilot data.
 The prospective [power-model amendment](protocols/confirmatory-power-model-amendment.v1.json)
 uses dependence-robust member-power bounds and a reserve-adequacy gate; an
 independence-only joint simulation is diagnostic and cannot choose a smaller N.

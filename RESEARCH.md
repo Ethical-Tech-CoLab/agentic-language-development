@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.193 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.194 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -914,12 +914,16 @@ message are separate components. Its state/action spaces must still be packet-bo
 The outcome-blind [practical-margin policy](protocols/confirmatory-practical-margins.v1.json)
 now freezes H5's rule, H8's spaces, and all nine scale-specific margins before any
 family pilot. Values used earlier in packet-compiler tests are not empirical support.
-All nine pilot summaries remain explicitly uncollected, so
+All nine member pilot summaries remain explicitly uncollected, so
 the inventory cannot yield a sample size or research finding.
-The `confirmatory-pilot-summary/v1` contract fixes fourteen component summaries
-across the nine members. Only a complete twenty-valid-slot pilot with a finite
-one-sided upper dispersion bound for every component is selection-eligible;
-partial or invalid pilots remain retained but cannot feed the joint selector.
+The `confirmatory-pilot-summary/v2` contract fixes seven experiment pilots, their
+nine member mappings, and fourteen component summaries. Only twenty valid primary
+slots in every experiment, a finite one-sided upper dispersion bound for every
+component, and a checked experiment-specific one-sided invalid-run upper bound are
+selection-eligible. Partial or invalid pilots remain retained but cannot feed the
+selector. Even zero invalid runs in twenty slots has a nonzero upper validity-risk
+bound; the later reserve calculation must use that bound and may require a prospective
+resource amendment rather than treating zero observations as zero risk.
 Because twenty-slot marginal dispersions do not identify dependence among the
 fourteen component tests, the prospective
 [power-model amendment](protocols/confirmatory-power-model-amendment.v1.json)

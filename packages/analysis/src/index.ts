@@ -166,11 +166,16 @@ export {
 } from './negotiation-language.js';
 export {
   CONFIRMATORY_PILOT_COMPONENTS,
+  CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS,
   CONFIRMATORY_PILOT_SUMMARY_VERSION,
+  confirmatoryPilotInvalidProbabilityUpper95,
   validateConfirmatoryPilotSummary,
   type ConfirmatoryMemberId,
   type ConfirmatoryPilotComponentSummary,
+  type ConfirmatoryPilotExperimentId,
+  type ConfirmatoryPilotExperimentSummary,
   type ConfirmatoryPilotMemberSummary,
+  type ConfirmatoryPilotStatus,
   type ConfirmatoryPilotSummary,
 } from './confirmatory-pilot.js';
 export {
