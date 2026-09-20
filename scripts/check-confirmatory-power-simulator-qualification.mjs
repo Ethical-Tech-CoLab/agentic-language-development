@@ -179,9 +179,23 @@ export function validateConfirmatoryPowerSimulatorQualification(receipt, root = 
   assert.match(receipt.execution.commit, /^[0-9a-f]{40}$/u);
   assert.match(receipt.execution.tree, /^[0-9a-f]{40}$/u);
   assert.match(receipt.execution.version, /^0\.1\.\d+$/u);
+  const git = (...args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim();
+  assert.equal(git('rev-parse', `${receipt.execution.commit}^{tree}`), receipt.execution.tree,
+    'receipt tree must belong to its execution commit');
+  const versionAtExecution = JSON.parse(git('show', `${receipt.execution.commit}:package.json`)).version;
+  assert.equal(versionAtExecution, receipt.execution.version,
+    'receipt version must belong to its execution commit');
   assert.deepEqual(receipt.sourceArtifacts.map((artifact) => artifact.path), sourcePaths);
   for (const expected of receipt.sourceArtifacts) {
-    assert.deepEqual(sourceArtifact(expected.path, root), expected);
+    const committedBytes = execFileSync('git', ['-C', root, 'show',
+      `${receipt.execution.commit}:${expected.path}`]);
+    assert.equal(committedBytes.length, expected.bytes,
+      `${expected.path} byte count differs from the execution commit`);
+    assert.equal(sha256(committedBytes), expected.sha256,
+      `${expected.path} digest differs from the execution commit`);
+    if (expected.path !== 'scripts/check-confirmatory-power-simulator-qualification.mjs') {
+      assert.deepEqual(sourceArtifact(expected.path, root), expected);
+    }
   }
   assert.deepEqual(receipt.qualification, runConfirmatoryPowerSimulatorQualification());
   assert.match(receipt.claimBoundary, /not a pilot, campaign power result, selected N/u);

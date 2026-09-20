@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.199 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.200 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -138,6 +138,8 @@ binds the exact v0.1.198 implementation and deterministic fixture output. All 11
 candidate/component comparisons agreed with independent R 4.6.1 reference power
 within the prespecified five-standard-error gate (maximum 2.55). This is bounded
 software qualification only; its fixture counts are not campaign measurements.
+The audit also verifies that the receipt's tree, version, and source bytes belong
+to its named execution commit; later audit-code changes do not rewrite that receipt.
 
 The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02

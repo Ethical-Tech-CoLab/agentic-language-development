@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.199 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.200 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -969,6 +969,9 @@ exact-binomial reference power; the maximum deviation was 2.55 standard errors.
 These synthetic fixture values qualify implementation behavior only. No eligible
 pilot was supplied and the receipt records no campaign power, selected N, resource
 authorization, study outcome, or scientific disposition.
+The receipt auditor additionally checks its named commit's tree, package version,
+and each qualified source artifact against Git history, preserving the original
+receipt while allowing later audit-code corrections.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
