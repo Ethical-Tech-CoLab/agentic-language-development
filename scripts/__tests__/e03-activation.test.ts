@@ -91,4 +91,16 @@ describe('E03 repository-native simulated activation', () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('working packet differs from committed registration');
   });
+
+  it('rejects a tampered v3 simulated-commitment binding', () => {
+    const { directory } = fixture('v3');
+    expect(run(directory, '--activate', 'v3').status).toBe(0);
+    const path = join(directory, 'protocols/e03-pilot-registration-binding.v3.json');
+    const binding = JSON.parse(readFileSync(path, 'utf8'));
+    binding.preRunAnchor.status = 'pending';
+    writeFileSync(path, `${JSON.stringify(binding, null, 2)}\n`);
+    const result = run(directory, '--check', 'v3');
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('E03 activation binding is stale');
+  });
 });

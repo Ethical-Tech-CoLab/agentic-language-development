@@ -1,8 +1,9 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "classification": "registration-readiness-inventory",
+  "inventoryScope": "generic-eleven-binding-compiler-only",
   "researchFinding": false,
-  "capturedAt": "2026-09-13",
+  "capturedAt": "2026-09-20",
   "compilerVersion": 1,
   "sourceCardsSha256": "8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d",
   "requiredBindings": [
@@ -1118,6 +1119,10 @@
       "preRegistrationHash": null
     }
   ],
+  "excludedStageSpecificRegistrationPaths": [
+    "protocols/e03-pilot-registration.v3.json",
+    "protocols/e03-full-registration.v1.json"
+  ],
   "activationStepsNotRepresentedAsBindings": [
     "authentic governance approval",
     "immutable repository registration of the compiled packet hash",
@@ -1127,5 +1132,5 @@
     "third-party registration or archival timestamp",
     "independent methods and reproduction review"
   ],
-  "boundary": "This inventory is deliberately incomplete. It is not a repository registration, a completed simulated commitment, governance approval, or permission to collect outcomes."
+  "boundary": "This generic-compiler inventory does not count E03 stage-specific packets, which have separate registration audits. Its incomplete E10+ bindings are not repository registrations, simulated commitments, or permission to collect outcomes."
 }

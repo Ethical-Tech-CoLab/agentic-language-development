@@ -64,9 +64,11 @@ data/claim inventory, registration inventory, campaign decision, source register
 and rendered-book hash. The dated September 13 critical review records eight reviewer
 perspectives and then-current venue criteria; the manuscript still returns
 `needs-revision`. Neither is empirical or independent human evidence.
-The registration-readiness inventory applies an eleven-binding fail-closed packet
-contract to all 19 experiment cards. E00, E01, and E02 have registered packets;
-the remaining 16 cards retain 160 unresolved exact bindings.
+The generic registration-readiness inventory applies an eleven-binding fail-closed
+packet contract to all 19 experiment cards. E00, E01, and E02 have packets in that
+compiler; its other 16 cards retain 160 unresolved generic bindings. E03 separately
+registered its completed blinded pilot and full control qualification with stage-specific
+packets and simulated commitments. Neither inventory makes an E10+ packet ready.
 The carrier-perception protocol and receipt bind a clean v0.1.71 candidate, three
 handcrafted carrier distances, held-out nearest-prototype fixtures, and six rejection
 paths. Its perfect synthetic controls do not establish learner generalization or

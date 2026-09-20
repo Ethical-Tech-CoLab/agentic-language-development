@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.202 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.203 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -1214,8 +1214,10 @@ Implemented:
   mismatched provider; exact detached qualification passed 10 focused tests and the
   full 1,808-test repository gate;
 - a general fail-closed registration-packet compiler requiring eleven exact binding
-  classes; the inventory binds all eleven fields for E00, E01 and E02,
-  leaves 160 experiment-specific bindings open, and emits E00, E01 and E02 registration hashes;
+  classes; its generic inventory binds all eleven fields for E00, E01 and E02,
+  leaves 160 generic experiment-specific bindings open, and emits their registration hashes;
+  E03's blinded pilot and full control qualification instead use separate verified
+  stage-specific repository packets and simulated pre-run commitments;
 - grammar-valid bitmap, translation-tolerant canvas, and graded tone distances with
   deterministic nearest-prototype evaluation; this is a handcrafted E13 diagnostic,
   not evidence that a learner learned the metric or generalized to novel forms; an

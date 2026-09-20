@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const outputPath = 'reports/research/manuscript-readiness-audit.json';
@@ -15,6 +16,9 @@ const claims = JSON.parse(read('reports/research/data-claim-manifest.json')) as 
   totals: Record<string, number>;
 };
 const registration = JSON.parse(read('reports/research/registration-packet-readiness.json')) as {
+  schemaVersion: number;
+  inventoryScope: string;
+  excludedStageSpecificRegistrationPaths: string[];
   totals: Record<string, number>;
 };
 const campaign = JSON.parse(read('protocols/campaign-readiness-review.v1.json')) as {
@@ -84,8 +88,17 @@ if (
 ) {
   throw new Error('external prerequisite or upstream-enforcement status changed');
 }
-if (registration.totals['compiledPackets'] !== 3 || registration.totals['unresolvedBindings'] !== 160) {
-  throw new Error('registration readiness counts changed');
+if (registration.schemaVersion !== 2 ||
+    registration.inventoryScope !== 'generic-eleven-binding-compiler-only' ||
+    registration.excludedStageSpecificRegistrationPaths.join('|') !==
+      'protocols/e03-pilot-registration.v3.json|protocols/e03-full-registration.v1.json' ||
+    registration.totals['compiledPackets'] !== 3 || registration.totals['unresolvedBindings'] !== 160) {
+  throw new Error('generic registration inventory counts changed');
+}
+for (const [stage, version] of [['pilot', 'v3'], ['full', 'v1']] as const) {
+  execFileSync(process.execPath,
+    ['scripts/activate-e03-registration.mjs', stage, '--check', version],
+    { stdio: 'pipe' });
 }
 if (claims.totals['researchIncluded'] !== 0 || claims.totals['confirmedPublicChainAnchors'] !== 0) {
   throw new Error('pre-results manuscript status contradicts the eligible-data or public-chain inventory');
@@ -102,15 +115,16 @@ exact(
     'backlog acceptance criteria verified.',
 );
 exact(`resolves ${String(claims.totals['bundles'])} exported bundles across ${String(claims.totals['collections'])} collections`);
-exact(`leaves ${String(registration.totals['unresolvedBindings'])} experiment-specific bindings open, and emits E00, E01 and E02 registration hashes`);
+exact(`leaves ${String(registration.totals['unresolvedBindings'])} generic experiment-specific bindings open, and emits their registration hashes`);
+exact('E03\'s blinded pilot and full control qualification instead use separate verified stage-specific repository packets and simulated pre-run commitments');
 exact(`external-dependency ledger is ready at ${String(external.satisfiedCount)}/${String(external.requiredCount)}`);
 exact('No empirical results are reported in this version.');
 
 const result = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   classification: 'manuscript-readiness-audit',
   researchFinding: false,
-  capturedAt: '2026-09-15',
+  capturedAt: '2026-09-20',
   decision: 'needs-revision',
   manuscript: {
     path: 'RESEARCH.md',
@@ -129,8 +143,9 @@ const result = {
     notStartedExperiments: notStartedExperimentRows.length,
     researchIncludedBundles: claims.totals['researchIncluded'],
     confirmedPublicChainAnchors: claims.totals['confirmedPublicChainAnchors'],
-    compiledRegistrationPackets: registration.totals['compiledPackets'],
-    unresolvedRegistrationBindings: registration.totals['unresolvedBindings'],
+    compiledGenericRegistrationPackets: registration.totals['compiledPackets'],
+    unresolvedGenericRegistrationBindings: registration.totals['unresolvedBindings'],
+    verifiedE03StageRegistrations: 2,
     campaignBlockers: campaign.blockingFindings.length,
     externalPrerequisitesSatisfied: external.satisfiedCount,
     externalPrerequisitesRequired: external.requiredCount,
@@ -144,7 +159,7 @@ const result = {
     allDefinedReferencesCited: true,
     requiredIndependentHumanRecheck: true,
   },
-  boundary: 'This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, repository registration, prospective simulated commitments, independent human review, or venue acceptance.'
+  boundary: 'This audit checks current-draft consistency and historical E03 stage registrations. It does not supply missing E10+ experiment data, E10+ repository registrations, prospective E10+ simulated commitments, independent human review, or venue acceptance.'
 };
 const rendered = `${JSON.stringify(result, null, 2)}\n`;
 if (process.argv.includes('--write')) {

@@ -1,6 +1,6 @@
 # Canonical Registration Packet Readiness
 
-Status: B11 in progress; E00, E01 and E02 compile and 16 experiment packets remain incomplete
+Status: B11 in progress; E00–E02 compile generically, E03 registered stage-specifically, and E10+ packets remain incomplete
 Evidence class: outcome-blind design inventory  
 Machine inventory: `reports/research/registration-packet-readiness.json`
 
@@ -45,24 +45,28 @@ execution commit in its receipt, and uses another fresh seed domain. V4 complete
 five slots but failed when the Rust auditor accepted receipt-class relabeling. V5
 prospectively binds that repair and another fresh seed domain.
 
-## Current inventory
+## Generic compiler inventory and separate E03 registrations
 
 All 19 protocol cards resolve and receive stable card hashes. E00, E01 and E02 each
-resolve all eleven bindings and reproduce their canonical hashes. The remaining ten
-bindings for each of 16 experiments are deliberately unresolved: 160 unresolved
-bindings in total.
+resolve all eleven bindings and reproduce their canonical hashes in this generic
+compiler. The remaining ten generic bindings for each of 16 cards are deliberately
+unresolved: 160 generic bindings in total. This count does not mean E03 lacks a
+registration: its blinded pilot v3 and full control qualification v1 used separate
+stage-specific repository packets and simulated pre-run commitments. Their exact
+bindings are verified by `pnpm run audit:registration-e03-current`, now part of
+the standard registration-readiness gate.
 Therefore:
 
-- registration-ready packet drafts: 3/19;
-- compiled canonical packets: 3/19;
-- pre-registration hashes emitted by this inventory: 3 (E00, E01 and E02); and
+- generic registration-ready packet drafts: 3/19;
+- generic compiled canonical packets: 3/19;
+- pre-registration hashes emitted by this generic inventory: 3 (E00, E01 and E02); and
 - immutable repository registration and matching simulated pre-run commitments:
   E00 v2 and v4 are complete failed attempts; v3 is superseded without outcomes;
   v5 passed all five registered slots. E01 v1 passed its bounded category gate and
-  v2 passed the explicit signed corpus. E02 v1 and v2, with their matching simulated
-  activations, remain preserved as failed attempts. The E02 v2 packet still
-  hash-reproduces as a historical compiled artifact, but its identifiers and seeds
-  are consumed; a fresh v3 packet is required after the all-method deadline repair.
+  v2 passed the explicit signed corpus. E02 v1 and v2 remain preserved as failed
+  attempts; the fresh v3 packet completed its bounded software qualification.
+  E03's separate pilot v3 and full v1 packets completed their registered stages.
+  None of these packets admits an E10+ behavioral study.
 
 Existing generic scenario, analysis, seed-allocation, environment, and evidence
 artifacts are inputs to future experiment-specific bindings. They are not silently

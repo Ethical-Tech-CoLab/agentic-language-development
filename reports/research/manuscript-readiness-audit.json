@@ -1,18 +1,18 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "classification": "manuscript-readiness-audit",
   "researchFinding": false,
-  "capturedAt": "2026-09-15",
+  "capturedAt": "2026-09-20",
   "decision": "needs-revision",
   "manuscript": {
     "path": "RESEARCH.md",
-    "sha256": "707d778797da62534b352fd42c731e3f6da115a121fd151ec7e4bb211b8da398",
-    "version": "0.1.202",
+    "sha256": "d02d8ed2d714430c4db9934f209ed1cebc6e2da9d43fc87a2daff9689a2d9b3d",
+    "version": "0.1.203",
     "majorSections": 25,
     "referencesDefined": 50,
     "referencesCited": 50,
     "renderedPages": 51,
-    "renderedSourceSha256": "707d778797da62534b352fd42c731e3f6da115a121fd151ec7e4bb211b8da398",
+    "renderedSourceSha256": "d02d8ed2d714430c4db9934f209ed1cebc6e2da9d43fc87a2daff9689a2d9b3d",
     "backlogCriteria": 261,
     "checkedBacklogCriteria": 257
   },
@@ -21,8 +21,9 @@
     "notStartedExperiments": 15,
     "researchIncludedBundles": 0,
     "confirmedPublicChainAnchors": 0,
-    "compiledRegistrationPackets": 3,
-    "unresolvedRegistrationBindings": 160,
+    "compiledGenericRegistrationPackets": 3,
+    "unresolvedGenericRegistrationBindings": 160,
+    "verifiedE03StageRegistrations": 2,
     "campaignBlockers": 8,
     "externalPrerequisitesSatisfied": 1,
     "externalPrerequisitesRequired": 1,
@@ -36,5 +37,5 @@
     "allDefinedReferencesCited": true,
     "requiredIndependentHumanRecheck": true
   },
-  "boundary": "This audit checks current-draft consistency and readiness claims. It does not supply missing experiment data, repository registration, prospective simulated commitments, independent human review, or venue acceptance."
+  "boundary": "This audit checks current-draft consistency and historical E03 stage registrations. It does not supply missing E10+ experiment data, E10+ repository registrations, prospective E10+ simulated commitments, independent human review, or venue acceptance."
 }

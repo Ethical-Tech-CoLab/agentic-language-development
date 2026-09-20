@@ -123,10 +123,11 @@ const packets = source.cards.map((card) => {
 });
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   classification: 'registration-readiness-inventory',
+  inventoryScope: 'generic-eleven-binding-compiler-only',
   researchFinding: false,
-  capturedAt: '2026-09-13',
+  capturedAt: '2026-09-20',
   compilerVersion: 1,
   sourceCardsSha256: hash(cardsBytes),
   requiredBindings: REGISTRATION_BINDING_KEYS,
@@ -138,6 +139,10 @@ const report = {
     compiledPackets: packets.filter((packet) => packet.preRegistrationHash !== null).length,
   },
   packets,
+  excludedStageSpecificRegistrationPaths: [
+    'protocols/e03-pilot-registration.v3.json',
+    'protocols/e03-full-registration.v1.json',
+  ],
   activationStepsNotRepresentedAsBindings: [
     'authentic governance approval',
     'immutable repository registration of the compiled packet hash',
@@ -147,7 +152,7 @@ const report = {
     'third-party registration or archival timestamp',
     'independent methods and reproduction review',
   ],
-  boundary: 'This inventory is deliberately incomplete. It is not a repository registration, a completed simulated commitment, governance approval, or permission to collect outcomes.',
+  boundary: 'This generic-compiler inventory does not count E03 stage-specific packets, which have separate registration audits. Its incomplete E10+ bindings are not repository registrations, simulated commitments, or permission to collect outcomes.',
 };
 
 if (report.totals.registrationReady !== 3 || report.totals.compiledPackets !== 3) throw new Error('inventory must contain exactly the verified E00, E01 and E02 packets');
@@ -161,4 +166,4 @@ if (process.argv.includes('--write')) {
 } else if (readFileSync(outputPath, 'utf8') !== rendered) {
   throw new Error('registration-packet readiness inventory is stale; run pnpm run build:registration-readiness');
 }
-console.log(`registration readiness valid: ${String(report.totals.experiments)} experiments, ${String(report.totals.compiledPackets)} compiled, ${String(report.totals.unresolvedBindings)} unresolved bindings`);
+console.log(`generic registration readiness valid: ${String(report.totals.experiments)} cards, ${String(report.totals.compiledPackets)} compiled, ${String(report.totals.unresolvedBindings)} unresolved bindings; E03 stage packets audited separately`);
