@@ -160,6 +160,14 @@ component streams is explicitly diagnostic-only, while the selector consumes the
 component counts. The Normal model is an assumption for power planning, not a claim
 about observed distributions, and fixture execution is never a campaign power result.
 
+The retained
+[`confirmatory-power-simulator-qualification-receipt.json`](../reports/research/confirmatory-power-simulator-qualification-receipt.json)
+binds the exact v0.1.198 implementation, source artifacts, fixture seed, and output
+digest. Its 112 candidate/component proportions were checked against independent R
+4.6.1 noncentral-t and exact-binomial power values; the maximum deviation was 2.55
+Monte Carlo standard errors under a prespecified five-standard-error gate. The
+receipt records no eligible pilot, selected N, campaign result, or resource approval.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

@@ -124,7 +124,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.198 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.199 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1036,7 +1036,16 @@ candidate, member, and component. Their independent joint-family outcome is a
 diagnostic only; selection uses the component-wise dependence-robust bounds above.
 The Normal assumption is a declared parametric power model, not evidence about the
 future outcome distribution. Software fixtures do not supply a pilot, power result,
-selected sample size, resource authorization, or empirical finding.</p>
+selected sample size, resource authorization, or empirical finding.
+The retained
+<a href="reports/research/confirmatory-power-simulator-qualification-receipt.json">software-qualification receipt</a>
+binds the exact v0.1.198 implementation and output digest. Across eight candidates
+and fourteen components, all 112 deterministic Monte Carlo proportions were within
+the prespecified five-standard-error gate of independent R 4.6.1 t/noncentral-t or
+exact-binomial reference power; the maximum deviation was 2.55 standard errors.
+These synthetic fixture values qualify implementation behavior only. No eligible
+pilot was supplied and the receipt records no campaign power, selected N, resource
+authorization, study outcome, or scientific disposition.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends

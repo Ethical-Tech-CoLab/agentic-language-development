@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.198 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.199 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -960,6 +960,15 @@ diagnostic only; selection uses the component-wise dependence-robust bounds abov
 The Normal assumption is a declared parametric power model, not evidence about the
 future outcome distribution. Software fixtures do not supply a pilot, power result,
 selected sample size, resource authorization, or empirical finding.
+The retained
+[software-qualification receipt](reports/research/confirmatory-power-simulator-qualification-receipt.json)
+binds the exact v0.1.198 implementation and output digest. Across eight candidates
+and fourteen components, all 112 deterministic Monte Carlo proportions were within
+the prespecified five-standard-error gate of independent R 4.6.1 t/noncentral-t or
+exact-binomial reference power; the maximum deviation was 2.55 standard errors.
+These synthetic fixture values qualify implementation behavior only. No eligible
+pilot was supplied and the receipt records no campaign power, selected N, resource
+authorization, study outcome, or scientific disposition.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
