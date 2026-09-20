@@ -8,6 +8,7 @@ import type {
   Clock,
   LedgerEventDraft,
   RunConfig,
+  SignerRegistry,
 } from '@ald/types';
 
 import { openEvidenceDatabase } from '../../src/database.js';
@@ -140,7 +141,7 @@ export interface TestWriter {
   close(): void;
   database: ReturnType<typeof openEvidenceDatabase>['database'];
   path: string;
-  signers: InMemorySignerRegistry;
+  signers: SignerRegistry;
 }
 
 export async function createWriter(options: {
@@ -148,7 +149,7 @@ export async function createWriter(options: {
   path?: string;
   clock?: Clock;
   register?: boolean;
-  signers?: InMemorySignerRegistry;
+  signers?: SignerRegistry;
 } = {}): Promise<TestWriter> {
   const config = options.config ?? runConfig();
   const path = options.path ?? (await temporaryDatabasePath());

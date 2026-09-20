@@ -15,6 +15,10 @@ rejection and signer death. The current Compose lifecycle does **not** use this
 component. It has no Fort-backed per-domain key provisioning, authenticated
 selected-topology deployment, separate Baby twins, or separate per-role ledger
 writers; it is not a B12 qualification receipt.
+An evidence-writer integration test also commits a real signed turn through
+six separate signer processes, then kills one signer and confirms the next
+turn leaves no partial ledger or channel event. This tests the interface and
+transaction boundary in a disposable fixture, not the selected deployment.
 
 ## Prerequisites
 
