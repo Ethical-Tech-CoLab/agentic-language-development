@@ -843,6 +843,8 @@ export interface RunSummary {
   configurationHash: Sha256Hash;
   preRegistrationHash?: Sha256Hash;
   registrationClass?: RegistrationClass;
+  /** Operational refusal after an uncertain write or incomplete signed turn. */
+  operationalQuarantine?: 'incomplete-turn-evidence' | 'evidence-write-uncertain';
 }
 
 export interface TurnResult {

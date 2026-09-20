@@ -17,6 +17,7 @@ export type RuntimeErrorCode =
   | 'anchor-policy'
   | 'unsupported-condition'
   | 'signer-registry-mismatch'
+  | 'incomplete-turn-evidence'
   | 'adapter-failure';
 
 export class NurseryRuntimeError extends Error {
@@ -39,6 +40,14 @@ export class UnknownRunError extends NurseryRuntimeError {
 export class DuplicateRunError extends NurseryRuntimeError {
   constructor(readonly runId: string) {
     super('duplicate-run', `run "${runId}" is already loaded in this runtime`);
+  }
+}
+
+/** A signed channel or affect event has no completed turn record after recovery. */
+export class IncompleteTurnEvidenceError extends NurseryRuntimeError {
+  constructor(readonly runId: string, readonly turns: readonly number[]) {
+    super('incomplete-turn-evidence',
+      `run "${runId}" has channel or affect evidence without completed turn records at turns ${turns.join(', ')}; this attempt cannot resume`);
   }
 }
 

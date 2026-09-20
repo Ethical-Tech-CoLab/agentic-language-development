@@ -47,7 +47,7 @@ import { hashCanonical, hashCarrierMark, SeededPrng } from '@ald/hashing';
 import { validateLedgerEventDraft } from '@ald/evidence';
 
 import { AffectProtocol, type DerivedAffectResult } from './affect.js';
-import type { GatewayEvidencePort } from './evidence-port.js';
+import { EvidenceWriteUncertainError, type GatewayEvidencePort } from './evidence-port.js';
 import {
   carrierModule,
   DEFAULT_MAX_SYMBOL_REPEATS,
@@ -185,6 +185,8 @@ function isDerangement(permutation: readonly number[]): boolean {
 }
 
 export class SymbolGatewayImpl implements SymbolGateway {
+  private readonly evidence: GatewayEvidencePort;
+  private evidenceWriteUncertain = false;
   private readonly module: CarrierModule;
   private readonly maxSymbolRepeats: number;
   private readonly constant: PublicArtifact;
@@ -210,9 +212,22 @@ export class SymbolGatewayImpl implements SymbolGateway {
 
   constructor(
     readonly runContext: GatewayRunContext,
-    private readonly evidence: GatewayEvidencePort,
+    evidence: GatewayEvidencePort,
     options: SymbolGatewayOptions = {},
   ) {
+    this.evidence = {
+      commitTurn: (request) => this.guardEvidenceCall(() => evidence.commitTurn(request)),
+      commitRejection: (request) =>
+        this.guardEvidenceCall(() => evidence.commitRejection(request)),
+      commitControlArtifact: (request) =>
+        this.guardEvidenceCall(() => evidence.commitControlArtifact(request)),
+      appendLedgerEvent: (request) =>
+        this.guardEvidenceCall(() => evidence.appendLedgerEvent(request)),
+      appendInterventionEvent: (request) =>
+        this.guardEvidenceCall(() => evidence.appendInterventionEvent(request)),
+      appendAffectEvent: (request) =>
+        this.guardEvidenceCall(() => evidence.appendAffectEvent(request)),
+    };
     this.assertInventory(runContext.symbolInventory);
     this.module = carrierModule(runContext.config.carrierMode);
     this.maxSymbolRepeats = options.maxSymbolRepeats ?? DEFAULT_MAX_SYMBOL_REPEATS;
@@ -230,6 +245,26 @@ export class SymbolGatewayImpl implements SymbolGateway {
     this.constant = this.resolveConstantArtifact(options.constantArtifact);
   }
 
+  private assertEvidenceOperational(): void {
+    if (this.evidenceWriteUncertain) throw new EvidenceWriteUncertainError();
+  }
+
+  private async guardEvidenceCall<T>(call: () => Promise<T>): Promise<T> {
+    this.assertEvidenceOperational();
+    try {
+      return await call();
+    } catch (error) {
+      if (error instanceof EvidenceWriteUncertainError) {
+        this.evidenceWriteUncertain = true;
+      }
+      throw error;
+    }
+  }
+
+  isEvidenceWriteQuarantined(): boolean {
+    return this.evidenceWriteUncertain;
+  }
+
   // -------------------------------------------------------------------------
   // Sender path (SPEC §8.1 steps 2-5)
   // -------------------------------------------------------------------------
@@ -238,6 +273,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     turn: GatewayTurnContext,
     envelope: TurnProposalEnvelope,
   ): Promise<GatewaySubmitResult> {
+    this.assertEvidenceOperational();
     const condition = this.condition;
     if (condition === 'oracle') {
       throw new OracleRequiresControlArtifactError();
@@ -356,6 +392,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     turn: GatewayTurnContext,
     artifact: AgentActionProposal['publicArtifact'],
   ): Promise<{ channelEvent: ChannelEvent; delivery: DeliveredChannelArtifact }> {
+    this.assertEvidenceOperational();
     if (this.condition !== 'oracle') {
       throw new ControlArtifactNotPermittedError(this.condition);
     }
@@ -396,6 +433,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     recipient: BabyRole,
     envelope: LedgerDraftEnvelope,
   ): Promise<LedgerEvent> {
+    this.assertEvidenceOperational();
     const raw: unknown = envelope;
     if (!isPlainObject(raw) || !hasExactKeys(raw, ['channelEventHash', 'privateLedgerDraft'])) {
       return this.rejectInterpretation(turn, recipient, 'invalid-envelope', raw);
@@ -472,6 +510,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     turn: GatewayTurnContext,
     sender: BabyRole,
   ): Promise<GatewayRejection> {
+    this.assertEvidenceOperational();
     const rejection = await this.commitRejection(turn.turn, sender, 'timeout', null);
     return { kind: 'rejected', ...rejection };
   }
@@ -490,6 +529,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
    * construct an `AffectProtocol` directly with its own clock.
    */
   get affect(): AffectProtocol {
+    this.assertEvidenceOperational();
     this.affectProtocol ??= new AffectProtocol({
       runContext: this.runContext,
       evidence: this.evidence,

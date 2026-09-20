@@ -41,12 +41,17 @@
  *   decision that makes the `invalid` disposition permanent. Both rely on the
  *   seal's evidence half being written exactly once per run (`#sealEvidence`),
  *   which is also what makes `seal` itself idempotent on re-entry.
+ * - An uncertain Gateway evidence write is not retried in place. The Gateway
+ *   quarantines its port, and recovery refuses a signed channel or affect
+ *   event with no completed turn record. Attempt-level accounting still owns
+ *   failures whose write never committed.
  */
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
   babyIdForRole,
+  AffectEventSchema,
   AuditLedgerEntrySchema,
   CLAIM_BOUNDARY_STATEMENTS,
   ChannelEventSchema,
@@ -165,6 +170,7 @@ import {
   type TrackLearnerContract,
 } from '@ald/learners';
 import {
+  EvidenceWriteUncertainError,
   InterpretationRejectedError,
   SymbolGatewayImpl,
   TurnDeadlineExceededError,
@@ -176,6 +182,7 @@ import {
   AnchorPolicyError,
   ConfigurationMismatchError,
   DuplicateRunError,
+  IncompleteTurnEvidenceError,
   RunConfigurationError,
   RunStateError,
   SignerRegistryMismatchError,
@@ -480,6 +487,8 @@ interface RunRuntime {
     method: Exclude<AdapterMethod, 'updatePolicy'>;
     quarantineFailed: boolean;
   } | null;
+  /** Signed channel/affect evidence with no completed turn record. */
+  incompleteEvidenceTurns: number[] | null;
 }
 
 export interface RunToCompletionOptions {
@@ -757,6 +766,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       causalPrediction,
       pendingRepair: null,
       deadlineQuarantine: null,
+      incompleteEvidenceTurns: null,
     };
     this.#runs.set(runId, run);
 
@@ -791,6 +801,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async step(runId: string): Promise<TurnResult> {
     const run = this.#requireRun(runId);
+    if (run.gateway.isEvidenceWriteQuarantined()) {
+      throw new EvidenceWriteUncertainError();
+    }
+    if (run.incompleteEvidenceTurns !== null) {
+      throw new IncompleteTurnEvidenceError(runId, run.incompleteEvidenceTurns);
+    }
     run.lifecycle.assertAcceptsTurn();
 
     const pendingRepair = run.pendingRepair;
@@ -1576,6 +1592,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async resume(runId: string, intervention: Intervention): Promise<RunSummary> {
     const run = this.#requireRun(runId);
+    if (run.gateway.isEvidenceWriteQuarantined()) {
+      throw new EvidenceWriteUncertainError();
+    }
+    if (run.incompleteEvidenceTurns !== null) {
+      throw new IncompleteTurnEvidenceError(runId, run.incompleteEvidenceTurns);
+    }
     if (run.deadlineQuarantine !== null) {
       throw new RunConfigurationError([{
         path: 'resume',
@@ -2063,6 +2085,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async recover(runId: string): Promise<RunSummary> {
     const existing = this.#runs.get(runId);
     const run = existing ?? this.#reconstruct(runId);
+    if (run.gateway.isEvidenceWriteQuarantined()) {
+      throw new EvidenceWriteUncertainError();
+    }
+    if (run.incompleteEvidenceTurns !== null) {
+      throw new IncompleteTurnEvidenceError(runId, run.incompleteEvidenceTurns);
+    }
 
     const mismatches = this.#signerMismatches(run);
     if (mismatches.length > 0) {
@@ -2085,6 +2113,17 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     const records = this.#turnRecords(run);
+    const recordedTurns = new Set(records.map((record) => record.turn));
+    const orphanedTurns = [
+      ...run.writer.readEvents(runId, 'channel').map((event) =>
+        ChannelEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
+      ...run.writer.readEvents(runId, 'affect').map((event) =>
+        AffectEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
+    ].filter((turn) => !recordedTurns.has(turn));
+    if (orphanedTurns.length > 0) {
+      run.incompleteEvidenceTurns = [...new Set(orphanedTurns)].sort((a, b) => a - b);
+      throw new IncompleteTurnEvidenceError(runId, run.incompleteEvidenceTurns);
+    }
     const last = records.at(-1);
     run.turn = last === undefined ? 0 : last.turn + 1;
     run.trainingCount = records.filter(
@@ -3719,6 +3758,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       causalPrediction: this.#causalPredictionProvider(config),
       pendingRepair,
       deadlineQuarantine,
+      incompleteEvidenceTurns: null,
     };
     this.#runs.set(runId, run);
     return run;
@@ -4241,6 +4281,11 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: run.configurationHash,
       preRegistrationHash: run.config.preRegistrationHash,
       registrationClass: run.config.registrationClass ?? 'qualification',
+      ...(run.gateway.isEvidenceWriteQuarantined()
+        ? { operationalQuarantine: 'evidence-write-uncertain' as const }
+        : run.incompleteEvidenceTurns === null
+          ? {}
+          : { operationalQuarantine: 'incomplete-turn-evidence' as const }),
     };
   }
 }

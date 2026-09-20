@@ -10,3 +10,13 @@ export type GatewayEvidencePort = Pick<
   | 'appendInterventionEvent'
   | 'appendAffectEvent'
 >;
+
+/** The request may have committed, but the writer's response was not confirmed. */
+export class EvidenceWriteUncertainError extends Error {
+  readonly code = 'evidence-write-uncertain';
+
+  constructor() {
+    super('evidence write outcome is uncertain; this run cannot continue');
+    this.name = 'EvidenceWriteUncertainError';
+  }
+}

@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.213"
+    "version": "0.1.214"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1123,6 +1123,9 @@
     },
     "packages/orchestrator/__tests__/recovery.test.ts": {
       "selectors": [
+        "quarantines a committed channel event with no completed turn record",
+        "quarantines a committed affect event with no completed turn record",
+        "refuses another turn before adapter work when the Gateway is quarantined",
         "reconstructs the run at the last committed turn and continues",
         "marks the run forked-invalid and preserves both artifacts"
       ],

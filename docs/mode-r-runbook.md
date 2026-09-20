@@ -18,6 +18,12 @@ The Gateway now accepts a six-method write-only evidence port at its type bounda
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
 writer, so this is not yet a process or runtime capability boundary.
+The Gateway now quarantines itself when that port reports a possibly committed
+write with no confirmed response. A running Controller refuses another turn
+before adapter work, and restart recovery refuses channel or affect events that
+lack a completed turn record. These checks do not replace a durable pre-send
+journal or qualify a remote Evidence Writer: an uncertain request with no
+committed event still needs attempt-level failure accounting before any restart.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

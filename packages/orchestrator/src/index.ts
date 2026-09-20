@@ -69,6 +69,7 @@ export {
   AnchorPolicyError,
   ConfigurationMismatchError,
   DuplicateRunError,
+  IncompleteTurnEvidenceError,
   NurseryRuntimeError,
   RunConfigurationError,
   RunStateError,

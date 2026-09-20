@@ -70,6 +70,7 @@ export {
   type GatewayRejection,
   type SymbolGatewayOptions,
 } from './symbol-gateway.js';
+export { EvidenceWriteUncertainError } from './evidence-port.js';
 export type { GatewayEvidencePort } from './evidence-port.js';
 export {
   assertEveryCarrierHasVectors,

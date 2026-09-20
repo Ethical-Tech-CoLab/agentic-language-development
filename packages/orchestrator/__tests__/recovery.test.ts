@@ -2,11 +2,12 @@
  * ALD-027: crash recovery and integrity-fork handling (SPEC §7.3,
  * LEDGER-INTEGRITY-DESIGN.md §15).
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SqliteEvidenceWriter } from '@ald/evidence';
-import { StepClock } from '@ald/gateway';
+import { EvidenceWriteUncertainError, StepClock } from '@ald/gateway';
 import { parseCanonicalJson, validateChain } from '@ald/hashing';
 import type { LedgerEventDraft } from '@ald/types';
+import { IncompleteTurnEvidenceError } from '../src/index.js';
 
 import {
   createHarness,
@@ -57,6 +58,101 @@ describe('crash recovery (ALD-027)', () => {
     await harness?.cleanup();
     harness = undefined;
     restarted = undefined;
+  });
+
+  it('quarantines a committed channel event with no completed turn record', async () => {
+    harness = await createHarness();
+    const runId = 'run-incomplete-turn-recovery';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'incomplete-turn-recovery',
+      maxTurnsPerRun: 4,
+      evaluationTurns: 4,
+    })));
+    const committed = await harness.runtime.gatewayFor(runId).submitProposal(
+      { turn: 0, sender: 'baby-a', recipient: 'baby-b' },
+      {
+        proposal: { kind: 'emit_symbols', publicArtifact: { symbols: ['S01'] } },
+        privateLedgerDraft: {
+          eventType: 'intention.recorded',
+          contentSchema: 'agent-native-ledger',
+          subjectId: 'subject-incomplete',
+          content: { artifactRef: 'artifact-incomplete' },
+          blindingNonce: 'nonce-incomplete',
+          evidenceRefs: [],
+        },
+      },
+    );
+    expect(committed.kind).toBe('accepted');
+    expect(harness.runtime.writerFor(runId).readEvents(runId, 'channel')).toHaveLength(1);
+    expect(harness.runtime.turnRecords(runId)).toHaveLength(0);
+
+    restarted = harness.restart();
+    await expect(restarted.runtime.recover(runId)).rejects.toBeInstanceOf(
+      IncompleteTurnEvidenceError,
+    );
+    expect(restarted.runtime.getRun(runId)?.operationalQuarantine)
+      .toBe('incomplete-turn-evidence');
+    await expect(restarted.runtime.step(runId)).rejects.toBeInstanceOf(
+      IncompleteTurnEvidenceError,
+    );
+    expect(restarted.runtime.writerFor(runId).readEvents(runId, 'channel')).toHaveLength(1);
+    expect(restarted.runtime.turnRecords(runId)).toHaveLength(0);
+  });
+
+  it('quarantines a committed affect event with no completed turn record', async () => {
+    harness = await createHarness();
+    const runId = 'run-incomplete-affect-recovery';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'incomplete-affect-recovery',
+      maxTurnsPerRun: 4,
+      evaluationTurns: 4,
+    })));
+    await harness.runtime.writerFor(runId).appendAffectEvent({
+      runId,
+      turn: 0,
+      windowId: 'window-incomplete',
+      sender: 'baby-a',
+      displayId: 'A3',
+      affectMode: 'declared',
+      deliveredAt: new Date(0).toISOString(),
+    });
+    expect(harness.runtime.turnRecords(runId)).toHaveLength(0);
+
+    restarted = harness.restart();
+    await expect(restarted.runtime.recover(runId)).rejects.toBeInstanceOf(
+      IncompleteTurnEvidenceError,
+    );
+    expect(restarted.runtime.getRun(runId)?.operationalQuarantine)
+      .toBe('incomplete-turn-evidence');
+    await expect(restarted.runtime.step(runId)).rejects.toBeInstanceOf(
+      IncompleteTurnEvidenceError,
+    );
+    expect(restarted.runtime.writerFor(runId).readEvents(runId, 'affect')).toHaveLength(1);
+  });
+
+  it('refuses another turn before adapter work when the Gateway is quarantined', async () => {
+    harness = await createHarness();
+    const runId = 'run-uncertain-live-write';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'uncertain-live-write',
+      maxTurnsPerRun: 4,
+      evaluationTurns: 4,
+    })));
+    vi.spyOn(harness.runtime.gatewayFor(runId), 'isEvidenceWriteQuarantined')
+      .mockReturnValue(true);
+    expect(harness.runtime.getRun(runId)?.operationalQuarantine)
+      .toBe('evidence-write-uncertain');
+    await expect(harness.runtime.step(runId)).rejects.toBeInstanceOf(
+      EvidenceWriteUncertainError,
+    );
+    expect(harness.runtime.turnRecords(runId)).toHaveLength(0);
+    expect(harness.runtime.writerFor(runId).readEvents(runId, 'channel')).toHaveLength(0);
   });
 
   it('reconstructs the run at the last committed turn and continues', async () => {
