@@ -168,6 +168,16 @@ digest. Its 112 candidate/component proportions were checked against independent
 Monte Carlo standard errors under a prespecified five-standard-error gate. The
 receipt records no eligible pilot, selected N, campaign result, or resource approval.
 
+The prospective
+[`confirmatory-pilot-reduction.v1.json`](../protocols/confirmatory-pilot-reduction.v1.json)
+binds a pure numerical reducer for seven complete twenty-slot pilot corpora. It
+requires exact ordered component keys and distinct registration, run, seed, and
+evidence identities, then computes each sample SD and a one-sided 95% upper SD
+using the R-checked `sqrt(19 / qchisq(0.05, 19))` factor. Its summary is not an
+admitted pilot: original bundle verification, packet ancestry, registered metric
+derivation, and a separate admission receipt remain mandatory. Pilot means present
+in the v2 numerical contract are prohibited inputs to design changes.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

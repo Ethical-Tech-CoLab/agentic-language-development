@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.200 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.201 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -140,6 +140,12 @@ within the prespecified five-standard-error gate (maximum 2.55). This is bounded
 software qualification only; its fixture counts are not campaign measurements.
 The audit also verifies that the receipt's tree, version, and source bytes belong
 to its named execution commit; later audit-code changes do not rewrite that receipt.
+The prospective [pilot-reduction policy](protocols/confirmatory-pilot-reduction.v1.json)
+now has a deterministic reducer for seven complete twenty-slot corpora. It checks
+ordered, distinct run/seed/evidence identities and computes conservative component
+SDs using an R-checked one-sided chi-square factor. This is numerical preparation
+only: no original pilot bundles or registration ancestry have been admitted, and
+the v2 summary's means may not be used to tune the frozen design.
 
 The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02

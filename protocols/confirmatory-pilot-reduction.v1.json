@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-pilot-numerical-reduction",
+  "frozenAt": "2026-09-20",
+  "status": "reducer implemented; no registered confirmatory pilot data or admission receipt exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {
+      "path": "protocols/confirmatory-design-readiness.v1.json",
+      "sha256": "sha256:3ccade150b19abfc8e6b0ae137b4cb31ce7d3683eca2a05b148a7bb6cfa66219"
+    },
+    {
+      "path": "protocols/confirmatory-power-model-amendment.v1.json",
+      "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"
+    },
+    {
+      "path": "protocols/confirmatory-practical-margins.v1.json",
+      "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"
+    },
+    {
+      "path": "packages/analysis/src/confirmatory-pilot.ts",
+      "sha256": "sha256:761c477b369e3924a5b2479030d5188054c8f79ca113a7a1323978f17cc088fc"
+    }
+  ],
+  "analysisVersion": "confirmatory-pilot-reduction/v1",
+  "summaryVersion": "confirmatory-pilot-summary/v2",
+  "experiments": ["E11", "E13", "E15", "E16", "E20", "E30", "E32"],
+  "primarySlotsPerExperiment": 20,
+  "totalRequiredPrimarySlots": 140,
+  "components": 14,
+  "admissionInputs": "Each experiment requires its own prospectively registered packet hash and twenty ordered, globally unique run IDs, seeds, and original evidence digests. The numerical reducer checks shape and uniqueness only; a separate admission audit must verify exact packet ancestry and original bundles before selection.",
+  "upperDispersion": {
+    "method": "normal-chi-square-one-sided-95-n20-v1",
+    "degreesOfFreedom": 19,
+    "lowerChiSquareQuantile": 10.117013063859044,
+    "oneSidedConfidence": 0.95,
+    "factor": 1.3704103976822324,
+    "rule": "sample SD times sqrt(19 / qchisq(0.05, 19)); zero sample SD remains zero",
+    "assumption": "Independent seed-level observations are approximately Normal for this dispersion bound. It is a parametric planning bound, not a distribution-free guarantee."
+  },
+  "h5Rule": "Both H5 components are per-seed binary indicators; non-binary values are rejected. The power simulator later uses exact-binomial design probabilities, not this pilot SD.",
+  "designUse": "Only conservative dispersion and validity risk may feed the frozen power model. Although the existing v2 summary contract contains sample means for audit consistency, those means must not influence margins, alternatives, model choice, outcomes, stopping rules, or seed selection; they must not be presented as pilot effects before design lock.",
+  "failureRule": "Any missing, invalid, duplicated, reused, or unverified original slot blocks admission. This reducer deliberately refuses partial sets rather than turning a failure into a completed summary. Preserve failed original attempts separately.",
+  "qualificationRule": "Qualify the exact implementation with synthetic records, independent R 4.6.1 SD and chi-square references, and negative controls. Qualification is software-only and cannot provide real pilot evidence.",
+  "claimBoundary": "This policy and numerical reducer are not original evidence verification, an admitted blinded pilot, campaign power, selected sample size, resource authorization, a scientific finding, independent review, or a publication result."
+}

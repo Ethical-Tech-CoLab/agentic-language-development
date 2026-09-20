@@ -195,6 +195,15 @@ export {
   type ConfirmatoryPilotSummary,
 } from './confirmatory-pilot.js';
 export {
+  CONFIRMATORY_PILOT_REDUCTION_VERSION,
+  CONFIRMATORY_PILOT_UPPER_SD_FACTOR,
+  CONFIRMATORY_PILOT_UPPER_SD_METHOD,
+  reduceConfirmatoryPilot,
+  type ConfirmatoryPilotExperimentInput,
+  type ConfirmatoryPilotReduction,
+  type ConfirmatoryPilotSlotObservation,
+} from './confirmatory-pilot-reduction.js';
+export {
   E03_REGISTRATION_CLAIM_BOUNDARY,
   E03_REGISTRATION_COMPILER_VERSION,
   compileE03Registration,

@@ -16,6 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { build } from 'esbuild';
 import { marked } from 'marked';
+import sharp from 'sharp';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const bookDir = join(root, 'book');
@@ -172,6 +173,7 @@ function printableHtml(markdown) {
       border: 0;
       border-top: 0.5pt solid #c6d1df;
     }
+    hr:has(+ h2) { display: none; }
     img { max-width: 100%; break-inside: avoid; }
   </style>
 </head>
@@ -253,14 +255,27 @@ async function renderPages() {
       'pages',
       '--scale',
       '1.5',
-      '--quality',
-      '82',
+      '--format',
+      'png',
     ],
     { stdio: 'inherit' },
   );
   if (result.status !== 0) {
     throw new Error(`Page rasterization failed with exit ${result.status}`);
   }
+  const manifestPath = join(pagesDir, 'manifest.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  for (const source of manifest.pages) {
+    const filename = source.split('/').at(-1);
+    if (!filename?.endsWith('.png')) throw new Error(`Unexpected rendered page ${source}`);
+    const pngPath = join(pagesDir, filename);
+    await sharp(pngPath).webp({ lossless: true }).toFile(
+      join(pagesDir, filename.replace(/\.png$/u, '.webp')),
+    );
+    await rm(pngPath);
+  }
+  manifest.pages = manifest.pages.map((source) => source.replace(/\.png$/u, '.webp'));
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 }
 
 function normalizeLineEndings(text) {

@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.200 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.201 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -972,6 +972,15 @@ authorization, study outcome, or scientific disposition.
 The receipt auditor additionally checks its named commit's tree, package version,
 and each qualified source artifact against Git history, preserving the original
 receipt while allowing later audit-code corrections.
+The prospective [pilot-reduction policy](protocols/confirmatory-pilot-reduction.v1.json)
+adds a deterministic numerical reducer for all seven distinct twenty-slot pilot
+corpora. It requires globally unique run IDs, seeds, and evidence digests and
+computes the Normal-assumption one-sided 95% upper SD with factor 1.37041039768,
+independently checked against R. The reducer does not verify the original bundles,
+packet ancestry, or registered metric derivation; its output expressly prohibits
+selection admission. The existing v2 summary retains means for audit consistency,
+but those pilot means must not influence the frozen design before lock. No pilot
+data have been supplied to this reducer.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded

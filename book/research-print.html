@@ -114,6 +114,7 @@
       border: 0;
       border-top: 0.5pt solid #c6d1df;
     }
+    hr:has(+ h2) { display: none; }
     img { max-width: 100%; break-inside: avoid; }
   </style>
 </head>
@@ -124,7 +125,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.200 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.201 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1048,7 +1049,16 @@ pilot was supplied and the receipt records no campaign power, selected N, resour
 authorization, study outcome, or scientific disposition.
 The receipt auditor additionally checks its named commit&#39;s tree, package version,
 and each qualified source artifact against Git history, preserving the original
-receipt while allowing later audit-code corrections.</p>
+receipt while allowing later audit-code corrections.
+The prospective <a href="protocols/confirmatory-pilot-reduction.v1.json">pilot-reduction policy</a>
+adds a deterministic numerical reducer for all seven distinct twenty-slot pilot
+corpora. It requires globally unique run IDs, seeds, and evidence digests and
+computes the Normal-assumption one-sided 95% upper SD with factor 1.37041039768,
+independently checked against R. The reducer does not verify the original bundles,
+packet ancestry, or registered metric derivation; its output expressly prohibits
+selection admission. The existing v2 summary retains means for audit consistency,
+but those pilot means must not influence the frozen design before lock. No pilot
+data have been supplied to this reducer.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
