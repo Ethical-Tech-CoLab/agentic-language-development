@@ -9,6 +9,12 @@ no-network container with only its own private socket bind. The Fort-file path
 still holds its signer registry in Nursery. Neither path clears V06/B12 or supports the full
 Research-Grade claim sentence in `SPECIFICATION.md` §5.2 for E10+ studies.
 
+The [prospective selected authority graph](../protocols/mode-r-authority-graph.v1.json)
+names the remaining Baby, adapter, Gateway, Evidence Writer, signer, Controller,
+checkpoint, and offline-verifier processes and their permitted calls. Its status
+is `design-locked-not-implemented`; the current Compose file is intentionally a
+negative reference for the selected B12 gate.
+
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified
 signatures, and a six-domain registry adapter compatible with the existing

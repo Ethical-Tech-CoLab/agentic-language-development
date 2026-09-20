@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-selected-mode-r-authority-graph",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "b12Closed": false,
+  "amendmentRule": "Any changed process, network, key-domain, call, or threat-model binding needs a new prospective graph version before selected-topology qualification. This graph by itself is not execution evidence.",
+  "sourcePolicy": [
+    "SPECIFICATION.md §4.1–4.4",
+    "SPECIFICATION.md §5.2",
+    "SPECIFICATION.md §10.3"
+  ],
+  "interpretation": "A Baby's append-only ledger client is a role-scoped logical capability carried in the validated Gateway envelope. It is not a direct network route to a ledger writer. The Gateway relays role-private observations from the Controller without granting the Controller an action-validation override.",
+  "processes": {
+    "baby-a": { "zone": "baby-a", "networks": ["baby-a-gateway"], "keyDomains": [], "writableState": ["baby-a-private"] },
+    "baby-b": { "zone": "baby-b", "networks": ["baby-b-gateway"], "keyDomains": [], "writableState": ["baby-b-private"] },
+    "model-adapter-a": { "zone": "baby-a", "networks": [], "keyDomains": [], "writableState": ["baby-a-model"] },
+    "model-adapter-b": { "zone": "baby-b", "networks": [], "keyDomains": [], "writableState": ["baby-b-model"] },
+    "gateway": { "zone": "mediation", "networks": ["baby-a-gateway", "baby-b-gateway", "control-plane"], "keyDomains": [], "writableState": [] },
+    "evidence-writer": { "zone": "evidence", "networks": ["control-plane"], "keyDomains": [], "writableState": ["sqlite-event-store"] },
+    "ledger-writer-a": { "zone": "signer-a", "networks": [], "keyDomains": ["baby-a-ledger"], "writableState": [] },
+    "ledger-writer-b": { "zone": "signer-b", "networks": [], "keyDomains": ["baby-b-ledger"], "writableState": [] },
+    "channel-signer": { "zone": "signer-channel", "networks": [], "keyDomains": ["channel"], "writableState": [] },
+    "affect-signer": { "zone": "signer-affect", "networks": [], "keyDomains": ["affect"], "writableState": [] },
+    "audit-signer": { "zone": "signer-audit", "networks": [], "keyDomains": ["audit"], "writableState": [] },
+    "witness-signer": { "zone": "signer-witness", "networks": [], "keyDomains": ["witness"], "writableState": [] },
+    "controller-scenario": { "zone": "control", "networks": ["control-plane"], "keyDomains": [], "writableState": [] },
+    "checkpoint": { "zone": "evidence", "networks": ["control-plane"], "keyDomains": [], "writableState": [] },
+    "simulated-anchor": { "zone": "evidence", "networks": ["control-plane"], "keyDomains": [], "writableState": [] },
+    "offline-verifier": { "zone": "offline", "networks": [], "keyDomains": [], "writableState": [] }
+  },
+  "calls": [
+    { "from": "baby-a", "to": "gateway", "transport": "role-authenticated-network", "purpose": "proposal-and-private-ledger-draft" },
+    { "from": "baby-b", "to": "gateway", "transport": "role-authenticated-network", "purpose": "proposal-and-private-ledger-draft" },
+    { "from": "gateway", "to": "baby-a", "transport": "role-private-network", "purpose": "observation-and-validated-delivery" },
+    { "from": "gateway", "to": "baby-b", "transport": "role-private-network", "purpose": "observation-and-validated-delivery" },
+    { "from": "baby-a", "to": "model-adapter-a", "transport": "private-unix-socket", "purpose": "own-policy-inference-and-update" },
+    { "from": "baby-b", "to": "model-adapter-b", "transport": "private-unix-socket", "purpose": "own-policy-inference-and-update" },
+    { "from": "controller-scenario", "to": "gateway", "transport": "authenticated-control-plane", "purpose": "registered-run-configuration-and-role-private-observation" },
+    { "from": "gateway", "to": "evidence-writer", "transport": "authenticated-control-plane", "purpose": "validated-atomic-commit-and-rejection" },
+    { "from": "evidence-writer", "to": "ledger-writer-a", "transport": "private-unix-socket", "purpose": "canonical-baby-a-ledger-hash-only" },
+    { "from": "evidence-writer", "to": "ledger-writer-b", "transport": "private-unix-socket", "purpose": "canonical-baby-b-ledger-hash-only" },
+    { "from": "evidence-writer", "to": "channel-signer", "transport": "private-unix-socket", "purpose": "canonical-channel-hash-only" },
+    { "from": "evidence-writer", "to": "affect-signer", "transport": "private-unix-socket", "purpose": "canonical-affect-hash-only" },
+    { "from": "evidence-writer", "to": "audit-signer", "transport": "private-unix-socket", "purpose": "canonical-audit-hash-only" },
+    { "from": "checkpoint", "to": "witness-signer", "transport": "private-unix-socket", "purpose": "canonical-checkpoint-hash-only" },
+    { "from": "checkpoint", "to": "evidence-writer", "transport": "authenticated-control-plane", "purpose": "read-consistent-tree-sizes-and-append-checkpoint" },
+    { "from": "simulated-anchor", "to": "evidence-writer", "transport": "authenticated-control-plane", "purpose": "read-checkpoint-hash-and-append-local-receipt" },
+    { "from": "controller-scenario", "to": "evidence-writer", "transport": "authenticated-control-plane", "purpose": "append-run-and-intervention-records-only" }
+  ],
+  "gate": {
+    "selectedImplementationQualified": false,
+    "mustVerify": [
+      "distinct-live-process-and-container-identities",
+      "gateway-only-baby-network-routes",
+      "role-private-observation-and-delivery",
+      "no-controller-validation-override",
+      "one-key-domain-per-signer-process",
+      "no-key-or-cross-role-state-in-baby-mounts",
+      "single-transaction-owner-and-append-only-events",
+      "dynamic-fault-and-late-callback-containment",
+      "detector-positive-and-negative-bounds",
+      "complete-lifecycle-and-independent-bundle-audit",
+      "measured-selected-topology-resource-envelope"
+    ]
+  }
+}
