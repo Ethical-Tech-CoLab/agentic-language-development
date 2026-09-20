@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.195 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.196 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -115,6 +115,11 @@ or confirmatory-reused pilot data.
 The prospective [power-model amendment](protocols/confirmatory-power-model-amendment.v1.json)
 uses dependence-robust member-power bounds and a reserve-adequacy gate; an
 independence-only joint simulation is diagnostic and cannot choose a smaller N.
+The [power-confidence amendment](protocols/confirmatory-power-confidence-amendment.v1.json)
+applies one-sided `0.05/9` confidence allocation to the nine simulated member-power
+bounds before their union lower bound is formed. The executable selector now rejects
+the former joint-only authority, incomplete pilots, incomplete candidate rows, and
+unadjusted member confidence.
 The prospective [validity-reserve amendment](protocols/confirmatory-validity-reserve-amendment.v1.json)
 replaces the inadequate fixed 10% rule for the seven confirmatory experiment pilots
 with the smallest candidate-specific reserve count meeting 0.95 adequacy. Its clean

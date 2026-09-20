@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-power-confidence-amendment",
+  "frozenAt": "2026-09-20",
+  "status": "confidence-rule-frozen; no pilot input, simulation receipt, or selected seed count exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:ad3c17609e462d67b769092b455aaaf762368e91ce139ad586643d687a6c1051"}
+  ],
+  "reason": "Nine separately estimated member-power lower bounds must have simultaneous coverage before their complements are combined. Unadjusted 95% intervals do not provide a 95% family confidence guarantee.",
+  "familyConfidence": 0.95,
+  "members": 9,
+  "memberOneSidedAlpha": 0.005555555555555556,
+  "memberWilsonEquivalentTwoSidedConfidence": 0.9888888888888889,
+  "rule": "For each candidate and member, calculate the Wilson lower endpoint using one-sided alpha 0.05/9 (equivalently a two-sided confidence level of 1 - 2*0.05/9). Combine the nine simultaneous lower bounds as max(0, 1 - sum(1 - lower_member)).",
+  "minimumDependenceRobustFamilyLowerPower": 0.90,
+  "jointDiagnosticConfidence": 0.95,
+  "jointDiagnosticAuthority": false,
+  "failureRule": "If no candidate passes the simultaneous dependence-robust bound and reserve gate, no confirmatory prefix may be selected. Do not revert to unadjusted member intervals or diagnostic joint power.",
+  "claimBoundary": "This prospectively corrects simulation-confidence accounting. It is not a pilot, power result, selected N, resource authorization, scientific finding, independent review, or publication result."
+}

@@ -1,46 +1,82 @@
 import { describe, expect, it } from 'vitest';
 
-import { selectConfirmatoryFamilySeeds } from '../src/confirmatory-selection.js';
+import {
+  CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS,
+  CONFIRMATORY_MEMBER_IDS,
+  CONFIRMATORY_MONTE_CARLO_REPETITIONS,
+  CONFIRMATORY_PILOT_COMPONENTS,
+  CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS,
+  CONFIRMATORY_PILOT_SUMMARY_VERSION,
+  confirmatoryPilotInvalidProbabilityUpper95,
+  minimumConfirmatoryReserveSeeds,
+  selectConfirmatoryFamilySeeds,
+  type ConfirmatoryFamilySimulationRow,
+  type ConfirmatoryPilotSummary,
+} from '../src/index.js';
 
-const rule = { candidatePrimarySeeds: [75, 100, 125],
-  monteCarloRepetitionsPerCandidate: 30_000, minimumLower95JointPower: 0.90 };
-const row = (primarySeeds: number, completeJointDecisionSuccesses: number) => ({
-  primarySeeds, repetitions: 30_000, completeJointDecisionSuccesses,
-});
+function pilot(): ConfirmatoryPilotSummary {
+  return {
+    schemaVersion: 2, analysisVersion: CONFIRMATORY_PILOT_SUMMARY_VERSION,
+    stage: 'blinded-pilot', status: 'complete',
+    experiments: Object.entries(CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS).map(([id, memberIds]) => ({
+      id: id as keyof typeof CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS,
+      memberIds: [...memberIds], status: 'complete', plannedSlots: 20,
+      attemptedSlots: 20, completedSlots: 20, validSlots: 20, invalidSlots: 0,
+      invalidProbabilityUpper95: confirmatoryPilotInvalidProbabilityUpper95(0, 20),
+      invalidProbabilityUpper95Method: 'wilson-score-one-sided-95',
+    })),
+    members: Object.entries(CONFIRMATORY_PILOT_COMPONENTS).map(([id, components]) => ({
+      id: id as keyof typeof CONFIRMATORY_PILOT_COMPONENTS,
+      components: components.map((component) => ({ id: component, n: 20, mean: 0,
+        sampleSd: 0.2, upper95Sd: 0.25, upper95SdMethod: 'test-fixture' })),
+    })), researchFinding: false, scientificDisposition: 'not-tested',
+    confirmatoryEstimateUse: false, selectionEligible: true,
+  };
+}
 
-describe('prospective complete-family seed selection', () => {
-  it('chooses the smallest shared candidate whose joint Wilson lower bound passes', () => {
-    const selection = selectConfirmatoryFamilySeeds([
-      row(75, 21_000), row(100, 27_300), row(125, 28_000),
-    ], rule);
-    expect(selection.selectedPrimarySeeds).toBe(100);
-    expect(selection.requiresProspectiveAmendment).toBe(false);
+function rows(firstPassingIndex: number | null): ConfirmatoryFamilySimulationRow[] {
+  return CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS.map((primarySeeds, index) => {
+    const successes = firstPassingIndex !== null && index >= firstPassingIndex ? 30_000 : 27_000;
+    return {
+      primarySeeds, repetitions: CONFIRMATORY_MONTE_CARLO_REPETITIONS,
+      memberCompleteDecisionSuccesses: Object.fromEntries(
+        CONFIRMATORY_MEMBER_IDS.map((id) => [id, successes]),
+      ) as Record<(typeof CONFIRMATORY_MEMBER_IDS)[number], number>,
+      diagnosticJointDecisionSuccesses: 30_000,
+    };
+  });
+}
+
+describe('dependence-robust confirmatory-family seed selection', () => {
+  it('chooses the first robust candidate and returns corrected experiment reserves', () => {
+    const selection = selectConfirmatoryFamilySeeds(rows(1), pilot());
+    expect(selection.selectedPrimarySeeds).toBe(50);
+    expect(selection.selectedReserveSeedsByExperiment?.E11).toBe(12);
+    expect(selection.rows[0]?.diagnosticJointLower95Power).toBeGreaterThan(0.99);
+    expect(selection.rows[0]?.passesDependenceRobustPower).toBe(false);
+    expect(selection.resourceAuthorizationRequired).toBe(true);
     expect(selection.researchFinding).toBe(false);
   });
 
-  it('does not substitute a member-specific minimum for underpowered joint power', () => {
-    const selection = selectConfirmatoryFamilySeeds([
-      row(75, 21_000), row(100, 26_700), row(125, 28_000),
-    ], rule);
-    expect(selection.rows[1]?.lower95JointPower).toBeLessThan(0.90);
-    expect(selection.selectedPrimarySeeds).toBe(125);
-  });
-
-  it('blocks registration when no candidate passes', () => {
-    const selection = selectConfirmatoryFamilySeeds([
-      row(75, 20_000), row(100, 23_000), row(125, 26_000),
-    ], rule);
+  it('blocks selection when no dependence-robust candidate passes', () => {
+    const selection = selectConfirmatoryFamilySeeds(rows(null), pilot());
     expect(selection.selectedPrimarySeeds).toBeNull();
-    expect(selection.requiresProspectiveAmendment).toBe(true);
+    expect(selection.requiresPowerOrDesignAmendment).toBe(true);
   });
 
-  it('rejects incomplete, out-of-order, or fabricated repetition counts', () => {
-    expect(() => selectConfirmatoryFamilySeeds([row(75, 30_000)], rule)).toThrow(/complete ordered/u);
-    expect(() => selectConfirmatoryFamilySeeds([
-      row(100, 27_300), row(75, 21_000), row(125, 28_000),
-    ], rule)).toThrow(/complete ordered/u);
-    expect(() => selectConfirmatoryFamilySeeds([
-      row(75, 21_000), { ...row(100, 27_300), repetitions: 10_000 }, row(125, 28_000),
-    ], rule)).toThrow(/complete ordered/u);
+  it('rejects an incomplete pilot and incomplete member simulations', () => {
+    const incomplete = pilot();
+    (incomplete as { status: string; selectionEligible: boolean }).status = 'incomplete';
+    (incomplete as { status: string; selectionEligible: boolean }).selectionEligible = false;
+    expect(() => selectConfirmatoryFamilySeeds(rows(1), incomplete)).toThrow(/status contradicts|eligible/u);
+    const malformed = rows(1);
+    delete (malformed[0]!.memberCompleteDecisionSuccesses as Partial<Record<string, number>>).H8;
+    expect(() => selectConfirmatoryFamilySeeds(malformed, pilot())).toThrow(/complete ordered/u);
+  });
+
+  it('reproduces the prospective minimal reserve endpoints', () => {
+    const invalidUpper = confirmatoryPilotInvalidProbabilityUpper95(0, 20);
+    expect(minimumConfirmatoryReserveSeeds(25, invalidUpper).reserveSeeds).toBe(7);
+    expect(minimumConfirmatoryReserveSeeds(300, invalidUpper).reserveSeeds).toBe(52);
   });
 });

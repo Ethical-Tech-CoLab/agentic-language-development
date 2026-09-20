@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.195 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.196 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -893,15 +893,18 @@ Seed and resource allocation is frozen in
 [`protocols/seed-and-resource-allocation.v1.json`](protocols/seed-and-resource-allocation.v1.json).
 Qualification, blinded-pilot, confirmatory, and replication stages use disjoint
 SHA-256 domains; paired conditions share scenario seeds but not learner, Gateway, or
-analysis seeds. A 20-slot blinded pilot selects the smallest shared candidate N whose
-complete nine-member Holm-family simulation has a lower 95% Monte Carlo power bound
-of at least 0.90. N=100 is a planning value, not a selected result.
+analysis seeds. The original allocation described selection from the complete
+nine-member joint simulation. That simulation remains a useful diagnostic, but the
+prospective dependence and confidence amendments now require the first shared
+candidate whose simultaneously bounded member-power union reaches 0.90 and whose
+experiment-specific validity reserves reach 0.95. N=100 is a planning value, not a
+selected result.
 The prospective [selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
-resolves the earlier "largest required count" wording: member-specific minima
-are diagnostics, while the first shared candidate passing the complete joint
-nine-member lower-bound gate controls registration. The selector is implemented
-for complete simulation rows; no member-specific pilot inputs or 30,000-run
-joint-family receipt yet exist.
+resolves the earlier "largest required count" wording: member-specific minima remain
+diagnostics. The current executable reducer requires every eligible pilot, all nine
+member success counts at all eight candidates, the simultaneous confidence rule, and
+corrected reserves; the complete joint count is reported without selection authority.
+No pilot inputs or 30,000-repetition receipt yet exist.
 
 The prospective [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
 separately audits the inputs needed before those pilots. All nine estimands now have an
@@ -931,6 +934,11 @@ does not let an independence assumption control selection. It freezes outcome-bl
 design alternatives, component screening at 0.05/9, a dependence-robust union lower
 bound across nine member-power bounds, and a 0.95 reserve-adequacy gate. The ordinary
 joint simulation remains diagnostic and cannot select a smaller N.
+The prospective [power-confidence amendment](protocols/confirmatory-power-confidence-amendment.v1.json)
+allocates one-sided alpha `0.05/9` to each simulated member-power lower bound before
+the union calculation. This supplies simultaneous family confidence instead of
+mistaking nine unadjusted intervals for a 95% family guarantee. The executable
+selector is bound to this corrected rule and still supplies no pilot or power result.
 The prospective [validity-reserve amendment](protocols/confirmatory-validity-reserve-amendment.v1.json)
 then corrects the original fixed 10% rule for the seven scoped experiments. For each
 candidate and experiment it chooses the smallest reserve count whose binomial

@@ -94,12 +94,13 @@ reject when the true standardized effect is 0.40. N=100 raises that estimate to
 
 These are sensitivity values, not universal seed counts. Each frozen raw-scale
 margin and blinded-pilot upper variance must feed a member-specific complete
-test, including composites and missingness. The prospective
+test, including composites and missingness. The original
 [selection clarification](../protocols/confirmatory-family-selection-amendment.v1.json)
-requires the first ordered shared candidate whose 30,000-repetition complete
-nine-member joint-decision Wilson lower bound reaches 0.90. Member-specific
-minima are diagnostics, not a replacement for that joint gate. Neither the
-ten-seed floor nor the historical 75-seed convention is evidence of power.
+resolved candidate ordering but gave the complete nine-member joint simulation
+selection authority. The later dependence and confidence amendments supersede that
+authority: the first ordered shared candidate must pass the simultaneously bounded
+member-power union and corrected reserve gate. The joint result remains diagnostic.
+Neither the ten-seed floor nor the historical 75-seed convention is evidence of power.
 
 The machine-checked
 [`confirmatory-design-readiness.v1.json`](../protocols/confirmatory-design-readiness.v1.json)
@@ -127,6 +128,14 @@ therefore makes selection dependence-robust: each complete member must pass at t
 0.05/9 screen, Wilson lower member-power bounds feed a union lower bound for all
 nine decisions, and reserve adequacy must be at least 0.95 at the pilot upper invalid
 rate. A modeled joint result is reported diagnostically but cannot select a smaller N.
+
+Nine separately computed 95% member intervals do not provide 95% simultaneous
+coverage. The prospective
+[`confirmatory-power-confidence-amendment.v1.json`](../protocols/confirmatory-power-confidence-amendment.v1.json)
+therefore allocates one-sided alpha `0.05/9` to every member-power lower bound
+(equivalent two-sided Wilson confidence `0.988888...`) before the union bound is
+formed. The executable reducer requires every candidate and member count, rejects an
+ineligible pilot, and cannot promote the ordinary joint diagnostic.
 
 The prospective
 [`confirmatory-validity-reserve-amendment.v1.json`](../protocols/confirmatory-validity-reserve-amendment.v1.json)

@@ -143,9 +143,16 @@ export {
   type E03PilotSlotTally,
 } from './e03-pilot.js';
 export {
+  CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS,
+  CONFIRMATORY_MEMBER_IDS,
+  CONFIRMATORY_MINIMUM_FAMILY_POWER_LOWER95,
+  CONFIRMATORY_MINIMUM_RESERVE_ADEQUACY,
+  CONFIRMATORY_MEMBER_POWER_WILSON_CONFIDENCE,
+  CONFIRMATORY_MONTE_CARLO_REPETITIONS,
+  binomialInvalidAtMostProbability,
+  minimumConfirmatoryReserveSeeds,
   selectConfirmatoryFamilySeeds,
   type ConfirmatoryFamilySelection,
-  type ConfirmatoryFamilySelectionRule,
   type ConfirmatoryFamilySimulationRow,
 } from './confirmatory-selection.js';
 export {
