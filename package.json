@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.209",
+  "version": "0.1.210",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -11,6 +11,7 @@
     "test:ci": "vitest run --reporter=default --reporter=junit --outputFile.junit=artifacts/vitest-junit.xml",
     "test:mode-r": "node scripts/run-mode-r-smoke.mjs",
     "test:mode-r-study": "node scripts/run-mode-r-study.mjs",
+    "audit:mode-r-signer-reference:live": "node scripts/audit-mode-r-signer-reference.mjs --audit",
     "test:watch": "vitest",
     "design:e03": "pnpm run build && node scripts/run-e03-design-simulation.mjs",
     "registration:e03": "pnpm run build && node scripts/build-e03-registration.mjs",
