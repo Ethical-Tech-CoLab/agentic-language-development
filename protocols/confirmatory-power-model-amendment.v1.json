@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-power-model-amendment",
+  "frozenAt": "2026-09-19",
+  "status": "design-model-frozen; no pilot input, simulation receipt, or selected seed count exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:ad3c17609e462d67b769092b455aaaf762368e91ce139ad586643d687a6c1051"},
+    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"},
+    {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
+  ],
+  "reason": "Fourteen component tests include paired composites whose dependence is not identified by twenty-slot marginal upper-SD summaries. Treating them as independent could overstate complete-family power.",
+  "familywiseAlpha": 0.05,
+  "members": 9,
+  "components": 14,
+  "candidatePrimarySeeds": [25,50,75,100,125,150,200,300],
+  "monteCarloRepetitionsPerCandidate": 30000,
+  "componentScreeningAlpha": 0.005555555555555556,
+  "componentScreeningRule": "Every component of a member must pass its registered one-sided test and practical direction at alpha 0.05/9. A member's p-value remains the maximum component p-value for the registered global-Holm analysis.",
+  "selectionAuthority": "For each candidate, calculate a two-sided 95% Wilson lower power bound for each of the nine complete member decisions. The dependence-robust family lower bound is max(0, 1 - sum over members of (1 - member lower bound)). The smallest candidate with family lower bound at least 0.90 and reserve-adequacy probability at least 0.95 is selected.",
+  "jointSimulationRole": "Also report the 30000-repetition joint-family result under the registered dependence model as a diagnostic. It cannot select a smaller N than the dependence-robust family lower bound permits.",
+  "pilotDispersionRule": "Use each component's one-sided 95% upper SD from the complete twenty-slot pilot. H5's binary components use their registered design probabilities rather than a Gaussian SD approximation.",
+  "reserveRule": "For each experiment, use the pilot's one-sided 95% upper invalid-run probability and require at least 0.95 probability of obtaining N valid runs within N plus ceil(0.10*N) registered attempts. Failure requires a prospective reserve-allocation amendment; it cannot be ignored or repaired after outcomes.",
+  "designAlternatives": [
+    {"id":"H1","components":{"disabled":0.10,"constant":0.10,"random":0.10,"shuffled":0.10},"nullBoundary":0.05,"test":"one-sided seed-level t, greater"},
+    {"id":"H2","components":{"target-action-probability":0.10},"nullBoundary":0.05,"test":"one-sided seed-level t, greater"},
+    {"id":"H3","components":{"held-out-success":0.10},"nullBoundary":0.05,"test":"one-sided seed-level t, greater"},
+    {"id":"H4","components":{"brier-improvement":0.04},"nullBoundary":0.02,"test":"one-sided seed-level t, greater"},
+    {"id":"H5","components":{"stable-acquisition":0.75,"first-stable-turn-ratio":0.75},"nullBoundary":{"stableAcquisition":0.50,"firstStableTurnRatio":1.25},"test":"one-sided exact binomial; second component counts seed ratios above 1.25"},
+    {"id":"H6a","components":{"restricted-mean-turns":-0.20},"nullBoundary":-0.10,"test":"one-sided seed-level t, less"},
+    {"id":"H6b","components":{"excess-cmi-bits":0.0},"nullBoundary":0.02,"test":"one-sided seed-level t, less"},
+    {"id":"H7","components":{"replacement-degradation":0.10},"nullBoundary":0.05,"test":"one-sided seed-level t, greater"},
+    {"id":"H8","components":{"informativeness-bits":0.10,"normalized-ambiguity":0.20},"nullBoundary":{"informativenessDecreaseBits":0.05,"normalizedAmbiguityIncrease":0.10},"test":"two one-sided seed-level t tests, greater, combined by maximum p-value"}
+  ],
+  "failureRule": "If no candidate passes either the dependence-robust power gate or reserve-adequacy gate, no confirmatory prefix may be registered. Margins cannot be widened and pilot data cannot be discarded; redesign or resources must be amended prospectively.",
+  "claimBoundary": "This freezes a conservative future power model. It is not a pilot, power simulation, selected sample size, resource authorization, study outcome, independent review, or publication result."
+}

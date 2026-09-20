@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.192 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.193 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -920,6 +920,13 @@ The `confirmatory-pilot-summary/v1` contract fixes fourteen component summaries
 across the nine members. Only a complete twenty-valid-slot pilot with a finite
 one-sided upper dispersion bound for every component is selection-eligible;
 partial or invalid pilots remain retained but cannot feed the joint selector.
+Because twenty-slot marginal dispersions do not identify dependence among the
+fourteen component tests, the prospective
+[power-model amendment](protocols/confirmatory-power-model-amendment.v1.json)
+does not let an independence assumption control selection. It freezes outcome-blind
+design alternatives, component screening at 0.05/9, a dependence-robust union lower
+bound across nine member-power bounds, and a 0.95 reserve-adequacy gate. The ordinary
+joint simulation remains diagnostic and cannot select a smaller N.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded

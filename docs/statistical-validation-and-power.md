@@ -117,6 +117,14 @@ complete states; requires twenty valid slots and a conservative upper dispersion
 bound for every component; and refuses selection eligibility for partial, invalid,
 or confirmatory-reused pilot data.
 
+Marginal pilot SDs do not identify dependence among the fourteen component tests.
+The prospective
+[`confirmatory-power-model-amendment.v1.json`](../protocols/confirmatory-power-model-amendment.v1.json)
+therefore makes selection dependence-robust: each complete member must pass at the
+0.05/9 screen, Wilson lower member-power bounds feed a union lower bound for all
+nine decisions, and reserve adequacy must be at least 0.95 at the pilot upper invalid
+rate. A modeled joint result is reported diagnostically but cannot select a smaller N.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

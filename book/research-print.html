@@ -115,7 +115,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.192 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.193 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -988,7 +988,14 @@ the inventory cannot yield a sample size or research finding.
 The <code>confirmatory-pilot-summary/v1</code> contract fixes fourteen component summaries
 across the nine members. Only a complete twenty-valid-slot pilot with a finite
 one-sided upper dispersion bound for every component is selection-eligible;
-partial or invalid pilots remain retained but cannot feed the joint selector.</p>
+partial or invalid pilots remain retained but cannot feed the joint selector.
+Because twenty-slot marginal dispersions do not identify dependence among the
+fourteen component tests, the prospective
+<a href="protocols/confirmatory-power-model-amendment.v1.json">power-model amendment</a>
+does not let an independence assumption control selection. It freezes outcome-blind
+design alternatives, component screening at 0.05/9, a dependence-robust union lower
+bound across nine member-power bounds, and a 0.95 reserve-adequacy gate. The ordinary
+joint simulation remains diagnostic and cannot select a smaller N.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
