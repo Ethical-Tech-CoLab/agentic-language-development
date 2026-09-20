@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.194 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.195 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -931,6 +931,12 @@ does not let an independence assumption control selection. It freezes outcome-bl
 design alternatives, component screening at 0.05/9, a dependence-robust union lower
 bound across nine member-power bounds, and a 0.95 reserve-adequacy gate. The ordinary
 joint simulation remains diagnostic and cannot select a smaller N.
+The prospective [validity-reserve amendment](protocols/confirmatory-validity-reserve-amendment.v1.json)
+then corrects the original fixed 10% rule for the seven scoped experiments. For each
+candidate and experiment it chooses the smallest reserve count whose binomial
+probability of obtaining N valid runs is at least 0.95 at the pilot upper invalid
+rate. Under the clean 0/20 reference, this requires 7 reserves at N=25 through 52
+at N=300. The table is a design calculation; it authorizes no run or resource.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
@@ -938,8 +944,10 @@ numeric-rule table after its separate twenty-slot control pilot; E03 neither spe
 nor contributes confirmatory-family alpha.
 
 A fresh 260-turn recurrent-carrier benchmark took 37.58 seconds and wrote 25.53 MB.
-At that measured uncompressed rate, maximum materialized pools including replication
-project to 9,171 bundles, 9.37 million turns, 857.3 GiB, and 376.4 single-core hours.
+Under the original fixed-reserve allocation, maximum materialized pools including
+replication projected to 9,171 bundles, 9.37 million turns, 857.3 GiB, and 376.4
+single-core hours. The corrected confirmatory reserve formula can raise those maxima;
+its exact campaign total remains unset until N and experiment-level allocations are selected.
 The present local ceiling is 72 CPU-hours, 25 GiB, one frozen-model process, and zero
 external spend. It supports bounded qualification and pilots, not the full campaign;
 confirmatory registration requires an exact selected prefix and an approved execution

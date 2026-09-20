@@ -107,7 +107,16 @@ function printableHtml(markdown) {
     h4 { margin: 0.18in 0 0.06in; font-size: 10.5pt; }
     p, li { orphans: 3; widows: 3; }
     p { margin: 0 0 0.11in; }
-    ul, ol { margin: 0.04in 0 0.13in; padding-left: 0.24in; }
+    p:has(+ ul), p:has(+ ol) {
+      break-after: avoid-page;
+      page-break-after: avoid;
+    }
+    ul, ol {
+      margin: 0.04in 0 0.13in;
+      padding-left: 0.24in;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
     li {
       margin: 0 0 0.035in;
       break-inside: avoid;

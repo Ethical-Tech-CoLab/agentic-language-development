@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-validity-reserve-amendment",
+  "frozenAt": "2026-09-20",
+  "status": "design-formula-frozen; no pilot input, selected N, seed prefix, or resource authorization exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
+  ],
+  "scope": {
+    "stage": "confirmatory",
+    "experiments": ["E11","E13","E15","E16","E20","E30","E32"],
+    "members": ["H1","H2","H3","H4","H5","H6a","H6b","H7","H8"]
+  },
+  "reason": "The original ceil(0.10*N) rule cannot attain 0.95 reserve adequacy at the one-sided 95% invalid-run upper bound implied even by a complete zero-invalid twenty-slot pilot.",
+  "supersedesForScope": "protocols/seed-and-resource-allocation.v1.json sampleSizeRule.reserves",
+  "pilotEligibility": "Every scoped experiment must complete all twenty registered primary pilot slots with zero invalid slots before family selection. Any invalid or incomplete pilot remains retained and blocks selection.",
+  "invalidProbabilityBound": {
+    "method": "wilson-score-one-sided-95",
+    "equivalentTwoSidedConfidence": 0.90,
+    "zeroInvalidOfTwentyUpper": 0.11915783736096401
+  },
+  "adequacyModel": {
+    "assumption": "independent Bernoulli validity attempts within each experiment at that experiment's pilot upper invalid-run probability",
+    "minimumProbability": 0.95,
+    "probability": "P[Binomial(N + R, p_upper) <= R]",
+    "selection": "For each candidate N and experiment, choose the smallest integer R >= 0 whose adequacy probability is at least 0.95. The shared candidate is reserve-eligible only if all seven experiment rows pass."
+  },
+  "candidatePrimarySeeds": [25,50,75,100,125,150,200,300],
+  "zeroInvalidTwentySlotReference": [
+    {"primarySeeds":25,"reserveSeeds":7,"adequacy":0.9692294629808037,"previousReserveSeeds":6,"previousAdequacy":0.9316287385457128},
+    {"primarySeeds":50,"reserveSeeds":12,"adequacy":0.9707994472996041,"previousReserveSeeds":11,"previousAdequacy":0.9457130135123999},
+    {"primarySeeds":75,"reserveSeeds":16,"adequacy":0.960346174498754,"previousReserveSeeds":15,"previousAdequacy":0.9342194705637025},
+    {"primarySeeds":100,"reserveSeeds":20,"adequacy":0.954289248884509,"previousReserveSeeds":19,"previousAdequacy":0.9290343269261384},
+    {"primarySeeds":125,"reserveSeeds":24,"adequacy":0.9510517952726766,"previousReserveSeeds":23,"previousAdequacy":0.9272697674652398},
+    {"primarySeeds":150,"reserveSeeds":29,"adequacy":0.9658266715098686,"previousReserveSeeds":28,"previousAdequacy":0.9496169760337207},
+    {"primarySeeds":200,"reserveSeeds":37,"adequacy":0.9643395192485001,"previousReserveSeeds":36,"previousAdequacy":0.9498519906093122},
+    {"primarySeeds":300,"reserveSeeds":52,"adequacy":0.9554097158562206,"previousReserveSeeds":51,"previousAdequacy":0.9412922951995001}
+  ],
+  "resourceGate": "This amendment does not authorize the additional runs. Before registration, the selected experiment-by-condition primary and reserve pools must fit a measured prospective CPU, storage, memory, and retention allocation inside the zero-external-spend profile.",
+  "failureRule": "If the selected reserve pools do not fit an authorized measured envelope, the affected confirmatory collection remains blocked. Do not lower the 0.95 gate, treat zero observed invalid runs as zero risk, or omit registered reserves.",
+  "claimBoundary": "This is an outcome-blind reserve design correction. It is not a pilot, resource authorization, seed allocation, execution result, scientific finding, independent review, or publication result."
+}

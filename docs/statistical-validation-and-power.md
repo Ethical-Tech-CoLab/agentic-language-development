@@ -128,6 +128,15 @@ therefore makes selection dependence-robust: each complete member must pass at t
 nine decisions, and reserve adequacy must be at least 0.95 at the pilot upper invalid
 rate. A modeled joint result is reported diagnostically but cannot select a smaller N.
 
+The prospective
+[`confirmatory-validity-reserve-amendment.v1.json`](../protocols/confirmatory-validity-reserve-amendment.v1.json)
+corrects the original fixed 10% reserve rule for the seven confirmatory experiments.
+For each candidate it uses the exact binomial CDF and chooses the smallest reserve
+count whose probability of yielding N valid runs is at least 0.95 at the experiment's
+pilot upper invalid rate. With a clean 0/20 pilot, the machine-checked reference ranges
+from 7 reserves for N=25 to 52 for N=300. These rows are outcome-blind design bounds;
+they do not authorize resources, allocate seeds, or select N.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

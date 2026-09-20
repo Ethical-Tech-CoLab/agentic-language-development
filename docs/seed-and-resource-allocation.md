@@ -50,12 +50,14 @@ short run. This measurement includes build startup, local fake-chain work, and
 verification; it does not estimate frozen-model latency or any prohibited public-chain latency or
 distributed throughput.
 
-The maximum materialized pools contain 9,171 bundles and 9,374,270 turns, including
-2,750 provisional replication bundles. Linear projection at the measured recurrent
-rate is 857.3 GiB uncompressed and 376.4 single-core hours. These are upper-pool
-planning figures, not instructions to execute unused seed suffixes. Selected E03 and
-confirmatory prefixes will reduce them, while real frozen-model and external-service
-costs can increase them.
+Under the original fixed-reserve policy, the maximum materialized pools contain 9,171
+bundles and 9,374,270 turns, including 2,750 provisional replication bundles. Linear
+projection at the measured recurrent rate is 857.3 GiB uncompressed and 376.4
+single-core hours. The prospective confirmatory validity-reserve amendment supersedes
+that fixed reserve count for seven experiments and can raise the maximum; exact revised
+totals require a selected N and experiment-by-condition allocation. These are planning
+figures, not instructions to execute unused seed suffixes. Selected prefixes can reduce
+them, while real frozen-model costs can increase them.
 
 E02 uses 4,034 turns per registered slot: 2,016 rows per role in each of two
 stages plus two excluded sealing turns. The earlier 800-turn planning value did not
