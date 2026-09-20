@@ -2,9 +2,14 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import { validateConfirmatoryPilotReductionQualification } from
+  './qualify-confirmatory-pilot-reduction.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+const repoRoot = fileURLToPath(new URL('../', import.meta.url));
 const policy = read('protocols/confirmatory-pilot-reduction.v1.json');
 const source = readFileSync('packages/analysis/src/confirmatory-pilot-reduction.ts', 'utf8');
 
@@ -39,4 +44,7 @@ assert.match(source, /selectionAdmitted: false/u);
 assert.match(policy.designUse, /must not influence margins/u);
 assert.match(policy.failureRule, /Preserve failed original attempts/u);
 assert.match(policy.claimBoundary, /not original evidence verification/u);
-console.log('Prospective seven-experiment pilot reducer bound to independent R dispersion reference; no pilot data admitted');
+validateConfirmatoryPilotReductionQualification(read(new URL(
+  '../reports/research/confirmatory-pilot-reduction-qualification-receipt.json',
+  import.meta.url)), repoRoot);
+console.log('Prospective seven-experiment pilot reducer software-qualified against independent R; no pilot data admitted');

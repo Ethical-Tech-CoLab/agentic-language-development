@@ -31,6 +31,9 @@ returns `not-registration-ready` with eight substantive blockers: selected sampl
 resources, exact remaining packets, final detector/comparator qualifications, and
 authentic independent review. Local zero-spend governance and repository-native
 registration no longer require external funds or public-chain transactions.
+The confirmatory pilot-reduction qualification receipt binds the exact v0.1.204
+synthetic implementation and its independent-R numeric check. It is software
+evidence only; no original confirmatory pilot is admitted or sample size selected.
 E02 v1 and v2 are retained failed software-qualification attempts. Neither reached
 restore or probe evaluation, and neither supplies an empirical leakage result. The
 v2 terminal receipt and supplemental failure analysis distinguish its primary

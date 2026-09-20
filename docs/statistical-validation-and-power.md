@@ -177,11 +177,13 @@ using the R-checked `sqrt(19 / qchisq(0.05, 19))` factor. Its summary is not an
 admitted pilot: original bundle verification, packet ancestry, registered metric
 derivation, and a separate admission receipt remain mandatory. Pilot means present
 in the v2 numerical contract are prohibited inputs to design changes.
-An independent-R qualification runner now recomputes all fourteen synthetic
-component means, sample SDs, one-sided upper SDs, and the clean-pilot Wilson
-bound, with four rejection controls. Its exact-source receipt must be created
-on a clean committed implementation before calling this software qualified;
-it cannot admit an original pilot or select N.
+The retained [exact-source qualification receipt](../reports/research/confirmatory-pilot-reduction-qualification-receipt.json)
+binds v0.1.204 and an independent-R recalculation of all fourteen synthetic
+component means, sample SDs, and one-sided upper SDs: 42 comparisons with a
+maximum absolute difference of 1.11e-16. The clean-pilot Wilson bound and four
+rejection controls also passed. The routine statistics gate checks receipt
+provenance and output. This qualifies only synthetic software behavior; it
+cannot admit an original pilot or select N.
 
 ## Prospective E03 pilot reduction
 

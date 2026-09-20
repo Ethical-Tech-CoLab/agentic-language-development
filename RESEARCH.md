@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.204 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.205 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -980,7 +980,12 @@ independently checked against R. The reducer does not verify the original bundle
 packet ancestry, or registered metric derivation; its output expressly prohibits
 selection admission. The existing v2 summary retains means for audit consistency,
 but those pilot means must not influence the frozen design before lock. No pilot
-data have been supplied to this reducer.
+data have been supplied to this reducer. Its retained [synthetic software qualification
+receipt](reports/research/confirmatory-pilot-reduction-qualification-receipt.json)
+binds exact v0.1.204 sources, 42 independent-R mean/SD/upper-SD comparisons
+(maximum absolute difference 1.11e-16), and four rejection controls. The routine
+statistics gate checks the receipt's named commit, source digests, and fixture
+output; it does not admit original evidence or select N.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded
