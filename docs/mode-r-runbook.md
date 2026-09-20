@@ -64,8 +64,13 @@ The wrapper now requires a clean source commit and writes one
 That original file records the source tree/version, all four results, and the
 host-inspected signer container identities. If collection fails, it retains a
 separate minimal `attempt-failure.json` without converting a partial attempt
-into a pass. A separate original-bundle audit is still needed before using
-the terminal as a bounded qualification receipt.
+into a pass. A separate original-bundle audit now has a [bounded portable receipt](../reports/research/mode-r-signer-reference-audit-receipt.json)
+for the frozen v0.1.209 reference execution. From a clean checkout, check its
+Git ancestry, scope, and internal structure with
+`pnpm run audit:mode-r-signer-reference:receipt`. With the separately retained
+ignored `evidence/validation/mode-r-study-2358394/` directory and a built Rust
+auditor, run `pnpm run audit:mode-r-signer-reference:live` to recompute all four
+original bundles. The portable check alone does not replay raw evidence.
 
 This is a bounded software/topology qualification only, not the selected E10+
 process/key topology. Its receipt states

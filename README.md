@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.210 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.211 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -337,7 +337,8 @@ prospective amendment and allocation.
   actual controller, Gateway, SQLite writer, checkpoint, deterministic simulated commitment,
   exporter, and verifier. Its local no-Fort qualification path now uses six
   separate no-network, ephemeral signer containers; the Gateway and writer still
-  share the Nursery process, so B12 remains open. Its explicit simulated receipt remains software evidence,
+  share the Nursery process, so B12 remains open. The [independent four-bundle audit receipt](reports/research/mode-r-signer-reference-audit-receipt.json)
+  binds one exact clean-source execution and separate TypeScript/Rust verification; it remains software evidence,
   not a public-chain transaction or research result. Persistent study signers are
   accepted only from `si fort` files-mode materialization mounted into the Nursery;
   neither learner receives that mount or its path.

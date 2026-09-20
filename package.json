@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.210",
+  "version": "0.1.211",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -12,6 +12,7 @@
     "test:mode-r": "node scripts/run-mode-r-smoke.mjs",
     "test:mode-r-study": "node scripts/run-mode-r-study.mjs",
     "audit:mode-r-signer-reference:live": "node scripts/audit-mode-r-signer-reference.mjs --audit",
+    "audit:mode-r-signer-reference:receipt": "node scripts/check-mode-r-signer-reference-receipt.mjs",
     "test:watch": "vitest",
     "design:e03": "pnpm run build && node scripts/run-e03-design-simulation.mjs",
     "registration:e03": "pnpm run build && node scripts/build-e03-registration.mjs",

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "classification": "bounded-mode-r-signer-reference-independent-audit",
+  "executionCommit": "7f7275f2c9160656081fffbded00d1aeee6d4761",
+  "executionTree": "9d8fc064454b528d49bcf5da03ef63ef5f870c0c",
+  "executionVersion": "0.1.209",
+  "auditCommit": "01a80b10cf26c6bea97039dbd330dddd762e7d34",
+  "originalEvidenceRoot": "evidence/validation/mode-r-study-2358394",
+  "originalTerminalSha256": "sha256:1e70e54a8af79259f1c5cbb06461a40238fcf2f3818168860285f0f2776bbdf4",
+  "rustAuditorSha256": "sha256:2a81ee950998c91a14801d7d9adde514b5856aa3ad4f6da594f273bf060f307c",
+  "runs": [
+    {
+      "track": "no-learning",
+      "runId": "mode-r-study-no-learning",
+      "summarySha256": "sha256:76a0a618f196554f8d8d27ccdba424007c29f9ad0b955fcd6778f8507f9649ef",
+      "bundleManifestHash": "sha256:7077baf6ac56050a815d7c0e29a1b89db91315a2f058aa969c27fc483ddd665b",
+      "signedEventCount": 59,
+      "checkpointCount": 10,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "163311a7b64d0a6bb2dce3c6e6fa3703ef24c358eca33ea0b82297bfd8548904",
+        "signer-baby-b-ledger": "2d000d0f5796a314edc99e40f56cd69ff71ca39f9cbdafb85541e2a67cacb81e",
+        "signer-channel": "098665b2209f357da33c3e559b35a8f2630776e02112dd36fa522f18287c82fb",
+        "signer-affect": "27b1d32b720e2c84c3a693a59c29b184af16c1979f1d5d586674ef6c441771a1",
+        "signer-audit": "241e5de656fdd8551d265b910d0e26d8beaab1e86cc4684850f6aadfac1693e7",
+        "signer-witness": "a7a9a06655885b0ec4f7ba99e9138b1009388b8ecd45b08817f27d7a37bba70e"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true
+    },
+    {
+      "track": "scratch-rl",
+      "runId": "mode-r-study-scratch-rl",
+      "summarySha256": "sha256:c8fcb9bd17af3fb87d2440f2b304fff7f669d1e5726c2eee9ee155d31cbbe5a4",
+      "bundleManifestHash": "sha256:3942abe23fe70757655ce3723fbcebce11a9f36477b227428f24d51d8aba4f6d",
+      "signedEventCount": 77,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "867ba88e72f83df76089c7d7e6f61c645d580fe7f021e2b8f7abd6495035fde5",
+        "signer-baby-b-ledger": "4c6545a15fdc97dd091ef788ba6a350dc22656c46069c519d15c3e08c523c7d2",
+        "signer-channel": "8f015d6366e8dbe6c71e55928cfeb84fc00dc824d68a613f2b732837af26d668",
+        "signer-affect": "20c3b70c7a8dce470b744fc17963a2488218ec1cbf06bd59a2888392a5366e66",
+        "signer-audit": "bf94afecf216f19f53f414422aa9496587642a43eb813ca561ba4bbecb757ac7",
+        "signer-witness": "a060e293fe3e0e36dd24e0ea9ec6da36d0bc62e6e257bd1c1dcb8b0e6180da31"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true
+    },
+    {
+      "track": "self-supervised",
+      "runId": "mode-r-study-self-supervised",
+      "summarySha256": "sha256:8be7ecd860863e86cef68bcedfe21849159962fbae32f5fdc659bf83a048fe17",
+      "bundleManifestHash": "sha256:816eadde421476b1ff48e54354418db50ac5c5936aae2849f2eb61fd83328598",
+      "signedEventCount": 81,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "c86f4963aefce2bf31de7ca023a1ee21dfea1c21bed90a418605b97d8ad305d6",
+        "signer-baby-b-ledger": "2f4a0afbca60a20261be7bb694e766fc30a57c1954bfbf5c49585e0118179d68",
+        "signer-channel": "49493ada48fb8e65b762e2167cbead557cee5ea392b4c15d39d81e386dafed89",
+        "signer-affect": "95724bde06709143ffb60107ca4296d0b8651197728735147567c0ff61c0974d",
+        "signer-audit": "46128f7331e47694645804f32d09d483cb8540b432d10482bd724479877f7422",
+        "signer-witness": "747598c62c4e4e7e0527cf0b5c5b5e1ba71fac6db61b7fcc0d21725a44f549ff"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true
+    },
+    {
+      "track": "hybrid",
+      "runId": "mode-r-study-hybrid",
+      "summarySha256": "sha256:603f00f3513713bc7563167a29bb41263cdd69cf07cbea657c7802a614c4a072",
+      "bundleManifestHash": "sha256:9f7bd1cb0e661482c20ca76ea8f402bc72263f84df171f0d9658cea6fdc437e8",
+      "signedEventCount": 80,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "ce3a3dfe281129500e6b85591e1e14ea44be44fa084025deaf8f22a123550d5c",
+        "signer-baby-b-ledger": "4aca4904829ccd1e0af7597d2fa81665b23609be03fc83326f61fbac660956e0",
+        "signer-channel": "6e8bb9f59101ad8faf6600ddf50c592bae5cc56daf1cc035754730bcc53ceab6",
+        "signer-affect": "f9f45ad694f42dc10bc13e58f1e9382c6c0c196d9e0f9f248c66daad41d22357",
+        "signer-audit": "64f68f94c93ff90d06afc590c47a95731a16c9cd0122d8aca0fba11e953e1a3f",
+        "signer-witness": "2c51dcc87be937c74679e88b43b9c0e42ec88a8266d30693da2a143106d439af"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true
+    }
+  ],
+  "allFourOriginalBundlesVerified": true,
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "b12Closed": false,
+  "limits": [
+    "Host container inspection is an original-run assertion, not independently replayable after cleanup.",
+    "The anchor is local and simulated; it is not a public-chain transaction.",
+    "Adapter hosts are not separate Baby-twin processes; Gateway, writer, and Controller remain in Nursery.",
+    "The six signer keys are ephemeral, not Fort-provisioned per domain.",
+    "This reference does not qualify the selected E10+ topology or establish a behavioral result."
+  ]
+}
