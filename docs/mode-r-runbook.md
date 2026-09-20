@@ -7,6 +7,15 @@ The Symbol Gateway, SQLite writer, and signer registry currently execute in
 the Nursery process. This path cannot clear V06/B12 or support the full
 Research-Grade claim sentence in `SPECIFICATION.md` §5.2 for E10+ studies.
 
+The hashing package now has a bounded Unix-socket signer component: one signer
+domain per process, a private socket, exact run/domain identity checks, verified
+signatures, and a six-process registry adapter compatible with the existing
+evidence-writer interface. A disposable process test exercises domain/run
+rejection and signer death. The current Compose lifecycle does **not** use this
+component. It has no Fort-backed per-domain key provisioning, authenticated
+selected-topology deployment, separate Baby twins, or separate per-role ledger
+writers; it is not a B12 qualification receipt.
+
 ## Prerequisites
 
 - Linux or macOS with Docker Engine/Colima running;

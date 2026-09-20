@@ -56,3 +56,8 @@ export {
 export { FileKeyStore, SIGNER_SEED_FILE } from './keystore.js';
 export { SeededPrng, deriveSeedHex } from './prng.js';
 export { InMemorySignerRegistry } from './signers.js';
+export {
+  connectDomainSignerRegistryRpc,
+  connectDomainSignerRpc,
+  createDomainSignerRpcServer,
+} from './domain-signer-rpc.js';
