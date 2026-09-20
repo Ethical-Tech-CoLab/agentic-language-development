@@ -9,10 +9,11 @@ import { describe, expect, it } from 'vitest';
 
 import { SIGNER_DOMAINS, type SignerDomain } from '@ald/types';
 
-import { domainHash, verifyHashSignature } from '../src/index.js';
+import { InMemorySignerRegistry, domainHash, verifyHashSignature } from '../src/index.js';
 import {
   connectDomainSignerRegistryRpc,
   connectDomainSignerRpc,
+  createDomainSignerRpcServer,
 } from '../src/domain-signer-rpc.js';
 
 const fixture = fileURLToPath(new URL('./fixtures/domain-signer-child.mjs', import.meta.url));
@@ -122,6 +123,30 @@ describe('one-domain Unix-socket signer process', () => {
           await new Promise<void>((resolve) => child.once('exit', () => resolve()));
         }
       }));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('does not treat namespace-local PIDs as container identity proof', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ald-signer-namespaces-'));
+    const local = InMemorySignerRegistry.generate(runId);
+    const sockets = {} as Record<SignerDomain, string>;
+    const servers = [];
+    try {
+      for (const signerDomain of SIGNER_DOMAINS) {
+        const socketPath = join(directory, `${signerDomain}.sock`);
+        sockets[signerDomain] = socketPath;
+        servers.push(await createDomainSignerRpcServer(socketPath, runId,
+          local.signer(signerDomain)));
+      }
+      const registry = await connectDomainSignerRegistryRpc(runId, sockets);
+      expect(registry.publicKeys()).toEqual(local.publicKeys());
+      const reported = await Promise.all(SIGNER_DOMAINS.map((signerDomain) =>
+        connectDomainSignerRpc(sockets[signerDomain], runId, signerDomain)));
+      expect(new Set(reported.map(({ processId }) => processId)).size).toBe(1);
+    } finally {
+      await Promise.all(servers.map((server) => new Promise<void>((resolve) =>
+        server.close(() => resolve()))));
       rmSync(directory, { recursive: true, force: true });
     }
   });

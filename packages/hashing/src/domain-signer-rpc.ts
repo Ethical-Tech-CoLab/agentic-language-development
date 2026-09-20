@@ -207,19 +207,20 @@ export async function connectDomainSignerRpc(
 
 /**
  * Preconnect all six fixed domains before the synchronous writer constructor.
- * Distinct reported process IDs and public keys are necessary diagnostics,
- * not proof of container/key isolation; the selected topology must verify
- * process identity and mounts independently.
+ * Distinct socket endpoints and public keys prevent accidental reuse. PIDs
+ * may repeat across container namespaces, so the selected topology must
+ * verify container identities and mounts independently.
  */
 export async function connectDomainSignerRegistryRpc(
   runId: string,
   sockets: Record<SignerDomain, string>,
 ): Promise<SignerRegistry> {
+  if (new Set(SIGNER_DOMAINS.map((domain) => sockets[domain])).size !==
+      SIGNER_DOMAINS.length) {
+    throw new Error('signer domains must use distinct socket endpoints');
+  }
   const connections = await Promise.all(SIGNER_DOMAINS.map((domain) =>
     connectDomainSignerRpc(sockets[domain], runId, domain)));
-  if (new Set(connections.map(({ processId }) => processId)).size !== SIGNER_DOMAINS.length) {
-    throw new Error('signer domains must run in distinct processes');
-  }
   if (new Set(connections.map(({ signer }) => signer.publicKey)).size !== SIGNER_DOMAINS.length) {
     throw new Error('signer domains must have distinct public keys');
   }

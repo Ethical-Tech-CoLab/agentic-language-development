@@ -1,3 +1,15 @@
+x-domain-signer: &domain-signer
+  build:
+    context: ../..
+    dockerfile: deploy/mode-r/Dockerfile
+  entrypoint: ["/usr/local/bin/node", "/app/deploy/mode-r/domain-signer-host.mjs"]
+  user: "${ALD_MODE_R_NURSERY_UID:-1000}:${ALD_MODE_R_NURSERY_GID:-1000}"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 32
+  network_mode: none
+
 services:
   baby-a:
     build:
@@ -63,11 +75,64 @@ services:
     pids_limit: 64
     environment:
       ALD_SOFTWARE_COMMIT: ${ALD_SOFTWARE_COMMIT:-unknown}
+      ALD_MODE_R_SIGNER_SOCKET_ROOT: /signers
     volumes:
       - type: bind
         source: ${ALD_MODE_R_EVIDENCE_DIR:-/tmp/ald-mode-r-evidence}
         target: /evidence
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}
+        target: /signers
+        read_only: true
     networks: [baby-a-only, baby-b-only]
+
+  signer-baby-a-ledger:
+    <<: *domain-signer
+    command: ["baby-a-ledger", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/baby-a-ledger
+        target: /signer
+
+  signer-baby-b-ledger:
+    <<: *domain-signer
+    command: ["baby-b-ledger", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/baby-b-ledger
+        target: /signer
+
+  signer-channel:
+    <<: *domain-signer
+    command: ["channel", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/channel
+        target: /signer
+
+  signer-affect:
+    <<: *domain-signer
+    command: ["affect", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/affect
+        target: /signer
+
+  signer-audit:
+    <<: *domain-signer
+    command: ["audit", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/audit
+        target: /signer
+
+  signer-witness:
+    <<: *domain-signer
+    command: ["witness", "mode-r-study-${ALD_LEARNER_TRACK:-no-learning}"]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_SIGNER_SOCKET_ROOT:-/tmp/ald-mode-r-signers}/witness
+        target: /signer
 
 networks:
   baby-a-only:

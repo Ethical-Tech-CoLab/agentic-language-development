@@ -3,18 +3,22 @@
 This runbook qualifies the two-container learner-host reference and bounded
 controller/Gateway/evidence software path. Its `baby-a` and `baby-b` Compose
 service names identify adapter hosts, not fully separated Baby-twin processes.
-The Symbol Gateway, SQLite writer, and signer registry currently execute in
-the Nursery process. This path cannot clear V06/B12 or support the full
+The Symbol Gateway and SQLite writer still execute in the Nursery process.
+The no-Fort lifecycle path now hosts each of the six signer domains in a separate
+no-network container with only its own private socket bind. The Fort-file path
+still holds its signer registry in Nursery. Neither path clears V06/B12 or supports the full
 Research-Grade claim sentence in `SPECIFICATION.md` §5.2 for E10+ studies.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified
-signatures, and a six-process registry adapter compatible with the existing
+signatures, and a six-domain registry adapter compatible with the existing
 evidence-writer interface. A disposable process test exercises domain/run
-rejection and signer death. The current Compose lifecycle does **not** use this
-component. It has no Fort-backed per-domain key provisioning, authenticated
-selected-topology deployment, separate Baby twins, or separate per-role ledger
-writers; it is not a B12 qualification receipt.
+rejection and signer death. The no-Fort Compose lifecycle now uses this component
+with ephemeral keys and distinct signer containers. It still has no Fort-backed
+per-domain key provisioning, selected E10+ topology, separate Baby twins, or
+separate per-role ledger writers; it is not a B12 qualification receipt. Distinct signer PIDs cannot
+be required across container namespaces; the selected host audit must prove
+distinct container identities and mounts.
 An evidence-writer integration test also commits a real signed turn through
 six separate signer processes, then kills one signer and confirms the next
 turn leaves no partial ledger or channel event. This tests the interface and
@@ -48,7 +52,8 @@ volumes, and containers on exit. Any failed assertion exits non-zero.
 ## Full-lifecycle topology qualification
 
 Run all four learner tracks through the in-Nursery controller, Gateway, SQLite writer,
-checkpoint, local qualification anchor, exporter, and verifier:
+checkpoint, local qualification anchor, exporter, verifier, and six isolated
+ephemeral signer containers:
 
 ```sh
 pnpm run test:mode-r-study

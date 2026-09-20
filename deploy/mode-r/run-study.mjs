@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { BaseAnchorPublisher, FakeChainTransport } from '@ald/anchor';
+import { connectDomainSignerRegistryRpc } from '@ald/hashing';
 import { createIsolatedAdapterFactory } from '@ald/isolation';
 import { RECURRENT_ARCHITECTURE } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
@@ -11,6 +12,7 @@ import {
   createProductionRuntime,
   signerProviderFromFortEnvironment,
 } from '@ald/orchestrator';
+import { SIGNER_DOMAINS } from '@ald/types';
 
 // Live Mode R qualification for the recurrent ALD-045 and ALD-046 paths.
 
@@ -37,6 +39,25 @@ const fortSignerProvider =
   process.env[FORT_SIGNER_SEEDS_FILE_ENV] === undefined
     ? undefined
     : signerProviderFromFortEnvironment();
+const remoteSignerRegistry = fortSignerProvider === undefined
+  ? await (async () => {
+    const root = process.env['ALD_MODE_R_SIGNER_SOCKET_ROOT'];
+    if (!root) throw new Error('Mode R qualification signer sockets are required');
+    const sockets = Object.fromEntries(SIGNER_DOMAINS.map((domain) => [
+      domain,
+      join(root, domain, 'signer.sock'),
+    ]));
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      try {
+        return await connectDomainSignerRegistryRpc(runId, sockets);
+      } catch (error) {
+        if (attempt === 39) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+    }
+    throw new Error('Mode R qualification signers did not start');
+  })()
+  : undefined;
 
 let production;
 const evidence = {
@@ -71,9 +92,7 @@ production = createProductionRuntime({
   databasePath: join(outputRoot, `${runId}.sqlite`),
   bundleRoot: join(outputRoot, 'bundles'),
   softwareCommit,
-  ...(fortSignerProvider === undefined
-    ? {}
-    : { signerProvider: fortSignerProvider }),
+  signerProvider: fortSignerProvider ?? (() => remoteSignerRegistry),
   allowUnanchored: false,
   anchorPublisher: publisher,
   anchorPolicy: 'required',
@@ -216,6 +235,9 @@ try {
     researchFinding: false,
     publicChainTransaction: false,
     anchorTransport: 'local-qualification-fake-chain',
+    signerBoundary: fortSignerProvider === undefined
+      ? 'six-ephemeral-container-signers'
+      : 'nursery-fort-file',
     runId,
     track,
     softwareCommit,
