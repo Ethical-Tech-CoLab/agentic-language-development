@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-component-power-amendment",
+  "frozenAt": "2026-09-20",
+  "status": "component-power rule frozen; no pilot input, simulation receipt, or selected seed count exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path":"protocols/confirmatory-power-confidence-amendment.v1.json","sha256":"sha256:5389899d5989f96991b3e39f8855f9f531d6d8777f42e5c151e871c17fbe32d3"},
+    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"}
+  ],
+  "reason": "The pilot summary retains fourteen marginal upper dispersions but no paired component covariance. A simulated complete-member success count would therefore require an unidentified within-member dependence model for H1, H5, and H8.",
+  "members": 9,
+  "components": 14,
+  "familyConfidence": 0.95,
+  "componentOneSidedAlpha": 0.0035714285714285718,
+  "componentWilsonEquivalentTwoSidedConfidence": 0.9928571428571429,
+  "componentSimulation": "For every candidate, simulate each of the fourteen registered component tests separately for 30000 repetitions from its frozen alternative and eligible pilot input. Record a success only when that component's registered test and practical direction pass.",
+  "memberLowerBound": "For each member, calculate max(0, 1 - sum over its components of (1 - simultaneous component lower power)).",
+  "familyLowerBound": "Calculate max(0, 1 - sum over all fourteen components of (1 - simultaneous component lower power)). The first candidate at or above 0.90 and passing every reserve gate may be selected.",
+  "diagnosticAuthority": "Complete-member and complete-family joint simulations under any declared dependence model are diagnostics only and cannot select a smaller N.",
+  "scientificTestUnchanged": "The registered confirmatory analysis still has nine global-Holm members and component screening alpha 0.05/9. This amendment changes power-estimation uncertainty and dependence handling, not the scientific test family.",
+  "failureRule": "Missing component counts, an unidentified dependence assumption, or failure of the component-union lower bound blocks selection. Do not substitute member or joint diagnostic power.",
+  "claimBoundary": "This prospectively removes unidentified dependence from sample-size selection. It is not a pilot, power result, selected N, resource authorization, scientific finding, independent review, or publication result."
+}

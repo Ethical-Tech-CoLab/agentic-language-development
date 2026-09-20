@@ -1,7 +1,8 @@
-/** Outcome-blind selection from complete member-power simulations and an eligible pilot. */
+/** Outcome-blind selection from complete component-power simulations and an eligible pilot. */
 import { wilsonInterval } from './descriptive.js';
 import { AnalysisError } from './errors.js';
 import {
+  CONFIRMATORY_PILOT_COMPONENTS,
   CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS,
   CONFIRMATORY_PILOT_SUMMARY_VERSION,
   validateConfirmatoryPilotSummary,
@@ -14,13 +15,18 @@ export const CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS = [25, 50, 75, 100, 125, 150, 
 export const CONFIRMATORY_MONTE_CARLO_REPETITIONS = 30_000;
 export const CONFIRMATORY_MINIMUM_FAMILY_POWER_LOWER95 = 0.90;
 export const CONFIRMATORY_MINIMUM_RESERVE_ADEQUACY = 0.95;
-export const CONFIRMATORY_MEMBER_POWER_WILSON_CONFIDENCE = 1 - 2 * (0.05 / 9);
+export const CONFIRMATORY_COMPONENT_POWER_WILSON_CONFIDENCE = 1 - 2 * (0.05 / 14);
 export const CONFIRMATORY_MEMBER_IDS = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6a', 'H6b', 'H7', 'H8'] as const;
+
+export type ConfirmatoryComponentSuccesses = {
+  readonly [Member in ConfirmatoryMemberId]: Readonly<Record<
+    (typeof CONFIRMATORY_PILOT_COMPONENTS)[Member][number], number>>;
+};
 
 export interface ConfirmatoryFamilySimulationRow {
   readonly primarySeeds: number;
   readonly repetitions: 30_000;
-  readonly memberCompleteDecisionSuccesses: Readonly<Record<ConfirmatoryMemberId, number>>;
+  readonly componentDecisionSuccesses: ConfirmatoryComponentSuccesses;
   readonly diagnosticJointDecisionSuccesses: number;
 }
 
@@ -33,10 +39,14 @@ export interface ConfirmatoryFamilySelection {
     primarySeeds: number;
     members: readonly {
       id: ConfirmatoryMemberId;
-      completeDecisionSuccesses: number;
-      estimatedPower: number;
-      lower95Power: number;
-      upper95Power: number;
+      components: readonly {
+        id: string;
+        decisionSuccesses: number;
+        estimatedPower: number;
+        simultaneousLower95Power: number;
+        simultaneousUpper95Power: number;
+      }[];
+      dependenceRobustLower95Power: number;
     }[];
     dependenceRobustFamilyLower95Power: number;
     diagnosticJointPower: number;
@@ -120,21 +130,31 @@ export function selectConfirmatoryFamilySeeds(
   const evaluated = rows.map((row, rowIndex) => {
     if (row.primarySeeds !== CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS[rowIndex] ||
         row.repetitions !== CONFIRMATORY_MONTE_CARLO_REPETITIONS ||
-        Object.keys(row.memberCompleteDecisionSuccesses).join(',') !== CONFIRMATORY_MEMBER_IDS.join(',')) {
-      throw new AnalysisError('domain', 'complete ordered confirmatory member simulations are required');
+        Object.keys(row.componentDecisionSuccesses).join(',') !== CONFIRMATORY_MEMBER_IDS.join(',')) {
+      throw new AnalysisError('domain', 'complete ordered confirmatory component simulations are required');
     }
     const members = CONFIRMATORY_MEMBER_IDS.map((id) => {
-      const successes = row.memberCompleteDecisionSuccesses[id];
-      successCount(successes, `${row.primarySeeds}.${id}`);
-      const interval = wilsonInterval(successes, row.repetitions,
-        CONFIRMATORY_MEMBER_POWER_WILSON_CONFIDENCE);
-      return { id, completeDecisionSuccesses: successes, estimatedPower: interval.proportion,
-        lower95Power: interval.lower, upper95Power: interval.upper };
+      const expectedComponents: readonly string[] = CONFIRMATORY_PILOT_COMPONENTS[id];
+      const supplied = row.componentDecisionSuccesses[id] as Readonly<Record<string, number>>;
+      if (Object.keys(supplied).join(',') !== expectedComponents.join(',')) {
+        throw new AnalysisError('domain', 'complete ordered confirmatory component simulations are required');
+      }
+      const components = expectedComponents.map((componentId) => {
+        const successes = supplied[componentId]!;
+        successCount(successes, `${row.primarySeeds}.${id}.${componentId}`);
+        const interval = wilsonInterval(successes, row.repetitions,
+          CONFIRMATORY_COMPONENT_POWER_WILSON_CONFIDENCE);
+        return { id: componentId, decisionSuccesses: successes, estimatedPower: interval.proportion,
+          simultaneousLower95Power: interval.lower, simultaneousUpper95Power: interval.upper };
+      });
+      return { id, components, dependenceRobustLower95Power: Math.max(0,
+        1 - components.reduce((sum, component) => sum + (1 - component.simultaneousLower95Power), 0)) };
     });
     successCount(row.diagnosticJointDecisionSuccesses, `${row.primarySeeds}.diagnosticJoint`);
     const diagnostic = wilsonInterval(row.diagnosticJointDecisionSuccesses, row.repetitions);
-    const dependenceRobustFamilyLower95Power = Math.max(0,
-      1 - members.reduce((sum, member) => sum + (1 - member.lower95Power), 0));
+    const dependenceRobustFamilyLower95Power = Math.max(0, 1 - members.reduce((memberSum, member) =>
+      memberSum + member.components.reduce((componentSum, component) =>
+        componentSum + (1 - component.simultaneousLower95Power), 0), 0));
     const reserves = Object.keys(CONFIRMATORY_PILOT_EXPERIMENT_MEMBERS).map((id) => {
       const experimentId = id as ConfirmatoryPilotExperimentId;
       const experiment = pilot.experiments.find((entry) => entry.id === experimentId)!;

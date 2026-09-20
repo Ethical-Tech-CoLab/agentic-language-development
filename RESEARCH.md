@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.196 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.197 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -901,9 +901,9 @@ experiment-specific validity reserves reach 0.95. N=100 is a planning value, not
 selected result.
 The prospective [selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
 resolves the earlier "largest required count" wording: member-specific minima remain
-diagnostics. The current executable reducer requires every eligible pilot, all nine
-member success counts at all eight candidates, the simultaneous confidence rule, and
-corrected reserves; the complete joint count is reported without selection authority.
+diagnostics. The current executable reducer requires every eligible pilot, all
+fourteen component success counts at all eight candidates, simultaneous component
+confidence, and corrected reserves; member/joint counts have no selection authority.
 No pilot inputs or 30,000-repetition receipt yet exist.
 
 The prospective [design-readiness inventory](protocols/confirmatory-design-readiness.v1.json)
@@ -935,10 +935,14 @@ design alternatives, component screening at 0.05/9, a dependence-robust union lo
 bound across nine member-power bounds, and a 0.95 reserve-adequacy gate. The ordinary
 joint simulation remains diagnostic and cannot select a smaller N.
 The prospective [power-confidence amendment](protocols/confirmatory-power-confidence-amendment.v1.json)
-allocates one-sided alpha `0.05/9` to each simulated member-power lower bound before
-the union calculation. This supplies simultaneous family confidence instead of
-mistaking nine unadjusted intervals for a 95% family guarantee. The executable
-selector is bound to this corrected rule and still supplies no pilot or power result.
+first supplied simultaneous family confidence instead of mistaking nine unadjusted
+intervals for a 95% family guarantee. A further
+[component-power amendment](protocols/confirmatory-component-power-amendment.v1.json)
+recognizes that marginal pilot dispersions do not identify dependence inside the
+multi-component H1, H5, and H8 decisions either. The controlling rule therefore uses
+one-sided alpha `0.05/14` for all fourteen component-power bounds and forms member and
+family union lower bounds without a covariance assumption. The executable selector
+is bound to this final rule and still supplies no pilot or power result.
 The prospective [validity-reserve amendment](protocols/confirmatory-validity-reserve-amendment.v1.json)
 then corrects the original fixed 10% rule for the seven scoped experiments. For each
 candidate and experiment it chooses the smallest reserve count whose binomial

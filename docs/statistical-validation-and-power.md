@@ -132,10 +132,13 @@ rate. A modeled joint result is reported diagnostically but cannot select a smal
 Nine separately computed 95% member intervals do not provide 95% simultaneous
 coverage. The prospective
 [`confirmatory-power-confidence-amendment.v1.json`](../protocols/confirmatory-power-confidence-amendment.v1.json)
-therefore allocates one-sided alpha `0.05/9` to every member-power lower bound
-(equivalent two-sided Wilson confidence `0.988888...`) before the union bound is
-formed. The executable reducer requires every candidate and member count, rejects an
-ineligible pilot, and cannot promote the ordinary joint diagnostic.
+first corrected that member-level error. The later
+[`confirmatory-component-power-amendment.v1.json`](../protocols/confirmatory-component-power-amendment.v1.json)
+also removes unidentified dependence inside composite H1, H5, and H8. The controlling
+selector allocates one-sided alpha `0.05/14` to all fourteen component-power bounds
+(equivalent two-sided Wilson confidence `0.992857...`), forms member and family union
+bounds, requires every candidate/component count, rejects an ineligible pilot, and
+cannot promote a member or joint diagnostic.
 
 The prospective
 [`confirmatory-validity-reserve-amendment.v1.json`](../protocols/confirmatory-validity-reserve-amendment.v1.json)

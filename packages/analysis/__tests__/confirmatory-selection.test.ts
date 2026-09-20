@@ -10,6 +10,7 @@ import {
   confirmatoryPilotInvalidProbabilityUpper95,
   minimumConfirmatoryReserveSeeds,
   selectConfirmatoryFamilySeeds,
+  type ConfirmatoryComponentSuccesses,
   type ConfirmatoryFamilySimulationRow,
   type ConfirmatoryPilotSummary,
 } from '../src/index.js';
@@ -39,9 +40,11 @@ function rows(firstPassingIndex: number | null): ConfirmatoryFamilySimulationRow
     const successes = firstPassingIndex !== null && index >= firstPassingIndex ? 30_000 : 27_000;
     return {
       primarySeeds, repetitions: CONFIRMATORY_MONTE_CARLO_REPETITIONS,
-      memberCompleteDecisionSuccesses: Object.fromEntries(
-        CONFIRMATORY_MEMBER_IDS.map((id) => [id, successes]),
-      ) as Record<(typeof CONFIRMATORY_MEMBER_IDS)[number], number>,
+      componentDecisionSuccesses: Object.fromEntries(
+        CONFIRMATORY_MEMBER_IDS.map((id) => [id, Object.fromEntries(
+          CONFIRMATORY_PILOT_COMPONENTS[id].map((component) => [component, successes]),
+        )]),
+      ) as ConfirmatoryComponentSuccesses,
       diagnosticJointDecisionSuccesses: 30_000,
     };
   });
@@ -70,7 +73,7 @@ describe('dependence-robust confirmatory-family seed selection', () => {
     (incomplete as { status: string; selectionEligible: boolean }).selectionEligible = false;
     expect(() => selectConfirmatoryFamilySeeds(rows(1), incomplete)).toThrow(/status contradicts|eligible/u);
     const malformed = rows(1);
-    delete (malformed[0]!.memberCompleteDecisionSuccesses as Partial<Record<string, number>>).H8;
+    delete (malformed[0]!.componentDecisionSuccesses as Partial<Record<string, unknown>>).H8;
     expect(() => selectConfirmatoryFamilySeeds(malformed, pilot())).toThrow(/complete ordered/u);
   });
 
