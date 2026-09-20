@@ -27,6 +27,7 @@ export interface ConfirmatoryFamilySimulationRow {
   readonly primarySeeds: number;
   readonly repetitions: 30_000;
   readonly componentDecisionSuccesses: ConfirmatoryComponentSuccesses;
+  readonly diagnosticDependenceModel: 'independent-component-streams-diagnostic-only';
   readonly diagnosticJointDecisionSuccesses: number;
 }
 
@@ -130,6 +131,7 @@ export function selectConfirmatoryFamilySeeds(
   const evaluated = rows.map((row, rowIndex) => {
     if (row.primarySeeds !== CONFIRMATORY_CANDIDATE_PRIMARY_SEEDS[rowIndex] ||
         row.repetitions !== CONFIRMATORY_MONTE_CARLO_REPETITIONS ||
+        row.diagnosticDependenceModel !== 'independent-component-streams-diagnostic-only' ||
         Object.keys(row.componentDecisionSuccesses).join(',') !== CONFIRMATORY_MEMBER_IDS.join(',')) {
       throw new AnalysisError('domain', 'complete ordered confirmatory component simulations are required');
     }

@@ -149,6 +149,17 @@ pilot upper invalid rate. With a clean 0/20 pilot, the machine-checked reference
 from 7 reserves for N=25 to 52 for N=300. These rows are outcome-blind design bounds;
 they do not authorize resources, allocate seeds, or select N.
 
+The prospective
+[`confirmatory-power-simulator.v1.json`](../protocols/confirmatory-power-simulator.v1.json)
+specifies the deterministic executable model for all eight candidate sizes and all
+fourteen component tests. Continuous components use their frozen alternatives and
+the eligible pilot's conservative upper SD under a Normal sufficient-statistic
+model; H5 uses exact-binomial decision probabilities. Each candidate/member/component
+has a derived random stream. A complete-family count produced from independent
+component streams is explicitly diagnostic-only, while the selector consumes the
+component counts. The Normal model is an assumption for power planning, not a claim
+about observed distributions, and fixture execution is never a campaign power result.
+
 ## Prospective E03 pilot reduction
 
 The E03 pilot reducer accepts exactly twenty 200-episode seed tallies for each

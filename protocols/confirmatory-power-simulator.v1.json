@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-confirmatory-power-simulator-specification",
+  "frozenAt": "2026-09-20",
+  "status": "simulator specified and implemented; no eligible pilot input, power result, or selected seed count exists",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "sourcePolicies": [
+    {
+      "path": "protocols/confirmatory-component-power-amendment.v1.json",
+      "sha256": "sha256:b465388779703f1ac11efc4593297f8667033d783ac18f61228de422a0ea6435"
+    },
+    {
+      "path": "protocols/confirmatory-power-model-amendment.v1.json",
+      "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"
+    },
+    {
+      "path": "protocols/confirmatory-practical-margins.v1.json",
+      "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"
+    },
+    {
+      "path": "protocols/confirmatory-validity-reserve-amendment.v1.json",
+      "sha256": "sha256:012debedab717ddcacded58df5e2710d5c21899866200568f1b1b910836f2c63"
+    }
+  ],
+  "analysisVersion": "confirmatory-power-simulation/v1",
+  "pilotAnalysisVersion": "confirmatory-pilot-summary/v2",
+  "candidatePrimarySeeds": [25, 50, 75, 100, 125, 150, 200, 300],
+  "repetitionsPerCandidate": 30000,
+  "componentScientificAlpha": 0.005555555555555556,
+  "continuousWorkingModel": {
+    "distribution": "normal",
+    "mean": "the prospectively frozen alternative for the component",
+    "dispersion": "the component's one-sided 95 percent upper SD from an eligible blinded pilot",
+    "test": "one-sided Student t at alpha 0.05/9 using simulated Normal mean and chi-square sample-variance sufficient statistics",
+    "generator": "Box-Muller standard Normal and Marsaglia-Tsang gamma draws from domain-separated SeededPrng streams"
+  },
+  "binaryWorkingModel": {
+    "scope": ["H5.stable-acquisition", "H5.first-stable-turn-ratio"],
+    "alternativeProbability": 0.75,
+    "nullProbability": 0.5,
+    "test": "one-sided exact binomial at alpha 0.05/9",
+    "simulation": "calculate the exact probability of crossing the critical success count and draw one decision indicator per repetition"
+  },
+  "streamRule": "Derive a separate deterministic stream from the registered root seed for every candidate, member, and component. Candidate or component ordering cannot share or shift random draws.",
+  "diagnosticDependenceModel": "independent-component-streams-diagnostic-only",
+  "selectionAuthority": "Only the fourteen component success counts may enter the dependence-robust selection rule. The joint count under independent component streams is labeled diagnostic-only and cannot authorize a smaller candidate.",
+  "distributionalLimitation": "The Normal model is a prospectively declared parametric power working model aligned with the registered seed-level t tests; it is not evidence that future component outcomes are Normal. Upper pilot dispersion and component-union selection address variance and unidentified dependence, not arbitrary distributional misspecification. Final reporting must state this limitation and include registered robustness analyses where the study protocol requires them.",
+  "zeroDispersionRule": "A zero upper SD is treated as a point mass and passes every repetition only when the frozen alternative is strictly in the registered direction beyond the null boundary.",
+  "failureRule": "Incomplete pilot input, missing conservative dispersion, changed candidates or repetition count, an undeclared dependence model, or a non-reproducible seed blocks simulation admission. Software fixtures cannot supply a campaign power result.",
+  "qualificationRule": "Software qualification must use synthetic fixtures, replay an identical seed bit-for-bit, exercise continuous and exact-binomial paths, and bind its output to the committed implementation. Qualification does not select campaign N.",
+  "claimBoundary": "This specification and implementation define a prospective deterministic power simulator. They are not pilot evidence, a power result, selected sample size, resource authorization, study outcome, scientific finding, independent review, or publication result."
+}

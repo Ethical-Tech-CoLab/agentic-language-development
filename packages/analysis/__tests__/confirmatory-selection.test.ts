@@ -45,6 +45,7 @@ function rows(firstPassingIndex: number | null): ConfirmatoryFamilySimulationRow
           CONFIRMATORY_PILOT_COMPONENTS[id].map((component) => [component, successes]),
         )]),
       ) as ConfirmatoryComponentSuccesses,
+      diagnosticDependenceModel: 'independent-component-streams-diagnostic-only',
       diagnosticJointDecisionSuccesses: 30_000,
     };
   });
@@ -75,6 +76,9 @@ describe('dependence-robust confirmatory-family seed selection', () => {
     const malformed = rows(1);
     delete (malformed[0]!.componentDecisionSuccesses as Partial<Record<string, unknown>>).H8;
     expect(() => selectConfirmatoryFamilySeeds(malformed, pilot())).toThrow(/complete ordered/u);
+    const unidentified = rows(1);
+    (unidentified[0] as { diagnosticDependenceModel: string }).diagnosticDependenceModel = 'unspecified';
+    expect(() => selectConfirmatoryFamilySeeds(unidentified, pilot())).toThrow(/complete ordered/u);
   });
 
   it('reproduces the prospective minimal reserve endpoints', () => {

@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.197 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.198 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -126,6 +126,13 @@ replaces the inadequate fixed 10% rule for the seven confirmatory experiment pil
 with the smallest candidate-specific reserve count meeting 0.95 adequacy. Its clean
 twenty-slot reference requires 7–52 reserves across candidate N=25–300; these are
 design bounds, not authorized runs or selected prefixes.
+The prospective [power-simulator specification](protocols/confirmatory-power-simulator.v1.json)
+now has an executable deterministic implementation for all eight candidates and
+fourteen component tests. Continuous components use their frozen alternatives and
+future pilot upper SDs under a declared Normal sufficient-statistic working model;
+H5 uses exact-binomial decision probabilities. Independent component streams supply
+only a labeled joint diagnostic. Synthetic software fixtures qualify code paths but
+cannot supply pilot evidence, campaign power, selected N, or resource authorization.
 
 The verifiable core, communication runtime, isolated learner transport, experiment-readiness
 scaffolds, and operator preflight are implemented and tested. E00, E01, and E02

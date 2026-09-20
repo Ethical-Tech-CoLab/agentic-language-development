@@ -8,7 +8,7 @@
 >
 > **Prepared:** September 2, 2026
 >
-> **Engineering snapshot:** v0.1.197 · 257/261 backlog acceptance criteria verified.
+> **Engineering snapshot:** v0.1.198 · 257/261 backlog acceptance criteria verified.
 >
 > **Proposed arXiv category:** `cs.MA` (primary), with possible cross-listing to
 > `cs.AI` and `cs.CL`
@@ -949,6 +949,17 @@ candidate and experiment it chooses the smallest reserve count whose binomial
 probability of obtaining N valid runs is at least 0.95 at the pilot upper invalid
 rate. Under the clean 0/20 reference, this requires 7 reserves at N=25 through 52
 at N=300. The table is a design calculation; it authorizes no run or resource.
+
+The prospective [power-simulator specification](protocols/confirmatory-power-simulator.v1.json)
+binds the executable model for all eight candidates and fourteen components. It uses
+Normal mean and chi-square sample-variance sufficient statistics for the registered
+one-sided t tests, with each future pilot's one-sided upper SD, and exact-binomial
+decision probabilities for H5. Random streams are deterministically separated by
+candidate, member, and component. Their independent joint-family outcome is a
+diagnostic only; selection uses the component-wise dependence-robust bounds above.
+The Normal assumption is a declared parametric power model, not evidence about the
+future outcome distribution. Software fixtures do not supply a pilot, power result,
+selected sample size, resource authorization, or empirical finding.
 
 That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03's qualification-only rule in Appendix D. E03 uses its own four-row bounded

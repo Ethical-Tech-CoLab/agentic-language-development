@@ -157,6 +157,14 @@ export {
   type ConfirmatoryComponentSuccesses,
 } from './confirmatory-selection.js';
 export {
+  CONFIRMATORY_COMPONENT_TEST_ALPHA,
+  CONFIRMATORY_DIAGNOSTIC_DEPENDENCE_MODEL,
+  CONFIRMATORY_POWER_SIMULATION_VERSION,
+  CONFIRMATORY_POWER_WORKING_MODEL,
+  simulateConfirmatoryComponentPower,
+  type ConfirmatoryPowerSimulation,
+} from './confirmatory-power-simulation.js';
+export {
   STABLE_CONVENTION_ANALYSIS_VERSION,
   evaluateStableConvention,
   type StableConventionObservation,

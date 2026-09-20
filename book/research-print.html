@@ -124,7 +124,7 @@
 <p><strong>Document type:</strong> Working academic manuscript and pre-results study protocol</p>
 <p><strong>Status:</strong> Draft for research execution; not yet ready for arXiv submission</p>
 <p><strong>Prepared:</strong> September 2, 2026</p>
-<p><strong>Engineering snapshot:</strong> v0.1.197 · 257/261 backlog acceptance criteria verified.</p>
+<p><strong>Engineering snapshot:</strong> v0.1.198 · 257/261 backlog acceptance criteria verified.</p>
 <p><strong>Proposed arXiv category:</strong> <code>cs.MA</code> (primary), with possible cross-listing to
 <code>cs.AI</code> and <code>cs.CL</code></p>
 <p><strong>Authors:</strong> Anonymous working draft; author order, affiliations, ORCID identifiers,
@@ -1027,6 +1027,16 @@ candidate and experiment it chooses the smallest reserve count whose binomial
 probability of obtaining N valid runs is at least 0.95 at the pilot upper invalid
 rate. Under the clean 0/20 reference, this requires 7 reserves at N=25 through 52
 at N=300. The table is a design calculation; it authorizes no run or resource.</p>
+<p>The prospective <a href="protocols/confirmatory-power-simulator.v1.json">power-simulator specification</a>
+binds the executable model for all eight candidates and fourteen components. It uses
+Normal mean and chi-square sample-variance sufficient statistics for the registered
+one-sided t tests, with each future pilot&#39;s one-sided upper SD, and exact-binomial
+decision probabilities for H5. Random streams are deterministically separated by
+candidate, member, and component. Their independent joint-family outcome is a
+diagnostic only; selection uses the component-wise dependence-robust bounds above.
+The Normal assumption is a declared parametric power model, not evidence about the
+future outcome distribution. Software fixtures do not supply a pilot, power result,
+selected sample size, resource authorization, or empirical finding.</p>
 <p>That nine-member rule governs the confirmatory H1-H8 family and is distinct from
 E03&#39;s qualification-only rule in Appendix D. E03 uses its own four-row bounded
 numeric-rule table after its separate twenty-slot control pilot; E03 neither spends
