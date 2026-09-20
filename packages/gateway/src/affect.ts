@@ -75,12 +75,12 @@ import {
   type AffectWindow,
   type BabyRole,
   type ChannelEvent,
-  type EvidenceWriter,
   type GatewayRunContext,
   type RunConfig,
   type Sha256Hash,
 } from '@ald/types';
 import { SeededPrng, hashCanonical } from '@ald/hashing';
+import type { GatewayEvidencePort } from './evidence-port.js';
 
 import {
   AffectDisabledError,
@@ -161,7 +161,7 @@ export interface AffectRejectionCommit {
  */
 export interface AffectProtocolHost {
   readonly runContext: GatewayRunContext;
-  readonly evidence: EvidenceWriter;
+  readonly evidence: GatewayEvidencePort;
   commitAffectRejection(
     turn: number,
     sender: BabyRole,

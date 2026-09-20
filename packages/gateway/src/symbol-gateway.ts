@@ -4,7 +4,7 @@
  *
  * This class is the single mediation point for every inter-agent artifact.
  * It never writes SQLite: it validates, applies the §9.6 communication
- * control, and calls the one Evidence Writer through the `EvidenceWriter`
+ * control, and calls the one Evidence Writer through the `GatewayEvidencePort`
  * contract, releasing the public artifact to the receiver only after that
  * commit succeeds (§8.2). It holds no learner state and no scenario ground
  * truth.
@@ -33,7 +33,6 @@ import {
   type BabyRole,
   type ChannelEvent,
   type DeliveredChannelArtifact,
-  type EvidenceWriter,
   type GatewayRunContext,
   type GatewaySubmitResult,
   type GatewayTurnContext,
@@ -48,6 +47,7 @@ import { hashCanonical, hashCarrierMark, SeededPrng } from '@ald/hashing';
 import { validateLedgerEventDraft } from '@ald/evidence';
 
 import { AffectProtocol, type DerivedAffectResult } from './affect.js';
+import type { GatewayEvidencePort } from './evidence-port.js';
 import {
   carrierModule,
   DEFAULT_MAX_SYMBOL_REPEATS,
@@ -210,7 +210,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
 
   constructor(
     readonly runContext: GatewayRunContext,
-    private readonly evidence: EvidenceWriter,
+    private readonly evidence: GatewayEvidencePort,
     options: SymbolGatewayOptions = {},
   ) {
     this.assertInventory(runContext.symbolInventory);

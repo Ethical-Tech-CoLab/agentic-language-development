@@ -14,6 +14,10 @@ names the remaining Baby, adapter, Gateway, Evidence Writer, signer, Controller,
 checkpoint, and offline-verifier processes and their permitted calls. Its status
 is `design-locked-not-implemented`; the current Compose file is intentionally a
 negative reference for the selected B12 gate.
+The Gateway now accepts a six-method write-only evidence port at its type boundary;
+a test exercises accepted and rejected turns through a port without registration,
+read, checkpoint, or anchor methods. The current Nursery still passes an in-process
+writer, so this is not yet a process or runtime capability boundary.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified
