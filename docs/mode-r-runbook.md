@@ -107,17 +107,22 @@ failed before pause: that turn exhausted its one-turn training budget and advanc
 the state to evaluation, where the lifecycle does not permit an explicit pause.
 The retained receipt, logs, database, and portable failure report record one turn,
 no restore, no offline verification, and clean teardown. They are not reused.
-The prospective v2 packet allocates two training turns so the first Controller can
-create the run, complete one training turn, and pause while still running. The
-collector then replaces only the two model adapters, two Babies, Gateway, and
-Controller while leaving all signer, writer, checkpoint, anchor, and audit services
-live. A new Controller must verify the retained prefix, recover the paused run,
-resume, complete the second training turn and one held-out evaluation turn, export
-the bundle, and invoke the offline verifier. The collector records container
-identity changes, exact routes and mounts, checkpoints, interventions, resources,
-and teardown. A pass would qualify only this bounded lifecycle path; the injected-
-fault matrix, detector bounds, peak resource envelope, Rust audit, B12 closure,
-and behavioral findings remain separate gates.
+The v2 packet allocated two training turns, so the first Controller created the
+run, completed one training turn, and paused while still running. The collector
+then replaced only the two model adapters, two Babies, Gateway, and Controller
+while leaving all signer, writer, checkpoint, anchor, and audit services live.
+The replacement Controller started before the replacement Gateway had opened both
+learner-relay sockets, so recovery adapter initialization received `ECONNREFUSED`.
+The retained v2 evidence records a completed pause and six replacements, but no
+completed restore or offline verification. The raw receipt's ten persistent-service
+identity changes are an accounting artifact of its absent second snapshot and are
+not accepted as a measurement. The v3 collector requires the replacement Gateway
+to remain running and emit its existing `ready` marker—after both relay listeners
+open—before starting the replacement Controller. It also counts an identity change
+only when both snapshots contain that service. Every lifecycle turn and acceptance
+threshold remains unchanged. A pass would qualify only this bounded lifecycle path;
+the injected-fault matrix, detector bounds, peak resource envelope, Rust audit,
+B12 closure, and behavioral findings remain separate gates.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

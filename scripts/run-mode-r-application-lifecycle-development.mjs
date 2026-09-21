@@ -18,12 +18,12 @@ import { fixedTokenInventory } from '@ald/types';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-application-lifecycle-development.v2.json';
-const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v2';
+const protocolPath = 'protocols/mode-r-application-lifecycle-development.v3.json';
+const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v3';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
-const project = 'ald-mode-r-application-lifecycle-development-v2';
+const project = 'ald-mode-r-application-lifecycle-development-v3';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
 const baseEnvironment = {
@@ -81,6 +81,27 @@ async function waitForServiceExit(name, timeoutMs = 600_000) {
     await delay(250);
   }
   throw new Error(`${name} did not exit within ${String(timeoutMs)} ms`);
+}
+
+async function waitForServiceLog(name, marker, timeoutMs = 60_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const ids = command('docker', [
+      'ps', '-aq',
+      '--filter', `label=com.docker.compose.project=${project}`,
+      '--filter', `label=com.docker.compose.service=${name}`,
+    ]).split('\n').filter(Boolean);
+    assert.ok(ids.length <= 1, `${name} has multiple containers`);
+    if (ids.length === 1) {
+      const inspected = JSON.parse(command('docker', ['inspect', ids[0]]))[0];
+      assert.equal(inspected.State.Status, 'running',
+        `${name} exited before reporting ${marker}`);
+      const logs = command('docker', ['logs', ids[0]]);
+      if (logs.split('\n').includes(marker)) return;
+    }
+    await delay(250);
+  }
+  throw new Error(`${name} did not report ${marker} within ${String(timeoutMs)} ms`);
 }
 
 function snapshot(resolved) {
@@ -193,7 +214,7 @@ assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha25
 const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
-  randomSeed: 'selected-application-lifecycle-development-v2',
+  randomSeed: 'selected-application-lifecycle-development-v3',
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',
@@ -270,6 +291,7 @@ try {
   compose('recover', 'up', '-d', '--no-deps', 'model-adapter-a', 'model-adapter-b');
   compose('recover', 'up', '-d', '--no-deps', 'baby-a', 'baby-b');
   compose('recover', 'up', '-d', '--no-deps', 'gateway');
+  await waitForServiceLog('gateway', 'ready');
   compose('recover', 'up', '-d', '--no-deps', 'controller-scenario');
   const secondTerminal = await waitForServiceExit('controller-scenario');
   assert.equal(secondTerminal.exitCode, 0, 'recovery controller failed');
@@ -302,8 +324,11 @@ const remaining = command('docker', [
 ]).split('\n').filter(Boolean);
 const firstByName = new Map(firstObservations.map((entry) => [entry.name, entry]));
 const secondByName = new Map(secondObservations.map((entry) => [entry.name, entry]));
-const identityChanges = (names) => names.filter((name) =>
-  firstByName.get(name)?.containerId !== secondByName.get(name)?.containerId).length;
+const identityChanges = (names) => names.filter((name) => {
+  const first = firstByName.get(name)?.containerId;
+  const second = secondByName.get(name)?.containerId;
+  return first !== undefined && second !== undefined && first !== second;
+}).length;
 const summary = {
   firstServiceCount: firstObservations.length,
   serviceCount: secondObservations.length,

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-lifecycle-recovery-startup-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "f98dfb262aa22ae4ee9d67ccad84c8c02275d212",
+  "attemptedRunId": "mode-r-application-lifecycle-v2",
+  "stage": "recovery-adapter-initialization",
+  "firstStageContainersObserved": 16,
+  "recreatedServicesObserved": 6,
+  "firstControllerExitCode": 0,
+  "recoveryControllerExitCode": 1,
+  "turnsRecorded": 1,
+  "channelEventsRecorded": 1,
+  "ledgerEventsRecorded": 5,
+  "auditEntriesRecorded": 0,
+  "interventionEventsRecorded": 2,
+  "checkpointsRecorded": 3,
+  "pauseCompleted": true,
+  "restoreCompleted": false,
+  "offlineVerifierAttempted": false,
+  "gatePassed": false,
+  "cause": "After the six selected services were recreated, the collector started the replacement Controller immediately after requesting Gateway startup. The Gateway had not yet emitted its ready marker or opened both learner-relay listeners, so recovered adapter initialization received ECONNREFUSED on the Baby A relay socket.",
+  "accountingLimitation": "The collector took no second-stage topology snapshot after the recovery Controller failed. Its raw summary therefore compared the ten present first-stage persistent IDs with absent second-stage IDs and misleadingly counted ten changes. The v3 collector counts an identity change only when both observations exist.",
+  "correctionPolicy": "Retain every v2 artifact; use a fresh v3 identity; require the replacement Gateway to remain running and emit its existing ready marker after both learner relays open before starting the replacement Controller; preserve all lifecycle and acceptance thresholds; and do not infer identity changes from a missing snapshot.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-lifecycle-development-v2/receipt.json",
+    "bytes": 15706,
+    "sha256": "sha256:d30e6b922b7c93e3f9f9e68895dead8a93e3e0e8eadd7e1c011a99cb3d2dfabe",
+    "retention": "local-ignored-original"
+  },
+  "rawLogs": {
+    "path": "evidence/mode-r-application-lifecycle-development-v2/compose-logs.txt",
+    "bytes": 2915,
+    "sha256": "sha256:ea1faecb90e107cd232c7cfd6001effdf45a41c36c6103206b13f465aefcd16d"
+  },
+  "retainedDatabase": {
+    "path": "evidence/mode-r-application-lifecycle-development-v2/evidence/evidence.sqlite",
+    "bytes": 212992,
+    "sha256": "sha256:377337009adabcecabab075f9dcc542ce63fb32d585613228cc918097469e7a8"
+  },
+  "prepareResult": {
+    "path": "evidence/mode-r-application-lifecycle-development-v2/output/controller-prepare-result.json",
+    "bytes": 576,
+    "sha256": "sha256:faaddf5974764e0ed2ac00911a586be465ba46fe5860b03fff56fa5d67985636"
+  },
+  "claimBoundary": "This failed recovery startup is not a passing qualification, behavioral result, B12 closure, or publication result."
+}

@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 3,
+  "classification": "selected-mode-r-application-lifecycle-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-lifecycle-v3",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-application-lifecycle-development-v2-failure.json",
+    "stage": "recovery-adapter-initialization",
+    "turnsRecorded": 1,
+    "cause": "The replacement Controller started before the replacement Gateway had opened its two learner-relay sockets and received ECONNREFUSED while initializing the recovered adapters."
+  },
+  "prerequisite": {
+    "path": "reports/research/mode-r-application-development-v6-qualification-receipt.json",
+    "sha256": "44e90d041b556a9ce86a0120787215cd703c5e652b5527a870fbf80f842c26be",
+    "qualification": "bounded-selected-application-development"
+  },
+  "authorityGraph": {
+    "path": "protocols/mode-r-authority-graph.v6.json",
+    "sha256": "aaafc8aecb844942118e2fb6e279019d4be193ba4013dfd737685db2c6f26db3"
+  },
+  "compose": {
+    "basePath": "deploy/mode-r/docker-compose.application.v1.yml",
+    "baseSha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f",
+    "overlayPath": "deploy/mode-r/docker-compose.application-lifecycle.v1.yml",
+    "overlaySha256": "05b306936ca32e8d7f42f9b1dd89494839b4a8e45f4db1a59a876586326fb8ab"
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "carrier": "fixed-token",
+    "trainingTurns": 2,
+    "evaluationTurns": 1,
+    "checkpointEventInterval": 1,
+    "firstControllerStage": "prepare-recovery",
+    "secondControllerStage": "recover",
+    "replacementGatewayReadyLog": "ready",
+    "recreatedServices": [
+      "model-adapter-a",
+      "model-adapter-b",
+      "baby-a",
+      "baby-b",
+      "gateway",
+      "controller-scenario"
+    ],
+    "persistentServices": [
+      "signer-baby-a-ledger",
+      "signer-baby-b-ledger",
+      "signer-channel",
+      "signer-affect",
+      "signer-audit",
+      "witness-signer",
+      "evidence-writer",
+      "checkpoint",
+      "simulated-anchor",
+      "audit-interpreter"
+    ],
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attempts": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true
+  },
+  "acceptance": {
+    "firstTurn": 0,
+    "firstPhase": "running",
+    "pausedState": "paused",
+    "recoveredState": "paused",
+    "recoveredTurn": 1,
+    "resumedState": "running",
+    "secondTurn": 1,
+    "secondPhase": "running",
+    "evaluationTurn": 2,
+    "evaluationPhase": "evaluating",
+    "finalState": "sealing",
+    "finalTurn": 3,
+    "auditEntryCount": 1,
+    "requiredCheckpointReasons": [
+      "run-initialized",
+      "event-interval",
+      "pause",
+      "recovery",
+      "intervention"
+    ],
+    "requiredInterventionTypes": ["pause", "recovery", "resume"],
+    "recreatedServiceIdentityChanges": 6,
+    "persistentServiceIdentityChanges": 0,
+    "serviceCount": 17,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "offlineVerifierExitCode": 0,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "scope": {
+    "included": [
+      "selected-container-run-creation",
+      "one-pre-restart-training-turn",
+      "pause-checkpoint",
+      "controller-gateway-baby-model-process-replacement",
+      "replacement-gateway-readiness-before-controller-start",
+      "verified-prefix-recovery",
+      "resume-checkpoint",
+      "one-post-restart-training-turn",
+      "one-held-out-evaluation-turn",
+      "delayed-audit-entry",
+      "bundle-export",
+      "offline-typescript-verification",
+      "network-mount-identity-and-teardown-reconciliation"
+    ],
+    "excluded": [
+      "injected-uncertain-write-and-late-callback-matrix",
+      "signer-writer-checkpoint-anchor-and-audit-service-death-matrix",
+      "detector-positive-and-negative-bounds",
+      "peak-resource-envelope-qualification",
+      "independent-rust-audit",
+      "b12-closure",
+      "behavioral-or-scientific-finding"
+    ]
+  },
+  "correction": {
+    "scientificDesignChanged": false,
+    "thresholdChanged": false,
+    "reason": "The collector now waits for the replacement Gateway's existing ready marker, which is emitted only after both learner-relay listeners are open, before it starts the replacement Controller. Missing second-stage snapshots no longer count absent persistent services as changed identities."
+  },
+  "claimBoundary": "A pass establishes only the selected application pause/restart/recover/resume/evaluation path. It does not close B12 or establish fault, detector, resource, behavioral, or publication claims."
+}

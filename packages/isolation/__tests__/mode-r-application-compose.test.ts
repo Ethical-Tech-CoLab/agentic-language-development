@@ -59,7 +59,7 @@ const protocolV6 = JSON.parse(readFileSync(
   };
 };
 const lifecycleProtocol = JSON.parse(readFileSync(
-  'protocols/mode-r-application-lifecycle-development.v2.json',
+  'protocols/mode-r-application-lifecycle-development.v3.json',
   'utf8',
 )) as {
   schemaVersion: number;
@@ -75,6 +75,7 @@ const lifecycleProtocol = JSON.parse(readFileSync(
   execution: {
     trainingTurns: number;
     evaluationTurns: number;
+    replacementGatewayReadyLog: string;
     recreatedServices: string[];
     persistentServices: string[];
   };
@@ -190,20 +191,21 @@ describe('selected Mode R application Compose', () => {
       .digest('hex')).toBe(protocolV6.compose.sha256);
   });
 
-  it('uses a fresh v2 identity for the corrected pause/restart/recover path', () => {
+  it('uses a fresh v3 identity and waits for the replacement Gateway', () => {
     expect(lifecycleProtocol).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       status: 'design-locked-not-executed',
-      runId: 'mode-r-application-lifecycle-v2',
+      runId: 'mode-r-application-lifecycle-v3',
       predecessorFailure: {
-        path: 'reports/research/mode-r-application-lifecycle-development-v1-failure.json',
-        stage: 'prepare-lifecycle-transition',
+        path: 'reports/research/mode-r-application-lifecycle-development-v2-failure.json',
+        stage: 'recovery-adapter-initialization',
         turnsRecorded: 1,
       },
     });
     expect(lifecycleProtocol.execution).toMatchObject({
       trainingTurns: 2,
       evaluationTurns: 1,
+      replacementGatewayReadyLog: 'ready',
     });
     expect(lifecycleProtocol.execution.recreatedServices).toHaveLength(6);
     expect(lifecycleProtocol.execution.persistentServices).toHaveLength(10);
@@ -230,6 +232,7 @@ describe('selected Mode R application Compose', () => {
       'utf8',
     );
     expect(collector).toContain("'rm', '--stop', '--force'");
+    expect(collector).toContain("waitForServiceLog('gateway', 'ready')");
     expect(collector).toContain('recreatedServiceIdentityChanges');
     expect(collector).toContain('persistentServiceIdentityChanges');
     expect(collector).toContain("'offline-verifier'");
