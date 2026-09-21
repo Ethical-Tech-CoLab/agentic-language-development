@@ -22,12 +22,12 @@ import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-uncertain-write-development.v2.json';
-const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v2';
+const protocolPath = 'protocols/mode-r-uncertain-write-development.v3.json';
+const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v3';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-uncertain-write.v1.yml';
-const project = 'ald-mode-r-uncertain-write-development-v2';
+const project = 'ald-mode-r-uncertain-write-development-v3';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -118,12 +118,19 @@ function resourceSnapshot() {
   ]).split('\n').filter(Boolean).map(JSON.parse);
 }
 
-function removeGatewaySocket() {
-  const path = join(evidenceRoot, 'runtime/gateway-controller/gateway.sock');
-  const info = lstatSync(path);
-  assert.equal(info.isSocket(), true, 'Gateway endpoint is not a socket');
-  assert.equal(info.isSymbolicLink(), false, 'Gateway endpoint is a symlink');
-  unlinkSync(path);
+function removeGatewaySockets() {
+  const paths = [
+    'runtime/gateway-controller/gateway.sock',
+    'runtime/gateway-baby-a/learner.sock',
+    'runtime/gateway-baby-b/learner.sock',
+  ];
+  for (const relativePath of paths) {
+    const path = join(evidenceRoot, relativePath);
+    const info = lstatSync(path);
+    assert.equal(info.isSocket(), true, `${relativePath} is not a socket`);
+    assert.equal(info.isSymbolicLink(), false, `${relativePath} is a symlink`);
+    unlinkSync(path);
+  }
 }
 
 function journalAccounting() {
@@ -275,7 +282,7 @@ try {
   journal = journalAccounting();
 
   compose('recover', 'rm', '--stop', '--force', 'controller-scenario', 'gateway');
-  removeGatewaySocket();
+  removeGatewaySockets();
   compose('recover', 'up', '-d', '--no-deps', 'gateway');
   await waitForServiceLog('gateway', 'ready');
   compose('recover', 'up', '-d', '--no-deps', 'controller-scenario');

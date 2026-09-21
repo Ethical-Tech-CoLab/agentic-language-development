@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v2",
+  "executionCommit": "08a4e3201cb86d34c671b9bbc734adead575f609",
+  "executionTree": "cd4c9e30b3c1525c72824f0007650909bffd169a",
+  "executionVersion": "0.1.290",
+  "startedAt": "2026-09-21T14:40:46.904Z",
+  "finishedAt": "2026-09-21T14:44:31.771Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v2.json",
+    "bytes": 3669,
+    "sha256": "sha256:978dfc4c54327b615676e91dc0b4e98bb52a64aec3c07a2bafc501d33cc60f47"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v2/receipt.json",
+    "bytes": 7232,
+    "sha256": "sha256:16d34fb4b3caf3e1be19228aeed189c2787a78f06f87aff27d583f82a442f15f",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 0,
+    "controllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "observedInjection": {
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "state": "running",
+    "turn": 0,
+    "operationalQuarantine": "evidence-write-uncertain",
+    "channelDelta": 1,
+    "senderLedgerDelta": 2,
+    "turnRecordDelta": 0,
+    "secondAttemptAddedEvidence": false,
+    "journalIntentCount": 1,
+    "journalConfirmationCount": 0,
+    "typescriptPrefixExitCode": 0,
+    "rustPrefixIntegrityPass": true,
+    "rustPrefixEventCount": 4,
+    "rustPrefixCheckpointCount": 1
+  },
+  "cause": "The runner removed only the Gateway controller socket before recreation. The two role-specific learner-relay sockets remained, so the recreated Gateway could not finish opening its relay listeners or report readiness within the bound.",
+  "interpretation": "The prospective live fault behavior occurred and the incomplete cryptographic prefix verifies, but the registered two-stage qualification is failed because recovery refusal was not exercised.",
+  "nextAction": "Register a fresh v3 supplement that removes all three Gateway-owned sockets before recreation and expects both first-emission and intention events on the sender ledger.",
+  "claimBoundary": "V2 is a failed two-stage qualification. Its retained observations support diagnosis only; they do not constitute a passing uncertainty qualification, B12 closure, or a behavioral result."
+}
