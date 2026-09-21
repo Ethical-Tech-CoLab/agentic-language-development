@@ -73,6 +73,7 @@ export {
 export { EvidenceWriteUncertainError } from './evidence-port.js';
 export type { GatewayEvidencePort } from './evidence-port.js';
 export { GatewayWriteIntentJournal } from './write-intent-journal.js';
+export { connectGatewayEvidenceRpc, createGatewayEvidenceRpcServer } from './evidence-rpc.js';
 export {
   assertEveryCarrierHasVectors,
   conformanceVectorsFor,

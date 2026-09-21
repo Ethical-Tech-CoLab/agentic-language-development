@@ -42,6 +42,13 @@ The Controller now uses the Gateway interface and awaits batch setup, sealing,
 recovery discard, and rejection-counter reset. A held-response test verifies
 that delivery does not outrun setup or sealing. The writer and Gateway remain
 in the Nursery process, so these asynchronous calls are not remote RPC evidence.
+A separate component test now runs a real SQLite Evidence Writer in a child
+process and calls its six Gateway write operations over a private Unix socket.
+The run-bound handshake, method allowlist, bounded frames, response schemas,
+and no-retry client are tested; the existing write-intent journal quarantines
+a call after writer death. This component is not wired into `nursery-study` or
+the selected Compose topology. Its socket permissions are not, by themselves,
+proof of authenticated role routes or Controller/Gateway process isolation.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified
