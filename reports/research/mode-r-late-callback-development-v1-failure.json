@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-late-callback-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "rawReceiptPassedFlag": true,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-late-callback-development-v1",
+  "executionCommit": "92529db8008b45bb6f0e8c1a722f193d391ec8ba",
+  "executionTree": "305a572c746038bd1c1a5e8d6a24eacc581b7895",
+  "executionVersion": "0.1.296",
+  "startedAt": "2026-09-21T15:51:01.837Z",
+  "finishedAt": "2026-09-21T15:53:27.882Z",
+  "protocol": {
+    "path": "protocols/mode-r-late-callback-development.v1.json",
+    "bytes": 3807,
+    "sha256": "sha256:fe6cc6b9dfddfa92d3c42d4f8d69f265eca00ff39cf0216e877f50352c2a2b7a"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-late-callback-development-v1/receipt.json",
+    "bytes": 11119,
+    "sha256": "sha256:aac9640c0e0ee9977f4fca9acba276fd5e2d08fd0ce4de9de117d8ab7e79b334",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 0,
+    "controllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "observed": {
+    "terminalState": "paused",
+    "channelReasonCode": "timeout",
+    "logicalSender": "baby-a",
+    "deadlineMethod": "act",
+    "recordedBudgetMs": 30000,
+    "actualAdapterDeadlineMs": 1000,
+    "adapterQuarantined": true,
+    "quarantineFailed": false,
+    "turnDelta": 1,
+    "channelDelta": 1,
+    "lateWindowAddedEvidence": false,
+    "refusedActionsAddedEvidence": false,
+    "resumeErrorName": "RunConfigurationError",
+    "stepErrorName": "RunNotAcceptingTurnsError",
+    "typescriptVerifierExitCode": 0,
+    "rustIntegrityPass": true,
+    "rustEventCount": 4,
+    "rustCheckpointCount": 3,
+    "rustIssueCount": 0,
+    "resourceSnapshotCount": 1
+  },
+  "cause": "The injected late action was quarantined and added no evidence after the deadline, but the run configuration retained its default 30000 ms turn-response budget while the selected outer adapter enforced 1000 ms. The signed deadline attestation therefore recorded 30000 ms and violated the prospective 1000 ms acceptance criterion.",
+  "interpretation": "The safety behavior was observed, but the mismatched signed budget makes v1 an invalid qualification. Its raw receipt computed passed before the final protocol audit; that flag is explicitly rejected here.",
+  "nextAction": "Register v2 under a fresh identity with turnResponseBudgetMs set prospectively to the unchanged selected outer adapter deadline and include the signed deadline-event fields in the receipt pass calculation.",
+  "claimBoundary": "V1 remains a failed qualification wrapper. It does not close the late-callback gate, B12, or any behavioral hypothesis."
+}

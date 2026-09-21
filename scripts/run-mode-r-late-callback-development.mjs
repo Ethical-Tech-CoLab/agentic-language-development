@@ -19,12 +19,12 @@ import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-late-callback-development.v1.json';
-const evidenceRoot = 'evidence/mode-r-late-callback-development-v1';
+const protocolPath = 'protocols/mode-r-late-callback-development.v2.json';
+const evidenceRoot = 'evidence/mode-r-late-callback-development-v2';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-late-callback.v1.yml';
-const project = 'ald-mode-r-late-callback-development-v1';
+const project = 'ald-mode-r-late-callback-development-v2';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -160,6 +160,7 @@ assert.equal(protocol.status, 'design-locked-not-executed');
 assert.equal(protocol.researchFinding, false);
 assert.equal(protocol.b12Closed, false);
 assert.equal(sha256(protocol.prerequisite.path), protocol.prerequisite.sha256);
+assert.equal(sha256(protocol.predecessorFailure.path), protocol.predecessorFailure.sha256);
 for (const source of protocol.sources) assert.equal(sha256(source.path), source.sha256);
 
 const unresolvedConfig = buildRunConfig({
@@ -182,6 +183,7 @@ const unresolvedConfig = buildRunConfig({
   maxTurnsPerRun: 3,
   evaluationTurns: 1,
   checkpointEventInterval: 1,
+  turnResponseBudgetMs: protocol.injection.outerDeadlineMs,
   protocolGitCommit: commit,
 });
 const tracks = [...new Set([unresolvedConfig.babyA.track, unresolvedConfig.babyB.track])];
@@ -250,6 +252,11 @@ try {
 
 const unexpectedRunningAfterTeardown = containerIds().length;
 const acceptance = protocol.acceptance;
+const expectedDeadlineDetails = {
+  turn: acceptance.turn,
+  phase: acceptance.phase,
+  ...acceptance.deadlineEvent,
+};
 const passed = failure === null && result !== null && controllerTerminal?.exitCode === 0 &&
   result.createdState === acceptance.createdState &&
   result.step?.turn === acceptance.turn && result.step?.phase === acceptance.phase &&
@@ -263,6 +270,10 @@ const passed = failure === null && result !== null && controllerTerminal?.exitCo
   sameCounts(result.afterTimeout, result.afterLateWindow) &&
   sameCounts(result.afterLateWindow, result.afterRefusals) &&
   result.deadlineEvents?.length === acceptance.deadlineEventCount &&
+  Object.keys(result.deadlineEvents?.[0]?.details ?? {}).length ===
+    Object.keys(expectedDeadlineDetails).length &&
+  Object.entries(expectedDeadlineDetails).every(([key, value]) =>
+    result.deadlineEvents?.[0]?.details?.[key] === value) &&
   result.resumeError?.name === acceptance.resumeErrorName &&
   result.stepError?.name === acceptance.stepErrorName &&
   verification?.typescript.exitCode === acceptance.typescriptVerifierExitCode &&

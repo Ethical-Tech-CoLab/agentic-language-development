@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 2,
+  "classification": "selected-mode-r-late-callback-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-late-callback-development-v2",
+  "runId": "mode-r-application-late-callback-development-v2",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-late-callback-development-v1-failure.json",
+    "sha256": "875df9dea77beb130624cce058203953aed4f04e0533921e693024131f6f2368"
+  },
+  "prerequisite": {
+    "path": "reports/research/mode-r-uncertain-write-development-v6-qualification-receipt.json",
+    "sha256": "8284a94178dea425013b07ab77ce74e4b1c10594626e066085a5e9315cec4cd4"
+  },
+  "sources": [
+    {
+      "path": "packages/isolation/src/host.ts",
+      "sha256": "12c305a3268d9189908f577e21c3b050aa621ec4a028d81247a916fc618d37cd"
+    },
+    {
+      "path": "deploy/mode-r/Dockerfile",
+      "sha256": "43a12cb1140687a6e83bb167f43d5019e3a464bdf4a4a8e27787e1c7103cd35e"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application.v1.yml",
+      "sha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application-late-callback.v1.yml",
+      "sha256": "ab150801c4aa1399a20b61d8fca2232bf868c4a5db32f40b5e5c35ebcb49c0f4"
+    },
+    {
+      "path": "deploy/mode-r/application-delayed-model-adapter.mjs",
+      "sha256": "076e061b1d53ee174925d0146e9d4e294db288434a72537bfda3f20be8d9ea89"
+    },
+    {
+      "path": "deploy/mode-r/application-late-callback-controller.mjs",
+      "sha256": "bcff7370949580af45621735cc1bcee5e7e09fde67d843e294b2b0939c866621"
+    }
+  ],
+  "injection": {
+    "role": "baby-a",
+    "modelMethod": "act",
+    "delayMs": 1500,
+    "outerDeadlineMs": 1000,
+    "postDeadlineObservationMs": 2500,
+    "semantics": "The isolated model begins the sender action but cannot answer before the outer Baby boundary's normalized deadline. The Controller-side adapter must close its Gateway relay, quarantine the attempt, and admit no late evidence after the delayed method completes."
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "createdState": "running",
+    "turn": 0,
+    "phase": "running",
+    "terminalState": "paused",
+    "channelValidation": "rejected",
+    "channelReasonCode": "timeout",
+    "logicalSender": "baby-a",
+    "outcomeReasonCode": "timeout",
+    "turnDelta": 1,
+    "channelDelta": 1,
+    "deadlineEventCount": 1,
+    "deadlineEvent": {
+      "role": "baby-a",
+      "method": "act",
+      "budgetMs": 1000,
+      "adapterQuarantined": true,
+      "quarantineFailed": false
+    },
+    "resumeErrorName": "RunConfigurationError",
+    "stepErrorName": "RunNotAcceptingTurnsError",
+    "typescriptVerifierExitCode": 0,
+    "rustIntegrityPass": true,
+    "minimumResourceSnapshots": 1
+  },
+  "correction": {
+    "scientificDesignChanged": false,
+    "scientificThresholdChanged": false,
+    "injectionChanged": false,
+    "reason": "V1 observed the intended terminal quarantine and no late evidence, but its run configuration left the signed response budget at the 30000 ms default while the selected adapter enforced 1000 ms. V2 prospectively aligns the run configuration with the unchanged outer deadline and includes the signed deadline-event fields in pass computation."
+  },
+  "scope": {
+    "included": [
+      "selected-application-topology",
+      "outer-baby-normalized-deadline",
+      "late-model-action-completion",
+      "gateway-relay-terminal-close",
+      "one-audited-timeout-forfeit",
+      "no-post-deadline-evidence",
+      "resume-and-next-step-refusal",
+      "typescript-and-independent-rust-cryptographic-prefix-verification"
+    ],
+    "excluded": [
+      "all-turn-path-methods-in-selected-topology",
+      "malformed-envelope-injection",
+      "detector-positive-and-negative-statistical-bounds",
+      "cgroup-peak-resource-envelope",
+      "selected-e10-plus-learner-and-carrier-bindings",
+      "b12-closure",
+      "behavioral-or-scientific-finding"
+    ]
+  },
+  "claimBoundary": "A pass establishes one bounded selected-topology late sender-action case: the outer normalized deadline produces one recorded timeout forfeit, terminally quarantines the remote adapter path, admits no evidence from the later model completion, and refuses resume or another turn. It does not qualify every method, close B12, or establish a behavioral result."
+}
