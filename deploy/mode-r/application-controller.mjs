@@ -13,6 +13,7 @@ import {
   connectAuditInterpreterRpc,
   createNurseryRuntime,
 } from '@ald/orchestrator';
+import { RECURRENT_ARCHITECTURE } from '@ald/learners';
 import { SIGNER_DOMAINS } from '@ald/types';
 
 import { readJson, required, retry } from './application-common.mjs';
@@ -37,6 +38,18 @@ const [controller, audit, checkpoint, anchor] = await Promise.all([
       network: 'base-sepolia',
     })),
 ]);
+const lv01LearnerOptions = {
+  backbone: RECURRENT_ARCHITECTURE,
+  learningRate: 0.003,
+  temperature: 1,
+  recurrent: {
+    hiddenSize: 16,
+    ppoClip: 0.2,
+    ppoEpochs: 4,
+    valueLossCoefficient: 0.5,
+    maxGradientNorm: 1,
+  },
+};
 const factories = new Map([
   ['baby-a', createGatewayRelayAdapterFactory({
     track: config.babyA.track,
@@ -44,6 +57,7 @@ const factories = new Map([
     hostLabel: 'baby-a-gateway-relay',
     timing: 'normalized',
     deadlineMs: 1_000,
+    learnerOptions: lv01LearnerOptions,
   })],
   ['baby-b', createGatewayRelayAdapterFactory({
     track: config.babyB.track,
@@ -51,6 +65,7 @@ const factories = new Map([
     hostLabel: 'baby-b-gateway-relay',
     timing: 'normalized',
     deadlineMs: 1_000,
+    learnerOptions: lv01LearnerOptions,
   })],
 ]);
 const signers = {
