@@ -218,9 +218,15 @@ four passed: seventeen distinct running processes, 272 directed routes, 160
 literal-interface probes, 34 authenticated allowed endpoints, 126 denied
 endpoints, 144 no-interface denials, and zero acceptance mismatches. Its raw
 receipt is retained and a portable checker binds the original digest and scope.
-No selected execution has occurred; this is bounded development topology
+At that stage no selected execution had occurred; this was bounded development topology
 qualification, not application-runtime qualification, B12 closure, or a
 scientific result.
+The separately frozen selected source then completed its single-use boundary
+collection with the same 17-process, 272-route, and 160-endpoint counts and
+zero mismatches. The selected raw receipt is retained and separately audited.
+This upgrades the bounded responder topology from development-only to selected
+qualification; it still does not execute the application services, lifecycle,
+faults, detectors, resource measurements, independent audit, or B12 closure.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
