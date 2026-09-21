@@ -7,12 +7,15 @@ import { buildRunConfig } from '@ald/lifecycle';
 import {
   AuditLedgerEntrySchema,
   VerificationReportSchema,
+  type AuditLedgerEntry,
   type LedgerEvent,
+  type StoredEvent,
 } from '@ald/types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   AuditInterpreterError,
+  AuditLedgerInterpreter,
   createProductionRuntime,
   type NurseryRuntimeImpl,
 } from '../src/index.js';
@@ -65,6 +68,39 @@ describe('human audit-ledger interpreter (ALD-064)', () => {
   afterAll(async () => {
     close();
     await rm(root, { recursive: true, force: true });
+  });
+
+  it('waits for an asynchronous ledger read before any audit append', async () => {
+    let releaseRead!: (events: StoredEvent[]) => void;
+    const delayedRead = new Promise<StoredEvent[]>((resolve) => { releaseRead = resolve; });
+    let writes = 0;
+    const interpreter = new AuditLedgerInterpreter({
+      readEvents: () => delayedRead,
+      appendAuditLedgerEntry: async () => {
+        writes += 1;
+        return {} as AuditLedgerEntry;
+      },
+    });
+    const pending = interpreter.appendBatch({
+      runId: RUN_ID,
+      interpreterVersion: 'held-read-test',
+      entries: [{
+        babyId: 'A',
+        sourceEntryHash: sources.babyA.entryHash,
+        content: { term: 'S01', hypothesis: 'held read', evidence: 'turn 0' },
+      }],
+    }, 2);
+    expect(writes).toBe(0);
+    releaseRead([{
+      stream: 'baby-a-ledger',
+      sequence: sources.babyA.sequence,
+      entryHash: sources.babyA.entryHash,
+      previousEntryHash: sources.babyA.previousEntryHash,
+      recordedAt: sources.babyA.recordedAt,
+      canonicalJson: JSON.stringify(sources.babyA),
+    }]);
+    await pending;
+    expect(writes).toBe(1);
   });
 
   it('refuses same-turn analysis, then appends a labeled batch without changing native events', async () => {

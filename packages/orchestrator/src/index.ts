@@ -50,6 +50,7 @@ export {
   AUDIT_INTERPRETATION_DELAY_TURNS,
   AuditInterpreterError,
   AuditLedgerInterpreter,
+  type AuditInterpreterEvidencePort,
   type AuditInterpreterErrorCode,
 } from './audit-interpreter.js';
 export {

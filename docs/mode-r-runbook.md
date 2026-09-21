@@ -28,6 +28,10 @@ turn and an intervention, rejects Gateway/audit methods and a wrong run, and
 checks the retained SQLite rows after writer death. The live Nursery does not
 yet use this port: its synchronous reads and checkpoint dependencies still
 require migration, and socket-mount exclusivity has not been measured.
+The delayed Audit Interpreter now accepts only ledger reads and audit-ledger
+appends through its source-level port, and it awaits reads so a remote evidence
+service can be introduced later. It still runs inside the current Nursery;
+neither an audit-interpreter process nor its v2 socket exists yet.
 The Gateway now quarantines itself when that port reports a possibly committed
 write with no confirmed response. A running Controller refuses another turn
 before adapter work, and restart recovery refuses channel or affect events that

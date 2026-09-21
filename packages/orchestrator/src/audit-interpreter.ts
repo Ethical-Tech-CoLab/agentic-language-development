@@ -12,7 +12,17 @@ import {
   type AuditInterpretationBatchRequest,
   type AuditLedgerEntry,
   type EvidenceWriter,
+  type StoredEvent,
 } from '@ald/types';
+
+/** The delayed interpreter cannot request channel commits or Controller writes. */
+export interface AuditInterpreterEvidencePort {
+  readEvents(
+    runId: string,
+    stream: 'baby-a-ledger' | 'baby-b-ledger',
+  ): StoredEvent[] | Promise<StoredEvent[]>;
+  appendAuditLedgerEntry: EvidenceWriter['appendAuditLedgerEntry'];
+}
 
 /** A source must have one fully completed later turn before interpretation. */
 export const AUDIT_INTERPRETATION_DELAY_TURNS = 1;
@@ -35,7 +45,7 @@ export class AuditInterpreterError extends Error {
 
 export class AuditLedgerInterpreter {
   constructor(
-    private readonly evidence: EvidenceWriter,
+    private readonly evidence: AuditInterpreterEvidencePort,
     private readonly delayTurns = AUDIT_INTERPRETATION_DELAY_TURNS,
   ) {
     if (!Number.isInteger(delayTurns) || delayTurns < 1) {
@@ -69,8 +79,8 @@ export class AuditLedgerInterpreter {
       UnsignedAuditLedgerEntrySchema.shape.content.parse(draft.content);
       const stream =
         draft.babyId === 'A' ? 'baby-a-ledger' : 'baby-b-ledger';
-      const source = this.evidence
-        .readEvents(request.runId, stream)
+      const source = (await this.evidence
+        .readEvents(request.runId, stream))
         .find((event) => event.entryHash === draft.sourceEntryHash);
       if (source === undefined) {
         throw new AuditInterpreterError(

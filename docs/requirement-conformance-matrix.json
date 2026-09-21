@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.225"
+    "version": "0.1.226"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1056,6 +1056,7 @@
     },
     "packages/orchestrator/__tests__/audit-interpreter.test.ts": {
       "selectors": [
+        "waits for an asynchronous ledger read before any audit append",
         "refuses same-turn analysis, then appends a labeled batch without changing native events",
         "exports the audit stream for successful independent verification"
       ],
