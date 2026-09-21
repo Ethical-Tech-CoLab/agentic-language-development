@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "classification": "synthetic-lv01-power-selector-software-qualification",
+  "capturedAt": "2026-09-21",
+  "passed": true,
+  "researchFinding": false,
+  "registeredExecution": false,
+  "scientificDisposition": "not-tested",
+  "syntheticFixturesOnly": true,
+  "eligiblePilotUsed": false,
+  "selectedDyads": null,
+  "reserveDyads": null,
+  "resourceAuthorization": false,
+  "externalSpend": 0,
+  "execution": {
+    "commit": "4ed86300e5bf5456e1d51e8021e46b1a22b85d40",
+    "tree": "f2bd61c53e2565b453f85a777f49955af8f028ab",
+    "version": "0.1.307"
+  },
+  "qualification": {
+    "candidateDyads": [75, 100, 125, 150, 200, 300],
+    "components": ["fidelity", "disabled", "constant", "random", "shuffled", "intervention"],
+    "repetitions": 30000,
+    "independentReference": "base-R qchisq/qt/pt implementation",
+    "comparisons": 36,
+    "pilotUpperSdFactor": 1.6009841465252495
+  },
+  "sourceArtifacts": [
+    {"path": "packages/analysis/src/ledger-value-power.ts", "sha256": "sha256:9aa9c493b1c88dfb60e4dcdb13697380dd647005b19bec413ce6a2f3a7efd338"},
+    {"path": "packages/analysis/src/ledger-value.ts", "sha256": "sha256:2a2b251bac27e36d927f09fe0b44a435d42c45a95cc4787c70df1a0ad86bd617"},
+    {"path": "packages/analysis/src/special.ts", "sha256": "sha256:8db15e8cd93c6551af579899a8e2fc2bff73ac9c1545d7650e1871fe1e2b0d8a"},
+    {"path": "packages/analysis/src/confirmatory-selection.ts", "sha256": "sha256:4f0e3143932f025a2e7ffb3b333b088d287c71a7e61874ffd5e314a72cc395d7"},
+    {"path": "packages/analysis/__tests__/ledger-value-power.test.ts", "sha256": "sha256:baae64b65459fdede76850f90d10a3b646462d34409203ae74ac6f0e3081c970"},
+    {"path": "scripts/validate-lv01-reference.R", "sha256": "sha256:0f2c09fe635699988b2c64708f2b8877bae4debdbb6874c72969149f851b9d3e"},
+    {"path": "scripts/check-lv01-power-reference.mjs", "sha256": "sha256:bbf7f7ca474cbf512be12e89e824dac4fc4d7f196884659ef46cde5d9acd338c"}
+  ],
+  "claimBoundary": "Synthetic numerical software qualification only; not a pilot, selected sample size, resource authorization, confirmatory outcome, replication, or scientific finding."
+}
