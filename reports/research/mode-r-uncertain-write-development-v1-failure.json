@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v1",
+  "executionCommit": "73f976c683ea0b6b7e625b1872776db4177df10b",
+  "executionTree": "90cb4835fd571273fdcf5370347d201c51d64982",
+  "executionVersion": "0.1.289",
+  "startedAt": "2026-09-21T14:29:22.754Z",
+  "finishedAt": "2026-09-21T14:32:04.131Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v1.json",
+    "bytes": 2971,
+    "sha256": "sha256:2ff75161fe7206dbc80d26b4ba4d1ff2fe568cf7c4b79b0f50c4cd942ee4c5ed"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v1/receipt.json",
+    "bytes": 1254,
+    "sha256": "sha256:220c973ce032233d4a7ff86070deb9e0b3381e4a9101e0b30d146062081f9dd2",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 1,
+    "controllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "cause": "The v1 run identity did not use the application-qualified prefix required by the signer host. All ephemeral signer services therefore rejected startup before keys or signed evidence existed.",
+  "interpretation": "This is a packet-binding failure before the intended fault injection, not evidence for or against uncertain-write handling.",
+  "nextAction": "Register a fresh v2 identity using the accepted mode-r-application prefix. Keep the injection schedule and acceptance thresholds unchanged.",
+  "claimBoundary": "V1 is a failed development attempt with no signed run evidence and no scientific result. It does not qualify uncertainty handling or close B12."
+}
