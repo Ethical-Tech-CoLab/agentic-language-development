@@ -19,7 +19,7 @@ import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
-assert.ok(['complete', 'prepare-recovery', 'recover'].includes(stage),
+assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -108,8 +108,44 @@ async function writeResult(name, result) {
   await writeFile(join(outputRoot, name), `${JSON.stringify(result, null, 2)}\n`);
 }
 
+async function runLv01Fixture() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.equal(config.babyA.track, 'scratch-rl');
+  assert.equal(config.babyB.track, 'scratch-rl');
+  assert.ok(config.ledgerValuePlan !== undefined);
+  await runtime.createRun(config);
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'sealed');
+  const records = await controller.port.readEvents(config.runId, 'turns');
+  const checkpoints = await controller.port.readCheckpoints(config.runId);
+  const bundle = await runtime.exportBundle(config.runId, join(outputRoot, 'bundle'));
+  await writeResult('lv01-fixture-result.json', {
+    schemaVersion: 1,
+    classification: 'lv01-development-topology-fixture',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    state: summary.state,
+    trainingTurns: records.filter((event) => JSON.parse(event.canonicalJson).phase === 'running').length,
+    evaluationTurns: records.filter((event) => JSON.parse(event.canonicalJson).phase === 'evaluating').length,
+    checkpointCount: checkpoints.length,
+    processIds: {
+      controller: process.pid,
+      evidenceWriter: controller.processId,
+      gateway: gatewayProcessId,
+      checkpoint: checkpoint.processId,
+      anchor: anchor.processId,
+      auditInterpreter: audit.processId,
+    },
+    bundleRunId: bundle.runId,
+    claimBoundary: 'One local full-turn recurrent fixture through the selected application boundaries. This is not seven-branch LV01 qualification, a pilot, or a behavioral finding.',
+  });
+}
+
 try {
-  if (stage === 'prepare-recovery') {
+  if (stage === 'lv01-fixture') {
+    await runLv01Fixture();
+  } else if (stage === 'prepare-recovery') {
     const created = await runtime.createRun(config);
     const first = await runtime.step(config.runId);
     const paused = await runtime.pause(config.runId, {

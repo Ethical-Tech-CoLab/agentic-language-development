@@ -247,6 +247,15 @@ describe('selected Mode R application Compose', () => {
     expect(collector).toContain("'offline-verifier'");
   });
 
+  it('keeps the LV01 fixture inside the existing selected controller boundary', () => {
+    const controller = readFileSync('deploy/mode-r/application-controller.mjs', 'utf8');
+    expect(controller).toContain("'lv01-fixture'");
+    expect(controller).toContain("assert.equal(config.experimentId, 'LV01')");
+    expect(controller).toContain('await runtime.runToCompletion(config.runId)');
+    expect(controller).toContain("classification: 'lv01-development-topology-fixture'");
+    expect(controller).toContain('not seven-branch LV01 qualification');
+  });
+
   it('declares the exact 17-process graph and three internal networks', () => {
     expect(Object.keys(compose.services).sort()).toEqual(processes);
     expect(Object.keys(compose.networks).sort()).toEqual([
