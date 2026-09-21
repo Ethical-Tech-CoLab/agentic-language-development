@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.298",
+  "version": "0.1.299",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -178,6 +178,7 @@
     "build:seed-resource-ledger": "tsx scripts/check-seed-resource-allocation.ts --write",
     "audit:seed-resource": "tsx scripts/check-seed-resource-allocation.ts",
     "audit:campaign-readiness": "tsx scripts/check-campaign-readiness.ts",
+    "audit:lv01-design": "node scripts/check-lv01-design.mjs",
     "audit:research-governance": "tsx scripts/check-research-governance.ts && node scripts/check-e03-prototype-mode-amendment.mjs",
     "audit:external-prerequisites": "tsx scripts/check-external-prerequisite-readiness.ts",
     "build:data-claim-manifest": "tsx scripts/build-data-claim-manifest.ts --write",

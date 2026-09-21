@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "studyId": "LV01",
+  "designVersion": "lv01-study-design/v1",
+  "classification": "prospective-ledger-fidelity-study-design",
+  "status": "design-frozen-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "question": "How faithfully do contemporaneous training-derived private semantic ledgers reconstruct a frozen recurrent receiver policy, how do their predictions compare with ordinary records, and what are their measured audit costs in one learned referential task?",
+  "scopeBoundary": [
+    "One synthetic numeric referential task and one recurrent scratch-RL learner family.",
+    "No language-emergence, compositionality, human-audit, public-timestamp, independent-review, or full-program completion claim.",
+    "The original E00-E50 protocols and their experiment IDs remain unchanged."
+  ],
+  "task": {
+    "generator": "referential-game-v1",
+    "attributeCount": 2,
+    "valuesPerAttribute": 4,
+    "typeCodeRule": "4 * firstAttribute + secondAttribute",
+    "candidatesPerEpisode": 4,
+    "chanceSuccess": 0.25,
+    "eligibleTypeCodes": [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14],
+    "untouchedTypeCodes": [0, 5, 10, 15],
+    "partitions": {
+      "training": {"cases": 3000, "perReceiverRole": 1500, "perEligibleTargetPerRole": 125, "policyUpdates": true},
+      "validationFit": {"cases": 240, "perReceiverRole": 120, "perEligibleTargetPerRole": 10, "policyUpdates": false},
+      "validationSelection": {"cases": 240, "perReceiverRole": 120, "perEligibleTargetPerRole": 10, "policyUpdates": false},
+      "withinSupportTest": {"cases": 240, "perReceiverRole": 120, "perEligibleTargetPerRole": 10, "policyUpdates": false}
+    },
+    "duplicateRule": "Canonical scenario content and IDs are distinct across partitions after outcome-free rederivation; deliberate seven-branch reuse inside one test case is required.",
+    "prohibitedSplits": ["held-out", "evaluation"],
+    "claimBoundary": "Fresh within-support cases are not new-type generalization or compositionality evidence."
+  },
+  "learner": {
+    "track": "scratch-rl",
+    "architecture": "gru-actor-critic-v1",
+    "agents": 2,
+    "trainingIsolation": "independent",
+    "inputSize": 50,
+    "hiddenSize": 16,
+    "senderOutputSize": 32,
+    "receiverOutputSize": 16,
+    "valueOutputSize": 1,
+    "parameterCountPerAgent": 4049,
+    "learningSignal": "extrinsic-task",
+    "optimizer": {"name": "adam-v1", "learningRate": 0.003, "beta1": 0.9, "beta2": 0.999, "epsilon": 1e-8},
+    "reinforcement": {"ppoClip": 0.2, "ppoEpochs": 4, "valueLossCoefficient": 0.5, "maxGradientNorm": 1},
+    "temperature": 1,
+    "roleReversalPeriod": 1,
+    "forbidden": ["cross-agent updates", "auxiliary reward", "architecture search", "curriculum", "repair", "affect", "negotiation"]
+  },
+  "channel": {
+    "carrier": "fixed-token",
+    "inventorySize": 32,
+    "marksPerMessage": 1,
+    "maximumCapacityBits": 5,
+    "capacityClaimBoundary": "Maximum carrier capacity is not measured information or syntax."
+  },
+  "execution": {
+    "deploymentMode": "research-grade",
+    "topology": "selected-mode-r-application",
+    "anchorClass": "simulated",
+    "turnResponseBudgetMs": 1000,
+    "deadlineRule": "One trusted normalized deadline includes required policy synchronization; late work is rejected and five consecutive rejections pause the run.",
+    "checkpointEventInterval": 64,
+    "checkpointTimeIntervalMs": 300000,
+    "maximumParallelDyads": 1,
+    "developmentIterationLimit": 5
+  },
+  "evaluation": {
+    "freezeRule": "Freeze final policy bytes, optimizer state, checkpoint hidden state and ledger cutoff before validation; no evaluation action updates policy or checkpoint state.",
+    "restoreRule": "Restore final training state before every case and branch; unchanged export hashes do not substitute for a verified live-state reset.",
+    "sharedActionRandomness": "A case-specific receiver draw is shared across branches and is unavailable to every predictor.",
+    "branchOrder": "Deterministic seeded permutation per case.",
+    "branches": ["normal", "disabled", "constant", "random", "shuffled", "ledger-consistent", "ledger-shuffled"],
+    "receiverDecisionsPerDyad": 5160,
+    "testReceiverDecisionsPerDyad": 1680,
+    "interventionRule": "Constant uses inventory element 0; random uses a dedicated uniform stream; shuffled and ledger-shuffled use role-local derangements; ledger-consistent selects the native predictor's target-maximizing token with inventory-order ties."
+  },
+  "chronology": [
+    "Train once and retain all attempted episodes.",
+    "Freeze policy and authenticated training-ledger cutoff.",
+    "Run validation fitting and selection without updates.",
+    "Prepare normal messages and all final-test branch schedule.",
+    "Commit predictions, messages, identities and schedule before test receiver actions.",
+    "Restore identical pre-case state and execute paired branches.",
+    "Verify evidence before analysis."
+  ],
+  "sourcePolicies": [
+    {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
+    {"path": "protocols/scenario-split-and-model-comparison.v1.json", "sha256": "sha256:cfac41d3307319f60465c7e2ff05c9fb7b389b6347996b6baf99e20e50ba2671"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"},
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/seed-and-resource-allocation.v1.json", "sha256": "sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
+  ],
+  "claimBoundary": "This outcome-blind design is not a registration, qualification, resource allocation, pilot, confirmatory result, replication, independent review, submission or publication."
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "studyId": "LV01",
+  "policyVersion": "lv01-seed-resource-policy/v1",
+  "classification": "prospective-ledger-fidelity-seed-resource-policy",
+  "status": "outcome-blind-no-stage-allocation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "root": "ald-ledger-value-v1",
+  "derivation": {
+    "algorithm": "deriveSeedHex SHA-256 UTF-8 parts joined by one NUL byte",
+    "stages": ["development", "qualification", "pilot", "confirmatory", "replication"],
+    "slotKinds": ["primary", "reserve"],
+    "purposes": ["scenario", "learner/baby-a", "learner/baby-b", "gateway", "analysis"],
+    "rule": "Base parts are root, LV01, stage, v1, slot kind, four-digit index, purpose. Partition, receiver role, case and branch append explicit parts. Every materialized seed must be unique across LV01 and existing registrations.",
+    "sharedPairing": "Scenario/case identities and receiver action draws omit branch; independent intervention shuffles append branch. Learner initialization occurs once per dyad.",
+    "prohibited": ["NUL in parts", "signing-key derivation", "reuse of development, qualification, pilot, confirmatory or replication identities"]
+  },
+  "stages": {
+    "development": {"maxIterations": 5, "smallFixture": {"trainingCases": 64, "casesPerEvaluationPartition": 24, "cpuHours": 0.25, "workingStorageGiB": 1}, "fullCalibrationDyads": 5, "claimBoundary": "software measurement only"},
+    "qualification": {"purpose": "selected topology, detector, fault, lifecycle and resource qualification", "studySeedsAllowed": false},
+    "pilot": {"primaryDyads": 20, "reserves": 0, "allValidRequired": true, "outcomeUse": "dispersion, validity and measured resource input only"},
+    "confirmatory": {"candidatePrimaryDyads": [75, 100, 125, 150, 200, 300], "selection": "smallest candidate whose six-component union-bound lower power is at least 0.90 and whose complete allocation fits", "replacement": "ordered reserves replace validity failures only"},
+    "replication": {"rule": "fresh stage identities use the same selected N and ordered reserve rule as confirmatory; no outcome-based retuning"}
+  },
+  "power": {
+    "pilotComponents": 6,
+    "pilotValidDyads": 20,
+    "upperDispersion": "sample SD * sqrt(19 / qchisq(0.05/6, 19))",
+    "screeningAlpha": 0.016666666666666666,
+    "monteCarloRepetitions": 30000,
+    "monteCarloLowerBound": "if k=0 then 0 else qbeta(0.05/36, k, 30000-k+1)",
+    "familyLowerBound": "max(0, 1 - sum over six components of (1 - component lower bound))",
+    "minimumFamilyLowerPower": 0.9,
+    "reserveInvalidity": "one-sided 95% Wilson upper invalid-run probability; choose smallest R with P[Binomial(N+R,pUpper)<=R] >= 0.95"
+  },
+  "resources": {
+    "ceiling": {"cpuHours": 72, "workingStorageGiB": 25, "maximumResidentGiB": 6, "externalSpend": 0},
+    "measurement": "Reconcile historical charges first. Record every service CPU, conservative peak memory, raw/exported bytes, verification, analysis, teardown and failures.",
+    "calibration": "After five complete full-workload development dyads, reserve two times the largest complete per-slot CPU/storage/wall cost and 1.5 times the conservative peak-memory bound.",
+    "designLock": "Reserve 2*(N+R) complete slots for confirmatory plus replication, full analysis/reproduction, benchmark and temporary packaging. Missing measurement blocks admission.",
+    "prohibited": ["treating historical remaining balances as current capacity", "deleting originals to fit", "reducing N or reserves after pilot", "spending external funds"]
+  },
+  "claimBoundary": "This policy does not allocate a stage, select N, authorize execution or create a finding."
+}
