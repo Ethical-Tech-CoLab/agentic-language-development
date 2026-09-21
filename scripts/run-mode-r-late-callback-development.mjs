@@ -179,12 +179,12 @@ const unresolvedConfig = buildRunConfig({
   randomSeed: protocol.runId,
   deploymentMode: 'research-grade',
   babyA: {
-    track: 'no-learning',
+    track: lv01Mode ? 'scratch-rl' : 'no-learning',
     modelRef: lv01Mode ? 'gru-actor-critic-v1' : 'selected-application-no-learning',
     trainingIsolation: 'independent',
   },
   babyB: {
-    track: 'no-learning',
+    track: lv01Mode ? 'scratch-rl' : 'no-learning',
     modelRef: lv01Mode ? 'gru-actor-critic-v1' : 'selected-application-no-learning',
     trainingIsolation: 'independent',
   },
