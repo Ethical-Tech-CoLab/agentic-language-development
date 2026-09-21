@@ -135,6 +135,7 @@ export function createProductionRuntime(
       localWriter,
       controller: controllerEvidencePortForWriter(runId, localWriter),
       gateway: localWriter,
+      audit: localWriter,
       checkpoints: service,
     };
   };

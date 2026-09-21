@@ -99,8 +99,14 @@ owner, issues its run-bound Controller and Gateway capabilities, and retains the
 same Checkpoint Service for proof export without a mutable pending-run handoff;
 concurrent-run coverage verifies the identities remain separated. The context's
 local-writer field is deliberately labeled transitional because synchronous
-inspection and learner/audit clients still require it. Remote contexts cannot be
+inspection and learner-private-ledger clients still require it. Remote contexts cannot be
 claimed until those consumers migrate and the selected process mounts qualify.
+The delayed Audit Interpreter now receives its two-method capability from the
+same per-run context; live interpretation no longer constructs itself from the
+broad writer handle. Local production still supplies the in-process adapter,
+while a selected context may supply the already-tested audit socket client.
+This removes a live authority dependency but does not by itself place the
+interpreter in a distinct process or prove its exclusive mount.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

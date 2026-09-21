@@ -196,7 +196,10 @@ import {
   type AdapterMethod,
 } from './errors.js';
 import { RuntimePrivateLedgerClient } from './private-ledger.js';
-import { AuditLedgerInterpreter } from './audit-interpreter.js';
+import {
+  AuditLedgerInterpreter,
+  type AuditInterpreterEvidencePort,
+} from './audit-interpreter.js';
 import {
   replayDigest,
   scenarioReplayCheck,
@@ -389,6 +392,7 @@ export interface NurseryRunEvidenceContext {
   localWriter: SqliteEvidenceWriter;
   controller: ControllerEvidencePort;
   gateway: GatewayEvidencePort;
+  audit: AuditInterpreterEvidencePort;
   checkpoints: CheckpointService;
 }
 
@@ -456,6 +460,8 @@ interface RunRuntime {
   writer: SqliteEvidenceWriter;
   /** Exact run-bound Controller capability; local today, remote-ready. */
   controllerEvidence: ControllerEvidencePort;
+  /** Delayed interpreter's exact ledger-read/audit-append capability. */
+  auditEvidence: AuditInterpreterEvidencePort;
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
   gateway: SymbolGateway;
@@ -751,6 +757,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash,
       writer,
       controllerEvidence,
+      auditEvidence: evidence.audit,
       signers,
       lifecycle,
       gateway,
@@ -2354,7 +2361,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (!['running', 'paused', 'evaluating'].includes(run.lifecycle.state)) {
       throw new RunStateError(request.runId, run.lifecycle.state, 'running');
     }
-    const entries = await new AuditLedgerInterpreter(run.writer).appendBatch(
+    const entries = await new AuditLedgerInterpreter(run.auditEvidence).appendBatch(
       request,
       run.turn,
     );
@@ -3390,6 +3397,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       localWriter,
       controller: controllerEvidencePortForWriter(runId, localWriter),
       gateway: localWriter,
+      audit: localWriter,
       checkpoints: checkpointFactory(localWriter, signers),
     };
   }
@@ -3732,6 +3740,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: strictHash(metadata.configurationHash),
       writer,
       controllerEvidence,
+      auditEvidence: evidence.audit,
       signers,
       lifecycle: new RunLifecycle(runId, state),
       gateway: new SymbolGatewayImpl(
