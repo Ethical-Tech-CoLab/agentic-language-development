@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.219"
+    "version": "0.1.220"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -411,7 +411,7 @@
         "shuffled delivers another episode of the batch under a seeded derangement",
         "owns shuffled pre-pass validation without committing an eligible turn",
         "shuffled is reproducible from the run seed",
-        "shuffled requires the batch and rejects an out-of-range index",
+        "shuffled requires a complete sealed batch and rejects an unprepared turn",
         "shuffled with a single-episode batch can only deliver that episode",
         "oracle refuses learner proposals and commits gateway-control artifacts",
         "oracle validates the Scenario Engine artifact against the carrier",

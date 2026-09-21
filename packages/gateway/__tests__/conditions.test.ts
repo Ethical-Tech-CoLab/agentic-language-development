@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ChannelEventSchema, HASH_DOMAINS } from '@ald/types';
-import type { AgentActionProposal, GatewaySubmitResult } from '@ald/types';
+import type { AgentActionProposal, GatewaySubmitResult, SymbolGateway } from '@ald/types';
 import { hashCanonical, hashCarrierMark } from '@ald/hashing';
 
 import {
@@ -31,6 +31,19 @@ function accepted(
 /** Reads the `symbols` field of a delivered or proposed artifact. */
 function symbolsOf(artifact: unknown): string[] {
   return (artifact as { symbols?: string[] } | undefined)?.symbols ?? [];
+}
+
+async function prepareShuffledBatch(
+  gateway: SymbolGateway,
+  batch: readonly AgentActionProposal['publicArtifact'][],
+): Promise<void> {
+  gateway.beginShuffledBatch(batch.map((_, index) => index + 1));
+  for (let index = 0; index < batch.length; index += 1) {
+    expect(await gateway.preflightShuffledProposal(
+      turn({ turn: index + 1 }), symbolEnvelope(symbolsOf(batch[index])),
+    )).toEqual({ kind: 'eligible' });
+  }
+  gateway.sealShuffledBatch();
 }
 
 describe('SPEC §9.6 communication-control conditions', () => {
@@ -264,11 +277,9 @@ describe('SPEC §9.6 communication-control conditions', () => {
     const deliveredPerIndex: string[][] = [];
     for (let index = 0; index < batch.length; index += 1) {
       const { gateway } = harness({ communicationCondition: 'shuffled' });
+      await prepareShuffledBatch(gateway, batch);
       const result = accepted(
-        await gateway.submitProposal(
-          turn({ turn: index + 1, batchArtifacts: batch, batchIndex: index }),
-          symbolEnvelope(symbolsOf(batch[index])),
-        ),
+        await gateway.submitPreparedShuffledProposal(turn({ turn: index + 1 })),
       );
       const delivered = symbolsOf(result.delivery?.publicArtifact);
       deliveredPerIndex.push(delivered);
@@ -288,12 +299,11 @@ describe('SPEC §9.6 communication-control conditions', () => {
 
   it('owns shuffled pre-pass validation without committing an eligible turn', async () => {
     const { gateway, evidence, context } = harness({ communicationCondition: 'shuffled' });
+    gateway.beginShuffledBatch([1, 2, 3]);
     const eligible = await gateway.preflightShuffledProposal(
       turn(), symbolEnvelope(['S01']),
     );
-    expect(eligible).toMatchObject({
-      kind: 'eligible', artifact: { symbols: ['S01'] },
-    });
+    expect(eligible).toEqual({ kind: 'eligible' });
     expect(evidence.channelEvents(context.runId)).toHaveLength(0);
 
     const invalid = await gateway.preflightShuffledProposal(
@@ -304,6 +314,12 @@ describe('SPEC §9.6 communication-control conditions', () => {
     const malformed = await gateway.preflightShuffledProposal(turn({ turn: 3 }), undefined);
     expect(malformed).toMatchObject({ kind: 'rejected', reasonCode: 'invalid-envelope' });
     expect(evidence.channelEvents(context.runId)).toHaveLength(2);
+    gateway.sealShuffledBatch();
+    const acceptedResult = accepted(await gateway.submitPreparedShuffledProposal(turn()));
+    expect(symbolsOf(acceptedResult.delivery?.publicArtifact)).toEqual(['S01']);
+    await expect(gateway.submitPreparedShuffledProposal(turn())).rejects.toBeInstanceOf(
+      ShuffledBatchRequiredError,
+    );
     await expect(harness().gateway.preflightShuffledProposal(
       turn(), symbolEnvelope(['S01']),
     )).rejects.toThrow(/only permitted in the shuffled condition/u);
@@ -318,40 +334,52 @@ describe('SPEC §9.6 communication-control conditions', () => {
     const runs = [harness({ communicationCondition: 'shuffled' }), harness({ communicationCondition: 'shuffled' })];
     const observed: string[][] = [];
     for (const run of runs) {
+      await prepareShuffledBatch(run.gateway, batch);
       const result = accepted(
-        await run.gateway.submitProposal(
-          turn({ batchArtifacts: batch, batchIndex: 2 }),
-          symbolEnvelope(['S03']),
-        ),
+        await run.gateway.submitPreparedShuffledProposal(turn({ turn: 3 })),
       );
       observed.push(symbolsOf(result.delivery?.publicArtifact));
     }
     expect(observed[0]).toEqual(observed[1]);
   });
 
-  it('shuffled requires the batch and rejects an out-of-range index', async () => {
+  it('shuffled requires a complete sealed batch and rejects an unprepared turn', async () => {
     const { gateway } = harness({ communicationCondition: 'shuffled' });
     await expect(
       gateway.submitProposal(turn(), symbolEnvelope(['S01'])),
     ).rejects.toBeInstanceOf(ShuffledBatchRequiredError);
-
+    gateway.beginShuffledBatch([1, 2]);
+    expect(await gateway.preflightShuffledProposal(turn(), symbolEnvelope(['S01']))).toEqual({
+      kind: 'eligible',
+    });
+    expect(() => gateway.sealShuffledBatch()).toThrow(/every turn/u);
+    await expect(gateway.preflightShuffledProposal(turn(), symbolEnvelope(['S09'])))
+      .rejects.toBeInstanceOf(ShuffledBatchRequiredError);
+    await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S02']));
+    gateway.sealShuffledBatch();
+    await expect(gateway.submitProposal(turn(), symbolEnvelope(['S09'])))
+      .rejects.toBeInstanceOf(ShuffledBatchRequiredError);
+    await expect(gateway.submitPreparedShuffledProposal(turn({ recipient: 'baby-a' })))
+      .rejects.toBeInstanceOf(ShuffledBatchRequiredError);
     await expect(
-      gateway.submitProposal(
-        turn({ batchArtifacts: [{ symbols: ['S01'] }], batchIndex: 4 }),
-        symbolEnvelope(['S01']),
-      ),
+      gateway.submitPreparedShuffledProposal(turn({ turn: 4 })),
     ).rejects.toBeInstanceOf(ShuffledBatchRequiredError);
+    expect(() => gateway.beginShuffledBatch([3])).toThrow(/incomplete/u);
   });
 
   it('shuffled with a single-episode batch can only deliver that episode', async () => {
     const { gateway } = harness({ communicationCondition: 'shuffled' });
+    await prepareShuffledBatch(gateway, [{ symbols: ['S05'] }]);
     const result = accepted(
-      await gateway.submitProposal(
-        turn({ batchArtifacts: [{ symbols: ['S05'] }], batchIndex: 0 }),
-        symbolEnvelope(['S05']),
-      ),
+      await gateway.submitPreparedShuffledProposal(turn()),
     );
     expect(symbolsOf(result.delivery?.publicArtifact)).toEqual(['S05']);
+    gateway.beginShuffledBatch([2]);
+    expect(await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S06'])))
+      .toEqual({ kind: 'eligible' });
+    gateway.sealShuffledBatch();
+    const next = accepted(await gateway.submitPreparedShuffledProposal(turn({ turn: 2 })));
+    expect(symbolsOf(next.delivery?.publicArtifact)).toEqual(['S06']);
   });
 
   it('oracle refuses learner proposals and commits gateway-control artifacts', async () => {
@@ -419,14 +447,16 @@ describe('SPEC §9.6 communication-control conditions', () => {
       'shuffled',
     ] as const) {
       const { gateway } = harness({ communicationCondition: condition });
+      if (condition === 'shuffled') {
+        gateway.beginShuffledBatch([1, 2]);
+        await gateway.preflightShuffledProposal(turn(), symbolEnvelope(PROPOSED));
+        await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S02']));
+        gateway.sealShuffledBatch();
+      }
       const result = accepted(
-        await gateway.submitProposal(
-          turn({
-            batchArtifacts: [{ symbols: ['S01'] }, { symbols: ['S02'] }],
-            batchIndex: 0,
-          }),
-          symbolEnvelope(PROPOSED),
-        ),
+        condition === 'shuffled'
+          ? await gateway.submitPreparedShuffledProposal(turn())
+          : await gateway.submitProposal(turn(), symbolEnvelope(PROPOSED)),
       );
       expect(result.babyProposalHash).toMatch(/^sha256:[0-9a-f]{64}$/u);
       expect(result.deliveredArtifactHash).toMatch(/^sha256:[0-9a-f]{64}$/u);

@@ -112,6 +112,16 @@ type ValidatedProposal =
   | { ok: true; parsed: TurnProposalEnvelope }
   | { ok: false; reasonCode: GatewayReasonCode };
 
+interface ShuffledBatchState {
+  turns: readonly number[];
+  seen: Set<number>;
+  eligible: Map<number, { envelope: TurnProposalEnvelope; sender: BabyRole; recipient: BabyRole }>;
+  artifacts: PublicArtifact[];
+  indexByTurn: Map<number, number>;
+  consumed: Set<number>;
+  sealed: boolean;
+}
+
 /** True when `value` has exactly the given keys, no more and no fewer. */
 function hasExactKeys(
   value: Record<string, unknown>,
@@ -210,6 +220,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
   private readonly conditionPrng: SeededPrng;
   private readonly deliveries = new Map<string, GatewayDelivery>();
   private readonly permutations = new Map<number, number[]>();
+  private shuffledBatch: ShuffledBatchState | undefined;
   private rejections = 0;
   /** SPEC §9.3: built on first affect call (see the `affect` accessor). */
   private affectProtocol: AffectProtocol | undefined;
@@ -282,12 +293,23 @@ export class SymbolGatewayImpl implements SymbolGateway {
     if (condition === 'oracle') {
       throw new OracleRequiresControlArtifactError();
     }
+    if (condition === 'shuffled') {
+      throw new ShuffledBatchRequiredError(turn.turn);
+    }
 
     const validated = this.validateProposal(envelope);
     if (!validated.ok) {
       return this.rejectProposal(turn, envelope, validated.reasonCode);
     }
-    const parsed = validated.parsed;
+    return this.commitValidatedProposal(turn, validated.parsed);
+  }
+
+  private async commitValidatedProposal(
+    turn: GatewayTurnContext,
+    parsed: TurnProposalEnvelope,
+  ): Promise<GatewaySubmitResult> {
+    const condition = this.condition;
+    if (condition === 'oracle') throw new OracleRequiresControlArtifactError();
 
     // 6. §9.6: control replacement happens after validation, before the
     //    channel event is constructed.
@@ -337,6 +359,29 @@ export class SymbolGatewayImpl implements SymbolGateway {
     };
   }
 
+  beginShuffledBatch(turns: readonly number[]): void {
+    this.assertEvidenceOperational();
+    if (this.condition !== 'shuffled' || turns.length === 0 ||
+      turns.some((value, index) => !Number.isSafeInteger(value) || value < 0 ||
+        (index > 0 && value !== (turns[index - 1] as number) + 1))) {
+      throw new Error('shuffled batch requires nonnegative consecutive turns');
+    }
+    const previous = this.shuffledBatch;
+    if (previous !== undefined && (!previous.sealed ||
+      previous.consumed.size !== previous.eligible.size)) {
+      throw new Error('previous shuffled batch is incomplete');
+    }
+    this.shuffledBatch = {
+      turns: [...turns],
+      seen: new Set(),
+      eligible: new Map(),
+      artifacts: [],
+      indexByTurn: new Map(),
+      consumed: new Set(),
+      sealed: false,
+    };
+  }
+
   /** The Gateway, not the Controller, decides shuffled pre-pass eligibility. */
   async preflightShuffledProposal(
     turn: GatewayTurnContext,
@@ -346,15 +391,58 @@ export class SymbolGatewayImpl implements SymbolGateway {
     if (this.condition !== 'shuffled') {
       throw new Error('shuffled pre-pass is only permitted in the shuffled condition');
     }
+    const batch = this.shuffledBatch;
+    if (batch === undefined || batch.sealed || !batch.turns.includes(turn.turn) ||
+      batch.seen.has(turn.turn)) {
+      throw new ShuffledBatchRequiredError(turn.turn);
+    }
     const validated = this.validateProposal(envelope);
     if (!validated.ok) {
-      return this.rejectProposal(turn, envelope, validated.reasonCode);
+      const rejection = await this.rejectProposal(turn, envelope, validated.reasonCode);
+      batch.seen.add(turn.turn);
+      return rejection;
     }
-    return {
-      kind: 'eligible',
-      artifact: validated.parsed.proposal.publicArtifact,
+    batch.eligible.set(turn.turn, {
       envelope: validated.parsed,
-    };
+      sender: turn.sender,
+      recipient: turn.recipient,
+    });
+    batch.seen.add(turn.turn);
+    return { kind: 'eligible' };
+  }
+
+  sealShuffledBatch(): void {
+    this.assertEvidenceOperational();
+    const batch = this.shuffledBatch;
+    if (this.condition !== 'shuffled' || batch === undefined || batch.sealed ||
+      batch.seen.size !== batch.turns.length) {
+      throw new Error('shuffled batch cannot seal before every turn is preflighted');
+    }
+    for (const turn of batch.turns) {
+      const entry = batch.eligible.get(turn);
+      if (entry === undefined) continue;
+      batch.indexByTurn.set(turn, batch.artifacts.length);
+      batch.artifacts.push(entry.envelope.proposal.publicArtifact);
+    }
+    batch.sealed = true;
+  }
+
+  async submitPreparedShuffledProposal(turn: GatewayTurnContext): Promise<GatewaySubmitResult> {
+    this.assertEvidenceOperational();
+    const batch = this.shuffledBatch;
+    const entry = batch?.eligible.get(turn.turn);
+    if (this.condition !== 'shuffled' || batch?.sealed !== true ||
+      entry === undefined || batch?.consumed.has(turn.turn) ||
+      entry.sender !== turn.sender || entry.recipient !== turn.recipient) {
+      throw new ShuffledBatchRequiredError(turn.turn);
+    }
+    const result = await this.commitValidatedProposal(turn, entry.envelope);
+    batch.consumed.add(turn.turn);
+    return result;
+  }
+
+  discardShuffledBatchAfterRecovery(): void {
+    this.shuffledBatch = undefined;
   }
 
   private validateProposal(raw: unknown): ValidatedProposal {
@@ -795,9 +883,11 @@ export class SymbolGatewayImpl implements SymbolGateway {
    * own artifact.
    */
   private shuffledArtifact(turn: GatewayTurnContext): PublicArtifact {
-    const batch = turn.batchArtifacts;
-    const index = turn.batchIndex;
+    const state = this.shuffledBatch;
+    const batch = state?.artifacts;
+    const index = state?.indexByTurn.get(turn.turn);
     if (
+      state?.sealed !== true ||
       batch === undefined ||
       batch.length === 0 ||
       index === undefined ||

@@ -772,10 +772,6 @@ export interface GatewayTurnContext {
   turn: number;
   sender: BabyRole;
   recipient: BabyRole;
-  /** `shuffled` only: validated artifacts of the other episodes in the batch. */
-  batchArtifacts?: AgentActionProposal['publicArtifact'][];
-  /** `shuffled` only: this episode's index within `batchArtifacts`. */
-  batchIndex?: number;
   /** SPEC §15.2: a live causal probe to apply to this delivery (evaluation only). */
   probe?: ArtifactProbe;
 }
@@ -809,11 +805,19 @@ export interface SymbolGateway {
     turn: GatewayTurnContext,
     envelope: TurnProposalEnvelope,
   ): Promise<GatewaySubmitResult>;
+  /** Define the exact shuffled turn set before the pre-pass begins. */
+  beginShuffledBatch(turns: readonly number[]): void;
   /** Gateway-owned validation during a shuffled batch pre-pass. */
   preflightShuffledProposal(
     turn: GatewayTurnContext,
     envelope: unknown,
   ): Promise<ShuffledPrepassResult>;
+  /** Freeze the validated artifact set before the first delivery. */
+  sealShuffledBatch(): void;
+  /** Commit the exact eligible envelope retained during the pre-pass. */
+  submitPreparedShuffledProposal(turn: GatewayTurnContext): Promise<GatewaySubmitResult>;
+  /** Discard volatile batch state only after recovery verified the signed prefix. */
+  discardShuffledBatchAfterRecovery(): void;
   /** E03 `oracle`: commit a Scenario Engine artifact with no learner output. */
   submitControlArtifact(
     turn: GatewayTurnContext,
@@ -837,7 +841,7 @@ export interface SymbolGateway {
 }
 
 export type ShuffledPrepassResult =
-  | { kind: 'eligible'; artifact: AgentActionProposal['publicArtifact']; envelope: TurnProposalEnvelope }
+  | { kind: 'eligible' }
   | Extract<GatewaySubmitResult, { kind: 'rejected' }>;
 
 // ---------------------------------------------------------------------------

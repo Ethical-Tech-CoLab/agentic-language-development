@@ -81,7 +81,9 @@ describe('prospective Mode R authority graph', () => {
   it('keeps shuffled proposal validation inside the Gateway implementation', () => {
     const controller = readFileSync('packages/orchestrator/src/nursery-runtime.ts', 'utf8');
     expect(controller).toContain('preflightShuffledProposal(');
+    expect(controller).toContain('submitPreparedShuffledProposal(');
     expect(controller).not.toContain('.carrierProtocol.validate(');
     expect(controller).not.toContain('.carrierContext');
+    expect(controller).not.toContain('batchArtifacts');
   });
 });

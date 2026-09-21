@@ -32,11 +32,12 @@ attempt-level accounting around an in-process writer, not a separate remote
 Evidence Writer, and it does not replace selected-topology fault or resource
 measurements. Historical runs without this journal do not acquire its coverage
 retroactively.
-For shuffled batches, the Gateway now validates each pre-pass sender envelope
-and commits invalid submissions itself; the Controller no longer calls the
-carrier module or parses that sender envelope. The Controller still supplies
-the later batch artifact list, so this is not yet a separated Gateway-owned
-batch or a no-override process boundary.
+For shuffled batches, the Gateway validates each pre-pass sender envelope,
+commits invalid submissions, retains eligible envelopes, seals the artifact
+set, and applies the seeded permutation from its own batch state. The
+Controller schedules scenario turns but cannot supply or replace the batch
+artifact list at delivery. This is still an in-process boundary; it is not
+the selected authenticated, separate Gateway process or a B12 qualification.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

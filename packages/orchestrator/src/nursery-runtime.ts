@@ -107,7 +107,6 @@ import {
   type Sha256Hash,
   type SignerRegistry,
   type StoredAnalysisAttachment,
-  type TurnProposalEnvelope,
   type TurnRecord,
   type VerificationReport,
 } from '@ald/types';
@@ -407,19 +406,15 @@ export interface SemanticLeakageEvaluationRequest {
 interface BatchSlot {
   turn: number;
   instance: ScenarioInstance;
-  /** Validated sender envelope, replayed when the batch's turn executes. */
-  envelope?: TurnProposalEnvelope;
-  /** Set instead of `envelope` when the pre-pass proposal was rejected. */
+  /** The Gateway retains accepted pre-pass envelopes; the Controller does not. */
+  prepared?: true;
+  /** Set instead of `prepared` when the pre-pass proposal was rejected. */
   rejection?: Extract<GatewaySubmitResult, { kind: 'rejected' }>;
 }
 
 interface EpisodeBatch {
   split: ScenarioSplit;
   slots: BatchSlot[];
-  /** Validated artifacts of the batch, in `batchIndex` order. */
-  artifacts: AgentActionProposal['publicArtifact'][];
-  /** `batchIndex` of each turn that contributed an artifact. */
-  indexByTurn: Map<number, number>;
 }
 
 interface PendingRepair {
@@ -1283,7 +1278,6 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       turn: scratch.turn,
       sender: scratch.sender,
       recipient: scratch.receiver,
-      ...this.#batchBinding(run, scratch.turn),
       ...(scratch.phase === 'evaluating'
         ? {
             probe: run.probeSchedule?.probes.find(
@@ -2127,6 +2121,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ).length;
     run.lastCheckpointEventTotal = this.#eventTotal(run);
     run.batch = undefined;
+    run.gateway.discardShuffledBatchAfterRecovery();
 
     const sealCheckpoint = this.#finalCheckpoint(run);
     if (sealCheckpoint !== undefined) {
@@ -2492,9 +2487,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return slot.rejection;
     }
 
-    const cached = slot?.envelope;
-    if (cached !== undefined) {
-      return run.gateway.submitProposal(turnContext, cached);
+    if (slot?.prepared === true) {
+      return run.gateway.submitPreparedShuffledProposal(turnContext);
     }
 
     const envelope = await this.#callAdapter(run, sender, 'act', () =>
@@ -2617,7 +2611,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * The pre-pass is only sound for a stateless adapter, which is why
    * `shuffled` is restricted to the `no-learning` track: a learning adapter
    * would be acting on turn `n + k` before it has seen the outcome of turn
-   * `n`. The envelope produced here is the one the turn later submits, so no
+   * `n`. The Gateway retains the validated envelope for its later turn, so no
    * adapter is asked to act twice for the same turn.
    */
   async #slotFor(
@@ -2644,9 +2638,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const batch: EpisodeBatch = {
       split,
       slots: [],
-      artifacts: [],
-      indexByTurn: new Map(),
     };
+    run.gateway.beginShuffledBatch(
+      Array.from({ length: size }, (_, offset) => turn + offset),
+    );
     let episodeIndex = this.#episodeIndex(run, phase);
 
     for (let offset = 0; offset < size; offset += 1) {
@@ -2696,11 +2691,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         continue;
       }
 
-      batch.indexByTurn.set(slotTurn, batch.artifacts.length);
-      batch.artifacts.push(preflight.artifact);
-      batch.slots.push({ turn: slotTurn, instance, envelope: preflight.envelope });
+      batch.slots.push({ turn: slotTurn, instance, prepared: true });
     }
 
+    run.gateway.sealShuffledBatch();
     run.batch = batch;
     return batch.slots.find((slot) => slot.turn === turn);
   }
@@ -2729,21 +2723,6 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       this.#options.batchSize ??
       Math.min(run.evaluationTurns, DEFAULT_BATCH_SIZE)
     );
-  }
-
-  #batchBinding(
-    run: RunRuntime,
-    turn: number,
-  ): Pick<GatewayTurnContext, 'batchArtifacts' | 'batchIndex'> {
-    const batch = run.batch;
-    if (batch === undefined) {
-      return {};
-    }
-    const batchIndex = batch.indexByTurn.get(turn);
-    if (batchIndex === undefined) {
-      return {};
-    }
-    return { batchArtifacts: batch.artifacts, batchIndex };
   }
 
   /**

@@ -83,14 +83,13 @@ export class UnsupportedCarrierError extends GatewayError {
 
 /**
  * SPEC §9.6 `shuffled` delivers an artifact from *another* episode of the
- * same evaluation batch, so the caller must supply the batch and this
- * episode's position in it.
+ * same evaluation batch, which must already be sealed inside the Gateway.
  */
 export class ShuffledBatchRequiredError extends GatewayError {
   constructor(readonly turn: number) {
     super(
       'INVALID_REQUEST',
-      `The shuffled communication condition requires batchArtifacts and a batchIndex inside them (turn ${turn})`,
+      `The shuffled communication condition requires a sealed Gateway-owned batch containing turn ${turn}`,
       { turn, condition: 'shuffled' },
     );
   }
