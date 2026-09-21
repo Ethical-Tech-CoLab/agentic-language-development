@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.365",
+  "version": "0.1.366",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -36,6 +36,8 @@
     "audit:mode-r-application-development:receipt:live": "node scripts/check-mode-r-application-development-receipt.mjs --live-evidence",
     "qualify:mode-r-application-lifecycle-development": "pnpm run build && node scripts/run-mode-r-application-lifecycle-development.mjs --run",
     "audit:mode-r-application-lifecycle-development:live": "node scripts/run-mode-r-application-lifecycle-development.mjs --audit",
+    "qualify:lv01-recurrent-lifecycle-development": "pnpm run build && node scripts/run-lv01-recurrent-lifecycle-development.mjs --run",
+    "audit:lv01-recurrent-lifecycle-development": "node scripts/run-lv01-recurrent-lifecycle-development.mjs --audit",
     "audit:mode-r-application-lifecycle-failure": "node scripts/check-mode-r-application-lifecycle-failure.mjs",
     "audit:mode-r-application-lifecycle-failure:live": "node scripts/check-mode-r-application-lifecycle-failure.mjs --live-evidence",
     "audit:mode-r-application-lifecycle-receipt": "node scripts/check-mode-r-application-lifecycle-receipt.mjs && node scripts/check-mode-r-application-fault-failure.mjs && node scripts/check-mode-r-application-fault-receipt.mjs && node scripts/check-mode-r-uncertain-write-failure.mjs && node scripts/check-mode-r-uncertain-write-receipt.mjs && node scripts/check-mode-r-late-callback-failure.mjs && node scripts/check-mode-r-late-callback-receipt.mjs",
