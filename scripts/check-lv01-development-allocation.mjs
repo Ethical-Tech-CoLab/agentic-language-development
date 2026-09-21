@@ -2,8 +2,15 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { parseArgs } from 'node:util';
 
-const packet = JSON.parse(readFileSync('protocols/lv01-development-resource-allocation.v1.json', 'utf8'));
+const { values } = parseArgs({
+  options: { version: { type: 'string', default: '1' } },
+});
+assert.match(values.version, /^[1-9]\d*$/u, 'version must be a positive integer');
+const version = values.version;
+const packetPath = `protocols/lv01-development-resource-allocation.v${version}.json`;
+const packet = JSON.parse(readFileSync(packetPath, 'utf8'));
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const seed = (...parts) => createHash('sha256').update(parts.join('\0')).digest('hex');
 
@@ -23,20 +30,26 @@ for (const artifact of packet.sourceFreeze.artifacts) {
 }
 assert.equal(packet.allocation.maximumParallelDyads, 1);
 assert.deepEqual(packet.allocation.smallFixture, {
-  runId: 'lv01-development-v1-p0001', iteration: 1, trainingCases: 64,
+  runId: `lv01-development-v${version}-p0001`, iteration: 1, trainingCases: 64,
   validationFitCases: 24, validationSelectionCases: 24, withinSupportTestCases: 24,
   cpuHoursCap: 0.25, additionalStorageGiBCap: 1, maximumResidentGiB: 6,
 });
 assert.deepEqual(packet.allocation.fullCalibration.runIds, [
-  'lv01-development-v1-p0002', 'lv01-development-v1-p0003', 'lv01-development-v1-p0004',
-  'lv01-development-v1-p0005', 'lv01-development-v1-p0006',
+  `lv01-development-v${version}-p0002`, `lv01-development-v${version}-p0003`,
+  `lv01-development-v${version}-p0004`, `lv01-development-v${version}-p0005`,
+  `lv01-development-v${version}-p0006`,
 ]);
 for (const slot of packet.seedDerivation.slots) {
-  const prefix = ['ald-ledger-value-v1', 'LV01', 'development', 'v1', 'primary', slot.index];
-  assert.equal(slot.scenario, seed(...prefix, 'scenario'));
-  assert.equal(slot.babyA, seed(...prefix, 'learner/baby-a'));
-  assert.equal(slot.babyB, seed(...prefix, 'learner/baby-b'));
-  assert.equal(slot.gateway, seed(...prefix, 'gateway'));
-  assert.equal(slot.analysis, seed(...prefix, 'analysis'));
+  const derive = (purpose) => seed(packet.seedDerivation.root,
+    ...packet.seedDerivation.parts.map((part) => {
+      if (part === 'four-digit slot index') return slot.index;
+      if (part === 'purpose') return purpose;
+      return part;
+    }));
+  assert.equal(slot.scenario, derive('scenario'), 'scenario seed derivation');
+  assert.equal(slot.babyA, derive('learner/baby-a'), 'baby A seed derivation');
+  assert.equal(slot.babyB, derive('learner/baby-b'), 'baby B seed derivation');
+  assert.equal(slot.gateway, derive('gateway'), 'gateway seed derivation');
+  assert.equal(slot.analysis, derive('analysis'), 'analysis seed derivation');
 }
-console.log('LV01 development allocation valid: six fresh zero-spend identities; no execution or research result');
+console.log(`LV01 development allocation v${version} valid: six fresh zero-spend identities; no execution or research result`);

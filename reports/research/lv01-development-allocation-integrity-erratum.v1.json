@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-allocation-integrity-erratum",
+  "status": "historical-allocation-integrity-failure-retained",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "capturedAt": "2026-09-21",
+  "affectedAllocations": [
+    "protocols/lv01-development-resource-allocation.v5.json",
+    "protocols/lv01-development-resource-allocation.v6.json",
+    "protocols/lv01-development-resource-allocation.v7.json",
+    "protocols/lv01-development-resource-allocation.v8.json",
+    "protocols/lv01-development-resource-allocation.v9.json"
+  ],
+  "finding": "The listed packets declare a NUL-delimited seed derivation in their seedDerivation.parts field, but their recorded seed values do not regenerate from that declaration. The allocation verifier now detects this mismatch and rejects those packets for any future execution.",
+  "preservedEvidence": [
+    "Existing failed, aborted, and bounded development records remain retained and must not be rewritten.",
+    "The v9 receipt remains a bounded local resource observation only; it is not an eligible allocation, calibration, pilot, or behavioral result."
+  ],
+  "resolution": "Create a fresh allocation with a verified seed derivation and a source closure that includes the verifier before any further LV01 execution. Do not reuse any affected identifier or seed.",
+  "claimBoundary": "This erratum corrects allocation eligibility. It does not erase or convert historical execution records into scientific findings."
+}
