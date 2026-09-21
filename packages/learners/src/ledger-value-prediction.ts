@@ -34,6 +34,70 @@ export interface Lv01RecurrentReplayPrediction {
   readonly parameterCount: typeof LV01_PARAMETER_COUNT;
 }
 
+export const LV01_NATIVE_ASSOCIATION_EVENT_TYPES = [
+  'hypothesis.created',
+  'hypothesis.revised',
+  'hypothesis.contradicted',
+] as const;
+
+export type Lv01NativeAssociationEventType =
+  (typeof LV01_NATIVE_ASSOCIATION_EVENT_TYPES)[number];
+
+/** A verified, receiver-private training-ledger association record. */
+export interface Lv01TrainingLedgerAssociation {
+  readonly receiverRole: 'baby-a' | 'baby-b';
+  readonly eventType: Lv01NativeAssociationEventType;
+  /** Verified per-receiver ledger sequence, never filesystem ordering. */
+  readonly sequence: number;
+  readonly turn: number;
+  readonly eventHash: string;
+  readonly policyContextHash: string;
+  readonly authenticated: boolean;
+  readonly token: string;
+  /** One nonnegative association weight per LV01 type code. */
+  readonly associationOverTypeCodes: readonly number[];
+}
+
+export interface Lv01TrainingLedgerCutoff {
+  readonly sequence: number;
+  readonly turn: number;
+}
+
+export interface Lv01SelectedLedgerAssociation {
+  readonly token: string;
+  readonly eventHash: string;
+  readonly sequence: number;
+  readonly turn: number;
+  readonly policyContextHash: string;
+  readonly associationAgeTurns: number;
+  readonly associationOverTypeCodes: readonly number[];
+}
+
+export interface Lv01NativeLedgerIndex {
+  readonly predictionFunctionVersion: typeof LV01_PREDICTION_FUNCTION_VERSION;
+  readonly receiverRole: 'baby-a' | 'baby-b';
+  readonly cutoff: Lv01TrainingLedgerCutoff;
+  /** One latest qualifying association per token, ordered by token. */
+  readonly selectedAssociations: readonly Lv01SelectedLedgerAssociation[];
+}
+
+export interface Lv01NativeLedgerPrediction {
+  readonly predictionFunctionVersion: typeof LV01_PREDICTION_FUNCTION_VERSION;
+  readonly candidateTypeCodes: readonly number[];
+  readonly distribution: readonly number[];
+  readonly source: 'training-ledger' | 'uniform-missing-token' | 'uniform-disabled';
+  readonly selectedAssociation?: Lv01SelectedLedgerAssociation;
+}
+
+const LV01_NATIVE_EPSILON = 1e-12;
+
+function isNativeAssociationEventType(value: unknown): value is Lv01NativeAssociationEventType {
+  return (
+    typeof value === 'string' &&
+    (LV01_NATIVE_ASSOCIATION_EVENT_TYPES as readonly string[]).includes(value)
+  );
+}
+
 function assertLv01CandidateTypes(candidateTypeCodes: readonly number[]): void {
   if (candidateTypeCodes.length !== LV01_CANDIDATE_COUNT) {
     throw new LearnerConfigurationError(
@@ -87,6 +151,144 @@ function symbolIndex(
     throw new LearnerStateError('delivered token is absent from the LV01 inventory');
   }
   return index;
+}
+
+function assertTrainingCutoff(cutoff: Lv01TrainingLedgerCutoff): void {
+  if (!Number.isInteger(cutoff.sequence) || cutoff.sequence < 1) {
+    throw new LearnerConfigurationError('LV01 ledger cutoff sequence must be positive');
+  }
+  if (!Number.isInteger(cutoff.turn) || cutoff.turn < 0) {
+    throw new LearnerConfigurationError('LV01 ledger cutoff turn must be non-negative');
+  }
+}
+
+function uniformPrediction(
+  candidateTypeCodes: readonly number[],
+  source: Extract<
+    Lv01NativeLedgerPrediction['source'],
+    'uniform-missing-token' | 'uniform-disabled'
+  >,
+): Lv01NativeLedgerPrediction {
+  return {
+    predictionFunctionVersion: LV01_PREDICTION_FUNCTION_VERSION,
+    candidateTypeCodes: [...candidateTypeCodes],
+    distribution: Array.from(
+      { length: candidateTypeCodes.length },
+      () => 1 / candidateTypeCodes.length,
+    ),
+    source,
+  };
+}
+
+/**
+ * Read the latest usable association for every token from a verified training
+ * prefix. Post-cutoff records are deliberately ignored before validation so a
+ * later event cannot change a prospective prediction or turn an old prefix
+ * into an integrity failure.
+ */
+export function indexLv01TrainingLedger(
+  records: readonly Lv01TrainingLedgerAssociation[],
+  receiverRole: 'baby-a' | 'baby-b',
+  cutoff: Lv01TrainingLedgerCutoff,
+): Lv01NativeLedgerIndex {
+  assertTrainingCutoff(cutoff);
+  const preCutoff = records
+    .filter((record) => record.receiverRole === receiverRole && record.sequence <= cutoff.sequence)
+    .sort((left, right) => left.sequence - right.sequence);
+  const selected = new Map<string, Lv01SelectedLedgerAssociation>();
+  const seenSequences = new Set<number>();
+
+  for (const record of preCutoff) {
+    if (seenSequences.has(record.sequence)) {
+      throw new LearnerStateError(
+        `LV01 training ledger has duplicate sequence ${String(record.sequence)}`,
+      );
+    }
+    seenSequences.add(record.sequence);
+    if (!isNativeAssociationEventType(record.eventType)) {
+      throw new LearnerStateError('LV01 training ledger has an unsupported association event');
+    }
+    if (!record.authenticated) {
+      throw new LearnerStateError('LV01 training ledger association is unauthenticated');
+    }
+    if (
+      !Number.isInteger(record.sequence) ||
+      record.sequence < 1 ||
+      !Number.isInteger(record.turn) ||
+      record.turn < 0 ||
+      record.turn > cutoff.turn ||
+      record.eventHash.length === 0 ||
+      record.policyContextHash.length === 0 ||
+      record.token.length === 0
+    ) {
+      throw new LearnerStateError('LV01 training ledger association has invalid provenance');
+    }
+    if (
+      record.associationOverTypeCodes.length !== LV01_TYPE_COUNT ||
+      record.associationOverTypeCodes.some(
+        (weight) => !Number.isFinite(weight) || weight < 0,
+      )
+    ) {
+      throw new LearnerStateError('LV01 training ledger association has invalid weights');
+    }
+    selected.set(record.token, {
+      token: record.token,
+      eventHash: record.eventHash,
+      sequence: record.sequence,
+      turn: record.turn,
+      policyContextHash: record.policyContextHash,
+      associationAgeTurns: cutoff.turn - record.turn,
+      associationOverTypeCodes: [...record.associationOverTypeCodes],
+    });
+  }
+
+  return {
+    predictionFunctionVersion: LV01_PREDICTION_FUNCTION_VERSION,
+    receiverRole,
+    cutoff: { ...cutoff },
+    selectedAssociations: [...selected.values()].sort((left, right) =>
+      left.token.localeCompare(right.token),
+    ),
+  };
+}
+
+/**
+ * Produce LV01's native four-candidate distribution from the training-only
+ * index. It has no outcome, target, or live-policy input: those belong to
+ * later scoring and causal analyses, never this prospective predictor.
+ */
+export function predictLv01NativeLedger(
+  index: Lv01NativeLedgerIndex,
+  deliveredToken: string | null,
+  candidateTypeCodes: readonly number[],
+): Lv01NativeLedgerPrediction {
+  assertLv01CandidateTypes(candidateTypeCodes);
+  if (deliveredToken === null) {
+    return uniformPrediction(candidateTypeCodes, 'uniform-disabled');
+  }
+  const association = index.selectedAssociations.find(
+    (entry) => entry.token === deliveredToken,
+  );
+  if (association === undefined) {
+    return uniformPrediction(candidateTypeCodes, 'uniform-missing-token');
+  }
+  const weights = candidateTypeCodes.map(
+    (typeCode) =>
+      (association.associationOverTypeCodes[typeCode] as number) +
+      LV01_NATIVE_EPSILON,
+  );
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const distribution = weights.map((weight) => weight / total);
+  if (!distribution.every(Number.isFinite)) {
+    throw new LearnerStateError('LV01 native ledger produced a non-finite probability');
+  }
+  return {
+    predictionFunctionVersion: LV01_PREDICTION_FUNCTION_VERSION,
+    candidateTypeCodes: [...candidateTypeCodes],
+    distribution,
+    source: 'training-ledger',
+    selectedAssociation: association,
+  };
 }
 
 /**

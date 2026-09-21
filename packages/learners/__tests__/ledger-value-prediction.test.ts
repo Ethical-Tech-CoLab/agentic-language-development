@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   LV01_PARAMETER_COUNT,
+  indexLv01TrainingLedger,
+  predictLv01NativeLedger,
   replayLv01RecurrentReceiver,
 } from '../src/ledger-value-prediction.js';
 import { RecurrentCommunicationModel } from '../src/recurrent-model.js';
@@ -71,5 +73,91 @@ describe('LV01 exact recurrent replay', () => {
     expect(() =>
       replayLv01RecurrentReceiver(model, inventory[0] as string, inventory, [1, 1, 4, 9]),
     ).toThrow(/distinct/u);
+  });
+});
+
+function association(
+  sequence: number,
+  token: string,
+  weights: readonly number[],
+  overrides: Partial<Record<string, unknown>> = {},
+) {
+  return {
+    receiverRole: 'baby-a' as const,
+    eventType: 'hypothesis.created' as const,
+    sequence,
+    turn: sequence * 10,
+    eventHash: `sha256:${String(sequence).repeat(64).slice(0, 64)}`,
+    policyContextHash: `sha256:${String(sequence + 1).repeat(64).slice(0, 64)}`,
+    authenticated: true,
+    token,
+    associationOverTypeCodes: weights,
+    ...overrides,
+  };
+}
+
+describe('LV01 training-ledger native predictions', () => {
+  const low = Array.from({ length: 16 }, () => 0);
+  const early = [...low];
+  early[1] = 1;
+  const latest = [...low];
+  latest[9] = 4;
+
+  it('uses the latest verified pre-cutoff association in sequence order', () => {
+    const index = indexLv01TrainingLedger(
+      [
+        association(5, 'S03', latest),
+        association(2, 'S03', early),
+        association(4, 'S03', low),
+        association(6, 'S03', Array.from({ length: 16 }, () => 1)),
+      ],
+      'baby-a',
+      { sequence: 5, turn: 50 },
+    );
+    const prediction = predictLv01NativeLedger(index, 'S03', candidates);
+
+    expect(prediction.source).toBe('training-ledger');
+    expect(prediction.selectedAssociation).toMatchObject({ sequence: 5, turn: 50 });
+    expect(prediction.selectedAssociation?.associationAgeTurns).toBe(0);
+    expect(prediction.distribution).toHaveLength(4);
+    expect(prediction.distribution[2]).toBeGreaterThan(prediction.distribution[0] as number);
+    expect(prediction.distribution.reduce((sum, value) => sum + value, 0)).toBeCloseTo(1, 12);
+  });
+
+  it('keeps a post-cutoff association inaccessible and supplies recorded uniform priors', () => {
+    const before = indexLv01TrainingLedger(
+      [association(2, 'S04', early)],
+      'baby-a',
+      { sequence: 2, turn: 20 },
+    );
+    const after = indexLv01TrainingLedger(
+      [association(2, 'S04', early), association(3, 'S04', latest)],
+      'baby-a',
+      { sequence: 2, turn: 20 },
+    );
+    expect(predictLv01NativeLedger(after, 'S04', candidates)).toEqual(
+      predictLv01NativeLedger(before, 'S04', candidates),
+    );
+    expect(predictLv01NativeLedger(before, 'S99', candidates)).toMatchObject({
+      source: 'uniform-missing-token', distribution: [0.25, 0.25, 0.25, 0.25],
+    });
+    expect(predictLv01NativeLedger(before, null, candidates)).toMatchObject({
+      source: 'uniform-disabled', distribution: [0.25, 0.25, 0.25, 0.25],
+    });
+  });
+
+  it('rejects unauthenticated, malformed, and duplicate pre-cutoff associations', () => {
+    expect(() => indexLv01TrainingLedger(
+      [association(1, 'S01', early, { authenticated: false })],
+      'baby-a', { sequence: 1, turn: 10 },
+    )).toThrow(/unauthenticated/u);
+    expect(() => indexLv01TrainingLedger(
+      [association(1, 'S01', [...early.slice(0, 15), Number.NaN])],
+      'baby-a', { sequence: 1, turn: 10 },
+    )).toThrow(/invalid weights/u);
+    expect(() => indexLv01TrainingLedger(
+      [association(1, 'S01', early), association(1, 'S02', latest)],
+      'baby-a', { sequence: 1, turn: 10 },
+    )).toThrow(/duplicate sequence/u);
   });
 });

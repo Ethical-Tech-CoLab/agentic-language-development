@@ -188,12 +188,21 @@ export {
 } from './ledger-prediction.js';
 export {
   LV01_CANDIDATE_COUNT,
+  LV01_NATIVE_ASSOCIATION_EVENT_TYPES,
   LV01_PARAMETER_COUNT,
   LV01_PREDICTION_FUNCTION_VERSION,
   LV01_SYMBOL_COUNT,
   LV01_TYPE_COUNT,
+  indexLv01TrainingLedger,
+  predictLv01NativeLedger,
   replayLv01RecurrentReceiver,
+  type Lv01NativeAssociationEventType,
+  type Lv01NativeLedgerIndex,
+  type Lv01NativeLedgerPrediction,
   type Lv01RecurrentReplayPrediction,
+  type Lv01SelectedLedgerAssociation,
+  type Lv01TrainingLedgerAssociation,
+  type Lv01TrainingLedgerCutoff,
 } from './ledger-value-prediction.js';
 export {
   learnerContractPath,
