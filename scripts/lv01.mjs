@@ -115,7 +115,7 @@ switch (command) {
     if (stage !== 'development') fail(`${stage} v${version} allocation is blocked until topology qualification and measured resources exist`);
     const allocation = `protocols/lv01-development-resource-allocation.v${version}.json`;
     if (!existsSync(resolve(root, allocation))) fail(`development v${version} allocation requires the bounded allocation packet; no blank packet is created`);
-    run('scripts/check-lv01-development-allocation.mjs');
+    run('scripts/check-lv01-development-allocation.mjs', '--version', version);
     fail(`development v${version} allocation is immutable at ${allocation}; no overwrite is permitted`);
     break;
   }

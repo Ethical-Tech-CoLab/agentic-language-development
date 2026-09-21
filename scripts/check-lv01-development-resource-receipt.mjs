@@ -3,7 +3,9 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 const receiptPath = 'reports/research/lv01-development-v9-resource-receipt.json';
+const erratumPath = 'reports/research/lv01-development-allocation-integrity-erratum.v1.json';
 const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+const erratum = JSON.parse(readFileSync(erratumPath, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 
 assert.equal(receipt.schemaVersion, 1);
@@ -27,4 +29,7 @@ assert.ok(receipt.resourceObservation.sampledEstimatedCpuSeconds > 0);
 assert.ok(receipt.resourceObservation.observedPeakMemoryMiB > 0);
 assert.equal(sha256(receipt.attempt.allocation).startsWith('sha256:'), true);
 assert.match(receipt.claimBoundary, /no behavioral/u);
-console.log('LV01 bounded resource receipt valid: 17 services with non-empty sampled observations; no calibration or scientific claim');
+assert.equal(erratum.status, 'historical-allocation-integrity-failure-retained');
+assert.ok(erratum.affectedAllocations.includes(receipt.attempt.allocation));
+assert.match(erratum.resolution, /fresh allocation/u);
+console.log('LV01 bounded resource observation retained: 17 services with non-empty samples; allocation integrity erratum blocks calibration and scientific claims');

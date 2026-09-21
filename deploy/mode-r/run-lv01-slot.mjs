@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -20,11 +20,97 @@ const runId = `lv01-development-v${version}-p0001`;
 const slotRoot = join(evidenceRoot, runId);
 const resultPath = join(slotRoot, 'output', 'lv01-fixture-result.json');
 const resourcePath = join(slotRoot, 'output', 'lv01-fixture-resources.json');
+const authorityPath = join(slotRoot, 'output', 'lv01-authority-observation.json');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const allocation = existsSync(allocationPath)
   ? JSON.parse(readFileSync(allocationPath, 'utf8'))
   : null;
+
+const APPLICATION_SERVICES = [
+  'model-adapter-a', 'model-adapter-b', 'baby-a', 'baby-b',
+  'signer-baby-a-ledger', 'signer-baby-b-ledger', 'signer-channel',
+  'signer-affect', 'signer-audit', 'witness-signer', 'evidence-writer',
+  'gateway', 'checkpoint', 'simulated-anchor', 'audit-interpreter',
+  'controller-scenario', 'offline-verifier',
+];
+
+function inspectServiceAccess(containerId, service, target) {
+  const probe = spawnSync('docker', [
+    'exec', containerId, '/usr/local/bin/node', '-e',
+    "process.exit(require('node:fs').existsSync(process.argv[1]) ? 0 : 1)", target,
+  ], { encoding: 'utf8' });
+  const exitCode = probe.status ?? -1;
+  return { service, target, exitCode, denied: exitCode === 1 };
+}
+
+function authorityObservation(compose, environment) {
+  const ids = execFileSync('docker', [...compose, 'ps', '--all', '--quiet'], {
+    env: environment, encoding: 'utf8',
+  }).trim().split('\n').filter(Boolean);
+  if (ids.length !== APPLICATION_SERVICES.length) return null;
+  const containers = JSON.parse(execFileSync('docker', ['inspect', ...ids], { encoding: 'utf8' }));
+  const services = new Map(containers.map((container) => [
+    container.Config.Labels['com.docker.compose.service'], container,
+  ]));
+  assert.deepEqual([...services.keys()].sort(), [...APPLICATION_SERVICES].sort(),
+    'selected application services differ from the expected 17-role topology');
+  if (['controller-scenario', 'baby-a', 'baby-b'].some((service) =>
+    !services.get(service).State.Running)) return null;
+  for (const service of APPLICATION_SERVICES) {
+    const container = services.get(service);
+    assert.equal(container.HostConfig.ReadonlyRootfs, true, `${service} root must be read-only`);
+    assert.ok(container.HostConfig.CapDrop.includes('ALL'), `${service} must drop all capabilities`);
+  }
+  const mountTargets = (service) => new Set(services.get(service).Mounts.map((mount) => mount.Destination));
+  const controllerMounts = mountTargets('controller-scenario');
+  assert.ok(![...controllerMounts].some((target) => target.startsWith('/run/ald-mode-r/model-')),
+    'controller must not mount private model state');
+  assert.ok(![...controllerMounts].some((target) => target.startsWith('/run/ald-mode-r/signer-')),
+    'controller must not mount signer capabilities');
+  assert.ok(mountTargets('baby-a').has('/run/ald-mode-r/model-a'));
+  assert.ok(!mountTargets('baby-a').has('/run/ald-mode-r/model-b'));
+  assert.ok(mountTargets('baby-b').has('/run/ald-mode-r/model-b'));
+  assert.ok(!mountTargets('baby-b').has('/run/ald-mode-r/model-a'));
+  for (const service of ['model-adapter-a', 'model-adapter-b', 'signer-baby-a-ledger',
+    'signer-baby-b-ledger', 'signer-channel', 'signer-affect', 'signer-audit',
+    'witness-signer', 'offline-verifier']) {
+    assert.equal(Object.keys(services.get(service).NetworkSettings.Networks).length, 0,
+      `${service} must have no network route`);
+  }
+  const networks = (service) => Object.keys(services.get(service).NetworkSettings.Networks).sort();
+  assert.equal(networks('baby-a').some((network) => networks('baby-b').includes(network)), false,
+    'the two learner roles must not share a network');
+  const access = [
+    ['controller-scenario', '/run/ald-mode-r/model-a'],
+    ['controller-scenario', '/run/ald-mode-r/model-b'],
+    ['baby-a', '/run/ald-mode-r/model-b'],
+    ['baby-b', '/run/ald-mode-r/model-a'],
+  ].map(([service, target]) => inspectServiceAccess(services.get(service).Id, service, target));
+  assert.ok(access.every((entry) => entry.denied), 'private-model access probe unexpectedly succeeded');
+  return {
+    schemaVersion: 1,
+    classification: 'lv01-selected-application-authority-observation',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId,
+    services: APPLICATION_SERVICES.map((service) => {
+      const container = services.get(service);
+      return {
+        service,
+        containerId: container.Id,
+        running: container.State.Running,
+        processId: container.State.Pid,
+        readOnlyRoot: container.HostConfig.ReadonlyRootfs,
+        droppedCapabilities: container.HostConfig.CapDrop,
+        networks: networks(service),
+        mountTargets: [...mountTargets(service)].sort(),
+      };
+    }),
+    deniedPrivateModelAccess: access,
+    claimBoundary: 'A read-only live Docker inspection and negative filesystem probes for the selected LV01 application topology. It does not test malformed envelopes, recurrent state restoration, branch chronology, failure recovery, or behavioral outcomes.',
+  };
+}
 
 function verifyAllocation() {
   assert.ok(allocation !== null, `missing ${allocationPath}`);
@@ -39,6 +125,19 @@ function verifyAllocation() {
   assert.equal(allocation.allocation.smallFixture.validationSelectionCases, 24);
   assert.equal(allocation.allocation.smallFixture.withinSupportTestCases, 24);
   assert.equal(allocation.seedDerivation.slots.length, 6);
+  for (const slot of allocation.seedDerivation.slots) {
+    const derive = (purpose) => deriveSeedHex(allocation.seedDerivation.root,
+      ...allocation.seedDerivation.parts.map((part) => {
+        if (part === 'four-digit slot index') return slot.index;
+        if (part === 'purpose') return purpose;
+        return part;
+      }));
+    assert.equal(slot.scenario, derive('scenario'), 'scenario seed derivation');
+    assert.equal(slot.babyA, derive('learner/baby-a'), 'baby A seed derivation');
+    assert.equal(slot.babyB, derive('learner/baby-b'), 'baby B seed derivation');
+    assert.equal(slot.gateway, derive('gateway'), 'gateway seed derivation');
+    assert.equal(slot.analysis, derive('analysis'), 'analysis seed derivation');
+  }
   assert.equal(execFileSync('git', ['rev-parse', `${allocation.sourceFreeze.commit}^{tree}`], { encoding: 'utf8' }).trim(), allocation.sourceFreeze.tree);
   assert.equal(JSON.parse(execFileSync('git', ['show', `${allocation.sourceFreeze.commit}:package.json`], { encoding: 'utf8' })).version, allocation.sourceFreeze.version);
   for (const artifact of allocation.sourceFreeze.artifacts) {
@@ -139,9 +238,15 @@ function summarizeResources(samples) {
 async function runComposeWithMeasurements(compose, environment) {
   const startedAt = new Date().toISOString();
   const samples = [];
+  let authority = null;
+  let authorityFailure = null;
   const sample = () => {
     try { samples.push({ capturedAt: new Date().toISOString(), rows: resourceSnapshot(compose, environment) }); }
     catch { /* Resource observation must not alter the fixture outcome. */ }
+    if (authority === null && authorityFailure === null) {
+      try { authority = authorityObservation(compose, environment); }
+      catch (error) { authorityFailure = `${error.name}: ${error.message}`; }
+    }
   };
   const child = spawn('docker', [...compose, 'up', '--build', '--abort-on-container-exit', '--exit-code-from', 'offline-verifier'], {
     env: environment, stdio: ['ignore', 'pipe', 'pipe'],
@@ -163,6 +268,10 @@ async function runComposeWithMeasurements(compose, environment) {
       services: summarizeResources(samples),
       claimBoundary: 'Sampled local Docker observations support only bounded development resource accounting; they are not a calibrated resource authorization or scientific result.',
     }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+    assert.ok(authority !== null, authorityFailure ?? 'selected authority observation was never available');
+    writeFileSync(authorityPath, `${JSON.stringify(authority, null, 2)}\n`, {
+      flag: 'wx', mode: 0o600,
+    });
     if (code !== 0) throw new Error(`docker compose exited with ${String(code)}: ${output.split('\n')[0]}`);
     return output;
   } finally {
