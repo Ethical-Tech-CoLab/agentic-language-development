@@ -437,6 +437,18 @@ export interface RunStateMachine {
 
 export type ScenarioSplit = 'train' | 'validation' | 'held-out' | 'evaluation';
 
+/**
+ * The outcome-blind LV01 study uses these partitions in addition to the
+ * portfolio's generic runtime splits. They deliberately do not widen
+ * {@link ScenarioSplit}: a legacy study cannot request an LV01 partition via
+ * the ordinary scenario interface.
+ */
+export type Lv01Partition =
+  | 'training'
+  | 'validation-fit'
+  | 'validation-selection'
+  | 'within-support-test';
+
 export interface Outcome {
   success: boolean;
   /** Task reward under `extrinsic-task`; `0` or `1` for referential games. */
@@ -462,6 +474,14 @@ export interface ScenarioInstance {
   groundTruth: Record<string, unknown>;
   /** Domain-separated hash over ground truth and observations. */
   stateHash: Sha256Hash;
+}
+
+/** A scoped LV01 case with its explicit partition and receiver-role schedule. */
+export interface Lv01ScenarioCase {
+  partition: Lv01Partition;
+  caseIndex: number;
+  receiverRole: BabyRole;
+  scenario: ScenarioInstance;
 }
 
 export interface ScenarioEngine {

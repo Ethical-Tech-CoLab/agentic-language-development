@@ -39,6 +39,8 @@ import {
   type BabyRole,
   type Observation,
   type Outcome,
+  type Lv01Partition,
+  type Lv01ScenarioCase,
   type RunConfig,
   type ScenarioEngine,
   type ScenarioInstance,
@@ -55,6 +57,21 @@ const MAX_UTILITY = 10;
 
 /** `emit_symbols` carries at most 16 symbols (SPEC §11.3). */
 const MAX_SYMBOLS_PER_MESSAGE = 16;
+
+/** Frozen LV01 within-support task types; [0, 5, 10, 15] stay untouched. */
+export const LV01_ELIGIBLE_TYPE_CODES = [
+  1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14,
+] as const;
+
+const LV01_UNTOUCHED_TYPE_CODES = [0, 5, 10, 15] as const;
+
+/** Per-receiver-role cases required by each frozen LV01 partition. */
+export const LV01_PARTITION_CASES: Readonly<Record<Lv01Partition, number>> = {
+  training: 1_500,
+  'validation-fit': 120,
+  'validation-selection': 120,
+  'within-support-test': 120,
+};
 
 export type ScenarioErrorCode =
   | 'invalid-config'
@@ -477,10 +494,82 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
       );
     }
 
-    const prng = this.episodePrng(episodeIndex, split);
-    const targetPool = this.targetPool(split);
-    const targetTypeCode = targetPool[prng.nextInt(targetPool.length)] as number;
-    const candidatePool = this.candidatePool(split);
+    return this.generateFromPrng(
+      this.episodePrng(episodeIndex, split),
+      episodeIndex,
+      split,
+      roles,
+      this.targetPool(split),
+      this.candidatePool(split),
+    );
+  }
+
+  /**
+   * Generate one explicitly scheduled LV01 case. This is separate from
+   * {@link generate} so the original E00-E50 portfolio cannot request one of
+   * LV01's design partitions by accident.
+   */
+  generateLv01Case(
+    caseIndex: number,
+    partition: Lv01Partition,
+    roles: { sender: BabyRole; receiver: BabyRole },
+  ): Lv01ScenarioCase {
+    if (!Number.isInteger(caseIndex) || caseIndex < 0) {
+      throw new ScenarioEngineError(
+        'invalid-request',
+        'caseIndex must be a non-negative integer',
+      );
+    }
+    if (caseIndex >= LV01_PARTITION_CASES[partition]) {
+      throw new ScenarioEngineError(
+        'invalid-request',
+        `${partition} caseIndex must be below ${LV01_PARTITION_CASES[partition]}`,
+      );
+    }
+    if (roles.sender === roles.receiver) {
+      throw new ScenarioEngineError(
+        'invalid-request',
+        'sender and receiver must be different Babies',
+      );
+    }
+    this.assertLv01Config();
+
+    const targetTypeCode =
+      LV01_ELIGIBLE_TYPE_CODES[caseIndex % LV01_ELIGIBLE_TYPE_CODES.length] as number;
+    const split: ScenarioSplit = partition === 'training' ? 'train' : 'validation';
+    const prng = new SeededPrng(this.runSeed)
+      .derive('lv01')
+      .derive(partition)
+      .derive(roles.receiver)
+      .derive(String(caseIndex));
+
+    return {
+      partition,
+      caseIndex,
+      receiverRole: roles.receiver,
+      scenario: this.generateFromPrng(
+        prng,
+        caseIndex,
+        split,
+        roles,
+        LV01_ELIGIBLE_TYPE_CODES,
+        LV01_ELIGIBLE_TYPE_CODES,
+        targetTypeCode,
+      ),
+    };
+  }
+
+  private generateFromPrng(
+    prng: SeededPrng,
+    episodeIndex: number,
+    split: ScenarioSplit,
+    roles: { sender: BabyRole; receiver: BabyRole },
+    targetPool: readonly number[],
+    candidatePool: readonly number[],
+    fixedTargetTypeCode?: number,
+  ): ScenarioInstance {
+    const targetTypeCode = fixedTargetTypeCode ??
+      (targetPool[prng.nextInt(targetPool.length)] as number);
     const distractors = sampleDistinct(
       prng,
       candidatePool.filter((code) => code !== targetTypeCode),
@@ -682,6 +771,25 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
       .derive(String(episodeIndex));
     const label = this.config.evaluationSeedLabel;
     return split === 'evaluation' && label !== undefined ? base.derive(label) : base;
+  }
+
+  private assertLv01Config(): void {
+    const expectedUntouched = [...LV01_UNTOUCHED_TYPE_CODES];
+    if (
+      this.typeCodeCount !== 16 ||
+      this.config.candidatesPerEpisode !== 4 ||
+      this.config.attributeCount !== 2 ||
+      this.config.valuesPerAttribute !== 4 ||
+      this.config.heldOutTypeCodes.length !== expectedUntouched.length ||
+      this.config.heldOutTypeCodes.some(
+        (typeCode, index) => typeCode !== expectedUntouched[index],
+      )
+    ) {
+      throw new ScenarioEngineError(
+        'invalid-request',
+        'LV01 cases require the frozen 4x4 referential configuration with its untouched types',
+      );
+    }
   }
 
   private targetPool(split: ScenarioSplit): readonly number[] {

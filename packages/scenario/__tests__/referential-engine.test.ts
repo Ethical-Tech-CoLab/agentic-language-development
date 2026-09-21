@@ -13,6 +13,8 @@ import { SeededPrng, canonicalJson, hashCanonical } from '@ald/hashing';
 import {
   HygieneViolationError,
   ReferentialScenarioEngine,
+  LV01_ELIGIBLE_TYPE_CODES,
+  LV01_PARTITION_CASES,
   ScenarioEngineError,
   readGroundTruth,
   zoneOfPossibleAgreement,
@@ -300,6 +302,62 @@ describe('held-out rule', () => {
       );
     }
     expect(seen.size).toBe(16);
+  });
+});
+
+describe('scoped LV01 partitions', () => {
+  const lv01 = engine({ heldOutTypeCodes: [0, 5, 10, 15] });
+
+  it('keeps the LV01 partition labels outside the generic scenario interface', () => {
+    expect(() =>
+      lv01.generate(0, 'validation-fit' as ScenarioSplit, ROLES),
+    ).toThrow(ScenarioEngineError);
+  });
+
+  it('uses balanced within-support target schedules for every receiver role', () => {
+    for (const partition of Object.keys(LV01_PARTITION_CASES) as Array<
+      keyof typeof LV01_PARTITION_CASES
+    >) {
+      for (const receiver of ['baby-a', 'baby-b'] as BabyRole[]) {
+        const roles = receiver === 'baby-a'
+          ? { sender: 'baby-b' as const, receiver }
+          : { sender: 'baby-a' as const, receiver };
+        const targetCounts = new Map<number, number>();
+        const references = new Set<string>();
+        for (let caseIndex = 0; caseIndex < LV01_PARTITION_CASES[partition]; caseIndex += 1) {
+          const generated = lv01.generateLv01Case(caseIndex, partition, roles);
+          const truth = readGroundTruth(generated.scenario.groundTruth);
+          expect(generated.partition).toBe(partition);
+          expect(generated.receiverRole).toBe(receiver);
+          expect(LV01_ELIGIBLE_TYPE_CODES).toContain(truth.targetTypeCode);
+          expect(truth.senderOrder.every((code) => LV01_ELIGIBLE_TYPE_CODES.includes(
+            code as (typeof LV01_ELIGIBLE_TYPE_CODES)[number],
+          ))).toBe(true);
+          references.add(generated.scenario.scenarioRef);
+          targetCounts.set(
+            truth.targetTypeCode,
+            (targetCounts.get(truth.targetTypeCode) ?? 0) + 1,
+          );
+        }
+        expect(references.size).toBe(LV01_PARTITION_CASES[partition]);
+        const expectedPerTarget =
+          LV01_PARTITION_CASES[partition] / LV01_ELIGIBLE_TYPE_CODES.length;
+        expect([...targetCounts.values()]).toHaveLength(LV01_ELIGIBLE_TYPE_CODES.length);
+        expect([...targetCounts.values()].every((count) => count === expectedPerTarget)).toBe(true);
+      }
+    }
+  });
+
+  it('domain-separates every partition and rejects an unfrozen task configuration', () => {
+    const training = lv01.generateLv01Case(0, 'training', ROLES);
+    const validation = lv01.generateLv01Case(0, 'validation-fit', ROLES);
+    expect(training.scenario.stateHash).not.toBe(validation.scenario.stateHash);
+    expect(() => engine().generateLv01Case(0, 'training', ROLES)).toThrow(
+      ScenarioEngineError,
+    );
+    expect(() =>
+      lv01.generateLv01Case(LV01_PARTITION_CASES.training, 'training', ROLES),
+    ).toThrow(ScenarioEngineError);
   });
 });
 

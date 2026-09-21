@@ -12,6 +12,8 @@
 export {
   ReferentialGroundTruthSchema,
   ReferentialScenarioEngine,
+  LV01_ELIGIBLE_TYPE_CODES,
+  LV01_PARTITION_CASES,
   ScenarioEngineError,
   readGroundTruth,
   zoneOfPossibleAgreement,
