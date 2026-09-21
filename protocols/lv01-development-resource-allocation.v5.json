@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1, "studyId": "LV01", "classification": "prospective-development-only-allocation", "status": "design-locked-not-executed", "researchFinding": false, "scientificDisposition": "not-tested", "externalSpend": 0, "publicChainTransaction": false,
+  "sourceFreeze": { "commit": "bd5670348d1c50a56176543108acfd38fcd5d109", "tree": "991ffcbcf051014a677fe6f3f66bd63cc8b52fd5", "version": "0.1.330", "artifacts": [
+    {"path":"package.json","sha256":"sha256:09e92db419b2e96cf1d4bc37d87231b7a31bef5f6dc71d6730f4bc13d5eb8d88"},
+    {"path":"protocols/lv01-study-design.v1.json","sha256":"sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
+    {"path":"protocols/lv01-analysis-plan.v1.json","sha256":"sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
+    {"path":"protocols/lv01-seed-resource-policy.v1.json","sha256":"sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec"},
+    {"path":"deploy/mode-r/docker-compose.application.v1.yml","sha256":"sha256:fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"},
+    {"path":"deploy/mode-r/docker-compose.lv01.v1.yml","sha256":"sha256:339d6679c1b878ce7a64b625c45910057fa770c7f0a14602436eaba554a56fa3"},
+    {"path":"deploy/mode-r/application-controller.mjs","sha256":"sha256:33bd0e136ba86e0b5f0994938d001070a892e1f97365151a2952f24ce565ed60"},
+    {"path":"deploy/mode-r/domain-signer-host.mjs","sha256":"sha256:39d33aabbb49b03fb847bc536b929e09fd697548cfa248f07354cfb0ed41f174"},
+    {"path":"deploy/mode-r/run-lv01-slot.mjs","sha256":"sha256:c8229f7489ebd15996680239caf5bbbe92480a15a60fb46c87369c8f4d921b1a"},
+    {"path":"packages/orchestrator/src/experiments/ledger-value.ts","sha256":"sha256:d7495f64b62f8ea0918f1a8eda377e35cafe6482b576adacc9f0b73ed8a51240"},
+    {"path":"packages/orchestrator/src/experiments/ledger-value-journal.ts","sha256":"sha256:779f759b0d0c768570a038dbda90d13da877a66b542059b0f572b1de4356cb01"},
+    {"path":"scripts/lv01.mjs","sha256":"sha256:00cfd7e8727d53fd6a4abcd59043195f31131b2085800209ca6c2d0cc6a3fa0b"}
+  ]},
+  "allocation": { "maximumParallelDyads": 1, "smallFixture": {"runId":"lv01-development-v5-p0001","iteration":1,"trainingCases":64,"validationFitCases":24,"validationSelectionCases":24,"withinSupportTestCases":24,"cpuHoursCap":0.25,"additionalStorageGiBCap":1,"maximumResidentGiB":6}, "fullCalibration":{"iteration":2,"runIds":["lv01-development-v5-p0002","lv01-development-v5-p0003","lv01-development-v5-p0004","lv01-development-v5-p0005","lv01-development-v5-p0006"],"dyads":5,"requiredWorkload":"frozen full LV01 v1 workload after the small-fixture projection passes"}},
+  "seedDerivation": {"root":"ald-ledger-value-v1","parts":["LV01","development","v5","primary","four-digit slot index","purpose"],"purposes":["scenario","learner/baby-a","learner/baby-b","gateway","analysis"],"slots":[
+    {"index":"0001","scenario":"00bff26ce730e101c852fb431ffcf9db0fb11d502827370b0eaa5273ab8aa34f","babyA":"ee38cc3c42ace6b3fff5133e94f56483f7fcdee6b5a6677432042471fc789f92","babyB":"b54fa4bdcc6cdd97b1ada1a4765b682cdecff628267d18e31a34841b1c2b9779","gateway":"3ede19e5f0b97dbfd3ad3c1b12e5ce65775cbba141c7dade30d5fc9c2c94b049","analysis":"6c816524dc1f5e1da4af3faef2962db85da4a664da80177dda4ce1e9902139dc"},
+    {"index":"0002","scenario":"1bd08adcebec5e8909ef5fd96b00e94f17dcdef57a2a533e267183610d635e5e","babyA":"e7d4a177f8e8f56e66d212b87d3ea54e40dd752f5bba7ebe2e15e1c88b87c2d8","babyB":"365eb8434a311069c3af10fe5838c121e7c2655ebc683c6659db2c010d2a6dde","gateway":"b6075f3e41fce1899459a3cac63c9472430a1eb5fc2944b54fe1da3146879580","analysis":"a49957440b875fd306dae3372eba6a4ba4563b3d7356400dcceed51e7871ce0c"},
+    {"index":"0003","scenario":"bfd0f5434ef43905e9b5fbc79e4476a3d78ecaeda8c219fb9630c2d566605cb6","babyA":"14debb7806cbad2a2a0aaabef5b34165ad87c3e95c22297a6cd5754ee0eefcec","babyB":"0a437d7f1f2d421fa0e65e5c975468b182565d29f8559de844f7d80ec3b7dfc8","gateway":"820d83d9f8abfd7d4ed5f42f3d99c953d4588a772cb87a78ef934ae178103fe4","analysis":"2462738450c0cb8ef6e22bee932ddfb2231170c77b730dcc5d444f90345440ec"},
+    {"index":"0004","scenario":"d92bea58a7c79fa9e82280b3ec185dbdddd745fc647737e8579f40d128ba3223","babyA":"dafaa559c6efe2e2339805124787a02ffdf0a7bed1bdaf94a841f9d11edbdf98","babyB":"ecf4dc05e25f4205aa2f88be41f60c22e712c99c390fd8bdccd625f212348df4","gateway":"cf9cf699f91e2418ccd2e5b3034f8e8693621b29510ca8daed9371f8e18e764c","analysis":"cc84fd39621b93c212c2c1b3ff13872f3b82d16a4ee3c9b5f471f60e060be826"},
+    {"index":"0005","scenario":"95ac066234145ae68259792b036ce144711d9d82f6b7fee0728be76a27bc2531","babyA":"f5ad3d7b86cc10cf86cf0e78a65166836d558f6d5a45a08e9a4c0eb5e88405e8","babyB":"032df0dd9702d9b1871cd13e1a3d7e7fdae219ade1e9075905b97eeff94fd907","gateway":"6e89bfe404f35600b9e9d0792cf4ef348f9e0db7060cdc60f672ae0fc5f07572","analysis":"4bef4a290d734e6ad3220f445bc82272cc6fd8ed6e033a34a73f04aeaf0113fb"},
+    {"index":"0006","scenario":"2afa2e12196737e21165267ca55680a9bddac080c904194a548a25ee1556d8b2","babyA":"954101e14b8fa9ee359bf30937201e22b90b881fe813af99109ac43a3eaa6c12","babyB":"9358e36df7747db8494fe26208f9f3874b01cf5711aa5a6eadecafaf9a3576c5","gateway":"e5a805859787ccaa58f4f1496e179fe543070d1827668d441a48c02d4c894fb5","analysis":"6c3a4758a450f5a19379001d9c10487be79962bad311eb755bf09730ab30ed16"}
+  ]},
+  "requiredBeforeExecution":["clean execution source at the bound artifact closure","all-service resource accounting","no registered pilot or confirmatory identifier"],
+  "claimBoundary":"This uses fresh v5 development identifiers after retained v2, v3 and v4 qualification failures. It allocates no pilot data and establishes no scientific finding."
+}
