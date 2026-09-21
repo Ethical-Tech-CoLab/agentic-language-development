@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-lifecycle-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": true,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-lifecycle-v5",
+  "executionCommit": "6aad4320eef9d5da6aed443b2288fef9b9b0bc01",
+  "executionTree": "8f9a22a80349f77b679d7d61601f0ff81425abbd",
+  "executionVersion": "0.1.282",
+  "startedAt": "2026-09-21T12:54:40.702Z",
+  "finishedAt": "2026-09-21T12:57:30.504Z",
+  "protocol": {
+    "path": "protocols/mode-r-application-lifecycle-development.v5.json",
+    "bytes": 5084,
+    "sha256": "sha256:94a3a7bc58014d78980f34db9b666cdc6c84ec85d165136048e50e1ef19af094"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-lifecycle-development-v5/receipt.json",
+    "bytes": 38451,
+    "sha256": "sha256:b11d20e1c8b21fac7ccd0d6ddd6ac94727585706f7ec910004e335ad487da113",
+    "retention": "local-ignored-original"
+  },
+  "lifecycle": {
+    "firstTurn": 0,
+    "pausedState": "paused",
+    "recoveredState": "paused",
+    "recoveredTurn": 1,
+    "resumedState": "running",
+    "secondTurn": 1,
+    "evaluationTurn": 2,
+    "finalState": "sealing",
+    "finalTurn": 3,
+    "auditEntryCount": 1,
+    "checkpointCount": 8,
+    "interventionCount": 4
+  },
+  "application": {
+    "firstServiceCount": 16,
+    "finalServiceCount": 17,
+    "recreatedServiceIdentityChanges": 6,
+    "persistentServiceIdentityChanges": 0,
+    "staleOwnedSocketsRemoved": 3,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "resourceSnapshotCount": 13,
+    "offlineVerifierExitCode": 0,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "bundle": {
+    "manifestHash": "sha256:2cb2a8925cce1bf480eea7dca5a58457117213c9fcca73ba9575461e25957524",
+    "typescriptIntegrityPass": true,
+    "independentRustAudit": {
+      "implementation": "ald-integrity-auditor-rust-v1",
+      "integrityPass": true,
+      "anchored": false,
+      "streamCount": 6,
+      "eventCount": 26,
+      "checkpointCount": 8,
+      "issueCount": 0
+    }
+  },
+  "limitations": [
+    "The anchor is simulated and the independent Rust audit correctly reports anchored false.",
+    "This bounded lifecycle execution does not include the comprehensive service-death, uncertain-write, late-callback, direct-route, or detector matrix.",
+    "Thirteen post-run resource snapshots are observations, not a peak resource envelope qualification.",
+    "This receipt is software qualification evidence, not a behavioral result, B12 closure, independent review, or publication evidence."
+  ],
+  "claimBoundary": "The selected application completed the bounded pause, six-service replacement, verified recovery, resume, training, held-out evaluation, delayed audit, export, TypeScript verification, Rust integrity audit, topology reconciliation, and teardown path. Fault, detector, peak-resource, B12, behavioral, and publication claims remain open."
+}

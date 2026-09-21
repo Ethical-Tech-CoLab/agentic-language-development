@@ -133,8 +133,15 @@ the delayed audit after the second training turn, while the run is evaluating bu
 before its final evaluation turn. It requires the resulting analysis checkpoint.
 Every other lifecycle and acceptance threshold remains unchanged. A pass would
 qualify only this bounded lifecycle path;
-the injected-fault matrix, detector bounds, peak resource envelope, Rust audit,
-B12 closure, and behavioral findings remain separate gates.
+the injected-fault matrix, detector bounds, peak resource envelope, B12 closure,
+and behavioral findings remain separate gates.
+The fresh v5 execution passed that bounded lifecycle gate on its exact clean
+commit. A separate live receipt replay passed, and the Rust integrity auditor
+accepted six streams, twenty-six events, and eight checkpoints with no issue.
+The portable receipt binds the ignored original by hash. The simulated anchor is
+correctly reported as not independently anchored. Comprehensive injected faults,
+detector bounds, peak resources, B12 closure, behavioral findings, and independent
+review remain open.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
