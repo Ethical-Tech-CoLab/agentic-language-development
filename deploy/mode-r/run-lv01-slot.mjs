@@ -77,7 +77,7 @@ function config() {
   }, base.randomSeed);
   return {
     ...base,
-    promptBundleHash: promptBundleHash(['scratch-rl'].map(loadLearnerContract)),
+    promptBundleHash: promptBundleHash(['scratch-rl'].map((track) => loadLearnerContract(track))),
     scenarioBundleHash: scenario.bundleHash,
   };
 }
@@ -94,7 +94,7 @@ function prepareDirectories() {
 
 verifyAllocation();
 if (mode === '--check') {
-  assert.equal(existsSync(resultPath), false, 'fixture evidence already exists; audit the retained attempt instead');
+  assert.equal(existsSync(slotRoot), false, 'fixture evidence already exists; audit the retained attempt instead');
   console.log(`LV01 development fixture v${version} is configured but unexecuted`);
   process.exit(0);
 }
@@ -102,7 +102,18 @@ if (mode === '--check') {
 assert.equal(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(), '', 'LV01 fixture requires a clean committed source tree');
 assert.equal(existsSync(slotRoot), false, 'LV01 fixture evidence is single-use');
 prepareDirectories();
-writeFileSync(join(slotRoot, 'config', 'run-config.json'), `${JSON.stringify(config(), null, 2)}\n`, { mode: 0o600 });
+let resolvedConfig;
+try { resolvedConfig = config(); }
+catch (error) {
+  writeFileSync(join(slotRoot, 'fixture-failure.json'), `${JSON.stringify({
+    schemaVersion: 1, classification: 'lv01-development-topology-fixture', researchFinding: false,
+    scientificDisposition: 'not-tested', runId, stage: 'configuration',
+    failure: `${error.name}: ${error.message}`,
+    claimBoundary: 'The development fixture failed before Docker launch. No pilot, scientific result, or resource measurement exists.',
+  }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+  throw error;
+}
+writeFileSync(join(slotRoot, 'config', 'run-config.json'), `${JSON.stringify(resolvedConfig, null, 2)}\n`, { mode: 0o600 });
 const environment = {
   ...process.env,
   ALD_MODE_R_APPLICATION_ROOT: resolve(slotRoot), ALD_SOFTWARE_COMMIT: commit,
