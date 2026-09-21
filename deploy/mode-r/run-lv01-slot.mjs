@@ -62,6 +62,7 @@ function config() {
     learningSignal: 'extrinsic-task', communicationCondition: 'normal', maxTurnsPerRun: 64,
     evaluationTurns: 24, evaluationSeeds: 1, turnResponseBudgetMs: 1_000,
     checkpointEventInterval: 64, checkpointTimeIntervalMs: 300_000, protocolGitCommit: commit,
+    interventionPlan: { version: 1, heldOutTypeCodes: [0, 5, 10, 15] },
     ledgerValuePlan: {
       version: 1,
       designCommitmentHash: planHash('protocols/lv01-study-design.v1.json'),
