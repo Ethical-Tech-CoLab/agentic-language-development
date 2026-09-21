@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-interpretation-erratum",
+  "status": "historical-configuration-gap-retained",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "affectedReceipt": "reports/research/lv01-development-v15-authority-receipt.json",
+  "affectedAttempt": {
+    "runId": "lv01-development-v15-p0001",
+    "executionCommit": "8901224",
+    "evidenceRoot": "evidence/lv01/development-v15/lv01-development-v15-p0001"
+  },
+  "finding": "The selected controller declared the recurrent architecture in its run configuration but omitted the frozen recurrent learner options when constructing its Gateway relay adapters. The retained exported policies therefore have the tabular scratch-policy shape.",
+  "effect": "v15 remains evidence for the listed selected-topology authority observation, fixture sealing, local verification, and resource observation. It is not evidence for recurrent training, frozen recurrent evaluation, or recurrent restoration.",
+  "resolution": "Pass the frozen recurrent learner options through both controller relay factories, bind a fresh development allocation, and repeat the affected recurrent-path fixture. Existing evidence and receipt remain unchanged.",
+  "claimBoundary": "This erratum establishes no calibration, pilot, behavioral result, or scientific finding."
+}
