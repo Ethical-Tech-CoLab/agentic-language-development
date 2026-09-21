@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-recurrent-selected-lifecycle-development-attempt",
+  "attemptStatus": "failed-before-first-turn",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "publicChainTransaction": false,
+  "externalSpend": 0,
+  "protocol": "protocols/lv01-recurrent-lifecycle-development.v3.json",
+  "runId": "lv01-recurrent-lifecycle-v3-p0001",
+  "executionCommit": "44424d3",
+  "retainedEvidence": {
+    "receipt": {"path": "receipt.json", "sha256": "sha256:0b4e763e42e50aecdd319842fa355016a3c14b2ba99aa6c0533c0616fb37d0e8"},
+    "composeLogs": {"path": "compose-logs.txt", "sha256": "sha256:5897ed822b80c0aedf31258d02fc3fd17ea6f20d9c0d718fbd1246d5e4ec2000"}
+  },
+  "failure": "The signer allowlist admitted v3, but the lifecycle collector composed only the base no-learning service file. The recurrent controller sent scratch-rl initialization to no-learning-pinned Baby hosts, which correctly rejected it as invalid parameters before the first turn.",
+  "correction": "Compose the existing LV01 overlay between the base application and lifecycle overlay so its scratch-rl adapter and Baby commands are active for this recurrent fixture.",
+  "successor": "protocols/lv01-recurrent-lifecycle-development.v4.json",
+  "claimBoundary": "This retained configuration failure supplies no recurrent-restoration, resource, or behavioral result. The v3 identity cannot be retried."
+}

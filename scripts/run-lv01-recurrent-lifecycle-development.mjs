@@ -29,6 +29,7 @@ assert.equal(String(protocol.version), version, 'protocol version does not match
 const evidenceRoot = `evidence/lv01/recurrent-lifecycle-v${version}/${protocol.runId}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
+const lv01ComposePath = 'deploy/mode-r/docker-compose.lv01.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
 const project = `ald-lv01-recurrent-lifecycle-v${version}`;
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -53,6 +54,7 @@ function compose(stage, ...args) {
   return command('docker', [
     'compose', '-p', project,
     '-f', baseComposePath,
+    '-f', lv01ComposePath,
     '-f', overlayComposePath,
     ...args,
   ], {
