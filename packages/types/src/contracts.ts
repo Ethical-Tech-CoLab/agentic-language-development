@@ -350,13 +350,13 @@ export interface CheckpointService {
     stream: EventStream,
     sequence: number,
     checkpointSequence: number,
-  ): InclusionProof;
+  ): InclusionProof | Promise<InclusionProof>;
   consistencyProof(
     runId: string,
     stream: EventStream,
     fromCheckpointSequence: number,
     toCheckpointSequence: number,
-  ): ConsistencyProof;
+  ): ConsistencyProof | Promise<ConsistencyProof>;
 }
 
 export interface AnchorPublisher {

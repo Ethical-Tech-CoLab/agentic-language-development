@@ -87,14 +87,14 @@ const INTERVAL_REASONS: readonly CheckpointReason[] = [
  * detector of LEDGER §17 is exercised.
  */
 export interface CheckpointEvidenceStore {
-  readRunMetadata(runId: string): RunMetadataRecord | undefined;
-  readCheckpoints(runId: string): CheckpointManifest[];
+  readRunMetadata(runId: string): RunMetadataRecord | undefined | Promise<RunMetadataRecord | undefined>;
+  readCheckpoints(runId: string): CheckpointManifest[] | Promise<CheckpointManifest[]>;
   readEvents(
     runId: string,
     stream: EventStream,
     range?: EventRange,
-  ): StoredEvent[];
-  insertCheckpointManifest(manifest: CheckpointManifest): void;
+  ): StoredEvent[] | Promise<StoredEvent[]>;
+  insertCheckpointManifest(manifest: CheckpointManifest): void | Promise<void>;
 }
 
 export interface EvidenceCheckpointServiceOptions {
@@ -206,13 +206,13 @@ export class EvidenceCheckpointService
     runId: string,
     reason: CheckpointReason,
   ): Promise<CheckpointCreationResult> {
-    const metadata = this.evidence.readRunMetadata(runId);
+    const metadata = await this.evidence.readRunMetadata(runId);
     if (metadata === undefined) {
       throw new UnknownRunError(runId);
     }
 
-    const previous = this.evidence.readCheckpoints(runId).at(-1);
-    const snapshots = this.snapshots(runId);
+    const previous = (await this.evidence.readCheckpoints(runId)).at(-1);
+    const snapshots = await this.snapshots(runId);
     if (previous !== undefined) {
       assertPrefixUnchanged(previous, snapshots);
     }
@@ -258,7 +258,7 @@ export class EvidenceCheckpointService
       witnessSignature: await witness.sign(checkpointHash),
     });
 
-    this.evidence.insertCheckpointManifest(manifest);
+    await this.evidence.insertCheckpointManifest(manifest);
     return { created: true, manifest, reason };
   }
 
@@ -267,8 +267,8 @@ export class EvidenceCheckpointService
    * commits exactly those trees. Called before each manifest is signed and
    * usable on its own to re-audit a stored checkpoint.
    */
-  verifyManifestTrees(runId: string, manifest: CheckpointManifest): void {
-    assertManifestTrees(manifest, this.snapshots(runId));
+  async verifyManifestTrees(runId: string, manifest: CheckpointManifest): Promise<void> {
+    assertManifestTrees(manifest, await this.snapshots(runId));
   }
 
   // -------------------------------------------------------------------------
@@ -280,15 +280,15 @@ export class EvidenceCheckpointService
    * committed. Throws if the sequence is outside that committed prefix, and
    * if the recomputed root is not the root the checkpoint carries.
    */
-  inclusionProof(
+  async inclusionProof(
     runId: string,
     stream: EventStream,
     sequence: number,
     checkpointSequence: number,
-  ): InclusionProof {
+  ): Promise<InclusionProof> {
     const checkpointStream = assertCheckpointStream(stream);
     const treeName = treeNameFor(checkpointStream);
-    const manifest = this.checkpointAt(runId, checkpointSequence);
+    const manifest = await this.checkpointAt(runId, checkpointSequence);
     const reference = referenceFor(manifest, checkpointStream);
     if (
       !Number.isSafeInteger(sequence) ||
@@ -300,7 +300,7 @@ export class EvidenceCheckpointService
       );
     }
 
-    const events = this.prefix(runId, checkpointStream, reference.treeSize);
+    const events = await this.prefix(runId, checkpointStream, reference.treeSize);
     const target = events[sequence - 1];
     if (target === undefined) {
       throw new CheckpointIntegrityError(
@@ -330,12 +330,12 @@ export class EvidenceCheckpointService
    * stored, so a rewritten prefix is caught here rather than being papered
    * over by a freshly recomputed root (LEDGER §17).
    */
-  consistencyProof(
+  async consistencyProof(
     runId: string,
     stream: EventStream,
     fromCheckpointSequence: number,
     toCheckpointSequence: number,
-  ): ConsistencyProof {
+  ): Promise<ConsistencyProof> {
     const checkpointStream = assertCheckpointStream(stream);
     const treeName = treeNameFor(checkpointStream);
     if (fromCheckpointSequence > toCheckpointSequence) {
@@ -343,8 +343,8 @@ export class EvidenceCheckpointService
         `checkpoint ${String(fromCheckpointSequence)} is not before ${String(toCheckpointSequence)}`,
       );
     }
-    const fromManifest = this.checkpointAt(runId, fromCheckpointSequence);
-    const toManifest = this.checkpointAt(runId, toCheckpointSequence);
+    const fromManifest = await this.checkpointAt(runId, fromCheckpointSequence);
+    const toManifest = await this.checkpointAt(runId, toCheckpointSequence);
     const fromReference = referenceFor(fromManifest, checkpointStream);
     const toReference = referenceFor(toManifest, checkpointStream);
     if (fromReference.treeSize > toReference.treeSize) {
@@ -353,7 +353,7 @@ export class EvidenceCheckpointService
       );
     }
 
-    const events = this.prefix(runId, checkpointStream, toReference.treeSize);
+    const events = await this.prefix(runId, checkpointStream, toReference.treeSize);
     const snapshot = snapshotFromEvents(checkpointStream, events);
     const record = buildConsistencyProofRecord({
       stream,
@@ -404,7 +404,7 @@ export class EvidenceCheckpointService
         `maxInclusionPerTree must be an integer of at least 2, received ${String(maxInclusionPerTree)}`,
       );
     }
-    const checkpoints = this.evidence.readCheckpoints(runId);
+    const checkpoints = await this.evidence.readCheckpoints(runId);
     if (checkpoints.length === 0) {
       throw new CheckpointNotFoundError(runId, 0);
     }
@@ -439,7 +439,7 @@ export class EvidenceCheckpointService
           reference.treeSize,
           maxInclusionPerTree,
         )) {
-          const record = this.inclusionProof(
+          const record = await this.inclusionProof(
             runId,
             stream,
             sequence,
@@ -470,7 +470,7 @@ export class EvidenceCheckpointService
           // carries no information, so no file is written.
           continue;
         }
-        const record = this.consistencyProof(runId, stream, from, to);
+        const record = await this.consistencyProof(runId, stream, from, to);
         await writeCanonicalFile(
           join(
             consistencyDir,
@@ -489,21 +489,21 @@ export class EvidenceCheckpointService
   // Internals
   // -------------------------------------------------------------------------
 
-  private snapshots(runId: string): TreeSnapshot[] {
-    return CHECKPOINT_STREAMS.map((stream) =>
-      snapshotFromEvents(stream, this.evidence.readEvents(runId, stream)),
-    );
+  private async snapshots(runId: string): Promise<TreeSnapshot[]> {
+    return Promise.all(CHECKPOINT_STREAMS.map(async (stream) =>
+      snapshotFromEvents(stream, await this.evidence.readEvents(runId, stream)),
+    ));
   }
 
-  private prefix(
+  private async prefix(
     runId: string,
     stream: CheckpointStream,
     treeSize: number,
-  ): StoredEvent[] {
+  ): Promise<StoredEvent[]> {
     if (treeSize === 0) {
       return [];
     }
-    const events = this.evidence.readEvents(runId, stream, {
+    const events = await this.evidence.readEvents(runId, stream, {
       fromSequence: 1,
       toSequence: treeSize,
     });
@@ -515,13 +515,13 @@ export class EvidenceCheckpointService
     return events;
   }
 
-  private checkpointAt(
+  private async checkpointAt(
     runId: string,
     checkpointSequence: number,
-  ): CheckpointManifest {
+  ): Promise<CheckpointManifest> {
     return manifestAt(
       runId,
-      this.evidence.readCheckpoints(runId),
+      await this.evidence.readCheckpoints(runId),
       checkpointSequence,
     );
   }

@@ -270,7 +270,7 @@ export function createSimpleProofWriter(
       if (head.size === 0) {
         continue;
       }
-      const proof = checkpoints.inclusionProof(
+      const proof = await checkpoints.inclusionProof(
         runId,
         stream,
         head.size,
@@ -286,7 +286,7 @@ export function createSimpleProofWriter(
       );
 
       if (last.checkpointSequence > 0) {
-        const consistency = checkpoints.consistencyProof(
+        const consistency = await checkpoints.consistencyProof(
           runId,
           stream,
           0,

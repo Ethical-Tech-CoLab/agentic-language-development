@@ -218,7 +218,7 @@ describe('EvidenceCheckpointService.createCheckpoint', () => {
     );
 
     // An extra tree the store does not hold.
-    expect(() =>
+    await expect(
       context.service.verifyManifestTrees(context.runId, {
         ...manifest,
         auxiliaryTrees: {
@@ -226,27 +226,27 @@ describe('EvidenceCheckpointService.createCheckpoint', () => {
           affect: { ...EMPTY_TREE, treeSize: 1, lastEntryHash: hash('9') },
         },
       }),
-    ).toThrow(CheckpointIntegrityError);
+    ).rejects.toThrow(CheckpointIntegrityError);
 
     // A tree the store holds, missing from the manifest.
-    expect(() =>
+    await expect(
       context.service.verifyManifestTrees(context.runId, {
         ...manifest,
         auxiliaryTrees: {},
       }),
-    ).toThrow(CheckpointIntegrityError);
+    ).rejects.toThrow(CheckpointIntegrityError);
 
     // A mandatory tree with a rewritten root.
-    expect(() =>
+    await expect(
       context.service.verifyManifestTrees(context.runId, {
         ...manifest,
         channel: { ...manifest.channel, merkleRoot: hash('a') },
       }),
-    ).toThrow(CheckpointIntegrityError);
+    ).rejects.toThrow(CheckpointIntegrityError);
 
-    expect(() =>
+    await expect(
       context.service.verifyManifestTrees(context.runId, manifest),
-    ).not.toThrow();
+    ).resolves.toBeUndefined();
 
     context.close();
   });
@@ -404,7 +404,7 @@ describe('EvidenceCheckpointService.inclusionProof', () => {
 
     for (const stream of ['baby-a-ledger', 'baby-b-ledger', 'channel'] as const) {
       for (const sequence of [1, 6]) {
-        const proof = context.service.inclusionProof(
+        const proof = await context.service.inclusionProof(
           context.runId,
           stream,
           sequence,
@@ -432,23 +432,23 @@ describe('EvidenceCheckpointService.inclusionProof', () => {
       'run-sealed',
     );
 
-    expect(() =>
+    await expect(
       context.service.inclusionProof(context.runId, 'channel', 3, 0),
-    ).toThrow(CheckpointProofRangeError);
-    expect(() =>
+    ).rejects.toThrow(CheckpointProofRangeError);
+    await expect(
       context.service.inclusionProof(context.runId, 'affect', 1, 0),
-    ).toThrow(CheckpointProofRangeError);
-    expect(() =>
+    ).rejects.toThrow(CheckpointProofRangeError);
+    await expect(
       context.service.inclusionProof(
         context.runId,
         'channel',
         1,
         manifest.checkpointSequence + 5,
       ),
-    ).toThrow(CheckpointNotFoundError);
-    expect(() =>
+    ).rejects.toThrow(CheckpointNotFoundError);
+    await expect(
       context.service.inclusionProof(context.runId, 'intervention', 1, 0),
-    ).toThrow(CheckpointProofRangeError);
+    ).rejects.toThrow(CheckpointProofRangeError);
 
     context.close();
   });
@@ -469,7 +469,7 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
       'run-sealed',
     );
 
-    const first = context.service.consistencyProof(
+    const first = await context.service.consistencyProof(
       context.runId,
       'channel',
       zero.checkpointSequence,
@@ -482,7 +482,7 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
     expect(first.toRoot).toBe(one.channel.merkleRoot);
     expect(verifyConsistency(first)).toBe(true);
 
-    const second = context.service.consistencyProof(
+    const second = await context.service.consistencyProof(
       context.runId,
       'channel',
       one.checkpointSequence,
@@ -495,7 +495,7 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
     expect(verifyConsistency(second)).toBe(true);
     expect(verifyConsistency({ ...second, path: [] })).toBe(false);
 
-    const skip = context.service.consistencyProof(
+    const skip = await context.service.consistencyProof(
       context.runId,
       'turns',
       zero.checkpointSequence,
@@ -518,7 +518,7 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
     // Honest reads still verify.
     expect(
       verifyConsistency(
-        context.service.consistencyProof(context.runId, 'channel', 1, 2),
+        await context.service.consistencyProof(context.runId, 'channel', 1, 2),
       ),
     ).toBe(true);
 
@@ -536,16 +536,16 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
       softwareCommit: 'git:test-commit',
     });
 
-    expect(() =>
+    await expect(
       tampered.consistencyProof(context.runId, 'channel', 1, 2),
-    ).toThrow(CheckpointIntegrityError);
-    expect(() =>
+    ).rejects.toThrow(CheckpointIntegrityError);
+    await expect(
       tampered.inclusionProof(context.runId, 'channel', 1, 2),
-    ).toThrow(CheckpointIntegrityError);
+    ).rejects.toThrow(CheckpointIntegrityError);
     // Untouched streams still prove out through the same tampering store.
-    expect(() =>
+    await expect(
       tampered.consistencyProof(context.runId, 'baby-a-ledger', 1, 2),
-    ).not.toThrow();
+    ).resolves.toBeDefined();
 
     context.close();
   });
@@ -565,9 +565,9 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
       softwareCommit: 'git:test-commit',
     });
 
-    expect(() =>
+    await expect(
       truncating.consistencyProof(context.runId, 'channel', 0, 1),
-    ).toThrow(CheckpointIntegrityError);
+    ).rejects.toThrow(CheckpointIntegrityError);
 
     context.close();
   });
@@ -578,9 +578,9 @@ describe('EvidenceCheckpointService.consistencyProof', () => {
     await commitTurns(context, 1);
     await context.service.createCheckpoint(context.runId, 'run-sealed');
 
-    expect(() =>
+    await expect(
       context.service.consistencyProof(context.runId, 'channel', 1, 0),
-    ).toThrow(CheckpointProofRangeError);
+    ).rejects.toThrow(CheckpointProofRangeError);
 
     context.close();
   });
