@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+const root = 'evidence/lv01/late-callback-v2/lv01-late-callback-v2-p0001';
+const receipt = JSON.parse(readFileSync('reports/research/lv01-late-callback-v2-receipt.json', 'utf8'));
+const hash = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+assert.equal(hash(`${root}/receipt.json`), receipt.attempt.rawReceiptSha256);
+assert.equal(hash(`${root}/output/late-callback-result.json`), receipt.attempt.resultSha256);
+const raw = JSON.parse(readFileSync(`${root}/receipt.json`, 'utf8'));
+assert.equal(raw.passed, true);
+assert.equal(raw.result.step.channelReasonCode, receipt.observed.reasonCode);
+assert.equal(raw.result.deadlineEvents[0].details.adapterQuarantined, true);
+assert.equal(raw.verification.typescript.exitCode, 0);
+assert.equal(raw.verification.rust.integrityPass, true);
+console.log('LV01 v2 late-callback receipt verified against retained local evidence');
