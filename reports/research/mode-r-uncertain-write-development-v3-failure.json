@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v3",
+  "executionCommit": "3908bb7c76f3f5cf14f1e1985ba6c17cdcdede12",
+  "executionTree": "8210ffef465b52e2bd356d4b766f35a74cb67244",
+  "executionVersion": "0.1.291",
+  "startedAt": "2026-09-21T14:52:58.641Z",
+  "finishedAt": "2026-09-21T14:53:29.060Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v3.json",
+    "bytes": 3975,
+    "sha256": "sha256:ba48a1b0d410add7311d1d9d00f7bb934a3a764bec87591ae81ae8a564ab6279"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v3/receipt.json",
+    "bytes": 1509,
+    "sha256": "sha256:913b31396a085181dceb46fffc3013cd8561a7d3f829f7e174ab1335cd043a9b",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": null,
+    "controllerOomKilled": null,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "cause": "The Alpine image build could not download a matching better-sqlite3 prebuild and the image lacked Python and compiler tooling for node-gyp fallback compilation.",
+  "interpretation": "The failure occurred during image construction before services, injection, or signed evidence existed. It is not evidence for or against uncertain-write handling.",
+  "nextAction": "Make the image build reproducible by installing a bounded Alpine native-build toolchain during dependency installation, remove it before the runtime layer completes, qualify that build separately, and register a fresh v4 identity.",
+  "claimBoundary": "V3 is a failed pre-execution build attempt with no experimental evidence and no scientific result. It does not qualify uncertainty handling or close B12."
+}

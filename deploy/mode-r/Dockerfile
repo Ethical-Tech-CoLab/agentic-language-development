@@ -2,6 +2,9 @@ FROM node:24.20.0-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache libstdc++ \
+  && apk add --no-cache --virtual .native-build-deps python3 make g++
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsconfig.base.json ./
 COPY contracts ./contracts
 COPY packages ./packages
@@ -12,7 +15,8 @@ RUN corepack enable \
   && corepack prepare pnpm@12.3.4 --activate \
   && pnpm install --frozen-lockfile \
   && pnpm run build \
-  && pnpm prune --prod
+  && pnpm prune --prod \
+  && apk del .native-build-deps
 
 USER node
 
