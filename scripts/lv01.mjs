@@ -113,13 +113,19 @@ switch (command) {
   case 'allocate': {
     const { stage, version } = stageArguments(command);
     if (stage !== 'development') fail(`${stage} v${version} allocation is blocked until topology qualification and measured resources exist`);
-    fail(`development v${version} allocation requires the bounded allocation packet; no blank packet is created`);
+    const allocation = `protocols/lv01-development-resource-allocation.v${version}.json`;
+    if (!existsSync(resolve(root, allocation))) fail(`development v${version} allocation requires the bounded allocation packet; no blank packet is created`);
+    run('scripts/check-lv01-development-allocation.mjs');
+    fail(`development v${version} allocation is immutable at ${allocation}; no overwrite is permitted`);
     break;
   }
   case 'qualify-topology': {
     const { stage, version } = stageArguments(command);
     if (stage !== 'development') fail('topology qualification is development-only');
-    fail(`development v${version} topology qualification is blocked: allocation packet is absent`);
+    const allocation = `protocols/lv01-development-resource-allocation.v${version}.json`;
+    if (!existsSync(resolve(root, allocation))) fail(`development v${version} topology qualification is blocked: allocation packet is absent`);
+    run('scripts/check-lv01-development-allocation.mjs');
+    fail(`development v${version} topology qualification is blocked: the live LV01 runner and matrix receipt are not implemented`);
     break;
   }
   case 'audit-topology': {

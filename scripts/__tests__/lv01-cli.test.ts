@@ -26,5 +26,8 @@ describe('LV01 execution CLI', () => {
     const result = run('qualify-numerics', '--write');
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('immutable');
+    const allocation = run('allocate', '--stage', 'development', '--version', '1', '--write');
+    expect(allocation.status).not.toBe(0);
+    expect(allocation.stderr).toContain('immutable');
   });
 });
