@@ -15,7 +15,7 @@ import {
   OracleRequiresControlArtifactError,
   ShuffledBatchRequiredError,
 } from '../src/errors.js';
-import { harness, symbolEnvelope, turn } from './support.js';
+import { harness, intentionDraft, symbolEnvelope, turn } from './support.js';
 
 const PROPOSED = ['S13', 'S04'];
 
@@ -284,6 +284,29 @@ describe('SPEC §9.6 communication-control conditions', () => {
     expect(
       new Set(deliveredPerIndex.map((symbols) => symbols.join(','))).size,
     ).toBe(batch.length);
+  });
+
+  it('owns shuffled pre-pass validation without committing an eligible turn', async () => {
+    const { gateway, evidence, context } = harness({ communicationCondition: 'shuffled' });
+    const eligible = await gateway.preflightShuffledProposal(
+      turn(), symbolEnvelope(['S01']),
+    );
+    expect(eligible).toMatchObject({
+      kind: 'eligible', artifact: { symbols: ['S01'] },
+    });
+    expect(evidence.channelEvents(context.runId)).toHaveLength(0);
+
+    const invalid = await gateway.preflightShuffledProposal(
+      turn({ turn: 2 }),
+      symbolEnvelope(['S02'], intentionDraft({ eventType: 'hypothesis.created' })),
+    );
+    expect(invalid).toMatchObject({ kind: 'rejected', reasonCode: 'missing-intention' });
+    const malformed = await gateway.preflightShuffledProposal(turn({ turn: 3 }), undefined);
+    expect(malformed).toMatchObject({ kind: 'rejected', reasonCode: 'invalid-envelope' });
+    expect(evidence.channelEvents(context.runId)).toHaveLength(2);
+    await expect(harness().gateway.preflightShuffledProposal(
+      turn(), symbolEnvelope(['S01']),
+    )).rejects.toThrow(/only permitted in the shuffled condition/u);
   });
 
   it('shuffled is reproducible from the run seed', async () => {

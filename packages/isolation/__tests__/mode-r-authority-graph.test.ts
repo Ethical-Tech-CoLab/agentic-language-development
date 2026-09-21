@@ -77,4 +77,11 @@ describe('prospective Mode R authority graph', () => {
     expect(graph.gate.mustVerify).toContain('gateway-only-baby-network-routes');
     expect(graph.gate.mustVerify).toContain('complete-lifecycle-and-independent-bundle-audit');
   });
+
+  it('keeps shuffled proposal validation inside the Gateway implementation', () => {
+    const controller = readFileSync('packages/orchestrator/src/nursery-runtime.ts', 'utf8');
+    expect(controller).toContain('preflightShuffledProposal(');
+    expect(controller).not.toContain('.carrierProtocol.validate(');
+    expect(controller).not.toContain('.carrierContext');
+  });
 });

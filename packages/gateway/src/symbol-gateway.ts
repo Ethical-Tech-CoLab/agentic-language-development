@@ -40,6 +40,7 @@ import {
   type LedgerEvent,
   type RunConfig,
   type Sha256Hash,
+  type ShuffledPrepassResult,
   type SymbolGateway,
   type TurnProposalEnvelope,
 } from '@ald/types';
@@ -107,6 +108,9 @@ interface EnvelopeShape {
 }
 
 type ValidatedDraft = ReturnType<typeof validateLedgerEventDraft>;
+type ValidatedProposal =
+  | { ok: true; parsed: TurnProposalEnvelope }
+  | { ok: false; reasonCode: GatewayReasonCode };
 
 /** True when `value` has exactly the given keys, no more and no fewer. */
 function hasExactKeys(
@@ -279,60 +283,11 @@ export class SymbolGatewayImpl implements SymbolGateway {
       throw new OracleRequiresControlArtifactError();
     }
 
-    const raw: unknown = envelope;
-
-    // 1. §11.3 envelope frame.
-    const shape = readEnvelopeShape(raw);
-    if (!shape) {
-      return this.rejectProposal(turn, raw, 'invalid-envelope');
+    const validated = this.validateProposal(envelope);
+    if (!validated.ok) {
+      return this.rejectProposal(turn, envelope, validated.reasonCode);
     }
-
-    // 1b. §9.4: bound the whole envelope's structural complexity — proposal
-    //     *and* privateLedgerDraft alike — before any recursive inspection or
-    //     canonical hashing touches it. A payload nested or wide enough to
-    //     exceed the budget is rejected outright here, rather than risking an
-    //     unbounded recursion (in this module's own checks, or later in
-    //     `@ald/hashing` canonicalization on the Evidence Writer path) from
-    //     escaping the rejection framework as an uncaught RangeError.
-    if (!isWithinComplexityBudget(raw)) {
-      return this.rejectProposal(turn, raw, 'payload-too-complex');
-    }
-
-    // 2. §11.3 trusted metadata is Gateway-assigned; a Baby may never set it.
-    if (findTrustedMetadataKey(shape.proposal) !== undefined) {
-      return this.rejectProposal(turn, raw, 'trusted-metadata-present');
-    }
-
-    // 3. §8.1 step 2: the intention event is required, not optional.
-    let draft: ValidatedDraft;
-    try {
-      draft = validateLedgerEventDraft(shape.privateLedgerDraft);
-    } catch {
-      return this.rejectProposal(turn, raw, 'missing-intention');
-    }
-    if (draft.eventType !== 'intention.recorded') {
-      return this.rejectProposal(turn, raw, 'missing-intention');
-    }
-
-    // 4. §9.6: exactly one carrier family is available in a run.
-    if (!(this.module.allowedKinds as readonly string[]).includes(shape.kind)) {
-      return this.rejectProposal(turn, raw, 'carrier-mismatch');
-    }
-    const validation = this.module.validate(shape.proposal, this.carrierContext);
-    if (!validation.ok) {
-      return this.rejectProposal(turn, raw, validation.reasonCode);
-    }
-
-    // 5. ALD-035: the normalized envelope must satisfy the §11.3 schema.
-    let parsed: TurnProposalEnvelope;
-    try {
-      parsed = TurnProposalEnvelopeSchema.parse({
-        proposal: { kind: shape.kind, publicArtifact: validation.artifact },
-        privateLedgerDraft: shape.privateLedgerDraft,
-      });
-    } catch {
-      return this.rejectProposal(turn, raw, 'invalid-envelope');
-    }
+    const parsed = validated.parsed;
 
     // 6. §9.6: control replacement happens after validation, before the
     //    channel event is constructed.
@@ -380,6 +335,65 @@ export class SymbolGatewayImpl implements SymbolGateway {
       deliveredArtifactHash: commit.channelEvent.publicArtifactHash,
       ...(probeApplication === undefined ? {} : { probeApplication }),
     };
+  }
+
+  /** The Gateway, not the Controller, decides shuffled pre-pass eligibility. */
+  async preflightShuffledProposal(
+    turn: GatewayTurnContext,
+    envelope: unknown,
+  ): Promise<ShuffledPrepassResult> {
+    this.assertEvidenceOperational();
+    if (this.condition !== 'shuffled') {
+      throw new Error('shuffled pre-pass is only permitted in the shuffled condition');
+    }
+    const validated = this.validateProposal(envelope);
+    if (!validated.ok) {
+      return this.rejectProposal(turn, envelope, validated.reasonCode);
+    }
+    return {
+      kind: 'eligible',
+      artifact: validated.parsed.proposal.publicArtifact,
+      envelope: validated.parsed,
+    };
+  }
+
+  private validateProposal(raw: unknown): ValidatedProposal {
+    // §11.3 frame and §9.4 complexity bound precede recursive inspection.
+    const shape = readEnvelopeShape(raw);
+    if (!shape) return { ok: false, reasonCode: 'invalid-envelope' };
+    if (!isWithinComplexityBudget(raw)) {
+      return { ok: false, reasonCode: 'payload-too-complex' };
+    }
+    if (findTrustedMetadataKey(shape.proposal) !== undefined) {
+      return { ok: false, reasonCode: 'trusted-metadata-present' };
+    }
+
+    let draft: ValidatedDraft;
+    try {
+      draft = validateLedgerEventDraft(shape.privateLedgerDraft);
+    } catch {
+      return { ok: false, reasonCode: 'missing-intention' };
+    }
+    if (draft.eventType !== 'intention.recorded') {
+      return { ok: false, reasonCode: 'missing-intention' };
+    }
+    if (!(this.module.allowedKinds as readonly string[]).includes(shape.kind)) {
+      return { ok: false, reasonCode: 'carrier-mismatch' };
+    }
+    const validation = this.module.validate(shape.proposal, this.carrierContext);
+    if (!validation.ok) return { ok: false, reasonCode: validation.reasonCode };
+
+    try {
+      return {
+        ok: true,
+        parsed: TurnProposalEnvelopeSchema.parse({
+          proposal: { kind: shape.kind, publicArtifact: validation.artifact },
+          privateLedgerDraft: shape.privateLedgerDraft,
+        }),
+      };
+    } catch {
+      return { ok: false, reasonCode: 'invalid-envelope' };
+    }
   }
 
   /**
@@ -574,6 +588,11 @@ export class SymbolGatewayImpl implements SymbolGateway {
   /** The active carrier's protocol module. */
   get carrierProtocol(): CarrierModule {
     return this.module;
+  }
+
+  /** Immutable action names the Controller may advertise without a module reference. */
+  get allowedActionKinds(): readonly AgentActionProposal['kind'][] {
+    return [...this.module.allowedKinds];
   }
 
   /** SPEC §9.6 condition the Gateway applies to every accepted proposal. */
@@ -833,7 +852,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     turn: GatewayTurnContext,
     payload: unknown,
     reasonCode: GatewayReasonCode,
-  ): Promise<GatewaySubmitResult> {
+  ): Promise<GatewayRejection> {
     const rejection = await this.commitRejection(
       turn.turn,
       turn.sender,

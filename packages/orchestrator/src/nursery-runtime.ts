@@ -555,22 +555,6 @@ interface TurnScratch {
 }
 
 /**
- * SPEC §9.4/§11.3: what the Gateway is asked to reject when an adapter
- * returned something that is not a §11.3 envelope at all. The Gateway commits
- * a domain-separated hash of the rejected payload, so a value that cannot be
- * canonicalized (`undefined`, a cycle, a non-finite number) is committed as
- * `null` rather than escaping the rejection framework as an exception.
- */
-function rejectablePayload(value: unknown): TurnProposalEnvelope {
-  try {
-    canonicalJson(value);
-    return value as TurnProposalEnvelope;
-  } catch {
-    return null as unknown as TurnProposalEnvelope;
-  }
-}
-
-/**
  * SPEC §4.3 / §9.5 / §10.1: the run configuration as a Learner may see it.
  * `randomSeed` and the complete component seed binding are withheld — with
  * those seeds and the public Scenario Engine an
@@ -2521,7 +2505,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           turn: turnContext.turn,
           role: 'sender',
           responseBudgetMs: run.config.turnResponseBudgetMs,
-          availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+          availableActions: [...run.gateway.allowedActionKinds],
         }),
       ),
     );
@@ -2681,74 +2665,40 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // SPEC §11.4: every private ledger event an adapter appends inside this
       // slot's calls belongs to the slot's turn, not to the batch head the
       // runtime's own cursor still names.
-      const produced = await this.#withPrivateLedgerTurn(
+      const envelope: unknown = await this.#withPrivateLedgerTurn(
         run,
         slotTurn,
         async () => {
           await this.#callAdapter(run, slotSender, 'observe', () =>
             run.adapters[slotSender].observe(slotObservation),
           );
-          // §11.3: the envelope is validated inside the `#callAdapter`
-          // boundary, so a malformed one becomes a committed rejection rather
-          // than a `TypeError` escaping `step()` with no turn record.
-          return this.#callAdapter(run, slotSender, 'act', async () => {
-            const value: unknown = await this.#awaitTurnResponse(
+          return this.#callAdapter(run, slotSender, 'act', () =>
+            this.#awaitTurnResponse(
               run,
               slotSender,
               run.adapters[slotSender].act({
                 turn: slotTurn,
                 role: 'sender',
                 responseBudgetMs: run.config.turnResponseBudgetMs,
-                availableActions: [...run.gateway.carrierProtocol.allowedKinds],
+                availableActions: [...run.gateway.allowedActionKinds],
               }),
-            );
-            const parsed = TurnProposalEnvelopeSchema.safeParse(value);
-            return parsed.success
-              ? { envelope: parsed.data, malformed: undefined }
-              : { envelope: undefined, malformed: value };
-          });
+            ),
+          );
         },
       );
 
-      const envelope = produced.envelope;
-      if (envelope === undefined) {
-        // The Gateway owns rejection evidence for a malformed submission too:
-        // it reads the value defensively and commits `invalid-envelope`.
-        const rejected = await run.gateway.submitProposal(
-          { turn: slotTurn, sender: slotSender, recipient: slotReceiver },
-          rejectablePayload(produced.malformed),
-        );
-        batch.slots.push(
-          rejected.kind === 'rejected'
-            ? { turn: slotTurn, instance, rejection: rejected }
-            : { turn: slotTurn, instance },
-        );
-        continue;
-      }
-
-      const validation = run.gateway.carrierProtocol.validate(
-        envelope.proposal,
-        run.gateway.carrierContext,
+      const preflight = await run.gateway.preflightShuffledProposal(
+        { turn: slotTurn, sender: slotSender, recipient: slotReceiver },
+        envelope,
       );
-      if (!validation.ok) {
-        // The Gateway owns rejection evidence: submitting the envelope now
-        // commits the `channel.rejected` event with the right reason code
-        // and excludes the episode from the batch.
-        const rejected = await run.gateway.submitProposal(
-          { turn: slotTurn, sender: slotSender, recipient: slotReceiver },
-          envelope,
-        );
-        batch.slots.push(
-          rejected.kind === 'rejected'
-            ? { turn: slotTurn, instance, rejection: rejected }
-            : { turn: slotTurn, instance },
-        );
+      if (preflight.kind === 'rejected') {
+        batch.slots.push({ turn: slotTurn, instance, rejection: preflight });
         continue;
       }
 
       batch.indexByTurn.set(slotTurn, batch.artifacts.length);
-      batch.artifacts.push(validation.artifact);
-      batch.slots.push({ turn: slotTurn, instance, envelope });
+      batch.artifacts.push(preflight.artifact);
+      batch.slots.push({ turn: slotTurn, instance, envelope: preflight.envelope });
     }
 
     run.batch = batch;

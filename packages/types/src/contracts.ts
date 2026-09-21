@@ -803,11 +803,17 @@ export type GatewaySubmitResult =
 
 export interface SymbolGateway {
   readonly runContext: GatewayRunContext;
+  readonly allowedActionKinds: readonly AgentActionProposal['kind'][];
   /** Validate, apply the communication-control condition, commit, deliver. */
   submitProposal(
     turn: GatewayTurnContext,
     envelope: TurnProposalEnvelope,
   ): Promise<GatewaySubmitResult>;
+  /** Gateway-owned validation during a shuffled batch pre-pass. */
+  preflightShuffledProposal(
+    turn: GatewayTurnContext,
+    envelope: unknown,
+  ): Promise<ShuffledPrepassResult>;
   /** E03 `oracle`: commit a Scenario Engine artifact with no learner output. */
   submitControlArtifact(
     turn: GatewayTurnContext,
@@ -829,6 +835,10 @@ export interface SymbolGateway {
   consecutiveRejections(): number;
   resetRejectionCounter(): void;
 }
+
+export type ShuffledPrepassResult =
+  | { kind: 'eligible'; artifact: AgentActionProposal['publicArtifact']; envelope: TurnProposalEnvelope }
+  | Extract<GatewaySubmitResult, { kind: 'rejected' }>;
 
 // ---------------------------------------------------------------------------
 // Nursery Controller runtime (SPEC §12.5, §12.6) — consumed by twin packs
