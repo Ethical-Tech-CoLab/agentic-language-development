@@ -515,6 +515,11 @@ describe('experiment and mode coverage (ALD-023)', () => {
       'experimentId',
     ]);
   });
+
+  it('admits the scoped LV01 identifier without treating it as a portfolio experiment', () => {
+    expect(() => buildRunConfig({ ...BASE, experimentId: 'LV01' })).not.toThrow();
+    expect(valid(buildRunConfig({ ...BASE, experimentId: 'LV01' })).warnings).toEqual([]);
+  });
 });
 
 describe('missing and malformed input (ALD-023)', () => {

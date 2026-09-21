@@ -36,6 +36,7 @@ import {
   ChannelEventSchema,
   CheckpointManifestReferenceSchema,
   DeliveredChannelArtifactSchema,
+  ExperimentIdSchema,
   ExperimentRecordSchema,
   LedgerDraftEnvelopeSchema,
   LedgerEventSchema,
@@ -47,6 +48,7 @@ import {
 } from './schemas.js';
 
 export const schemaRegistry = {
+  ExperimentIdSchema,
   RunConfigSchema,
   RunSeedBindingsSchema,
   ObservationSchema,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   EXPECTED_SCHEMA_EXPORTS,
+  ExperimentIdSchema,
   RunConfigSchema,
   schemaRegistry,
 } from '../src/index.js';
@@ -13,6 +14,15 @@ describe('schema registry', () => {
     expect(Object.keys(schemaRegistry).sort()).toEqual(
       [...EXPECTED_SCHEMA_EXPORTS].sort(),
     );
+  });
+
+  it('admits only the original portfolio identifiers and scoped LV01', () => {
+    for (const experimentId of ['E00', 'E99', 'LV01']) {
+      expect(ExperimentIdSchema.safeParse(experimentId).success).toBe(true);
+    }
+    for (const experimentId of ['LV02', 'E1', 'X01', 'ledger-value']) {
+      expect(ExperimentIdSchema.safeParse(experimentId).success).toBe(false);
+    }
   });
 
   it('accepts a valid root run configuration', () => {

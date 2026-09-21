@@ -141,8 +141,9 @@ const HYBRID_LEARNING_SIGNALS = [
 
 const LEARNER_FIELDS = ['babyA', 'babyB'] as const;
 
-function experimentIndex(experimentId: string): number {
-  return Number.parseInt(experimentId.slice(1), 10);
+function isPublicationExperiment(experimentId: RunConfig['experimentId']): boolean {
+  const match = /^E(\d{2})$/u.exec(experimentId);
+  return match !== null && Number(match[1]) >= PUBLICATION_EXPERIMENT_INDEX;
 }
 
 /**
@@ -263,7 +264,7 @@ function collectWarnings(config: RunConfig): string[] {
         `${QUALIFICATION_EVALUATION_SEEDS} seeds per condition for a qualification claim`,
     );
   } else if (
-    experimentIndex(config.experimentId) >= PUBLICATION_EXPERIMENT_INDEX &&
+    isPublicationExperiment(config.experimentId) &&
     config.evaluationSeeds < PUBLICATION_EVALUATION_SEEDS
   ) {
     warnings.push(

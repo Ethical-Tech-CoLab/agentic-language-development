@@ -5,6 +5,7 @@
  * (LEDGER §7, §8, §10, §13) follow.
  */
 export const EXPECTED_SCHEMA_EXPORTS = [
+  'ExperimentIdSchema',
   'RunConfigSchema',
   'RunSeedBindingsSchema',
   'ObservationSchema',

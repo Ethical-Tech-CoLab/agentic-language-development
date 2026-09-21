@@ -7,6 +7,17 @@ const hashString = z.string().regex(/^(?:sha256:)?[a-f0-9]{64}$/iu);
 const signatureString = z.string().min(16);
 const isoDateTime = z.iso.datetime({ offset: true });
 
+/**
+ * Identifiers for the frozen original experiment portfolio plus the scoped
+ * ledger-value study. New identifiers must be admitted here deliberately;
+ * accepting arbitrary strings would let an unregistered study enter evidence
+ * and lifecycle records.
+ */
+export const ExperimentIdSchema = z.union([
+  z.string().regex(/^E\d{2}$/u),
+  z.literal('LV01'),
+]);
+
 export const LearnerTrackIdSchema = z.enum([
   'frozen-llm',
   'scratch-rl',
@@ -222,7 +233,7 @@ export const RunConfigSchema = z
     preRegistrationHash: hashString,
     randomSeed: nonEmptyString,
     seedBindings: RunSeedBindingsSchema.optional(),
-    experimentId: z.string().regex(/^E\d{2}$/u),
+    experimentId: ExperimentIdSchema,
     /** E16 comparator/native-predictor identities committed before run creation. */
     causalPredictionPlan: causalPredictionPlanSchema.optional(),
     /** SPEC §15.1: absent means `qualification` (non-confirmatory). */
@@ -641,7 +652,7 @@ export const ExperimentRecordSchema = z.object({
   version: z.literal(1),
   recordVersion: positiveInteger,
   runId: nonEmptyString,
-  experimentId: z.string().regex(/^E\d{2}$/u),
+  experimentId: ExperimentIdSchema,
   deploymentMode: z.enum(['prototype', 'research-grade']),
   learnerContractVersion: nonEmptyString,
   runConfigRef: hashString,

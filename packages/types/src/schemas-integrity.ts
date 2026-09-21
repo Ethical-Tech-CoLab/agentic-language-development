@@ -10,6 +10,7 @@
 import { z } from 'zod';
 
 import { MODE_R_ONLY_CLAIM_LABELS } from './domains.js';
+import { ExperimentIdSchema } from './schemas.js';
 
 const strictHash = z.string().regex(/^sha256:[a-f0-9]{64}$/u);
 const ed25519Signature = z.string().regex(/^ed25519:[A-Za-z0-9+/]+=*$/u);
@@ -109,7 +110,7 @@ export const StreamDeclarationSchema = z.object({
  */
 export const PreRegistrationArtifactSchema = z.object({
   version: z.literal(1),
-  experimentId: z.string().regex(/^E\d{2}$/u),
+  experimentId: ExperimentIdSchema,
   protocolGitCommit: nonEmptyString,
   registrationClass: z.enum(['qualification', 'confirmatory']),
   hypothesis: nonEmptyString,
@@ -159,7 +160,7 @@ export const RunManifestSchema = z.object({
   version: z.literal(1),
   runId: nonEmptyString,
   runIdHash: strictHash,
-  experimentId: z.string().regex(/^E\d{2}$/u),
+  experimentId: ExperimentIdSchema,
   deploymentMode: z.enum(['prototype', 'research-grade']),
   claimBoundaryStatement: nonEmptyString,
   claimLabels: z.enum(MODE_R_ONLY_CLAIM_LABELS).array().optional(),
