@@ -52,6 +52,13 @@ The child-process test uses the real simulated chain publisher and confirms
 that only its one terminal receipt is retained; public-chain and cross-run
 requests are refused. The live Anchor publisher still uses synchronous
 in-process evidence, and the selected Anchor process is not qualified.
+The Anchor publisher now awaits its Evidence Store reads and terminal insert,
+so it can use that remote port without changing the simulated-chain logic.
+The in-flight guard is set before those asynchronous reads; a remote-port
+test proves concurrent submissions send one transaction, simultaneous
+confirmations insert one receipt, and a different run hash cannot join the
+submission. Current Nursery assembly still injects in-process
+evidence, and this test does not measure selected mounts or process faults.
 The Gateway now quarantines itself when that port reports a possibly committed
 write with no confirmed response. A running Controller refuses another turn
 before adapter work, and restart recovery refuses channel or affect events that

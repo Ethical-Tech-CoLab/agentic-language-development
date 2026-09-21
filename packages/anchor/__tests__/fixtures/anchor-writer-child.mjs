@@ -77,4 +77,4 @@ if (preparedReceipt?.transactionHash !== receipt.transactionHash) {
   throw new Error('simulated receipt preparation failed');
 }
 await createAnchorEvidenceRpcServer(socketPath, config.runId, writer);
-process.stdout.write(`${JSON.stringify({ receipt, allRuns: writer.listRuns() })}\n`);
+process.stdout.write(`${JSON.stringify({ manifest, receipt, allRuns: writer.listRuns() })}\n`);

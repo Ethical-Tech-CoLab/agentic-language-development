@@ -130,10 +130,10 @@ export function requiredConfirmations(policy: string): number {
  * `SqliteEvidenceWriter` without implementing the whole contract.
  */
 export interface AnchorEvidenceStore {
-  insertAnchorReceipt(receipt: AnchorReceipt): void;
-  readCheckpoints(runId: string): CheckpointManifest[];
-  readAnchorReceipts(runId: string): AnchorReceipt[];
-  listRuns(): string[];
+  insertAnchorReceipt(receipt: AnchorReceipt): void | Promise<void>;
+  readCheckpoints(runId: string): CheckpointManifest[] | Promise<CheckpointManifest[]>;
+  readAnchorReceipts(runId: string): AnchorReceipt[] | Promise<AnchorReceipt[]>;
+  listRuns(): string[] | Promise<string[]>;
 }
 
 export interface AnchorRetryOptions {
@@ -219,6 +219,8 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   private readonly reservations = new Map<string, PendingAnchorSubmission>();
   /** Reservations still being sent, so concurrent submits share one send. */
   private readonly inFlight = new Map<string, Promise<AnchorReceipt>>();
+  /** One terminal decision per run/checkpoint/transaction during async evidence reads. */
+  private readonly confirmationInFlight = new Map<string, Promise<AnchorReceipt>>();
 
   constructor(options: BaseAnchorPublisherOptions) {
     this.anchorClass = options.anchorClass;
@@ -277,31 +279,39 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   async submit(manifest: CheckpointManifest): Promise<AnchorReceipt> {
     this.assertNetworkAllowed();
 
-    const runId = this.resolveRunId(manifest.runIdHash);
-    this.assertCheckpointStored(runId, manifest.checkpointHash);
-    const existing = this.storedReceiptFor(runId, manifest.checkpointHash);
+    const key = reservationKey(this.chainId, manifest.checkpointHash);
+    const inFlightKey = `${manifest.runIdHash}:${key}`;
+    const started = this.inFlight.get(inFlightKey);
+    if (started !== undefined) {
+      return await started;
+    }
+
+    const sending = this.submitOnce(manifest, key);
+    this.inFlight.set(inFlightKey, sending);
+    try {
+      return await sending;
+    } finally {
+      this.inFlight.delete(inFlightKey);
+    }
+  }
+
+  private async submitOnce(
+    manifest: CheckpointManifest,
+    key: string,
+  ): Promise<AnchorReceipt> {
+    const runId = await this.resolveRunId(manifest.runIdHash);
+    await this.assertCheckpointStored(runId, manifest.checkpointHash);
+    const existing = await this.storedReceiptFor(runId, manifest.checkpointHash);
     if (existing !== undefined) {
       return existing;
     }
 
-    const key = reservationKey(this.chainId, manifest.checkpointHash);
     const reserved = this.reservedSubmission(key, manifest.checkpointHash);
     if (reserved !== undefined) {
       return this.receiptFromPending(reserved);
     }
 
-    const started = this.inFlight.get(key);
-    if (started !== undefined) {
-      return await started;
-    }
-
-    const sending = this.sendAndReserve(runId, manifest, key);
-    this.inFlight.set(key, sending);
-    try {
-      return await sending;
-    } finally {
-      this.inFlight.delete(key);
-    }
+    return this.sendAndReserve(runId, manifest, key);
   }
 
   /**
@@ -317,6 +327,19 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   async awaitConfirmation(receipt: AnchorReceipt): Promise<AnchorReceipt> {
     this.assertNetworkAllowed();
 
+    const key = `${receipt.runId}:${receipt.checkpointHash}:${receipt.transactionHash.toLowerCase()}`;
+    const started = this.confirmationInFlight.get(key);
+    if (started !== undefined) return await started;
+    const confirming = this.confirmOnce(receipt);
+    this.confirmationInFlight.set(key, confirming);
+    try {
+      return await confirming;
+    } finally {
+      this.confirmationInFlight.delete(key);
+    }
+  }
+
+  private async confirmOnce(receipt: AnchorReceipt): Promise<AnchorReceipt> {
     let observed: ObservedInclusion | null = null;
 
     for (
@@ -390,8 +413,8 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   }
 
   /** LEDGER §8 manifests carry `runIdHash`; receipts carry the run id. */
-  private resolveRunId(runIdHash: string): string {
-    for (const runId of this.evidence.listRuns()) {
+  private async resolveRunId(runIdHash: string): Promise<string> {
+    for (const runId of await this.evidence.listRuns()) {
       if (hashRunId(runId) === runIdHash) {
         return runId;
       }
@@ -400,21 +423,21 @@ export class BaseAnchorPublisher implements AnchorPublisher {
   }
 
   /** ALD-018: the receipt's one-to-one manifest must already be stored. */
-  private assertCheckpointStored(runId: string, checkpointHash: string): void {
-    const stored = this.evidence
-      .readCheckpoints(runId)
+  private async assertCheckpointStored(runId: string, checkpointHash: string): Promise<void> {
+    const stored = (await this.evidence
+      .readCheckpoints(runId))
       .some((manifest) => manifest.checkpointHash === checkpointHash);
     if (!stored) {
       throw new UnknownAnchorCheckpointError(runId, checkpointHash);
     }
   }
 
-  private storedReceiptFor(
+  private async storedReceiptFor(
     runId: string,
     checkpointHash: string,
-  ): AnchorReceipt | undefined {
-    return this.evidence
-      .readAnchorReceipts(runId)
+  ): Promise<AnchorReceipt | undefined> {
+    return (await this.evidence
+      .readAnchorReceipts(runId))
       .find(
         (candidate) =>
           candidate.chainId === this.chainId &&
@@ -422,12 +445,12 @@ export class BaseAnchorPublisher implements AnchorPublisher {
       );
   }
 
-  private storedReceiptForTransaction(
+  private async storedReceiptForTransaction(
     runId: string,
     transactionHash: string,
-  ): AnchorReceipt | undefined {
-    return this.evidence
-      .readAnchorReceipts(runId)
+  ): Promise<AnchorReceipt | undefined> {
+    return (await this.evidence
+      .readAnchorReceipts(runId))
       .find(
         (candidate) =>
           candidate.chainId === this.chainId &&
@@ -524,11 +547,11 @@ export class BaseAnchorPublisher implements AnchorPublisher {
    * are terminal, and a `submitted` row could never be upgraded because
    * `(chainId, transactionHash)` is the primary key).
    */
-  private giveUp(
+  private async giveUp(
     receipt: AnchorReceipt,
     observed: ObservedInclusion | null,
-  ): AnchorReceipt {
-    const stored = this.storedReceiptForTransaction(
+  ): Promise<AnchorReceipt> {
+    const stored = await this.storedReceiptForTransaction(
       receipt.runId,
       receipt.transactionHash,
     );
@@ -554,13 +577,13 @@ export class BaseAnchorPublisher implements AnchorPublisher {
    * persisted evidence — and the pending entry is left untouched: a call that
    * inserted nothing must not destroy another call's resume handle.
    */
-  private finalize(receipt: AnchorReceipt): AnchorReceipt {
+  private async finalize(receipt: AnchorReceipt): Promise<AnchorReceipt> {
     const final = AnchorReceiptSchema.parse({
       ...receipt,
       recordedAt: this.clock.now(),
     });
 
-    const alreadyStored = this.storedReceiptForTransaction(
+    const alreadyStored = await this.storedReceiptForTransaction(
       final.runId,
       final.transactionHash,
     );
@@ -568,7 +591,7 @@ export class BaseAnchorPublisher implements AnchorPublisher {
       return alreadyStored;
     }
 
-    this.evidence.insertAnchorReceipt(final);
+    await this.evidence.insertAnchorReceipt(final);
     this.reservations.delete(
       reservationKey(final.chainId, final.checkpointHash),
     );
