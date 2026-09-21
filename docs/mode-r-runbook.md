@@ -207,9 +207,14 @@ collector had not rejected. That raw receipt is also preserved and its apparent
 universal reachability is not a topology observation. The next prospective
 collector batches probes by source process, requires an explicit completion
 payload, rejects every subprocess error or signal, counts incomplete and
-wrong-responder outcomes, and uses a third fresh evidence identity. No selected
-execution has occurred and no topology observation is claimed at this source
-version.
+wrong-responder outcomes, and uses a third fresh evidence identity. That third
+attempt failed closed with 256 incomplete probes because denied hostname lookups
+kept the container resolver alive until the outer bound. Its raw receipt is
+preserved. The next prospective collector uses inspected target network IPs,
+actively checks every available target interface, treats a target with no
+network interface as an inspected denial, retains completion and responder
+identity checks, and uses a fourth fresh evidence identity. No selected execution
+has occurred and no topology observation is claimed at this source version.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

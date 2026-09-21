@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 
 const attempt1Path = 'reports/research/mode-r-boundary-development-attempt-1-failure.json';
 const attempt2Path = 'reports/research/mode-r-boundary-development-attempt-2-failure.json';
+const attempt3Path = 'reports/research/mode-r-boundary-development-attempt-3-failure.json';
 const protocolPath = 'protocols/mode-r-boundary-qualification.v1.json';
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
@@ -81,7 +82,48 @@ export function validatePortable(root = process.cwd()) {
   assert.equal(attempt2.collectorDiagnosis.reproducedErrorCode, 'ETIMEDOUT');
   assert.equal(attempt2.collectorDiagnosis.selectedExecutionWasAttempted, false);
   assert.match(attempt2.claimBoundary, /not a selected topology result/u);
-  return { attempt1: record, attempt2 };
+  const attempt3 = read(resolve(root, attempt3Path));
+  assert.equal(attempt3.schemaVersion, 1);
+  assert.equal(attempt3.qualificationId, 'mode-r-boundary-v1');
+  assert.equal(attempt3.attemptId, 'development-attempt-3');
+  assert.equal(attempt3.classification, 'supplemental-failure-evidence');
+  assert.equal(attempt3.researchFinding, false);
+  assert.equal(attempt3.b12Closed, false);
+  assert.equal(attempt3.historicalEvidenceModified, false);
+  assert.equal(attempt3.attemptStatus, 'failed');
+  assert.equal(attempt3.scientificDisposition, 'not-tested');
+  assert.equal(attempt3.executionCommit.length, 40);
+  assert.equal(attempt3.executionTree.length, 40);
+  assert.equal(attempt3.executionVersion, '0.1.253');
+  assert.match(attempt3.collectorSha256, /^[a-f0-9]{64}$/u);
+  assert.equal(attempt3.protocolSha256, record.protocolSha256);
+  assert.equal(attempt3.externalSpendingUsd, 0);
+  assert.equal(attempt3.plannedProcesses, 17);
+  assert.equal(attempt3.observedProcesses, 17);
+  assert.equal(attempt3.plannedRoutes, 272);
+  assert.equal(attempt3.observedRoutes, 272);
+  assert.deepEqual(attempt3.summary, {
+    networkMismatchCount: 33,
+    mountMismatchCount: 0,
+    keyDomainMismatchCount: 0,
+    notRunningProcessCount: 0,
+    incompleteProbeCount: 256,
+    wrongResponderCount: 0,
+    duplicateContainerIdCount: 0,
+    duplicateHostPidCount: 0,
+    unexpectedExternalNetworkCount: 0,
+  });
+  assert.deepEqual(attempt3.probeOutcomeCounts, {
+    denied: 15,
+    incomplete: 256,
+    reachable: 1,
+  });
+  assert.equal(attempt3.collectorDiagnosis.scope,
+    'development-name-resolution-lifetime-defect');
+  assert.equal(attempt3.collectorDiagnosis.incompleteReason, 'ETIMEDOUT');
+  assert.equal(attempt3.collectorDiagnosis.selectedExecutionWasAttempted, false);
+  assert.match(attempt3.claimBoundary, /does not qualify the topology/u);
+  return { attempt1: record, attempt2, attempt3 };
 }
 
 export function validateLive(root = process.cwd()) {
@@ -137,6 +179,30 @@ export function validateLive(root = process.cwd()) {
         route.observedReachable === kind.observedReachable).length,
     }));
   assert.deepEqual(attempt2Breakdown, records.attempt2.networkMismatchBreakdown);
+
+  const attempt3ArtifactPath = resolve(root, records.attempt3.retainedRawArtifact.path);
+  const attempt3Stat = lstatSync(attempt3ArtifactPath);
+  assert.equal(attempt3Stat.isSymbolicLink(), false);
+  assert.equal(attempt3Stat.size, records.attempt3.retainedRawArtifact.bytes);
+  assert.equal(sha256(attempt3ArtifactPath), records.attempt3.retainedRawArtifact.sha256);
+  const attempt3Receipt = read(attempt3ArtifactPath);
+  assert.equal(attempt3Receipt.executionCommit, records.attempt3.executionCommit);
+  assert.equal(attempt3Receipt.protocolSha256, records.attempt3.protocolSha256);
+  assert.equal(attempt3Receipt.collectedAt, records.attempt3.collectedAt);
+  assert.equal(attempt3Receipt.researchFinding, false);
+  assert.equal(attempt3Receipt.b12Closed, false);
+  assert.equal(attempt3Receipt.externalSpendingUsd, 0);
+  assert.equal(attempt3Receipt.passed, false);
+  assert.deepEqual(attempt3Receipt.summary, records.attempt3.summary);
+  assert.equal(attempt3Receipt.observations.processes.length,
+    records.attempt3.observedProcesses);
+  assert.equal(attempt3Receipt.observations.routes.length, records.attempt3.observedRoutes);
+  const outcomeCounts = Object.fromEntries(['denied', 'incomplete', 'reachable'].map((outcome) => [
+    outcome,
+    attempt3Receipt.observations.routes.filter((route) =>
+      route.probeOutcome === outcome).length,
+  ]));
+  assert.deepEqual(outcomeCounts, records.attempt3.probeOutcomeCounts);
   return records;
 }
 

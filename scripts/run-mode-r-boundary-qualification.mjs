@@ -18,7 +18,7 @@ assert.ok(modes.has(mode), 'expected --run-development, --audit-development, --r
 const development = mode.endsWith('development');
 const runMode = mode.startsWith('--run');
 const evidenceRoot = development
-  ? 'evidence/mode-r-boundary-qualification-v1-development-attempt-3'
+  ? 'evidence/mode-r-boundary-qualification-v1-development-attempt-4'
   : 'evidence/mode-r-boundary-qualification-v1';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const protocolPath = 'protocols/mode-r-boundary-qualification.v1.json';
@@ -57,28 +57,28 @@ const serverSource = [
 ].join(';');
 const probeBatchSource = [
   "const net=require('node:net')",
-  'const targets=JSON.parse(process.argv[1])',
-  "const probe=target=>new Promise(resolve=>{let socket,timer,response='',done=false",
-  "const finish=(outcome,responder=null)=>{if(done)return;done=true;clearTimeout(timer);socket.destroy();resolve({target,outcome,responder})}",
-  "socket=net.createConnection({host:target,port:4318})",
+  'const requests=JSON.parse(process.argv[1])',
+  "const probe=request=>new Promise(resolve=>{let socket,timer,response='',done=false",
+  "const finish=(outcome,responder=null)=>{if(done)return;done=true;clearTimeout(timer);socket.destroy();resolve({...request,outcome,responder})}",
+  "socket=net.createConnection({host:request.address,port:4318})",
   "socket.setEncoding('utf8')",
   "timer=setTimeout(()=>finish('denied'),750)",
   "socket.on('data',chunk=>{response+=chunk})",
-  "socket.on('end',()=>finish(response===target?'reachable':'wrong-responder',response||null))",
+  "socket.on('end',()=>finish(response===request.target?'reachable':'wrong-responder',response||null))",
   "socket.on('error',()=>finish('denied'))})",
-  "Promise.all(targets.map(probe)).then(results=>process.stdout.write(JSON.stringify({marker:'ald-mode-r-probe-v1',results})))",
+  "Promise.all(requests.map(probe)).then(results=>process.stdout.write(JSON.stringify({marker:'ald-mode-r-probe-v1',results})))",
 ].join(';');
 
 function inspect(name) {
   return JSON.parse(command('docker', ['inspect', name]))[0];
 }
 
-function probeBatch(container, targets) {
+function probeBatch(container, requests) {
   const result = spawnSync('docker', [
-    'exec', container, 'node', '-e', probeBatchSource, JSON.stringify(targets),
+    'exec', container, 'node', '-e', probeBatchSource, JSON.stringify(requests),
   ], { encoding: 'utf8', timeout: 30_000 });
-  const incomplete = (reason) => targets.map((target) => ({
-    target, outcome: 'incomplete', responder: null, reason,
+  const incomplete = (reason) => requests.map((request) => ({
+    ...request, outcome: 'incomplete', responder: null, reason,
   }));
   if (result.error !== undefined || result.signal !== null || result.status !== 0) {
     return incomplete(result.error?.code ?? result.signal ?? `exit-${String(result.status)}`);
@@ -86,7 +86,8 @@ function probeBatch(container, targets) {
   try {
     const payload = JSON.parse(result.stdout);
     assert.equal(payload.marker, 'ald-mode-r-probe-v1');
-    assert.deepEqual(payload.results.map((entry) => entry.target), targets);
+    assert.deepEqual(payload.results.map(({ target, network, address }) =>
+      ({ target, network, address })), requests);
     for (const entry of payload.results) {
       assert.ok(['reachable', 'denied', 'wrong-responder'].includes(entry.outcome));
     }
@@ -115,8 +116,10 @@ function audit(receipt) {
   assert.equal(receipt.summary.mountMismatchCount, 0);
   assert.equal(receipt.summary.keyDomainMismatchCount, 0);
   assert.equal(receipt.summary.notRunningProcessCount, 0);
+  assert.equal(receipt.summary.missingNetworkAddressCount, 0);
   assert.equal(receipt.summary.incompleteProbeCount, 0);
   assert.equal(receipt.summary.wrongResponderCount, 0);
+  assert.equal(receipt.summary.endpointMismatchCount, 0);
   assert.equal(receipt.summary.duplicateContainerIdCount, 0);
   assert.equal(receipt.summary.duplicateHostPidCount, 0);
   assert.equal(receipt.summary.unexpectedExternalNetworkCount, 0);
@@ -126,6 +129,8 @@ function audit(receipt) {
     assert.deepEqual(observation.qualificationMounts, expectedMounts[observation.name]);
     assert.equal(observation.keyDomain, expectedKeyDomain(observation.name));
     assert.equal(observation.running, true);
+    assert.deepEqual(Object.keys(observation.networkAddresses).sort(),
+      [...observation.observedNetworks].sort());
   }
   for (const route of receipt.observations.routes) {
     const shared = processes[route.from].networks.some((network) =>
@@ -133,8 +138,16 @@ function audit(receipt) {
     assert.equal(route.expectedReachable, shared);
     assert.equal(route.observedReachable, shared);
     assert.equal(route.probeCompleted, true);
-    assert.equal(route.probeOutcome, shared ? 'reachable' : 'denied');
+    assert.equal(route.probeOutcome, shared
+      ? 'reachable'
+      : route.endpointObservations.length === 0 ? 'no-target-interface' : 'denied');
     assert.equal(route.responderIdentity, shared ? route.to : null);
+    for (const endpoint of route.endpointObservations) {
+      const endpointExpected = processes[route.from].networks.includes(endpoint.network);
+      assert.equal(endpoint.expectedReachable, endpointExpected);
+      assert.equal(endpoint.outcome, endpointExpected ? 'reachable' : 'denied');
+      assert.equal(endpoint.responder, endpointExpected ? route.to : null);
+    }
   }
   return receipt;
 }
@@ -202,17 +215,23 @@ try {
   }
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    const ready = processNames.filter((name) => processes[name].networks.length > 0)
-      .every((name) => probeBatch(`${prefix}-${name}`, [name])[0]?.outcome === 'reachable');
+    const ready = processNames.every((name) => probeBatch(`${prefix}-${name}`, [{
+      target: name, network: 'loopback', address: '127.0.0.1',
+    }])[0]?.outcome === 'reachable');
     if (ready) break;
     assert.notEqual(attempt, 19, 'network probe listeners did not become ready');
   }
 
   const processObservations = processNames.map((name) => {
     const details = inspect(`${prefix}-${name}`);
-    const actualNetworks = Object.keys(details.NetworkSettings.Networks)
-      .filter((network) => network !== 'none')
-      .map((network) => network.replace(`${prefix}-`, '')).sort();
+    const networkAddresses = Object.fromEntries(
+      Object.entries(details.NetworkSettings.Networks)
+        .filter(([network]) => network !== 'none')
+        .map(([network, state]) => [
+          network.replace(`${prefix}-`, ''), state.IPAddress,
+        ]).sort(([left], [right]) => left.localeCompare(right)),
+    );
+    const actualNetworks = Object.keys(networkAddresses);
     const mounts = details.Mounts
       .filter((mount) => mount.Destination.startsWith('/qualification/'))
       .map((mount) => mount.Destination.slice('/qualification/'.length)).sort();
@@ -224,30 +243,56 @@ try {
       running: details.State.Running,
       declaredNetworks: processes[name].networks,
       observedNetworks: actualNetworks,
+      networkAddresses,
       qualificationMounts: mounts,
       keyDomain: key?.slice('ALD_KEY_DOMAIN='.length) ?? null,
     };
   });
+  const processByName = new Map(processObservations.map((observation) =>
+    [observation.name, observation]));
   const routes = [];
   for (const from of processNames) {
-    const targets = processNames.filter((to) => from !== to);
-    const probed = new Map(probeBatch(`${prefix}-${from}`, targets)
-      .map((observation) => [observation.target, observation]));
+    const requests = processNames.filter((to) => from !== to).flatMap((to) =>
+      Object.entries(processByName.get(to).networkAddresses)
+        .map(([network, address]) => ({ target: to, network, address })));
+    const probed = probeBatch(`${prefix}-${from}`, requests);
     for (const to of processNames) {
       if (from === to) continue;
       const expectedReachable = processes[from].networks.some((network) =>
         processes[to].networks.includes(network));
-      const observation = probed.get(to);
-      const probeCompleted = observation?.outcome !== 'incomplete';
+      const endpointObservations = probed.filter((observation) =>
+        observation.target === to).map((observation) => ({
+        network: observation.network,
+        address: observation.address,
+        expectedReachable: processes[from].networks.includes(observation.network),
+        outcome: observation.outcome,
+        responder: observation.responder,
+        incompleteReason: observation.outcome === 'incomplete'
+          ? observation.reason ?? 'missing-result' : null,
+      }));
+      const probeCompleted = endpointObservations.every((observation) =>
+        observation.outcome !== 'incomplete');
+      const reachable = endpointObservations.some((observation) =>
+        observation.outcome === 'reachable');
+      const wrongResponder = endpointObservations.some((observation) =>
+        observation.outcome === 'wrong-responder');
+      const responderIdentities = [...new Set(endpointObservations
+        .filter((observation) => observation.outcome === 'reachable')
+        .map((observation) => observation.responder))];
       routes.push({
         from,
         to,
         expectedReachable,
-        observedReachable: observation?.outcome === 'reachable',
+        observedReachable: reachable,
         probeCompleted,
-        probeOutcome: observation?.outcome ?? 'incomplete',
-        responderIdentity: observation?.responder ?? null,
-        incompleteReason: probeCompleted ? null : observation?.reason ?? 'missing-result',
+        probeOutcome: endpointObservations.length === 0
+          ? 'no-target-interface'
+          : !probeCompleted ? 'incomplete'
+            : wrongResponder ? 'wrong-responder'
+              : reachable ? 'reachable' : 'denied',
+        responderIdentity: responderIdentities.length === 1
+          ? responderIdentities[0] : null,
+        endpointObservations,
       });
     }
   }
@@ -260,9 +305,16 @@ try {
     observation.keyDomain !== expectedKeyDomain(observation.name)).length;
   const notRunningProcessCount = processObservations.filter((observation) =>
     !observation.running).length;
-  const incompleteProbeCount = routes.filter((route) => !route.probeCompleted).length;
-  const wrongResponderCount = routes.filter((route) =>
-    route.probeOutcome === 'wrong-responder').length;
+  const missingNetworkAddressCount = processObservations.flatMap((observation) =>
+    Object.values(observation.networkAddresses)).filter((address) => address.length === 0).length;
+  const endpointObservations = routes.flatMap((route) => route.endpointObservations);
+  const incompleteProbeCount = endpointObservations.filter((observation) =>
+    observation.outcome === 'incomplete').length;
+  const wrongResponderCount = endpointObservations.filter((observation) =>
+    observation.outcome === 'wrong-responder').length;
+  const endpointMismatchCount = endpointObservations.filter((observation) =>
+    observation.expectedReachable !== (observation.outcome === 'reachable') ||
+      observation.outcome === 'wrong-responder').length;
   const duplicateContainerIdCount = processObservations.length -
     new Set(processObservations.map((observation) => observation.containerId)).size;
   const duplicateHostPidCount = processObservations.length -
@@ -275,8 +327,10 @@ try {
     mountMismatchCount,
     keyDomainMismatchCount,
     notRunningProcessCount,
+    missingNetworkAddressCount,
     incompleteProbeCount,
     wrongResponderCount,
+    endpointMismatchCount,
     duplicateContainerIdCount,
     duplicateHostPidCount,
     unexpectedExternalNetworkCount,

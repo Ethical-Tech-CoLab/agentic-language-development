@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "qualificationId": "mode-r-boundary-v1",
+  "attemptId": "development-attempt-3",
+  "classification": "supplemental-failure-evidence",
+  "researchFinding": false,
+  "b12Closed": false,
+  "historicalEvidenceModified": false,
+  "attemptStatus": "failed",
+  "scientificDisposition": "not-tested",
+  "executionCommit": "c6917f189e40f03b65be309d4d48c454fb8f4728",
+  "executionTree": "1f4aca2d18de1cbb07b0e4a7849257ac9f9f7a99",
+  "executionVersion": "0.1.253",
+  "collectorSha256": "b81d1fbda569f20487e6f8b432f2772472dd27d7122c4774932a0300c046184f",
+  "protocolSha256": "sha256:8b45b2083320d7fda62f01d21a8371e817ebf7bddb821861e2ebc96d6f458184",
+  "collectedAt": "2026-09-21T07:30:33.383Z",
+  "externalSpendingUsd": 0,
+  "plannedProcesses": 17,
+  "observedProcesses": 17,
+  "plannedRoutes": 272,
+  "observedRoutes": 272,
+  "summary": {
+    "networkMismatchCount": 33,
+    "mountMismatchCount": 0,
+    "keyDomainMismatchCount": 0,
+    "notRunningProcessCount": 0,
+    "incompleteProbeCount": 256,
+    "wrongResponderCount": 0,
+    "duplicateContainerIdCount": 0,
+    "duplicateHostPidCount": 0,
+    "unexpectedExternalNetworkCount": 0
+  },
+  "probeOutcomeCounts": {
+    "denied": 15,
+    "incomplete": 256,
+    "reachable": 1
+  },
+  "collectorDiagnosis": {
+    "scope": "development-name-resolution-lifetime-defect",
+    "incompleteReason": "ETIMEDOUT",
+    "incompleteProbeCount": 256,
+    "wrongResponderCount": 0,
+    "selectedExecutionWasAttempted": false,
+    "correctionPolicy": "Preserve this receipt, probe inspected target network addresses instead of names, retain explicit completion accounting, and use a fresh development evidence identity."
+  },
+  "retainedRawArtifact": {
+    "path": "evidence/mode-r-boundary-qualification-v1-development-attempt-3/receipt.json",
+    "bytes": 90067,
+    "sha256": "d9f5c721c5238c7d259416424f648bdfbb12d5ef11ca960dcd302998363a63ba"
+  },
+  "claimBoundary": "This is an append-only interpretation of a failed development collector qualification. It validates fail-closed incomplete-probe accounting and does not qualify the topology, close B12, establish a behavioral result or negative scientific finding, provide independent review, or supply a public timestamp."
+}
