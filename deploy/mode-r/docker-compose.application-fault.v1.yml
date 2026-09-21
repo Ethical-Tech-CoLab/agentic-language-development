@@ -1,0 +1,5 @@
+services:
+  controller-scenario:
+    command: ["/app/deploy/mode-r/application-fault-controller.mjs"]
+    environment:
+      ALD_MODE_R_FAULT_CASE: ${ALD_MODE_R_FAULT_CASE:?set ALD_MODE_R_FAULT_CASE}

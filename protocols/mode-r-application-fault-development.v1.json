@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-fault-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-application-fault-development-v1",
+  "prerequisite": {
+    "path": "reports/research/mode-r-application-lifecycle-development-v5-qualification-receipt.json",
+    "sha256": "c607394841e53c678bbf2b16db3d1fef5e552526630d0364e0cc3e26e36de3b3"
+  },
+  "compose": {
+    "basePath": "deploy/mode-r/docker-compose.application.v1.yml",
+    "baseSha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f",
+    "overlayPath": "deploy/mode-r/docker-compose.application-fault.v1.yml",
+    "overlaySha256": "4aea1081c96f45c5763117b9ae799127ac9bdfdc4180a1da0ba2e43ec18085bf"
+  },
+  "controller": {
+    "path": "deploy/mode-r/application-fault-controller.mjs",
+    "sha256": "d22a7fcaec222f9928a16327f746a719320c0fe0dbd06e099b9fbaf3095bbed9"
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "carrier": "fixed-token",
+    "trainingTurns": 3,
+    "evaluationTurns": 1,
+    "checkpointEventInterval": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attemptsPerCase": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true,
+    "resourceSampling": "docker-stats-periodic-observations-not-cgroup-peak"
+  },
+  "cases": [
+    { "id": "baby-peer-death", "targetService": "baby-a", "postFaultAction": "step" },
+    { "id": "evidence-writer-death", "targetService": "evidence-writer", "postFaultAction": "step" },
+    { "id": "channel-signer-death", "targetService": "signer-channel", "postFaultAction": "step" },
+    { "id": "checkpoint-service-death", "targetService": "checkpoint", "postFaultAction": "step" },
+    { "id": "anchor-service-death", "targetService": "simulated-anchor", "postFaultAction": "step" },
+    { "id": "audit-interpreter-death", "targetService": "audit-interpreter", "postFaultAction": "interpret-audit-batch" }
+  ],
+  "acceptance": {
+    "caseCount": 6,
+    "serviceCount": 17,
+    "prefixTurn": 0,
+    "prefixTypeScriptVerifierExitCode": 0,
+    "prefixRustIntegrityPass": true,
+    "postFaultRejected": true,
+    "targetExitCode": 137,
+    "minimumResourceSnapshotsPerCase": 1,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "scope": {
+    "included": [
+      "real-selected-application-services",
+      "fresh-run-per-fault-case",
+      "baby-peer-evidence-writer-channel-signer-checkpoint-anchor-and-audit-death",
+      "signed-prefix-export",
+      "typescript-and-independent-rust-prefix-verification",
+      "periodic-container-resource-observations",
+      "post-fault-rejection-and-teardown-accounting"
+    ],
+    "excluded": [
+      "uncertain-reply-after-possible-commit-injection",
+      "late-callback-injection",
+      "malformed-envelope-injection",
+      "detector-positive-and-negative-statistical-bounds",
+      "cgroup-peak-resource-envelope",
+      "selected-e10-plus-learner-and-carrier-bindings",
+      "b12-closure",
+      "behavioral-or-scientific-finding"
+    ]
+  },
+  "claimBoundary": "A pass establishes bounded fail-closed behavior for six killed selected-application services and verified signed pre-fault prefixes. It does not qualify uncertain replies, late callbacks, malformed envelopes, detector bounds, peak resources, selected E10+ learners/carriers, B12 closure, or any behavioral result."
+}
