@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+const receiptPath = 'reports/research/lv01-development-v9-resource-receipt.json';
+const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+
+assert.equal(receipt.schemaVersion, 1);
+assert.equal(receipt.classification, 'lv01-development-resource-observation-receipt');
+assert.equal(receipt.status, 'completed-bounded-development-observation');
+assert.equal(receipt.researchFinding, false);
+assert.equal(receipt.scientificDisposition, 'not-tested');
+assert.equal(receipt.attempt.runId, 'lv01-development-v9-p0001');
+assert.equal(receipt.attempt.allocation, 'protocols/lv01-development-resource-allocation.v9.json');
+assert.equal(receipt.attempt.bundleManifestHash.length, 71);
+assert.equal(receipt.fixture.state, 'sealed');
+assert.equal(receipt.fixture.trainingTurns, 64);
+assert.equal(receipt.fixture.evaluationTurns, 24);
+assert.equal(receipt.fixture.offlineVerifierExitCode, 0);
+assert.equal(receipt.resourceObservation.samplingIntervalMs, 1_000);
+assert.ok(receipt.resourceObservation.sampleCount >= receipt.resourceObservation.nonEmptySampleCount);
+assert.ok(receipt.resourceObservation.nonEmptySampleCount > 0);
+assert.equal(receipt.resourceObservation.serviceCount, 17);
+assert.ok(receipt.resourceObservation.wallSeconds > 0);
+assert.ok(receipt.resourceObservation.sampledEstimatedCpuSeconds > 0);
+assert.ok(receipt.resourceObservation.observedPeakMemoryMiB > 0);
+assert.equal(sha256(receipt.attempt.allocation).startsWith('sha256:'), true);
+assert.match(receipt.claimBoundary, /no behavioral/u);
+console.log('LV01 bounded resource receipt valid: 17 services with non-empty sampled observations; no calibration or scientific claim');
