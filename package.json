@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.288",
+  "version": "0.1.289",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -46,6 +46,8 @@
     "audit:mode-r-application-fault-failure:live": "node scripts/check-mode-r-application-fault-failure.mjs --live-evidence",
     "audit:mode-r-application-fault-receipt": "node scripts/check-mode-r-application-fault-receipt.mjs",
     "audit:mode-r-application-fault-receipt:live": "node scripts/check-mode-r-application-fault-receipt.mjs --live-evidence",
+    "qualify:mode-r-uncertain-write-development": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-mode-r-uncertain-write-development.mjs --run",
+    "audit:mode-r-uncertain-write-development:live": "node scripts/run-mode-r-uncertain-write-development.mjs --audit",
     "audit:mode-r-signer-reference:receipt": "node scripts/check-mode-r-signer-reference-receipt.mjs",
     "test:watch": "vitest",
     "design:e03": "pnpm run build && node scripts/run-e03-design-simulation.mjs",

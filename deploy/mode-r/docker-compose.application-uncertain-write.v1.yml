@@ -1,0 +1,13 @@
+services:
+  evidence-writer:
+    environment:
+      ALD_MODE_R_COMMIT_TURN_RESPONSE_DELAY_MS: "1500"
+
+  gateway:
+    environment:
+      ALD_MODE_R_GATEWAY_WRITER_TIMEOUT_MS: "1000"
+
+  controller-scenario:
+    command: ["/app/deploy/mode-r/application-uncertain-write-controller.mjs"]
+    environment:
+      ALD_MODE_R_UNCERTAIN_STAGE: ${ALD_MODE_R_UNCERTAIN_STAGE:?set ALD_MODE_R_UNCERTAIN_STAGE}
