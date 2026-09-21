@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-recurrent-selected-lifecycle-development-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {"protocol":"protocols/lv01-recurrent-lifecycle-development.v4.json","runId":"lv01-recurrent-lifecycle-v4-p0001","executionCommit":"b127fedc1df5a3bbe05cf1a5e030d18553d924ad","rawReceiptSha256":"sha256:6485d353afa779e7e11c407afec3862eef2294f8f48da2bbf031e04d5295cd4c"},
+  "observed": {"trainingTurns":2,"evaluationTurns":1,"recreatedServiceIdentityChanges":6,"persistentServiceIdentityChanges":0,"staleOwnedSocketsRemoved":3,"serviceCount":17,"networkMismatchCount":0,"mountMismatchCount":0,"offlineVerifierExitCode":0,"recurrentArchitecture":"gru-actor-critic-v1","parameterCount":4049,"initialUpdateCount":0,"finalUpdateCountByRole":{"baby-a":2,"baby-b":2}},
+  "policyFiles": {"baby-a":{"initial":"sha256:c14d6542e62ecc9a18a0abf24c01ce3ce1400b9b38d05cf73f979c762294fe89","latest":"sha256:a980b86e5498f368e9d1a8bc8c724ba8ed7c1f66fc3130ed2fc037ff75e5b424"},"baby-b":{"initial":"sha256:ac717eb187b604250284e4b3210548f56640ca3a0ebb7d75c3863b4488a5d9f5","latest":"sha256:24578258e659942f0cd5ac7aeef326746450759a44a34dce447e8138333b7085"}},
+  "limitations":["The local verifier rebuilt integrity structures but reports unanchored tails and no independent anchor RPC confirmation.","This is a two-training/one-evaluation restart subfixture, not seven-branch, deadline/safety, detector, fault, or resource-calibration qualification."],
+  "claimBoundary":"The retained run establishes only bounded local recurrent state persistence through selected controller/Gateway/Baby/model replacement. It is not a behavioral finding, pilot, full H07 closure, or publication result."
+}
