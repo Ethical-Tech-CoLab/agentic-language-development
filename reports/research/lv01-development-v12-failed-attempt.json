@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-fixture-attempt",
+  "status": "failed-closed-docker-network-capacity",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v12-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v12.json",
+    "executionCommit": "f28458e",
+    "evidenceRoot": "evidence/lv01/development-v12/lv01-development-v12-p0001",
+    "retainedFiles": [
+      {"path":"config/run-config.json","sha256":"sha256:cd5271a32e94c36c60c39c2cb2d1fd560570bad33a27d1f421012ed2b24bd118"},
+      {"path":"output/compose-output.log","sha256":"sha256:af9b420acbe10b533b5c5cd32aa1c71a7e0892e1ef20f68814f9dd3082429175"},
+      {"path":"output/lv01-fixture-resources.json","sha256":"sha256:0c09b3a2b27b88f69b858eff32a35c11e93a5163b3d84e45bd88f38abd57e86f"},
+      {"path":"fixture-failure.json","sha256":"sha256:11dca3021eee2963ec0e868db475992567b5bc040a00a2ce02128acc6e6ca1af"}
+    ]
+  },
+  "failure": {
+    "stage": "docker-network-create",
+    "reason": "Docker reported that all predefined address pools had been fully subnetted before the selected application network could be created.",
+    "observations": "No application service was observed; the retained sampler has zero non-empty samples.",
+    "remediation": "Only orphaned LV01 project networks were removed after the attempt. Retained evidence directories and tracked receipts were not changed."
+  },
+  "requiredCorrection": "Use a fresh allocation after confirming isolated Docker network capacity. Do not reuse v12 identifiers or seeds.",
+  "claimBoundary": "This failed attempt provides no topology qualification, resource measurement, calibration, pilot, behavioral result, or scientific finding."
+}
