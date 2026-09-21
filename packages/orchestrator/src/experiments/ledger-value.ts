@@ -1,5 +1,7 @@
 /** LV01 fail-closed paired-case collection and immutable slot accounting. */
 import { hashCanonical } from '@ald/hashing';
+import { createDerivedRunConfig } from '@ald/lifecycle';
+import type { RunConfig } from '@ald/types';
 
 export const LV01_BRANCHES = ['normal', 'disabled', 'constant', 'random', 'shuffled', 'ledger-consistent', 'ledger-shuffled'] as const;
 export type Lv01Branch = (typeof LV01_BRANCHES)[number];
@@ -13,7 +15,85 @@ export interface Lv01PairedBranchEvidence { readonly branch: Lv01Branch; readonl
 export interface Lv01SlotResources { readonly cpuMicroseconds: number; readonly wallMilliseconds: number; readonly peakBytes: number; readonly evidenceBytes: number; readonly verificationMilliseconds: number; }
 export interface Lv01SlotTerminalReceipt { readonly journal: Lv01StageJournal; readonly slot: Lv01Slot; readonly resources: Lv01SlotResources; readonly failureStage: string | null; }
 
+/** The runtime condition and predictor treatment for each paired LV01 branch. */
+export interface Lv01PairedBranchPlan {
+  readonly branch: Lv01Branch;
+  readonly communicationCondition: RunConfig['communicationCondition'];
+  readonly predictionTreatment: 'ordinary-records' | 'ledger-consistent' | 'ledger-shuffled';
+  readonly config: RunConfig;
+}
+
+/** Immutable parent checkpoint and child identifiers for one seven-branch case. */
+export interface Lv01PairedCasePlanInput {
+  readonly parent: RunConfig;
+  readonly parentCheckpointHash: string;
+  readonly babyAInitialPolicyRef: string;
+  readonly babyBInitialPolicyRef: string;
+  readonly childRunIdPrefix: string;
+}
+
+/** Seven independent derived runs that begin from the same exported parent state. */
+export interface Lv01PairedCasePlan {
+  readonly preStateCommitment: string;
+  readonly branches: readonly Lv01PairedBranchPlan[];
+}
+
 function fail(message: string): never { throw new Error(`LV01 collector: ${message}`); }
+
+const branchTreatment = (branch: Lv01Branch): {
+  communicationCondition: RunConfig['communicationCondition'];
+  predictionTreatment: Lv01PairedBranchPlan['predictionTreatment'];
+} => {
+  switch (branch) {
+    case 'normal': return { communicationCondition: 'normal', predictionTreatment: 'ordinary-records' };
+    case 'disabled': return { communicationCondition: 'disabled', predictionTreatment: 'ordinary-records' };
+    case 'constant': return { communicationCondition: 'constant', predictionTreatment: 'ordinary-records' };
+    case 'random': return { communicationCondition: 'random', predictionTreatment: 'ordinary-records' };
+    case 'shuffled': return { communicationCondition: 'shuffled', predictionTreatment: 'ordinary-records' };
+    case 'ledger-consistent': return { communicationCondition: 'normal', predictionTreatment: 'ledger-consistent' };
+    case 'ledger-shuffled': return { communicationCondition: 'normal', predictionTreatment: 'ledger-shuffled' };
+  }
+};
+
+/**
+ * Compile the only supported paired-case reset: a fresh derived run per
+ * branch, each initialized from the exact same immutable parent policies.
+ *
+ * A live in-place snapshot would expose mutable Gateway and learner state to
+ * a controller. Derived lineage instead loads the exported recurrent policy
+ * (including optimizer and checkpoint-hidden state) inside each isolated
+ * Baby and makes every branch's evidence chain independently verifiable.
+ */
+export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01PairedCasePlan {
+  if (input.parent.experimentId !== 'LV01') fail('paired cases require an LV01 parent');
+  if (!/^sha256:[0-9a-f]{64}$/u.test(input.parentCheckpointHash)) fail('parent checkpoint hash is invalid');
+  if (!/^policies\/baby-a-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyAInitialPolicyRef)) fail('baby-a policy reference is invalid');
+  if (!/^policies\/baby-b-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyBInitialPolicyRef)) fail('baby-b policy reference is invalid');
+  if (!/^[a-z0-9-]+$/u.test(input.childRunIdPrefix)) fail('child run identifier prefix is invalid');
+  const preStateCommitment = hashCanonical('lv01-paired-pre-state/v1', {
+    parentRunId: input.parent.runId,
+    parentCheckpointHash: input.parentCheckpointHash,
+    babyAInitialPolicyRef: input.babyAInitialPolicyRef,
+    babyBInitialPolicyRef: input.babyBInitialPolicyRef,
+    configurationHash: hashCanonical('lv01-paired-parent-config/v1', input.parent),
+  });
+  const branches = LV01_BRANCHES.map((branch) => {
+    const treatment = branchTreatment(branch);
+    const config = createDerivedRunConfig(
+      input.parent,
+      input.parentCheckpointHash,
+      `${input.childRunIdPrefix}-${branch}`,
+      {
+        babyAInitialPolicyRef: input.babyAInitialPolicyRef,
+        babyBInitialPolicyRef: input.babyBInitialPolicyRef,
+        overrides: { communicationCondition: treatment.communicationCondition },
+      },
+    );
+    return { branch, ...treatment, config };
+  });
+  if (new Set(branches.map((entry) => entry.config.runId)).size !== LV01_BRANCHES.length) fail('branch run identifiers collide');
+  return { preStateCommitment, branches };
+}
 export function createLv01StageJournal(stage: Lv01Stage, version: number, primarySlots: number, reserveSlots = 0): Lv01StageJournal {
   if (!Number.isInteger(version) || version < 1 || !Number.isInteger(primarySlots) || primarySlots < 1 || !Number.isInteger(reserveSlots) || reserveSlots < 0) fail('stage journal dimensions are invalid');
   const slots: Lv01Slot[] = [
