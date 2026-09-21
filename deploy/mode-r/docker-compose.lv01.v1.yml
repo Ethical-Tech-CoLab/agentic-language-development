@@ -4,6 +4,8 @@
 services:
   model-adapter-a:
     command: ["--transport=unix", "--socket-path=/run/ald-mode-r/model-a/model.sock", "--track=scratch-rl", "--host-label=model-adapter-a"]
+    environment:
+      ALD_MODE_R_DELAYED_MODEL_TRACK: scratch-rl
     cpus: 1.0
     mem_limit: 768m
     memswap_limit: 768m
