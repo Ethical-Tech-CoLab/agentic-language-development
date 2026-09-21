@@ -20,6 +20,22 @@ export {
   type RunE03ControlsOptions,
 } from './e03-controls.js';
 export {
+  LV01_BRANCHES,
+  assessLv01Admission,
+  createLv01StageJournal,
+  finalizeLv01Stage,
+  transitionLv01Slot,
+  verifyLv01PairedCase,
+  type Lv01Admission,
+  type Lv01AdmissionInput,
+  type Lv01Branch,
+  type Lv01PairedBranchEvidence,
+  type Lv01Slot,
+  type Lv01SlotStatus,
+  type Lv01Stage,
+  type Lv01StageJournal,
+} from './ledger-value.js';
+export {
   runE11NamingGame,
   type E11Aggregate,
   type E11LearnerOptions,
