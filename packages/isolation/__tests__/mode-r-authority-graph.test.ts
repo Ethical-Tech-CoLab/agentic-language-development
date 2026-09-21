@@ -127,6 +127,17 @@ describe('prospective Mode R authority graph', () => {
     expect(babyModelBoundaryQualification.exclusions).toContain(
       'scientific or behavioral findings',
     );
+    const collector = readFileSync(
+      'scripts/run-mode-r-baby-model-qualification.mjs',
+      'utf8',
+    );
+    expect(collector).toContain("git('status', '--porcelain')");
+    expect(collector).toContain("existsSync(evidenceRoot), false");
+    expect(collector).toContain("timing: 'normalized'");
+    expect(collector).toContain("deadlineMs: 1_000");
+    expect(collector).toContain('liveAfterDispose');
+    expect(collector).toContain('researchFinding: false');
+    expect(collector).toContain('b12Closed: false');
   });
 
   it('prospectively freezes a bounded zero-spend container qualification', () => {

@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.257",
+  "version": "0.1.258",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -24,6 +24,8 @@
     "audit:mode-r-boundary-development-qualification:live": "node scripts/check-mode-r-boundary-development-qualification.mjs --live-evidence",
     "audit:mode-r-boundary-selected-qualification": "node scripts/check-mode-r-boundary-selected-qualification.mjs",
     "audit:mode-r-boundary-selected-qualification:live": "node scripts/check-mode-r-boundary-selected-qualification.mjs --live-evidence",
+    "qualify:mode-r-baby-model-development": "pnpm run build && node scripts/run-mode-r-baby-model-qualification.mjs --run",
+    "audit:mode-r-baby-model-development:live": "node scripts/run-mode-r-baby-model-qualification.mjs --audit",
     "audit:mode-r-signer-reference:receipt": "node scripts/check-mode-r-signer-reference-receipt.mjs",
     "test:watch": "vitest",
     "design:e03": "pnpm run build && node scripts/run-e03-design-simulation.mjs",
