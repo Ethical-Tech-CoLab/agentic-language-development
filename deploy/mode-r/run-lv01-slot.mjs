@@ -16,7 +16,8 @@ assert.match(version ?? '', /^[1-9]\d*$/u);
 
 const allocationPath = `protocols/lv01-development-resource-allocation.v${version}.json`;
 const evidenceRoot = `evidence/lv01/development-v${version}`;
-const slotRoot = join(evidenceRoot, 'lv01-development-v1-p0001');
+const runId = `lv01-development-v${version}-p0001`;
+const slotRoot = join(evidenceRoot, runId);
 const resultPath = join(slotRoot, 'output', 'lv01-fixture-result.json');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
@@ -31,7 +32,7 @@ function verifyAllocation() {
   assert.equal(allocation.status, 'design-locked-not-executed');
   assert.equal(allocation.researchFinding, false);
   assert.equal(allocation.externalSpend, 0);
-  assert.equal(allocation.allocation.smallFixture.runId, 'lv01-development-v1-p0001');
+  assert.equal(allocation.allocation.smallFixture.runId, runId);
   assert.equal(allocation.allocation.smallFixture.trainingCases, 64);
   assert.equal(allocation.allocation.smallFixture.validationFitCases, 24);
   assert.equal(allocation.allocation.smallFixture.validationSelectionCases, 24);
@@ -101,7 +102,7 @@ writeFileSync(join(slotRoot, 'config', 'run-config.json'), `${JSON.stringify(con
 const environment = {
   ...process.env,
   ALD_MODE_R_APPLICATION_ROOT: resolve(slotRoot), ALD_SOFTWARE_COMMIT: commit,
-  ALD_MODE_R_RUN_ID: allocation.allocation.smallFixture.runId,
+  ALD_MODE_R_RUN_ID: runId,
   ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
   ALD_MODE_R_CONTROLLER_STAGE: 'lv01-fixture',
 };
