@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-late-callback-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": true,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-late-callback-development-v2",
+  "executionCommit": "939f8e6fd4cc101b609e67b24bd8b3cf65cc7d5e",
+  "executionTree": "5971573f6b7e826fb82cae92331e3590a6e03e45",
+  "executionVersion": "0.1.297",
+  "startedAt": "2026-09-21T16:01:38.057Z",
+  "finishedAt": "2026-09-21T16:04:05.155Z",
+  "protocol": {
+    "path": "protocols/mode-r-late-callback-development.v2.json",
+    "bytes": 4490,
+    "sha256": "sha256:d607be65786759db71fc6ff9fad6d8bd6099caaa9d2e332fd926500b1379f65c"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-late-callback-development-v2/receipt.json",
+    "bytes": 11117,
+    "sha256": "sha256:d2852f9f3fa9c51136f9d23728bf8a276f6e4b86037f2bb1b089fc58a0e59df7",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 0,
+    "controllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "observation": {
+    "createdState": "running",
+    "terminalState": "paused",
+    "turn": 0,
+    "phase": "running",
+    "channelValidation": "rejected",
+    "channelReasonCode": "timeout",
+    "logicalSender": "baby-a",
+    "deadlineMethod": "act",
+    "injectedDelayMs": 1500,
+    "enforcedAndRecordedBudgetMs": 1000,
+    "postDeadlineObservationMs": 2500,
+    "adapterQuarantined": true,
+    "quarantineFailed": false,
+    "turnDelta": 1,
+    "channelDelta": 1,
+    "lateWindowAddedEvidence": false,
+    "refusedActionsAddedEvidence": false,
+    "resumeErrorName": "RunConfigurationError",
+    "stepErrorName": "RunNotAcceptingTurnsError"
+  },
+  "verification": {
+    "typescriptExitCode": 0,
+    "rustIntegrityPass": true,
+    "rustEventCount": 4,
+    "rustCheckpointCount": 3,
+    "rustIssueCount": 0,
+    "resourceSnapshotCount": 1
+  },
+  "limitations": [
+    "The execution uses no-learning learners, fixed-token carriers, simulated anchoring, and zero external spending.",
+    "The qualification injects one late Baby A sender-action completion; it does not repeat every turn-path method in the selected topology.",
+    "One resource snapshot is not a cgroup peak or campaign resource-envelope qualification.",
+    "Malformed envelopes, selected detector bounds, and selected E10+ learner and carrier bindings remain unresolved.",
+    "This is software qualification evidence, not a behavioral result, B12 closure, independent review, or publication evidence."
+  ],
+  "claimBoundary": "V2 qualifies one bounded selected-topology late sender-action case. The one-second normalized deadline produced one signed timeout forfeit, terminally quarantined the remote path, admitted no evidence during the 2.5-second late window, and refused resume and another step without evidence changes. The retained four-event, three-checkpoint prefix passed both cryptographic verifiers. B12 and all behavioral claims remain open."
+}
