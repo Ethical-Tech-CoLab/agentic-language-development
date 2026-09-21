@@ -22,6 +22,7 @@ export {
 export {
   LV01_BRANCHES,
   assessLv01Admission,
+  captureLv01SlotTerminal,
   createLv01StageJournal,
   finalizeLv01Stage,
   transitionLv01Slot,
@@ -31,6 +32,8 @@ export {
   type Lv01Branch,
   type Lv01PairedBranchEvidence,
   type Lv01Slot,
+  type Lv01SlotResources,
+  type Lv01SlotTerminalReceipt,
   type Lv01SlotStatus,
   type Lv01Stage,
   type Lv01StageJournal,

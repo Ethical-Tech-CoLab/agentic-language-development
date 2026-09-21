@@ -10,6 +10,8 @@ export interface Lv01StageJournal { readonly stage: Lv01Stage; readonly version:
 export interface Lv01AdmissionInput { readonly designVerified: boolean; readonly numericalQualificationVerified: boolean; readonly topologyQualificationVerified: boolean; readonly sourceClean: boolean; readonly registrationBound: boolean; readonly resourcesSufficient: boolean; readonly stage: Lv01Stage; }
 export interface Lv01Admission { readonly status: 'ready' | 'blocked' | 'unresolved'; readonly reasons: readonly string[]; }
 export interface Lv01PairedBranchEvidence { readonly branch: Lv01Branch; readonly scenarioHash: string; readonly receiverDrawCommitment: string; readonly preStateCommitment: string; readonly predictionCommitment: string; readonly actionRecordedAfterPrediction: boolean; readonly restoredBeforeAction: boolean; }
+export interface Lv01SlotResources { readonly cpuMicroseconds: number; readonly wallMilliseconds: number; readonly peakBytes: number; readonly evidenceBytes: number; readonly verificationMilliseconds: number; }
+export interface Lv01SlotTerminalReceipt { readonly journal: Lv01StageJournal; readonly slot: Lv01Slot; readonly resources: Lv01SlotResources; readonly failureStage: string | null; }
 
 function fail(message: string): never { throw new Error(`LV01 collector: ${message}`); }
 export function createLv01StageJournal(stage: Lv01Stage, version: number, primarySlots: number, reserveSlots = 0): Lv01StageJournal {
@@ -27,6 +29,14 @@ export function transitionLv01Slot(journal: Lv01StageJournal, index: number, sta
   else if (slot.status !== 'running') fail('only a running slot can become terminal');
   if ((status === 'invalid' || status === 'aborted') && (!reason || reason.length === 0)) fail('invalid or aborted slot requires a reason');
   return { ...journal, slots: journal.slots.map((entry) => entry.index === index ? { ...entry, status, ...(reason ? { reason } : {}) } : entry) };
+}
+/** Terminal slots retain measured resource counters even when execution fails. */
+export function captureLv01SlotTerminal(journal: Lv01StageJournal, index: number, status: Exclude<Lv01SlotStatus, 'unattempted' | 'running'>, resources: Lv01SlotResources, failureStage: string | null, reason?: string): Lv01SlotTerminalReceipt {
+  if (Object.values(resources).some((value) => !Number.isFinite(value) || value < 0)) fail('terminal resource counters must be finite non-negative numbers');
+  if (status === 'valid' && (failureStage !== null || reason !== undefined)) fail('valid slot cannot carry a failure diagnostic');
+  if (status !== 'valid' && (failureStage === null || failureStage.length === 0 || reason === undefined || reason.length === 0)) fail('failed slot requires stage and reason');
+  const updated = transitionLv01Slot(transitionLv01Slot(journal, index, 'running'), index, status, reason);
+  return { journal: updated, slot: updated.slots.find((slot) => slot.index === index)!, resources, failureStage };
 }
 export function finalizeLv01Stage(journal: Lv01StageJournal): Lv01StageJournal {
   if (journal.terminal !== 'open') fail('stage journal is already terminal');
