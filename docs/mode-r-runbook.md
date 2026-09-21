@@ -213,8 +213,14 @@ kept the container resolver alive until the outer bound. Its raw receipt is
 preserved. The next prospective collector uses inspected target network IPs,
 actively checks every available target interface, treats a target with no
 network interface as an inspected denial, retains completion and responder
-identity checks, and uses a fourth fresh evidence identity. No selected execution
-has occurred and no topology observation is claimed at this source version.
+identity checks, and uses a fourth fresh evidence identity. Development attempt
+four passed: seventeen distinct running processes, 272 directed routes, 160
+literal-interface probes, 34 authenticated allowed endpoints, 126 denied
+endpoints, 144 no-interface denials, and zero acceptance mismatches. Its raw
+receipt is retained and a portable checker binds the original digest and scope.
+No selected execution has occurred; this is bounded development topology
+qualification, not application-runtime qualification, B12 closure, or a
+scientific result.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

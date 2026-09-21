@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "qualificationId": "mode-r-boundary-v1",
+  "attemptId": "development-attempt-4",
+  "classification": "supplemental-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "selectedExecution": false,
+  "attemptStatus": "completed",
+  "qualificationDisposition": "passed",
+  "scientificDisposition": "not-tested",
+  "executionCommit": "f47c13b90beab3fd00457896aabfeafc88f7edd5",
+  "executionTree": "1982ad529c89b9624e71091b0d7d4550e600b0ea",
+  "executionVersion": "0.1.254",
+  "collectorSha256": "59c80d864e403a33c5fdbafbbf53d75d079b1c260547ca1f85284ad8f150eb86",
+  "protocolSha256": "sha256:8b45b2083320d7fda62f01d21a8371e817ebf7bddb821861e2ebc96d6f458184",
+  "collectedAt": "2026-09-21T07:40:05.122Z",
+  "externalSpendingUsd": 0,
+  "processCount": 17,
+  "routeCount": 272,
+  "endpointProbeCount": 160,
+  "routeOutcomeCounts": {
+    "denied": 94,
+    "no-target-interface": 144,
+    "reachable": 34
+  },
+  "endpointOutcomeCounts": {
+    "denied": 126,
+    "reachable": 34
+  },
+  "summary": {
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "keyDomainMismatchCount": 0,
+    "notRunningProcessCount": 0,
+    "missingNetworkAddressCount": 0,
+    "incompleteProbeCount": 0,
+    "wrongResponderCount": 0,
+    "endpointMismatchCount": 0,
+    "duplicateContainerIdCount": 0,
+    "duplicateHostPidCount": 0,
+    "unexpectedExternalNetworkCount": 0
+  },
+  "retainedRawArtifact": {
+    "path": "evidence/mode-r-boundary-qualification-v1-development-attempt-4/receipt.json",
+    "bytes": 131296,
+    "sha256": "8852e938810e4d0673d926e84bedc770ccfb842acb35fcf88b6227c956206bee"
+  },
+  "limitations": [
+    "Development identity only; the selected single-use execution has not run.",
+    "The containers host qualification responders, not the application services.",
+    "Lifecycle, fault, detector, resource, and independent-audit requirements were not exercised.",
+    "No behavioral or scientific hypothesis was tested, and B12 remains open."
+  ],
+  "claimBoundary": "Bounded development qualification of process, network, mount, key-domain, and identity observations. It is not selected qualification, application-runtime qualification, B12 closure, a behavioral result, independent review, or a public timestamp."
+}
