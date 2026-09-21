@@ -39,7 +39,7 @@ import { systemTimer, type IsolationTimer } from './timer.js';
 
 /** One byte-stream to a learner host: a child's stdio, or a TCP socket. */
 export interface FrameChannel {
-  readonly kind: 'process' | 'tcp' | 'loopback';
+  readonly kind: 'process' | 'tcp' | 'unix' | 'loopback';
   /** OS process id of the peer when the transport knows it. */
   readonly processId?: number;
   /** Write a complete frame sequence. Implementations must not reorder. */

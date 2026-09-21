@@ -164,6 +164,15 @@ export {
   type TcpFrameServerOptions,
 } from './tcp-transport.js';
 export {
+  UnixFrameChannel,
+  UnixHostTransport,
+  connectUnixFrameChannel,
+  createUnixFrameServer,
+  type UnixConnectOptions,
+  type UnixFrameServer,
+  type UnixFrameServerOptions,
+} from './unix-transport.js';
+export {
   DirectHostTransport,
   LoopbackChannel,
   createLoopbackChannelPair,

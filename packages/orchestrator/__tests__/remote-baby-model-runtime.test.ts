@@ -15,12 +15,10 @@ import {
 import {
   connectGatewayEvidenceRpc,
   connectSymbolGatewayRpc,
+  createGatewayRelayAdapterFactory,
+  type GatewayRelayAdapterFactory,
 } from '@ald/gateway';
 import { connectDomainSignerRpc } from '@ald/hashing';
-import {
-  createBabyContainerAdapterFactory,
-  type BabyContainerAdapterFactory,
-} from '@ald/isolation';
 import type { BabyRole, SignerRegistry } from '@ald/types';
 
 import {
@@ -86,18 +84,18 @@ async function availablePort(): Promise<number> {
 describe('remote runtime with distinct Baby and model processes', () => {
   let directory: string | undefined;
   let children: ChildProcess[] = [];
-  let babyFactories: BabyContainerAdapterFactory[] = [];
+  let relayFactories: GatewayRelayAdapterFactory[] = [];
 
   afterEach(async () => {
-    await Promise.all(babyFactories.map((factory) => factory.dispose()));
+    await Promise.all(relayFactories.map((factory) => factory.dispose()));
     for (const child of [...children].reverse()) await stop(child);
     if (directory !== undefined) rmSync(directory, { recursive: true, force: true });
-    babyFactories = [];
+    relayFactories = [];
     children = [];
     directory = undefined;
   });
 
-  it('commits and exports one turn through remote writer, Gateway, Baby, and model boundaries', async () => {
+  it('commits and exports one turn through Gateway relays, Babies, and model boundaries', async () => {
     if (process.platform !== 'linux') return;
     directory = mkdtempSync(join(tmpdir(), 'ald-remote-baby-model-runtime-'));
     const runId = 'remote-baby-model-runtime';
@@ -120,9 +118,14 @@ describe('remote runtime with distinct Baby and model processes', () => {
     };
     const gatewaySocket = join(directory, 'gateway-controller.sock');
     const roles: BabyRole[] = ['baby-a', 'baby-b'];
-    const containerFactories = new Map<BabyRole, BabyContainerAdapterFactory>();
+    const adapterFactories = new Map<BabyRole, GatewayRelayAdapterFactory>();
     const babyProcesses = new Map<BabyRole, ChildProcess>();
     const modelProcesses = new Map<BabyRole, ChildProcess>();
+    const relayBindings: Record<string, {
+      socketPath: string;
+      babyHost: string;
+      babyPort: number;
+    }> = {};
     for (const role of roles) {
       const modelPort = await availablePort();
       const babyPort = await availablePort();
@@ -154,20 +157,21 @@ describe('remote runtime with distinct Baby and model processes', () => {
       children.push(modelProcess, babyProcess);
       modelProcesses.set(role, modelProcess);
       babyProcesses.set(role, babyProcess);
-      const factory = createBabyContainerAdapterFactory({
+      const relaySocket = join(directory, `${role}-learner.sock`);
+      relayBindings[role] = {
+        socketPath: relaySocket,
+        babyHost: '127.0.0.1',
+        babyPort,
+      };
+      const factory = createGatewayRelayAdapterFactory({
         track: 'no-learning',
         timing: 'normalized',
         deadlineMs: 1_000,
-        endpoint: {
-          host: '127.0.0.1',
-          port: babyPort,
-          attempts: 20,
-          retryDelayMs: 50,
-          hostLabel: role,
-        },
+        socketPath: relaySocket,
+        hostLabel: `${role}-gateway-relay`,
       });
-      containerFactories.set(role, factory);
-      babyFactories.push(factory);
+      adapterFactories.set(role, factory);
+      relayFactories.push(factory);
     }
 
     const witnessProcess = spawn(process.execPath, [
@@ -222,7 +226,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
       anchorPolicy: 'required',
       anchorPublisher: anchorPublisherFor(runId),
       signerProvider: () => signers,
-      adapterFactoryFor: (_runConfig, role) => containerFactories.get(role)!,
+      adapterFactoryFor: (_runConfig, role) => adapterFactories.get(role)!,
       evidenceContextFactory: () => ({
         controller: controller.port,
         gateway: gatewayWriter.port,
@@ -239,6 +243,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
           sockets.gateway,
           input.journalDirectory,
           JSON.stringify(input.context.config),
+          JSON.stringify(relayBindings),
         ], { stdio: ['ignore', 'pipe', 'pipe'] });
         children.push(gatewayProcess);
         expect(await readyLine(gatewayProcess, 'Gateway')).toBe('ready\n');
@@ -249,12 +254,12 @@ describe('remote runtime with distinct Baby and model processes', () => {
     });
 
     await runtime.createRun(config);
-    const babyProcessIds = [...containerFactories.values()].map(
+    const babyProcessIds = [...adapterFactories.values()].map(
       (factory) => factory.adapters[0]?.isolation.processId,
     );
     expect(babyProcessIds.every(Number.isInteger)).toBe(true);
     expect(babyProcessIds).toEqual(roles.map((role) => babyProcesses.get(role)?.pid));
-    expect(roles.map((role) => containerFactories.get(role)?.adapters[0]?.isolation))
+    expect(roles.map((role) => adapterFactories.get(role)?.adapters[0]?.isolation))
       .toEqual(roles.map((role) => expect.objectContaining({
         boundary: 'separate-container',
         containerId: `${role}-baby-container`,
@@ -282,9 +287,9 @@ describe('remote runtime with distinct Baby and model processes', () => {
     expect(await controller.port.readEvents(runId, 'channel')).toHaveLength(1);
     expect(await controller.port.readEvents(runId, 'baby-a-ledger')).not.toHaveLength(0);
     expect(await controller.port.readEvents(runId, 'baby-b-ledger')).not.toHaveLength(0);
-    expect([...containerFactories.values()].flatMap((factory) => factory.adapters)
+    expect([...adapterFactories.values()].flatMap((factory) => factory.adapters)
       .reduce((sum, adapter) => sum + adapter.diagnostics.ledgerAppends, 0))
-      .toBeGreaterThan(0);
+      .toBe(0);
     expect(await controller.port.readCheckpoints(runId)).not.toHaveLength(0);
     const manifest = await runtime.exportBundle(runId, join(directory, 'export'));
     expect(manifest.runId).toBe(runId);
