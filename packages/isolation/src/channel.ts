@@ -85,6 +85,8 @@ export interface FrameConnectionOptions {
   timer?: IsolationTimer;
   /** Maps a thrown handler error to the wire code. Default: `internal`. */
   errorCodeFor?: (error: unknown) => HostErrorCode;
+  /** Called once when this connection becomes unusable. */
+  onClosed?: (error: IsolationError) => void;
 }
 
 export interface ConnectionStats {
@@ -132,6 +134,7 @@ export class FrameConnection {
   private readonly handler: FrameRequestHandler | undefined;
   private readonly timer: IsolationTimer;
   private readonly errorCodeFor: (error: unknown) => HostErrorCode;
+  private readonly onClosed: ((error: IsolationError) => void) | undefined;
   private readonly pending = new Map<string, PendingRequest>();
   private readonly assembler: FrameAssembler;
   private readonly reader: LineReader;
@@ -147,6 +150,7 @@ export class FrameConnection {
     this.handler = options.handler;
     this.timer = options.timer ?? systemTimer;
     this.errorCodeFor = options.errorCodeFor ?? ((): HostErrorCode => 'internal');
+    this.onClosed = options.onClosed;
     this.assembler = new FrameAssembler(this.maxPayloadBytes);
     this.reader = new LineReader(
       this.frameSize,
@@ -269,6 +273,12 @@ export class FrameConnection {
           cause: error,
         }),
       });
+    }
+    try {
+      this.onClosed?.(error);
+    } catch {
+      // Closing must still settle every pending request even if an observer
+      // has its own defect. The connection is already terminal here.
     }
   }
 

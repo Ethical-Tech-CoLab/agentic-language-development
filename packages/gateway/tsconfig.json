@@ -10,6 +10,7 @@
   "references": [
     { "path": "../types" },
     { "path": "../hashing" },
-    { "path": "../evidence" }
+    { "path": "../evidence" },
+    { "path": "../isolation" }
   ]
 }

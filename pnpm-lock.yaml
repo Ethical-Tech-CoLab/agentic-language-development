@@ -241,6 +241,9 @@ importers:
       '@ald/hashing':
         specifier: '*'
         version: link:../hashing
+      '@ald/isolation':
+        specifier: '*'
+        version: link:../isolation
       '@ald/types':
         specifier: '*'
         version: link:../types

@@ -22,6 +22,7 @@
     "@ald/types": "*",
     "@ald/hashing": "*",
     "@ald/evidence": "*",
+    "@ald/isolation": "*",
     "zod": "4.4.3"
   }
 }
