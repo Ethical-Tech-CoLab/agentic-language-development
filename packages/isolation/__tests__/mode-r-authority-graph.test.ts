@@ -76,7 +76,53 @@ const gatewayRecoveryAmendment = JSON.parse(
   readFileSync('protocols/mode-r-authority-graph.v4.json', 'utf8'),
 ) as GatewayRecoveryAmendment;
 
+type BoundaryQualification = {
+  schemaVersion: number;
+  status: string;
+  b12Closed: boolean;
+  externalSpendingUsd: number;
+  authoritySources: Array<{ path: string; sha256: string }>;
+  executionImage: { reference: string; localImageId: string; networkPullPermitted: boolean };
+  scope: { included: string[]; excluded: string[] };
+  mountPolicy: Record<string, string[]>;
+  keyDomainPolicy: Record<string, string>;
+  acceptance: Record<string, number>;
+};
+const boundaryQualification = JSON.parse(
+  readFileSync('protocols/mode-r-boundary-qualification.v1.json', 'utf8'),
+) as BoundaryQualification;
+
 describe('prospective Mode R authority graph', () => {
+  it('prospectively freezes a bounded zero-spend container qualification', () => {
+    expect(boundaryQualification.schemaVersion).toBe(1);
+    expect(boundaryQualification.status).toBe('design-locked-not-executed');
+    expect(boundaryQualification.b12Closed).toBe(false);
+    expect(boundaryQualification.externalSpendingUsd).toBe(0);
+    for (const source of boundaryQualification.authoritySources) {
+      expect(createHash('sha256').update(readFileSync(source.path)).digest('hex'))
+        .toBe(source.sha256);
+    }
+    expect(boundaryQualification.executionImage).toEqual({
+      reference: 'node:24.20.0-alpine',
+      localImageId: 'sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf',
+      networkPullPermitted: false,
+    });
+    expect(boundaryQualification.scope.excluded).toContain('b12-closure');
+    expect(boundaryQualification.scope.excluded)
+      .toContain('application-service-execution');
+    expect(boundaryQualification.mountPolicy['sqlite-event-store'])
+      .toEqual(['evidence-writer']);
+    expect(boundaryQualification.mountPolicy['gateway-controller'])
+      .toEqual(['controller-scenario', 'gateway']);
+    expect(Object.keys(boundaryQualification.keyDomainPolicy)).toHaveLength(6);
+    expect(boundaryQualification.acceptance).toMatchObject({
+      processCount: 17,
+      networkMismatchCount: 0,
+      mountMismatchCount: 0,
+      keyDomainMismatchCount: 0,
+    });
+  });
+
   it('prospectively binds fail-closed Gateway recovery to unchanged v3', () => {
     expect(gatewayRecoveryAmendment.schemaVersion).toBe(4);
     expect(gatewayRecoveryAmendment.status).toBe('design-locked-not-implemented');

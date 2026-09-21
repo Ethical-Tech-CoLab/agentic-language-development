@@ -181,6 +181,14 @@ Recovery verifies the remote prefix, starts a new Gateway process, continues at
 the next turn, and still exposes no database or writer handle to Nursery. This
 is recovery/process evidence, not proof of selected signer socket mounts or
 one-domain-per-signer deployment.
+The [prospective container-boundary packet](../protocols/mode-r-boundary-qualification.v1.json)
+now freezes the next execution before data collection. It binds all four
+authority-graph versions, the already-local pinned image identity, all-pairs
+network probes, exact capability/key/state mounts, and zero external spending.
+Its scope deliberately excludes application service execution, lifecycle and
+fault qualification, resource measurement, independent audit, behavioral
+findings, and B12 closure. No boundary result exists until the registered
+collector runs and its raw receipt is separately checked.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

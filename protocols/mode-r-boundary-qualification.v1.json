@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-selected-mode-r-container-boundary-qualification",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "externalSpendingUsd": 0,
+  "authoritySources": [
+    {
+      "path": "protocols/mode-r-authority-graph.v1.json",
+      "sha256": "9292d025a67683e32077968ed59531e554a412163a2828b0900f1e644f567202"
+    },
+    {
+      "path": "protocols/mode-r-authority-graph.v2.json",
+      "sha256": "802d81e66b0e4d281e408421944458cef81f898a1a36a808b963ba08b4046b13"
+    },
+    {
+      "path": "protocols/mode-r-authority-graph.v3.json",
+      "sha256": "8050aec662f1e466daadd91b917a053c8c13fdcf2257893072fb3bcc0d50b70a"
+    },
+    {
+      "path": "protocols/mode-r-authority-graph.v4.json",
+      "sha256": "581727d747940a044fae312fe4090fa2ba1d00267e807ebaa25448b89f7b891d"
+    }
+  ],
+  "executionImage": {
+    "reference": "node:24.20.0-alpine",
+    "localImageId": "sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf",
+    "networkPullPermitted": false
+  },
+  "scope": {
+    "included": [
+      "distinct-live-container-and-host-process-identities",
+      "all-ordered-pair-network-reachability-and-denial",
+      "internal-network-flags",
+      "exact-caller-capability-directory-mounts",
+      "sqlite-directory-mounted-only-in-evidence-writer",
+      "one-declared-key-domain-per-signer-container",
+      "no-key-or-cross-role-state-mount-in-baby-containers"
+    ],
+    "excluded": [
+      "application-service-execution",
+      "role-authentication-inside-a-reachable-route",
+      "complete-run-lifecycle",
+      "fault-and-late-callback-containment",
+      "detector-operating-characteristics",
+      "resource-envelope-measurement",
+      "independent-bundle-audit",
+      "behavioral-or-scientific-findings",
+      "b12-closure"
+    ]
+  },
+  "mountPolicy": {
+    "sqlite-event-store": ["evidence-writer"],
+    "gateway-writer": ["gateway", "evidence-writer"],
+    "controller-writer": ["controller-scenario", "evidence-writer"],
+    "checkpoint-writer": ["checkpoint", "evidence-writer"],
+    "anchor-writer": ["simulated-anchor", "evidence-writer"],
+    "audit-writer": ["audit-interpreter", "evidence-writer"],
+    "gateway-controller": ["controller-scenario", "gateway"],
+    "baby-a-model": ["baby-a", "model-adapter-a"],
+    "baby-b-model": ["baby-b", "model-adapter-b"],
+    "baby-a-private": ["baby-a"],
+    "baby-b-private": ["baby-b"],
+    "baby-a-ledger-key": ["evidence-writer", "ledger-writer-a"],
+    "baby-b-ledger-key": ["evidence-writer", "ledger-writer-b"],
+    "channel-key": ["evidence-writer", "channel-signer"],
+    "affect-key": ["evidence-writer", "affect-signer"],
+    "audit-key": ["audit-interpreter", "audit-signer"],
+    "witness-key": ["checkpoint", "witness-signer"]
+  },
+  "keyDomainPolicy": {
+    "ledger-writer-a": "baby-a-ledger",
+    "ledger-writer-b": "baby-b-ledger",
+    "channel-signer": "channel",
+    "affect-signer": "affect",
+    "audit-signer": "audit",
+    "witness-signer": "witness"
+  },
+  "executionRules": [
+    "use-a-unique-qualification-prefix",
+    "create-only-internal-declared-networks",
+    "do-not-pull-or-publish-images",
+    "probe-every-ordered-pair-not-only-expected-denials",
+    "compare-docker-inspect-mounts-to-the-exact-policy",
+    "record-container-id-host-pid-network-and-mount-observations",
+    "remove-only-resources-bearing-the-unique-prefix",
+    "retain-raw-receipt-outside-git-before-portable-receipt-review"
+  ],
+  "acceptance": {
+    "processCount": 17,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "keyDomainMismatchCount": 0,
+    "duplicateContainerIdCount": 0,
+    "duplicateHostPidCount": 0,
+    "unexpectedExternalNetworkCount": 0
+  },
+  "rawEvidencePath": "evidence/mode-r-boundary-qualification-v1/receipt.json",
+  "portableReceiptPath": "reports/research/mode-r-boundary-qualification-v1-receipt.json"
+}
