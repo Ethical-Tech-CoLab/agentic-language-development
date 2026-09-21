@@ -11,6 +11,11 @@
  */
 export { openEvidenceDatabase, type EvidenceDatabase } from './database.js';
 export {
+  connectAuditEvidenceRpc,
+  createAuditEvidenceRpcServer,
+  type AuditEvidencePort,
+} from './audit-rpc.js';
+export {
   connectControllerEvidenceRpc,
   createControllerEvidenceRpcServer,
   type ControllerEvidencePort,

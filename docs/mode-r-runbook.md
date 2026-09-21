@@ -32,6 +32,13 @@ The delayed Audit Interpreter now accepts only ledger reads and audit-ledger
 appends through its source-level port, and it awaits reads so a remote evidence
 service can be introduced later. It still runs inside the current Nursery;
 neither an audit-interpreter process nor its v2 socket exists yet.
+The audit-writer socket component now exists separately from the Controller
+capability: it permits only role-ledger reads and signed audit appends for one
+run. A child-process component test connects the real delayed interpreter,
+rejects a too-early source, appends after the delay, rejects Gateway methods,
+and checks the retained SQLite row. The live Nursery still constructs the
+interpreter in-process; the selected audit process and exclusive socket mount
+have not been qualified.
 The Gateway now quarantines itself when that port reports a possibly committed
 write with no confirmed response. A running Controller refuses another turn
 before adapter work, and restart recovery refuses channel or affect events that
