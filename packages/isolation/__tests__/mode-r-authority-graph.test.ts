@@ -58,7 +58,51 @@ const gatewayServiceAmendment = JSON.parse(
   readFileSync('protocols/mode-r-authority-graph.v3.json', 'utf8'),
 ) as GatewayServiceAmendment;
 
+type GatewayRecoveryAmendment = {
+  schemaVersion: number;
+  status: string;
+  b12Closed: boolean;
+  predecessor: { path: string; sha256: string };
+  gatewayServiceDelta: {
+    protocol: string;
+    removeMethods: string[];
+    addMethods: string[];
+    restoreRequest: Record<string, string[]>;
+    restoreRules: string[];
+  };
+  qualificationRequired: string[];
+};
+const gatewayRecoveryAmendment = JSON.parse(
+  readFileSync('protocols/mode-r-authority-graph.v4.json', 'utf8'),
+) as GatewayRecoveryAmendment;
+
 describe('prospective Mode R authority graph', () => {
+  it('prospectively binds fail-closed Gateway recovery to unchanged v3', () => {
+    expect(gatewayRecoveryAmendment.schemaVersion).toBe(4);
+    expect(gatewayRecoveryAmendment.status).toBe('design-locked-not-implemented');
+    expect(gatewayRecoveryAmendment.b12Closed).toBe(false);
+    expect(gatewayRecoveryAmendment.predecessor.path)
+      .toBe('protocols/mode-r-authority-graph.v3.json');
+    expect(createHash('sha256')
+      .update(readFileSync(gatewayRecoveryAmendment.predecessor.path))
+      .digest('hex')).toBe(gatewayRecoveryAmendment.predecessor.sha256);
+
+    const delta = gatewayRecoveryAmendment.gatewayServiceDelta;
+    expect(delta.protocol).toBe('symbol-gateway-v2');
+    expect(delta.removeMethods).toEqual(['discardShuffledBatchAfterRecovery']);
+    expect(delta.addMethods).toEqual(['restoreAfterVerifiedPrefix']);
+    expect(delta.restoreRequest).toEqual({
+      verifiedChannelHead: ['size', 'lastEntryHash'],
+      operationalState: ['consecutiveRejections'],
+    });
+    expect(delta.restoreRules).toContain(
+      'missing-or-malformed-latest-resume-channel-head-refuses-recovery',
+    );
+    expect(gatewayRecoveryAmendment.qualificationRequired).toContain(
+      'fresh-remote-gateway-restart-preserves-rejection-streak',
+    );
+  });
+
   it('binds the prospective Gateway service to unchanged v1 and v2 graphs', () => {
     expect(gatewayServiceAmendment.schemaVersion).toBe(3);
     expect(gatewayServiceAmendment.status).toBe('design-locked-not-implemented');

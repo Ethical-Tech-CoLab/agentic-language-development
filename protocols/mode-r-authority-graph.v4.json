@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 4,
+  "classification": "prospective-selected-mode-r-gateway-recovery-amendment",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "b12Closed": false,
+  "predecessor": {
+    "path": "protocols/mode-r-authority-graph.v3.json",
+    "sha256": "8050aec662f1e466daadd91b917a053c8c13fdcf2257893072fb3bcc0d50b70a"
+  },
+  "amendmentReason": "A fresh Gateway begins with a zero rejection counter. Restoring only its volatile shuffled batch after Controller restart can therefore erase the signed consecutive-rejection streak and postpone the mandatory safety pause.",
+  "inheritedUnchanged": [
+    "v1-process-network-key-and-gate-definitions",
+    "v2-writer-capabilities-and-single-writer-policy",
+    "v3-gateway-service-identity-status-and-no-retry-rules"
+  ],
+  "gatewayServiceDelta": {
+    "protocol": "symbol-gateway-v2",
+    "removeMethods": [
+      "discardShuffledBatchAfterRecovery"
+    ],
+    "addMethods": [
+      "restoreAfterVerifiedPrefix"
+    ],
+    "restoreRequest": {
+      "verifiedChannelHead": [
+        "size",
+        "lastEntryHash"
+      ],
+      "operationalState": [
+        "consecutiveRejections"
+      ]
+    },
+    "restoreRules": [
+      "controller-calls-only-after-complete-prefix-verification",
+      "controller-refuses-restore-when-orphaned-turn-evidence-exists",
+      "verified-channel-head-must-equal-the-recovery-report-channel-head",
+      "latest-valid-resume-head-defines-the-reviewed-channel-prefix",
+      "accepted-channel-event-after-reviewed-prefix-resets-the-streak",
+      "rejected-channel-event-after-reviewed-prefix-increments-the-streak",
+      "missing-or-malformed-latest-resume-channel-head-refuses-recovery",
+      "gateway-validates-counter-and-head-shape-before-state-change",
+      "gateway-discards-volatile-shuffled-batch-during-the-same-state-change"
+    ]
+  },
+  "qualificationRequired": [
+    "local-accepted-and-rejected-prefix-reconstruction",
+    "audited-resume-prefix-reconstruction",
+    "malformed-and-mismatched-resume-head-refusal",
+    "fresh-remote-gateway-restart-preserves-rejection-streak",
+    "safety-pause-occurs-at-the-original-configured-ceiling-after-restart",
+    "response-loss-and-orphan-refusal-remain-fail-closed"
+  ]
+}

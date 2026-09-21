@@ -20,9 +20,16 @@ current Compose file is intentionally a negative reference for the B12 gate.
 The [v3 Gateway-service amendment](../protocols/mode-r-authority-graph.v3.json)
 binds v1/v2 unchanged and freezes the exact Controller-to-Gateway method set,
 private socket mount, identity descriptor, operational-status envelope, and
-no-retry quarantine behavior required before moving the live Gateway. It is
-prospective and explicitly not implemented; the current source has only the
-Gateway-to-writer transport, so v3 supplies no process-isolation evidence.
+no-retry quarantine behavior required before moving the live Gateway. Its
+service boundary is now component-qualified and injectable into Nursery, but
+the selected container mounts and complete lifecycle are not qualified.
+The [prospective v4 recovery amendment](../protocols/mode-r-authority-graph.v4.json)
+binds v3 unchanged and replaces its batch-only recovery call with one verified
+prefix restoration. The Controller must reconstruct the rejection streak from
+signed channel evidence after the latest audited resume, while the Gateway
+atomically restores that counter and discards its volatile shuffled batch. The
+v4 design is locked but not implemented, so restart through a fresh remote
+Gateway remains an open fail-closed qualification item.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
