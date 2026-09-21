@@ -21,6 +21,8 @@ const slotRoot = join(evidenceRoot, runId);
 const resultPath = join(slotRoot, 'output', 'lv01-fixture-result.json');
 const resourcePath = join(slotRoot, 'output', 'lv01-fixture-resources.json');
 const authorityPath = join(slotRoot, 'output', 'lv01-authority-observation.json');
+const composeLogPath = join(slotRoot, 'output', 'compose-output.log');
+const authorityFailurePath = join(slotRoot, 'output', 'lv01-authority-failure.json');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const allocation = existsSync(allocationPath)
@@ -280,6 +282,17 @@ async function runComposeWithMeasurements(compose, environment) {
     return output;
   } finally {
     clearInterval(timer);
+    writeFileSync(composeLogPath, output, { flag: 'wx', mode: 0o600 });
+    if (authority === null) {
+      writeFileSync(authorityFailurePath, `${JSON.stringify({
+        schemaVersion: 1,
+        classification: 'lv01-selected-application-authority-observation',
+        researchFinding: false,
+        scientificDisposition: 'not-tested',
+        runId,
+        failure: authorityFailure ?? 'no live selected-application authority observation was available',
+      }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+    }
   }
 }
 
