@@ -36,6 +36,15 @@ export {
   type Lv01StageJournal,
 } from './ledger-value.js';
 export {
+  acquireLv01JournalLock,
+  appendLv01Journal,
+  initializeLv01Journal,
+  lv01JournalExecutionState,
+  readLv01Journal,
+  type Lv01JournalEvent,
+  type Lv01JournalLock,
+} from './ledger-value-journal.js';
+export {
   runE11NamingGame,
   type E11Aggregate,
   type E11LearnerOptions,
