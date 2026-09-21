@@ -11,6 +11,11 @@
  */
 export { openEvidenceDatabase, type EvidenceDatabase } from './database.js';
 export {
+  connectAnchorEvidenceRpc,
+  createAnchorEvidenceRpcServer,
+  type AnchorEvidencePort,
+} from './anchor-rpc.js';
+export {
   connectAuditEvidenceRpc,
   createAuditEvidenceRpcServer,
   type AuditEvidencePort,
