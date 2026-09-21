@@ -85,6 +85,13 @@ the configuration hash before lifecycle initialization. A source guard rejects
 return to direct writer registration. The writer object is still constructed
 inside Nursery, so this is a provisioning prerequisite rather than remote
 writer integration.
+Live lifecycle decisions now read through that same run-bound Controller
+capability: prospective causal-history commitments, final-seal detection,
+restart turn/orphan checks, restored probe schedules, and mandatory-chain
+checkpoint counters no longer read the broad writer directly. The remaining
+concrete handle serves synchronous public inspection/export surfaces, the
+private learner-ledger client, delayed-audit construction, and local component
+assembly. This narrows the selected ownership seam but does not qualify B12.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

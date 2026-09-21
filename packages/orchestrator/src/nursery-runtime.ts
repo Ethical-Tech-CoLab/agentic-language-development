@@ -1309,17 +1309,24 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         { path: 'causalPredictionFor', message: 'prediction provider disappeared during evaluation' },
       ]);
     }
+    const [channelEvents, turnEvents, babyAEvents, babyBEvents] =
+      await Promise.all([
+        run.controllerEvidence.readEvents(run.runId, 'channel'),
+        run.controllerEvidence.readEvents(run.runId, 'turns'),
+        run.controllerEvidence.readEvents(run.runId, 'baby-a-ledger'),
+        run.controllerEvidence.readEvents(run.runId, 'baby-b-ledger'),
+      ]);
     const testCase: PredictionCase = {
       caseId: `${run.runId}:turn:${String(turn)}`,
       actionIds: instance.candidateRefs.map((_, index) => `candidate-${String(index)}`),
       information: {
         publicTranscriptHistoryHash: hashCanonical(
           'dtsf-e16-public-transcript-history-v1',
-          run.writer.readEvents(run.runId, 'channel').map((event) => event.entryHash),
+          channelEvents.map((event) => event.entryHash),
         ),
         publicTaskHistoryHash: hashCanonical(
           'dtsf-e16-public-task-history-v1',
-          run.writer.readEvents(run.runId, 'turns').map((event) => event.entryHash),
+          turnEvents.map((event) => event.entryHash),
         ),
         frozenPolicyHash:
           run.policyRefs[receiver]?.policyHash
@@ -1333,7 +1340,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       turn,
       receiver,
       testCase,
-      ledgers: this.ledgers(run.runId),
+      ledgers: {
+        babyA: babyAEvents.map((event) =>
+          LedgerEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+        ),
+        babyB: babyBEvents.map((event) =>
+          LedgerEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+        ),
+      },
     });
     if (nativeLedger.predictionFunctionVersion !== configured.predictionFunctionVersion) {
       throw new RunConfigurationError([{
@@ -1660,7 +1674,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         ? {}
         : { details: intervention.details }),
     });
-    if (this.#finalCheckpoint(run) === undefined) {
+    if ((await this.#finalCheckpoint(run)) === undefined) {
       const checkpoint = await this.#checkpoint(run, 'intervention');
       const deviation =
         `unplanned-intervention:${event.entryHash}:` +
@@ -1988,8 +2002,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * second tail would be indistinguishable from a fork).
    */
   async #sealEvidence(run: RunRuntime): Promise<CheckpointManifest> {
-    const existing = this.#finalCheckpoint(run);
-    if (existing !== undefined && this.#runSealedEventsPresent(run)) {
+    const existing = await this.#finalCheckpoint(run);
+    if (existing !== undefined && (await this.#runSealedEventsPresent(run))) {
       run.finalCheckpointHash = existing.checkpointHash;
       return existing;
     }
@@ -2011,8 +2025,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * from a fork). `finalCheckpointHash` is the in-memory fast path; the scan
    * is what a recovered or re-entered run relies on.
    */
-  #finalCheckpoint(run: RunRuntime): CheckpointManifest | undefined {
-    const checkpoints = run.writer.readCheckpoints(run.runId);
+  async #finalCheckpoint(
+    run: RunRuntime,
+  ): Promise<CheckpointManifest | undefined> {
+    const checkpoints = await run.controllerEvidence.readCheckpoints(run.runId);
     const stored = run.finalCheckpointHash;
     if (stored !== undefined) {
       const known = checkpoints.find(
@@ -2033,25 +2049,30 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * anywhere in the chain, since §14.2 interventions and the recovery path
    * may have appended events after it (LEDGER §15).
    */
-  #runSealedEventsPresent(run: RunRuntime): boolean {
-    return BABY_ROLES.every((role) =>
-      run.writer
-        .readEvents(run.runId, ledgerStreamForRole(role))
-        .some((event) => {
+  async #runSealedEventsPresent(run: RunRuntime): Promise<boolean> {
+    const present = await Promise.all(
+      BABY_ROLES.map(async (role) =>
+        (await run.controllerEvidence.readEvents(
+          run.runId,
+          ledgerStreamForRole(role),
+        )).some((event) => {
           const parsed = parseCanonicalJson(event.canonicalJson) as {
             eventType?: unknown;
           };
           return parsed.eventType === 'run.sealed';
         }),
+      ),
     );
+    return present.every(Boolean);
   }
 
   /** LEDGER §15: the run already carries a complete, immutable seal tail. */
-  #sealEvidenceExists(run: RunRuntime): boolean {
-    return (
-      this.#finalCheckpoint(run) !== undefined &&
-      this.#runSealedEventsPresent(run)
-    );
+  async #sealEvidenceExists(run: RunRuntime): Promise<boolean> {
+    const [finalCheckpoint, sealedEventsPresent] = await Promise.all([
+      this.#finalCheckpoint(run),
+      this.#runSealedEventsPresent(run),
+    ]);
+    return finalCheckpoint !== undefined && sealedEventsPresent;
   }
 
   // -------------------------------------------------------------------------
@@ -2104,12 +2125,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return this.#summary(run);
     }
 
-    const records = this.#turnRecords(run);
+    const records = (await run.controllerEvidence.readEvents(runId, 'turns'))
+      .map((event) =>
+        TurnRecordSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      );
     const recordedTurns = new Set(records.map((record) => record.turn));
     const orphanedTurns = [
-      ...run.writer.readEvents(runId, 'channel').map((event) =>
+      ...(await run.controllerEvidence.readEvents(runId, 'channel')).map((event) =>
         ChannelEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
-      ...run.writer.readEvents(runId, 'affect').map((event) =>
+      ...(await run.controllerEvidence.readEvents(runId, 'affect')).map((event) =>
         AffectEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
     ].filter((turn) => !recordedTurns.has(turn));
     if (orphanedTurns.length > 0) {
@@ -2126,15 +2150,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       (record) =>
         record.phase === 'evaluating' && record.repairAttempt === undefined,
     ).length;
-    run.lastCheckpointEventTotal = this.#eventTotal(run);
+    run.lastCheckpointEventTotal = await this.#eventTotal(run);
     run.batch = undefined;
     await run.gateway.discardShuffledBatchAfterRecovery();
 
-    const sealCheckpoint = this.#finalCheckpoint(run);
+    const sealCheckpoint = await this.#finalCheckpoint(run);
     if (sealCheckpoint !== undefined) {
       run.finalCheckpointHash = sealCheckpoint.checkpointHash;
     }
-    if (run.lifecycle.isTerminal || this.#sealEvidenceExists(run)) {
+    if (run.lifecycle.isTerminal || (await this.#sealEvidenceExists(run))) {
       // §7.1: a terminal run is complete and immutable; a blocked seal keeps
       // its exported final checkpoint as the tip for `retrySeal`.
       return this.#summary(run);
@@ -2880,8 +2904,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ) {
       return false;
     }
-    const recorded = run.writer
-      .readEvents(run.runId, 'intervention')
+    const recorded = (await run.controllerEvidence
+      .readEvents(run.runId, 'intervention'))
       .map((event) =>
         InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
       )
@@ -3001,7 +3025,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     reason: CheckpointReason,
   ): Promise<CheckpointManifest> {
     const manifest = await run.checkpoints.createCheckpoint(run.runId, reason);
-    run.lastCheckpointEventTotal = this.#eventTotal(run);
+    run.lastCheckpointEventTotal = await this.#eventTotal(run);
     return manifest;
   }
 
@@ -3024,7 +3048,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (interval <= 0) {
       return;
     }
-    while (this.#eventTotal(run) - run.lastCheckpointEventTotal >= interval) {
+    while (
+      (await this.#eventTotal(run)) - run.lastCheckpointEventTotal >= interval
+    ) {
       const boundary = run.lastCheckpointEventTotal + interval;
       await run.checkpoints.createCheckpoint(run.runId, 'event-interval');
       run.lastCheckpointEventTotal = boundary;
@@ -3032,12 +3058,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   }
 
   /** LEDGER §9: sizes of the three mandatory chains. */
-  #eventTotal(run: RunRuntime): number {
-    let total = 0;
-    for (const stream of ['baby-a-ledger', 'baby-b-ledger', 'channel'] as const) {
-      total += run.writer.chainHead(run.runId, stream).size;
-    }
-    return total;
+  async #eventTotal(run: RunRuntime): Promise<number> {
+    const heads = await Promise.all(
+      (['baby-a-ledger', 'baby-b-ledger', 'channel'] as const)
+        .map((stream) => run.controllerEvidence.chainHead(run.runId, stream)),
+    );
+    return heads.reduce((total, head) => total + head.size, 0);
   }
 
   /**
