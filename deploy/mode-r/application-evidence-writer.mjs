@@ -6,6 +6,9 @@ import { SIGNER_DOMAINS } from '@ald/types';
 import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
+const commitTurnResponseDelayMs =
+  process.env.ALD_MODE_R_COMMIT_TURN_RESPONSE_DELAY_MS === undefined
+    ? undefined : Number(process.env.ALD_MODE_R_COMMIT_TURN_RESPONSE_DELAY_MS);
 const signerRoot = required('ALD_MODE_R_SIGNER_ROOT');
 const socketRoot = required('ALD_MODE_R_WRITER_SOCKET_ROOT');
 const signers = await retry('domain signers', () =>
@@ -28,6 +31,13 @@ const host = await createEvidenceWriterRpcHost(config.runId, writer, {
   checkpoint: `${socketRoot}/checkpoint/writer.sock`,
   anchor: `${socketRoot}/anchor/writer.sock`,
   audit: `${socketRoot}/audit/writer.sock`,
+}, {
+  gateway: commitTurnResponseDelayMs === undefined ? undefined : {
+    responseDelay: {
+      method: 'commitTurn',
+      milliseconds: commitTurnResponseDelayMs,
+    },
+  },
 });
 process.stdout.write('ready\n');
 process.on('SIGTERM', async () => {

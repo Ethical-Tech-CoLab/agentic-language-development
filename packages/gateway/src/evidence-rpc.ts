@@ -1,6 +1,7 @@
 import { chmodSync, lstatSync } from 'node:fs';
 import { createConnection, createServer, type Server, type Socket } from 'node:net';
 import { dirname } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import {
   AffectEventSchema,
@@ -24,6 +25,25 @@ const METHODS: readonly WriteMethod[] = [
 const PROTOCOL = 'gateway-evidence-v1';
 const MAX_FRAME_BYTES = 16 * 1024 * 1024;
 const RPC_TIMEOUT_MS = 30_000;
+
+export interface GatewayEvidenceRpcServerOptions {
+  responseDelay?: {
+    method: keyof GatewayEvidencePort;
+    milliseconds: number;
+  };
+}
+
+export interface GatewayEvidenceRpcClientOptions {
+  timeoutMs?: number;
+}
+
+function timeout(value: number | undefined): number {
+  const resolved = value ?? RPC_TIMEOUT_MS;
+  if (!Number.isSafeInteger(resolved) || resolved < 1 || resolved > 120_000) {
+    throw new Error('evidence RPC timeout must be an integer from 1 to 120000 ms');
+  }
+  return resolved;
+}
 
 function privateDirectory(socketPath: string): void {
   if (!socketPath.startsWith('/')) throw new Error('evidence RPC socket must be absolute');
@@ -50,9 +70,16 @@ export async function createGatewayEvidenceRpcServer(
   socketPath: string,
   runId: string,
   writer: GatewayEvidencePort,
+  options: GatewayEvidenceRpcServerOptions = {},
 ): Promise<Server> {
   privateDirectory(socketPath);
   if (runId.length === 0) throw new Error('evidence RPC run ID is required');
+  const responseDelay = options.responseDelay;
+  if (responseDelay !== undefined &&
+      (!METHODS.includes(responseDelay.method) ||
+       timeout(responseDelay.milliseconds) !== responseDelay.milliseconds)) {
+    throw new Error('evidence RPC response delay is invalid');
+  }
   const server = createServer((socket) => {
     let frame = '';
     let received = false;
@@ -91,6 +118,9 @@ export async function createGatewayEvidenceRpcServer(
             const request = message['request'];
             const result = await (writer[method] as (value: unknown) => Promise<unknown>)
               .call(writer, request);
+            if (responseDelay?.method === method) {
+              await delay(responseDelay.milliseconds);
+            }
             reply = { ok: true, result };
           }
         } catch {
@@ -118,7 +148,11 @@ export async function createGatewayEvidenceRpcServer(
   return server;
 }
 
-function request(socketPath: string, payload: Record<string, unknown>): Promise<unknown> {
+function request(
+  socketPath: string,
+  payload: Record<string, unknown>,
+  timeoutMs: number,
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const serialized = `${JSON.stringify(payload)}\n`;
     if (Buffer.byteLength(serialized) > MAX_FRAME_BYTES) {
@@ -135,7 +169,7 @@ function request(socketPath: string, payload: Record<string, unknown>): Promise<
       reject(error);
     };
     socket.setEncoding('utf8');
-    socket.setTimeout(RPC_TIMEOUT_MS, () => fail(new Error('evidence RPC timed out')));
+    socket.setTimeout(timeoutMs, () => fail(new Error('evidence RPC timed out')));
     socket.on('connect', () => socket.write(serialized));
     socket.on('data', (chunk: string) => {
       response += chunk;
@@ -165,6 +199,7 @@ function request(socketPath: string, payload: Record<string, unknown>): Promise<
 export async function connectGatewayEvidenceRpc(
   socketPath: string,
   runId: string,
+  options: GatewayEvidenceRpcClientOptions = {},
 ): Promise<{ port: GatewayEvidencePort; processId: number }> {
   privateDirectory(socketPath);
   const socket = lstatSync(socketPath);
@@ -172,7 +207,8 @@ export async function connectGatewayEvidenceRpc(
       (socket.mode & 0o077) !== 0) {
     throw new Error('evidence RPC socket is not private');
   }
-  const hello = await request(socketPath, { op: 'hello', runId });
+  const timeoutMs = timeout(options.timeoutMs);
+  const hello = await request(socketPath, { op: 'hello', runId }, timeoutMs);
   if (!record(hello) || !exactKeys(hello, ['ok', 'protocol', 'runId', 'processId']) ||
       hello['ok'] !== true || hello['protocol'] !== PROTOCOL ||
       hello['runId'] !== runId || !Number.isSafeInteger(hello['processId']) ||
@@ -180,7 +216,7 @@ export async function connectGatewayEvidenceRpc(
     throw new Error('evidence RPC identity does not match');
   }
   const call = async (op: WriteMethod, value: unknown): Promise<unknown> => {
-    const reply = await request(socketPath, { op, runId, request: value });
+    const reply = await request(socketPath, { op, runId, request: value }, timeoutMs);
     if (!record(reply) || !exactKeys(reply, ['ok', 'result']) || reply['ok'] !== true) {
       throw new Error('evidence RPC write was not confirmed');
     }

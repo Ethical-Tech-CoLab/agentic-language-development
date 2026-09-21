@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   connectGatewayEvidenceRpc,
+  createGatewayEvidenceRpcServer,
   EvidenceWriteUncertainError,
   GatewayWriteIntentJournal,
   SymbolGatewayImpl,
@@ -32,6 +33,45 @@ function rawRequest(socketPath: string, value: unknown): Promise<string> {
 }
 
 describe('Gateway evidence port over a distinct writer process', () => {
+  it('quarantines a committed write whose confirmation arrives after its deadline', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ald-evidence-rpc-late-confirmation-'));
+    const socketPath = join(directory, 'writer.sock');
+    const databasePath = join(directory, 'evidence.sqlite');
+    const context = runContext({ anchorClass: 'simulated' });
+    const database = openEvidenceDatabase(databasePath);
+    const writer = new SqliteEvidenceWriter({
+      database,
+      signers: InMemorySignerRegistry.generate(context.runId),
+    });
+    await writer.registerRun(context.config);
+    const server = await createGatewayEvidenceRpcServer(socketPath, context.runId, writer, {
+      responseDelay: { method: 'commitTurn', milliseconds: 300 },
+    });
+    try {
+      const { port } = await connectGatewayEvidenceRpc(socketPath, context.runId, {
+        timeoutMs: 100,
+      });
+      const journal = new GatewayWriteIntentJournal(join(directory, 'journal'), context.runId);
+      const gateway = new SymbolGatewayImpl(context, await journal.openPort(port));
+
+      await expect(gateway.submitProposal(turn(), symbolEnvelope(['S01'])))
+        .rejects.toBeInstanceOf(EvidenceWriteUncertainError);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      expect(writer.readEvents(context.runId, 'channel')).toHaveLength(1);
+      expect(writer.readEvents(context.runId, 'baby-a-ledger')).toHaveLength(1);
+      expect(journal.isQuarantined()).toBe(true);
+      expect(await journal.unresolvedIntents()).toHaveLength(1);
+      await expect(gateway.submitProposal(turn({ turn: 2 }), symbolEnvelope(['S02'])))
+        .rejects.toBeInstanceOf(EvidenceWriteUncertainError);
+      expect(writer.readEvents(context.runId, 'channel')).toHaveLength(1);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      database.close();
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it('rejects a confirmed frame whose signed event shape is invalid', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'ald-evidence-rpc-shape-'));
     const socketPath = join(directory, 'writer.sock');

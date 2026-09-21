@@ -86,7 +86,12 @@ export {
   type GatewayRelayAdapterFactory,
   type GatewayRelayAdapterFactoryOptions,
 } from './learner-relay-server.js';
-export { connectGatewayEvidenceRpc, createGatewayEvidenceRpcServer } from './evidence-rpc.js';
+export {
+  connectGatewayEvidenceRpc,
+  createGatewayEvidenceRpcServer,
+  type GatewayEvidenceRpcClientOptions,
+  type GatewayEvidenceRpcServerOptions,
+} from './evidence-rpc.js';
 export {
   connectSymbolGatewayRpc,
   createSymbolGatewayRpcServer,

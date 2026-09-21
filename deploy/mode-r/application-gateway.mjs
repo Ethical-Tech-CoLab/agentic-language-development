@@ -10,8 +10,12 @@ import {
 import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
+const writerTimeoutMs = process.env.ALD_MODE_R_GATEWAY_WRITER_TIMEOUT_MS === undefined
+  ? undefined : Number(process.env.ALD_MODE_R_GATEWAY_WRITER_TIMEOUT_MS);
 const writer = await retry('Gateway writer', () =>
-  connectGatewayEvidenceRpc(required('ALD_MODE_R_GATEWAY_WRITER'), config.runId));
+  connectGatewayEvidenceRpc(required('ALD_MODE_R_GATEWAY_WRITER'), config.runId, {
+    timeoutMs: writerTimeoutMs,
+  }));
 const journal = new GatewayWriteIntentJournal(
   required('ALD_MODE_R_GATEWAY_JOURNAL'),
   config.runId,

@@ -7,7 +7,10 @@ import {
   createControllerEvidenceRpcServer,
   type SqliteEvidenceWriter,
 } from '@ald/evidence';
-import { createGatewayEvidenceRpcServer } from '@ald/gateway';
+import {
+  createGatewayEvidenceRpcServer,
+  type GatewayEvidenceRpcServerOptions,
+} from '@ald/gateway';
 
 export interface EvidenceWriterCapabilitySockets {
   controller: string;
@@ -38,6 +41,7 @@ export async function createEvidenceWriterRpcHost(
   runId: string,
   writer: SqliteEvidenceWriter,
   sockets: EvidenceWriterCapabilitySockets,
+  options: { gateway?: GatewayEvidenceRpcServerOptions } = {},
 ): Promise<EvidenceWriterRpcHost> {
   if (runId.length === 0) throw new Error('evidence writer host run ID is required');
   if (new Set(Object.values(sockets)).size !== Object.keys(sockets).length) {
@@ -46,7 +50,8 @@ export async function createEvidenceWriterRpcHost(
   const servers: Server[] = [];
   try {
     servers.push(await createControllerEvidenceRpcServer(sockets.controller, runId, writer));
-    servers.push(await createGatewayEvidenceRpcServer(sockets.gateway, runId, writer));
+    servers.push(await createGatewayEvidenceRpcServer(
+      sockets.gateway, runId, writer, options.gateway));
     servers.push(await createCheckpointEvidenceRpcServer(sockets.checkpoint, runId, writer));
     servers.push(await createAnchorEvidenceRpcServer(sockets.anchor, runId, writer));
     servers.push(await createAuditEvidenceRpcServer(sockets.audit, runId, writer));
