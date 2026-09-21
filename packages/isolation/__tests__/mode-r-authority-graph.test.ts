@@ -102,6 +102,29 @@ const gatewayBabyRelayAmendment = JSON.parse(
   readFileSync('protocols/mode-r-authority-graph.v5.json', 'utf8'),
 ) as GatewayBabyRelayAmendment;
 
+type WitnessSigningAmendment = {
+  schemaVersion: number;
+  status: string;
+  researchFinding: boolean;
+  b12Closed: boolean;
+  predecessor: { path: string; sha256: string };
+  witnessSigner: {
+    keyOwner: string;
+    endpoint: string;
+    mountOnlyIn: string[];
+    method: string;
+    input: string;
+    runBinding: string;
+    domainBinding: string;
+    authorizedCallers: Record<string, string>;
+  };
+  authorityRules: string[];
+  qualificationRequired: string[];
+};
+const witnessSigningAmendment = JSON.parse(
+  readFileSync('protocols/mode-r-authority-graph.v6.json', 'utf8'),
+) as WitnessSigningAmendment;
+
 type BoundaryQualification = {
   schemaVersion: number;
   status: string;
@@ -135,6 +158,37 @@ const babyModelBoundaryQualification = JSON.parse(
 ) as BabyModelBoundaryQualification;
 
 describe('prospective Mode R authority graph', () => {
+  it('prospectively authorizes both required witness-domain hash callers', () => {
+    expect(witnessSigningAmendment.schemaVersion).toBe(6);
+    expect(witnessSigningAmendment.status).toBe('design-locked-not-implemented');
+    expect(witnessSigningAmendment.researchFinding).toBe(false);
+    expect(witnessSigningAmendment.b12Closed).toBe(false);
+    expect(witnessSigningAmendment.predecessor.path)
+      .toBe('protocols/mode-r-authority-graph.v5.json');
+    expect(createHash('sha256')
+      .update(readFileSync(witnessSigningAmendment.predecessor.path))
+      .digest('hex')).toBe(witnessSigningAmendment.predecessor.sha256);
+    expect(witnessSigningAmendment.witnessSigner).toMatchObject({
+      keyOwner: 'witness-signer',
+      endpoint: '/run/ald-mode-r/signer-witness/signer.sock',
+      mountOnlyIn: ['witness-signer', 'evidence-writer', 'checkpoint'],
+      method: 'sign',
+      input: 'sha256-hash-only',
+      runBinding: 'registered-run-id',
+      domainBinding: 'witness',
+      authorizedCallers: {
+        'evidence-writer': 'canonical-turn-record-entry-hash',
+        checkpoint: 'canonical-checkpoint-manifest-hash',
+      },
+    });
+    expect(witnessSigningAmendment.authorityRules).toContain(
+      'witness-private-key-remains-only-in-witness-signer',
+    );
+    expect(witnessSigningAmendment.qualificationRequired).toContain(
+      'witness-signer-death-prevents-later-turn-and-checkpoint-commit',
+    );
+  });
+
   it('freezes Gateway-hosted role-specific Baby relays before selected Compose', () => {
     expect(gatewayBabyRelayAmendment.schemaVersion).toBe(5);
     expect(gatewayBabyRelayAmendment.status).toBe('design-locked-not-implemented');

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 6,
+  "classification": "prospective-selected-mode-r-witness-signing-amendment",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "b12Closed": false,
+  "predecessor": {
+    "path": "protocols/mode-r-authority-graph.v5.json",
+    "sha256": "26d9e4980a5adf3b8863e4af4b26d55dcdfce6c070f33c257ee458e21bea4aca"
+  },
+  "amendmentReason": "The v1 graph authorizes only the Checkpoint Service to call the witness signer, but the implemented evidence format also requires the single Evidence Writer to sign every turns-stream entry with the witness domain. Selected Compose cannot mount that signer socket in the writer without a prospective authority amendment.",
+  "inheritedUnchanged": [
+    "v1-process-network-key-and-gate-definitions",
+    "v2-writer-capabilities-and-single-writer-policy",
+    "v3-controller-gateway-service-and-no-validation-override",
+    "v4-verified-prefix-gateway-recovery",
+    "v5-gateway-hosted-role-specific-baby-relays"
+  ],
+  "witnessSigner": {
+    "keyOwner": "witness-signer",
+    "endpoint": "/run/ald-mode-r/signer-witness/signer.sock",
+    "mountOnlyIn": [
+      "witness-signer",
+      "evidence-writer",
+      "checkpoint"
+    ],
+    "protocol": "domain-signer-v1",
+    "method": "sign",
+    "input": "sha256-hash-only",
+    "runBinding": "registered-run-id",
+    "domainBinding": "witness",
+    "authorizedCallers": {
+      "evidence-writer": "canonical-turn-record-entry-hash",
+      "checkpoint": "canonical-checkpoint-manifest-hash"
+    },
+    "publicKeyDistribution": "read-only-non-secret-metadata"
+  },
+  "authorityRules": [
+    "witness-private-key-remains-only-in-witness-signer",
+    "evidence-writer-never-receives-witness-key-material",
+    "checkpoint-never-receives-witness-key-material",
+    "controller-gateway-babies-models-anchor-and-audit-interpreter-cannot-mount-witness-socket",
+    "signer-rejects-wrong-run-wrong-domain-malformed-hash-and-non-sign-methods",
+    "clients-verify-every-returned-signature-before-use",
+    "neither-authorized-caller-retries-an-unconfirmed-sign-request-as-a-new-logical-write"
+  ],
+  "qualificationRequired": [
+    "exact-three-service-witness-socket-mount",
+    "one-live-witness-key-owner",
+    "turn-record-and-checkpoint-signatures-verify-under-the-same-registered-public-key",
+    "wrong-run-domain-method-and-payload-refusal",
+    "controller-gateway-baby-model-anchor-and-audit-witness-route-denial",
+    "witness-signer-death-prevents-later-turn-and-checkpoint-commit",
+    "no-content-or-private-key-observed-at-the-signer-boundary",
+    "complete-selected-lifecycle-and-independent-bundle-audit"
+  ],
+  "claimBoundary": "This amendment corrects the prospective signer call graph. It is not implementation, execution, B12 closure, a behavioral result, independent review, or publication evidence."
+}

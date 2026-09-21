@@ -31,6 +31,14 @@ atomically restores that counter and discards its volatile shuffled batch. The
 v4 file preserves its design-time status; the exact `symbol-gateway-v2`
 recovery contract is now implemented and component-qualified below. This does
 not qualify the selected container topology or close B12.
+The [v5 learner-relay amendment](../protocols/mode-r-authority-graph.v5.json)
+fixes the two role-specific Controller-to-Gateway sockets and Gateway-only Baby
+destinations. The [v6 witness-signing amendment](../protocols/mode-r-authority-graph.v6.json)
+corrects an omitted implemented dependency: the Evidence Writer signs turn
+records with the witness domain, while the Checkpoint Service signs manifests
+with that same domain. It prospectively authorizes both hash-only callers to
+one key-owning signer process and keeps every other process off that socket.
+Neither amendment is execution evidence or B12 closure.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
