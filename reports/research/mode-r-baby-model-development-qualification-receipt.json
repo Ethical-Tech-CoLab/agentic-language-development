@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "classification": "portable-mode-r-baby-model-process-development-qualification",
+  "passed": true,
+  "researchFinding": false,
+  "registeredStudyExecution": false,
+  "scientificDisposition": "not-tested",
+  "b12Closed": false,
+  "externalSpendUsd": 0,
+  "capturedAt": "2026-09-21T08:26:32.273Z",
+  "execution": {
+    "commit": "d9bd1e786438441d6f90073056bda596e6457d78",
+    "tree": "c00d85f117332c18e39522dbafc9bcdab55a6d09",
+    "version": "0.1.259",
+    "node": "v24.20.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "wallMs": 7864.206313,
+    "cleanBefore": true,
+    "cleanAfterRuntime": true
+  },
+  "preExecutionLaunch": {
+    "commit": "f9ab1d451cbed29423cdce86717d5a28e508e120",
+    "version": "0.1.258",
+    "errorCode": "ERR_MODULE_NOT_FOUND",
+    "executeEntered": false,
+    "evidenceRootCreated": false,
+    "qualificationAttempt": false
+  },
+  "sourceReceipt": {
+    "path": "evidence/mode-r-baby-model-process-development-v1/receipt.json",
+    "bytes": 5130,
+    "sha256": "sha256:4942bc4aa7c10beda7808cd5d59f63754dff60a1cbab3ed67cc1d693f39f5bbb"
+  },
+  "protocol": {
+    "path": "protocols/mode-r-baby-model-boundary-qualification.v1.json",
+    "bytes": 1992,
+    "sha256": "sha256:f04b3773d178111afd9d5782492868d988c85931163a7c4321f50f55971e384b"
+  },
+  "sourceArtifacts": [
+    { "path": "protocols/mode-r-baby-model-boundary-qualification.v1.json", "bytes": 1992, "sha256": "sha256:f04b3773d178111afd9d5782492868d988c85931163a7c4321f50f55971e384b" },
+    { "path": "packages/isolation/src/baby-factory.ts", "bytes": 4032, "sha256": "sha256:d7593cce60eaff234e5da4b7bedf4086bd2de94cf0013e4c2573df40a4ac6b06" },
+    { "path": "packages/isolation/src/baby-host.ts", "bytes": 3513, "sha256": "sha256:cc2921dddf3dfb61de33a5a29bdff2f0f9aa13a6078f2075dd93da5d6587fdd0" },
+    { "path": "packages/isolation/src/factory.ts", "bytes": 7286, "sha256": "sha256:d16af4ba369512432a563c3832a17bc8c6787e6e2e78b936072ca49fff7dcfaf" },
+    { "path": "packages/isolation/src/host.ts", "bytes": 21731, "sha256": "sha256:859ee8102949aac2370d8d8bdc348b5c0e2e51175d03212e73d8f20c6bc7abad" },
+    { "path": "packages/isolation/src/remote-adapter.ts", "bytes": 28129, "sha256": "sha256:7e621f45b5794ea37bbb10fe9757d44131ecf282fe5a7f3c3cc990e6c60bc8a1" },
+    { "path": "packages/isolation/src/protocol.ts", "bytes": 12478, "sha256": "sha256:c194facf5ac08b6e933bbcc01179d505f12d75e28e3d25ff2b7628179ca9f909" },
+    { "path": "packages/isolation/src/process-transport.ts", "bytes": 10554, "sha256": "sha256:5907c827f25c5d3bec5bf5469477d89c6e3e230bc02b5bf075e3f20f5ea1cd27" },
+    { "path": "packages/isolation/bin/ald-baby-host.js", "bytes": 200, "sha256": "sha256:868f6a0c2d9d3f318fc156814c471907e851bd5be28af884a89db925139f4d68" },
+    { "path": "packages/isolation/bin/ald-learner-host.js", "bytes": 785, "sha256": "sha256:5ba905f27d3ff60c5bf9ceca70b6a809a0856124e92e50c9004c816a1f50bf2e" },
+    { "path": "packages/isolation/__tests__/isolation.test.ts", "bytes": 6300, "sha256": "sha256:47ced46bab46d7e44c90bfe586f13ed3eb87dbd39a39be09f01f5c322ff40004" },
+    { "path": "packages/isolation/__tests__/mode-r-authority-graph.test.ts", "bytes": 19758, "sha256": "sha256:2f4d7a5c35d214b5d97b5df3d3328c030bfb1c8f6e195f62ac2bf535da513440" },
+    { "path": "packages/learners/src/conformance.ts", "bytes": 36974, "sha256": "sha256:2c7133d1483ca0676f7877f2cddb40aaf9998d3c116dcb675f64a85b6f624dd5" },
+    { "path": "scripts/run-mode-r-baby-model-qualification.mjs", "bytes": 11243, "sha256": "sha256:5a5d06b144eb70f863c1fa455eecf8b3bd2da427bf218700add82d8c73263a58" }
+  ],
+  "observations": {
+    "babyProcessCount": 2,
+    "modelAdapterProcessCount": 2,
+    "modelChildrenPerBaby": [1, 1],
+    "outerNormalizedDeadlineAuthorityCount": 2,
+    "conformanceEpisodes": 1,
+    "proposals": 2,
+    "ledgerDrafts": { "baby-a": 2, "baby-b": 3 },
+    "policyHashObservations": { "baby-a": 1, "baby-b": 1 },
+    "liveProcessesAfterDispose": 0,
+    "resourceSnapshot": {
+      "unit": "KiB",
+      "processCount": 5,
+      "totalResidentKiB": 471380,
+      "qualification": "single-live-snapshot-not-peak-or-selected-resource-envelope"
+    }
+  },
+  "softwareGate": {
+    "testFiles": 215,
+    "tests": 2228,
+    "rustTests": 5,
+    "secretScanFiles": 960,
+    "knownHighVulnerabilities": 0
+  },
+  "claimBoundary": "This portable receipt qualifies a synthetic no-learning LearnerAdapter path across distinct Baby and model-adapter processes with one outer normalized deadline and process-tree teardown. It does not qualify the selected container topology, Gateway/Evidence Writer integration, route or signer isolation, the selected resource envelope, B12 closure, a behavioral study, a scientific finding, independent review, or publication readiness."
+}
