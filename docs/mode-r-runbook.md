@@ -173,6 +173,14 @@ schedule's ledger reads also use that capability. Synchronous inspection and
 some live analysis helpers remain deliberately local-only and fail explicitly
 on this remote context; separate signer ownership, caller-exclusive container
 mounts, routes, complete lifecycle faults, and resources remain unqualified.
+The same remote-writer integration now restarts both Nursery and Gateway while
+the single writer remains live. The writer reports its public signer identities
+at provisioning; the reconstructed Controller uses those identities for the
+mandatory mismatch check but retains signing authority only for the witness.
+Recovery verifies the remote prefix, starts a new Gateway process, continues at
+the next turn, and still exposes no database or writer handle to Nursery. This
+is recovery/process evidence, not proof of selected signer socket mounts or
+one-domain-per-signer deployment.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

@@ -103,7 +103,10 @@ describe('Nursery remote evidence provisioning', () => {
     children.push(writer);
     const writerReady = JSON.parse(
       await firstLine(writer, 'evidence writer'),
-    ) as { processId: number };
+    ) as {
+      processId: number;
+      publicKeys: ReturnType<SignerRegistry['publicKeys']>;
+    };
     expect(writerReady.processId).toBe(writer.pid);
 
     const [controller, gatewayWriter, checkpoint, audit, witness] =
@@ -125,20 +128,21 @@ describe('Nursery remote evidence provisioning', () => {
         }
         return witness.signer;
       },
-      publicKeys: () => [{
-        domain: 'witness',
+      publicKeys: () => writerReady.publicKeys,
+    };
+    expect(writerReady.publicKeys.find((key) => key.domain === 'witness'))
+      .toMatchObject({
         keyId: witness.signer.keyId,
         publicKey: witness.signer.publicKey,
-      }],
-    };
+      });
     const checkpoints = new EvidenceCheckpointService({
       evidence: checkpoint.port,
       signers,
       clock: { now: () => new Date().toISOString() },
       softwareCommit,
     });
-    let gatewayProcessId: number | undefined;
-    const runtime = createNurseryRuntime({
+    const gatewayProcessIds: number[] = [];
+    const makeRuntime = () => createNurseryRuntime({
       bundleRoot: join(directory, 'bundles'),
       softwareCommit,
       anchorPolicy: 'skip',
@@ -166,23 +170,35 @@ describe('Nursery remote evidence provisioning', () => {
           gatewaySocket,
           input.context,
         );
-        gatewayProcessId = connected.processId;
+        gatewayProcessIds.push(connected.processId);
         return connected.gateway;
       },
     });
 
+    const runtime = makeRuntime();
     await runtime.createRun(config);
     expect(() => runtime.writerFor(runId)).toThrow(
       'local Evidence Writer inspection is unavailable',
     );
     const turn = await runtime.step(runId);
     expect(turn.turn).toBe(0);
-    expect(gatewayProcessId).not.toBe(process.pid);
-    expect(gatewayProcessId).not.toBe(writer.pid);
+    expect(gatewayProcessIds[0]).not.toBe(process.pid);
+    expect(gatewayProcessIds[0]).not.toBe(writer.pid);
     expect(await controller.port.readEvents(runId, 'turns')).toHaveLength(1);
     expect(await controller.port.readEvents(runId, 'channel')).toHaveLength(1);
     expect(await controller.port.readCheckpoints(runId)).not.toHaveLength(0);
     const manifest = await runtime.exportBundle(runId, join(directory, 'export'));
     expect(manifest.runId).toBe(runId);
+
+    await stop(children.at(-1)!);
+    const restarted = makeRuntime();
+    expect((await restarted.recover(runId)).state).toBe('running');
+    expect(gatewayProcessIds).toHaveLength(2);
+    expect(gatewayProcessIds[1]).not.toBe(gatewayProcessIds[0]);
+    expect(() => restarted.writerFor(runId)).toThrow(
+      'local Evidence Writer inspection is unavailable',
+    );
+    expect((await restarted.step(runId)).turn).toBe(1);
+    expect(await controller.port.readEvents(runId, 'turns')).toHaveLength(2);
   }, 30_000);
 });

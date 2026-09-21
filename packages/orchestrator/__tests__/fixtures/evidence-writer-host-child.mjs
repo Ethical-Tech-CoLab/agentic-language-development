@@ -28,4 +28,7 @@ const writer = new SqliteEvidenceWriter({
   softwareCommit: 'git:evidence-writer-host-fixture',
 });
 await createEvidenceWriterRpcHost(config.runId, writer, sockets);
-process.stdout.write(`${JSON.stringify({ processId: process.pid })}\n`);
+process.stdout.write(`${JSON.stringify({
+  processId: process.pid,
+  publicKeys: signers.publicKeys(),
+})}\n`);
