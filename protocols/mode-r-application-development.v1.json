@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-v1",
+  "authorityGraph": {
+    "path": "protocols/mode-r-authority-graph.v6.json",
+    "sha256": "aaafc8aecb844942118e2fb6e279019d4be193ba4013dfd737685db2c6f26db3"
+  },
+  "compose": {
+    "path": "deploy/mode-r/docker-compose.application.v1.yml",
+    "sha256": "639f4cb743636b2e73db6139b9c2e05266575c42463964abfa7825d066ef3d49"
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "trainingTurns": 2,
+    "evaluationTurns": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attempts": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "networkCount": 3,
+    "controllerExitCode": 0,
+    "offlineVerifierExitCode": 0,
+    "recordedTurnCount": 2,
+    "auditEntryCount": 1,
+    "distinctContainerIdCount": 17,
+    "distinctHostPidCount": 15,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "scope": {
+    "included": [
+      "real-application-entrypoints",
+      "seventeen-distinct-containers",
+      "gateway-only-baby-networks",
+      "networkless-model-adapters-signers-and-verifier",
+      "caller-scoped-unix-socket-mounts",
+      "single-sqlite-owner",
+      "two-signed-turns",
+      "delayed-audit-entry",
+      "simulated-anchor-service",
+      "offline-typescript-verification",
+      "measured-container-state-and-resource-snapshot"
+    ],
+    "excluded": [
+      "registered-behavioral-experiment",
+      "scientific-finding",
+      "complete-lifecycle-and-restore",
+      "comprehensive-fault-matrix",
+      "independent-rust-bundle-audit",
+      "selected-resource-envelope-qualification",
+      "b12-closure",
+      "independent-review",
+      "public-chain-timestamp",
+      "publication-readiness"
+    ]
+  },
+  "claimBoundary": "A passing development execution establishes only the bounded selected-shape application path listed in scope.included. It cannot close B12 or supply a behavioral result."
+}

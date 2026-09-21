@@ -1,0 +1,380 @@
+x-app: &app
+  build:
+    context: ../..
+    dockerfile: deploy/mode-r/Dockerfile
+  user: "${ALD_MODE_R_UID:-1000}:${ALD_MODE_R_GID:-1000}"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 64
+  restart: "no"
+
+x-node-host: &node-host
+  <<: *app
+  entrypoint: ["/usr/local/bin/node"]
+
+x-common-environment: &common-environment
+  ALD_MODE_R_CONFIG: /config/run-config.json
+  ALD_SOFTWARE_COMMIT: ${ALD_SOFTWARE_COMMIT:?set ALD_SOFTWARE_COMMIT}
+
+x-config-mount: &config-mount
+  type: bind
+  source: ${ALD_MODE_R_APPLICATION_ROOT:?set ALD_MODE_R_APPLICATION_ROOT}/config/run-config.json
+  target: /config/run-config.json
+  read_only: true
+
+services:
+  model-adapter-a:
+    <<: *app
+    command:
+      - --transport=unix
+      - --socket-path=/run/ald-mode-r/model-a/model.sock
+      - --track=no-learning
+      - --host-label=model-adapter-a
+    network_mode: none
+    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-a
+        target: /run/ald-mode-r/model-a
+
+  model-adapter-b:
+    <<: *app
+    command:
+      - --transport=unix
+      - --socket-path=/run/ald-mode-r/model-b/model.sock
+      - --track=no-learning
+      - --host-label=model-adapter-b
+    network_mode: none
+    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-b
+        target: /run/ald-mode-r/model-b
+
+  baby-a:
+    <<: *node-host
+    entrypoint: ["/usr/local/bin/node", "/app/packages/isolation/bin/ald-baby-host.js"]
+    command:
+      - --transport=tcp
+      - --bind=0.0.0.0
+      - --port=4318
+      - --track=no-learning
+      - --host-label=baby-a
+      - --model-socket=/run/ald-mode-r/model-a/model.sock
+      - --model-host-label=model-adapter-a
+    depends_on: [model-adapter-a]
+    networks: [baby-a-gateway]
+    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-a
+        target: /run/ald-mode-r/model-a
+
+  baby-b:
+    <<: *node-host
+    entrypoint: ["/usr/local/bin/node", "/app/packages/isolation/bin/ald-baby-host.js"]
+    command:
+      - --transport=tcp
+      - --bind=0.0.0.0
+      - --port=4318
+      - --track=no-learning
+      - --host-label=baby-b
+      - --model-socket=/run/ald-mode-r/model-b/model.sock
+      - --model-host-label=model-adapter-b
+    depends_on: [model-adapter-b]
+    networks: [baby-b-gateway]
+    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-b
+        target: /run/ald-mode-r/model-b
+
+  signer-baby-a-ledger:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-a-ledger", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-baby-a-ledger/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/baby-a-ledger
+        target: /run/ald-mode-r/signer-baby-a-ledger
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  signer-baby-b-ledger:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-b-ledger", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-baby-b-ledger/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/baby-b-ledger
+        target: /run/ald-mode-r/signer-baby-b-ledger
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  signer-channel:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "channel", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-channel/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/channel
+        target: /run/ald-mode-r/signer-channel
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  signer-affect:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "affect", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-affect/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/affect
+        target: /run/ald-mode-r/signer-affect
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  signer-audit:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "audit", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-audit/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/audit
+        target: /run/ald-mode-r/signer-audit
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  witness-signer:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "witness", "mode-r-application-v1"]
+    environment:
+      ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-witness/signer.sock
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/witness
+        target: /run/ald-mode-r/signer-witness
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+
+  evidence-writer:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-evidence-writer.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_DATABASE: /evidence/evidence.sqlite
+      ALD_MODE_R_SIGNER_ROOT: /run/ald-mode-r/signers
+      ALD_MODE_R_WRITER_SOCKET_ROOT: /run/ald-mode-r/evidence
+    depends_on:
+      - signer-baby-a-ledger
+      - signer-baby-b-ledger
+      - signer-channel
+      - signer-affect
+      - signer-audit
+      - witness-signer
+    networks: [control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/evidence
+        target: /evidence
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-controller
+        target: /run/ald-mode-r/evidence/controller
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-gateway
+        target: /run/ald-mode-r/evidence/gateway
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-checkpoint
+        target: /run/ald-mode-r/evidence/checkpoint
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-anchor
+        target: /run/ald-mode-r/evidence/anchor
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-audit
+        target: /run/ald-mode-r/evidence/audit
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers
+        target: /run/ald-mode-r/signers
+        read_only: true
+
+  gateway:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-gateway.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_GATEWAY_WRITER: /run/ald-mode-r/evidence/gateway/writer.sock
+      ALD_MODE_R_GATEWAY_SOCKET: /run/ald-mode-r/gateway-controller/gateway.sock
+      ALD_MODE_R_BABY_A_RELAY: /run/ald-mode-r/gateway-baby-a/learner.sock
+      ALD_MODE_R_BABY_B_RELAY: /run/ald-mode-r/gateway-baby-b/learner.sock
+      ALD_MODE_R_GATEWAY_JOURNAL: /gateway-state
+    depends_on: [baby-a, baby-b, evidence-writer]
+    networks: [baby-a-gateway, baby-b-gateway, control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-gateway
+        target: /run/ald-mode-r/evidence/gateway
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-controller
+        target: /run/ald-mode-r/gateway-controller
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-baby-a
+        target: /run/ald-mode-r/gateway-baby-a
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-baby-b
+        target: /run/ald-mode-r/gateway-baby-b
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/gateway-state
+        target: /gateway-state
+
+  checkpoint:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-checkpoint.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_CHECKPOINT_WRITER: /run/ald-mode-r/evidence/checkpoint/writer.sock
+      ALD_MODE_R_WITNESS_SIGNER: /run/ald-mode-r/signer-witness/signer.sock
+      ALD_MODE_R_CHECKPOINT_SERVICE: /run/ald-mode-r/checkpoint-service/service.sock
+    depends_on: [evidence-writer, witness-signer]
+    networks: [control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-checkpoint
+        target: /run/ald-mode-r/evidence/checkpoint
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/signers/witness
+        target: /run/ald-mode-r/signer-witness
+        read_only: true
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/checkpoint-service
+        target: /run/ald-mode-r/checkpoint-service
+
+  simulated-anchor:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-anchor.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_ANCHOR_WRITER: /run/ald-mode-r/evidence/anchor/writer.sock
+      ALD_MODE_R_ANCHOR_SERVICE: /run/ald-mode-r/anchor-service/service.sock
+    depends_on: [evidence-writer]
+    networks: [control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-anchor
+        target: /run/ald-mode-r/evidence/anchor
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/anchor-service
+        target: /run/ald-mode-r/anchor-service
+
+  audit-interpreter:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-audit-interpreter.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_AUDIT_WRITER: /run/ald-mode-r/evidence/audit/writer.sock
+      ALD_MODE_R_AUDIT_SERVICE: /run/ald-mode-r/audit-service/service.sock
+    depends_on: [evidence-writer]
+    networks: [control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-audit
+        target: /run/ald-mode-r/evidence/audit
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/audit-service
+        target: /run/ald-mode-r/audit-service
+
+  controller-scenario:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-controller.mjs"]
+    environment:
+      <<: *common-environment
+      ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
+      ALD_MODE_R_CONTROLLER_WRITER: /run/ald-mode-r/evidence/controller/writer.sock
+      ALD_MODE_R_GATEWAY_SOCKET: /run/ald-mode-r/gateway-controller/gateway.sock
+      ALD_MODE_R_BABY_A_RELAY: /run/ald-mode-r/gateway-baby-a/learner.sock
+      ALD_MODE_R_BABY_B_RELAY: /run/ald-mode-r/gateway-baby-b/learner.sock
+      ALD_MODE_R_CHECKPOINT_SERVICE: /run/ald-mode-r/checkpoint-service/service.sock
+      ALD_MODE_R_ANCHOR_SERVICE: /run/ald-mode-r/anchor-service/service.sock
+      ALD_MODE_R_AUDIT_SERVICE: /run/ald-mode-r/audit-service/service.sock
+      ALD_MODE_R_OUTPUT_ROOT: /output
+    depends_on: [gateway, checkpoint, simulated-anchor, audit-interpreter]
+    networks: [control-plane]
+    volumes:
+      - *config-mount
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/public-keys
+        target: /public-keys
+        read_only: true
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/evidence-controller
+        target: /run/ald-mode-r/evidence/controller
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-controller
+        target: /run/ald-mode-r/gateway-controller
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-baby-a
+        target: /run/ald-mode-r/gateway-baby-a
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/gateway-baby-b
+        target: /run/ald-mode-r/gateway-baby-b
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/checkpoint-service
+        target: /run/ald-mode-r/checkpoint-service
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/anchor-service
+        target: /run/ald-mode-r/anchor-service
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/audit-service
+        target: /run/ald-mode-r/audit-service
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/output
+        target: /output
+
+  offline-verifier:
+    <<: *node-host
+    command: ["/app/deploy/mode-r/application-offline-verifier.mjs"]
+    environment:
+      ALD_MODE_R_OUTPUT_ROOT: /output
+    depends_on:
+      controller-scenario:
+        condition: service_completed_successfully
+    network_mode: none
+    volumes:
+      - type: bind
+        source: ${ALD_MODE_R_APPLICATION_ROOT}/output
+        target: /output
+
+networks:
+  baby-a-gateway:
+    internal: true
+  baby-b-gateway:
+    internal: true
+  control-plane:
+    internal: true

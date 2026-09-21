@@ -39,6 +39,17 @@ records with the witness domain, while the Checkpoint Service signs manifests
 with that same domain. It prospectively authorizes both hash-only callers to
 one key-owning signer process and keeps every other process off that socket.
 Neither amendment is execution evidence or B12 closure.
+The new `docker-compose.application.v1.yml` is a separate prospective
+application surface; historical E02 and reference Compose files are unchanged.
+It maps all seventeen graph processes, three internal networks, five writer
+capabilities, three service capabilities, two Gateway learner relays, two
+networkless Baby/model sockets, six signer domains, and the v6 witness mount.
+Real deployment entrypoints execute two signed development turns, one delayed
+audit append, bundle export, and offline verification. The single-use collector
+fails closed on dirty source or reused evidence and compares resolved mounts and
+networks to live containers before teardown. The image builds and focused
+source tests pass; no application execution receipt exists yet, so this remains
+implemented but unexecuted development infrastructure and B12 stays open.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
