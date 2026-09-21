@@ -2083,7 +2083,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new IncompleteTurnEvidenceError(runId, run.incompleteEvidenceTurns);
     }
 
-    const mismatches = this.#signerMismatches(run);
+    const mismatches = await this.#signerMismatches(run);
     if (mismatches.length > 0) {
       // §14.5: the trigger is audited (the intervention stream is unsigned,
       // so this cannot itself extend a signed chain), then the recovery is
@@ -2174,8 +2174,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * unregistered key makes every later event unverifiable, and the tail can
    * never be re-signed.
    */
-  #signerMismatches(run: RunRuntime): string[] {
-    const registered = run.writer.readRunSigners(run.runId);
+  async #signerMismatches(run: RunRuntime): Promise<string[]> {
+    const registered = await run.controllerEvidence.readRunSigners(run.runId);
     if (registered.length === 0) {
       return [];
     }
@@ -3236,7 +3236,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async #verifyCommittedPrefix(
     run: RunRuntime,
   ): Promise<{ ok: boolean; heads: { stream: EventStream; size: number }[] }> {
-    const findings = this.#integrityFindings(run);
+    const findings = await this.#integrityFindings(run);
     if (findings.length > 0) {
       try {
         await run.controllerEvidence.appendInterventionEvent({
@@ -3264,21 +3264,26 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     return { ok: true, heads: report.heads };
   }
 
-  #integrityFindings(run: RunRuntime): string[] {
+  async #integrityFindings(run: RunRuntime): Promise<string[]> {
     const findings: string[] = [];
-    for (const artifact of run.writer.readForkArtifacts(run.runId)) {
+    const [forkArtifacts, registeredSigners] = await Promise.all([
+      run.controllerEvidence.readForkArtifacts(run.runId),
+      run.controllerEvidence.readRunSigners(run.runId),
+    ]);
+    const streams = await Promise.all(PRECHECKED_STREAMS.map((stream) =>
+      run.controllerEvidence.readEvents(run.runId, stream)));
+    for (const artifact of forkArtifacts) {
       findings.push(
         `fork ${artifact.stream}#${artifact.sequence}: ${artifact.entryHash}`,
       );
     }
 
     const keys = new Map(
-      run.writer
-        .readRunSigners(run.runId)
-        .map((signer) => [signer.domain, signer.publicKey]),
+      registeredSigners.map((signer) => [signer.domain, signer.publicKey]),
     );
-    for (const stream of PRECHECKED_STREAMS) {
-      const events = this.#readStream(run.runId, stream);
+    for (const [index, stream] of PRECHECKED_STREAMS.entries()) {
+      const events = (streams[index] ?? []).map((event) =>
+        parseCanonicalJson(event.canonicalJson) as Record<string, unknown>);
       const publicKey = keys.get(
         STREAM_SIGNER[stream as Exclude<EventStream, 'intervention'>],
       );
@@ -3492,7 +3497,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       clock: this.#clock,
       softwareCommit: this.#options.softwareCommit,
     });
-    const metadata = writer.readRunMetadata(runId);
+    const controllerEvidence = controllerEvidencePortForWriter(runId, writer);
+    const metadata = await controllerEvidence.readRunMetadata(runId);
     if (metadata === undefined) {
       throw new UnknownRunError(runId);
     }
@@ -3501,8 +3507,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const evaluationTurns =
       config.evaluationTurns ?? this.#evaluationTurnsDefault;
 
-    const records = writer
-      .readEvents(runId, 'turns')
+    const records = (await controllerEvidence
+      .readEvents(runId, 'turns'))
       .map((event) => TurnRecordSchema.parse(parseCanonicalJson(event.canonicalJson)));
     const lastRecord = records.at(-1);
     const evaluationCount = records.filter(
@@ -3520,8 +3526,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           : [record.repairAttempt.originalTurn],
       ),
     );
-    const interventionEvents = writer
-      .readEvents(runId, 'intervention')
+    const interventionEvents = (await controllerEvidence
+      .readEvents(runId, 'intervention'))
       .map((event) =>
         InterventionEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
       );
@@ -3532,13 +3538,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         !completedRepairs.has(event.details['originalTurn']),
     );
     const pendingRepairPhase = pendingRepairEvent?.details['phase'];
-    const experimentRecords = writer.readExperimentRecords(runId);
+    const experimentRecords = await controllerEvidence.readExperimentRecords(runId);
     const pauseTimes = [
       ...interventionEvents
         .filter((event) => event.eventType === 'pause')
         .map((event) => event.recordedAt),
-      ...writer
-        .readCheckpoints(runId)
+      ...(await controllerEvidence
+        .readCheckpoints(runId))
         .filter((checkpoint) => checkpoint.reason === 'pause')
         .map((checkpoint) => checkpoint.createdAt),
     ].sort();
@@ -3550,7 +3556,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       lastPauseAt !== undefined &&
       (lastResume === undefined || lastPauseAt > lastResume.recordedAt);
     const state =
-      this.#terminalStateFrom(writer, runId, experimentRecords) ??
+      (await this.#terminalStateFrom(
+        controllerEvidence, runId, experimentRecords)) ??
       (paused
         ? 'paused'
         : evaluationCount > 0 ||
@@ -3651,7 +3658,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       preRegistration: this.#recordedPreRegistration(interventionEvents),
       configurationHash: strictHash(metadata.configurationHash),
       writer,
-      controllerEvidence: controllerEvidencePortForWriter(runId, writer),
+      controllerEvidence,
       signers,
       lifecycle: new RunLifecycle(runId, state),
       gateway: new SymbolGatewayImpl(
@@ -3708,17 +3715,17 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * last governance decision. `undefined` means the run never ended, and the
    * turn-record counts decide as before.
    */
-  #terminalStateFrom(
-    writer: SqliteEvidenceWriter,
+  async #terminalStateFrom(
+    evidence: ControllerEvidencePort,
     runId: string,
     experimentRecords: readonly ExperimentRecord[],
-  ): RunState | undefined {
-    if (writer.readForkArtifacts(runId).length > 0) {
+  ): Promise<RunState | undefined> {
+    if ((await evidence.readForkArtifacts(runId)).length > 0) {
       return 'forked-invalid';
     }
 
-    const sealCheckpoint = writer
-      .readCheckpoints(runId)
+    const sealCheckpoint = (await evidence
+      .readCheckpoints(runId))
       .find(
         (manifest) =>
           manifest.reason === 'run-sealed' || manifest.reason === 'run-aborted',
@@ -3726,14 +3733,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (sealCheckpoint === undefined) {
       return undefined;
     }
-    const sealedLedgers = BABY_ROLES.every((role) =>
-      writer.readEvents(runId, ledgerStreamForRole(role)).some((event) => {
+    const sealedLedgers = (await Promise.all(BABY_ROLES.map(async (role) =>
+      (await evidence.readEvents(runId, ledgerStreamForRole(role))).some((event) => {
         const parsed = parseCanonicalJson(event.canonicalJson) as {
           eventType?: unknown;
         };
         return parsed.eventType === 'run.sealed';
       }),
-    );
+    ))).every(Boolean);
     if (!sealedLedgers) {
       return undefined;
     }
@@ -3749,8 +3756,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return 'aborted-sealed';
     }
 
-    const decisions = writer
-      .readEvents(runId, 'intervention')
+    const decisions = (await evidence
+      .readEvents(runId, 'intervention'))
       .map((event) => InterventionEventSchema.parse(
         parseCanonicalJson(event.canonicalJson),
       ))

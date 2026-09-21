@@ -74,6 +74,12 @@ rewrites and the `run.sealed` checkpoint reference use the same read surface.
 The local adapter normalizes void writes exactly like the socket wire. Public
 synchronous research getters and restart reconstruction still retain direct
 local-reader dependencies.
+Restart reconstruction now awaits Controller-capability metadata, turn,
+intervention, checkpoint, experiment-history, fork-artifact, signer-key, and
+signed-stream reads. Integrity prechecks parse stored canonical rows before
+chain verification, preserving the existing verification semantics across the
+asynchronous boundary. Public synchronous query/replay methods and initial
+writer construction remain local.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
