@@ -50,6 +50,19 @@ export {
   type Lv01SeedComponentValues,
 } from './ledger-value.js';
 export {
+  LV01_CANDIDATE_DYADS,
+  LV01_MINIMUM_FAMILY_LOWER_POWER,
+  LV01_MONTE_CARLO_REPETITIONS,
+  LV01_PILOT_UPPER_SD_FACTOR,
+  LV01_POWER_VERSION,
+  reduceLv01Pilot,
+  selectLv01Power,
+  type Lv01PilotDispersion,
+  type Lv01PilotReduction,
+  type Lv01PowerRow,
+  type Lv01PowerSelection,
+} from './ledger-value-power.js';
+export {
   carrierCapacity,
   type CarrierCapacity,
   type CarrierCapacityInput,
