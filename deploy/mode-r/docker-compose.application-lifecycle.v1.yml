@@ -1,0 +1,4 @@
+services:
+  controller-scenario:
+    environment:
+      ALD_MODE_R_CONTROLLER_STAGE: ${ALD_MODE_R_CONTROLLER_STAGE:?set ALD_MODE_R_CONTROLLER_STAGE}

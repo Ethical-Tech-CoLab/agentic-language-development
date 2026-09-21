@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -17,6 +18,9 @@ import { SIGNER_DOMAINS } from '@ald/types';
 import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
+const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
+assert.ok(['complete', 'prepare-recovery', 'recover'].includes(stage),
+  `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
   retry(`${domain} public key`, () => readJson(`${publicKeyRoot}/${domain}.json`))));
@@ -76,10 +80,7 @@ const runtime = createNurseryRuntime({
   },
 });
 
-try {
-  await runtime.createRun(config);
-  const first = await runtime.step(config.runId);
-  const second = await runtime.step(config.runId);
+async function appendDelayedAudit() {
   const ledger = await controller.port.readEvents(config.runId, 'baby-a-ledger');
   const source = ledger.find((event) => {
     const value = JSON.parse(event.canonicalJson);
@@ -99,32 +100,115 @@ try {
       },
     }],
   });
-  const auditEntryCount = (await controller.port.readEvents(config.runId, 'audit')).length;
-  const bundle = await runtime.exportBundle(
-    config.runId,
-    join(outputRoot, 'bundle'),
-  );
+  return (await controller.port.readEvents(config.runId, 'audit')).length;
+}
+
+async function writeResult(name, result) {
   await mkdir(outputRoot, { recursive: true });
-  await writeFile(join(outputRoot, 'controller-result.json'), `${JSON.stringify({
-    schemaVersion: 1,
-    classification: 'selected-application-development-execution',
-    researchFinding: false,
-    b12Closed: false,
-    publicChainTransaction: false,
-    externalSpendingUsd: 0,
-    runId: config.runId,
-    turns: [first.turn, second.turn],
-    auditEntryCount,
-    processIds: {
-      controller: process.pid,
-      evidenceWriter: controller.processId,
-      gateway: gatewayProcessId,
-      checkpoint: checkpoint.processId,
-      anchor: anchor.processId,
-      auditInterpreter: audit.processId,
-    },
-    bundleRunId: bundle.runId,
-  }, null, 2)}\n`);
+  await writeFile(join(outputRoot, name), `${JSON.stringify(result, null, 2)}\n`);
+}
+
+try {
+  if (stage === 'prepare-recovery') {
+    const created = await runtime.createRun(config);
+    const first = await runtime.step(config.runId);
+    const paused = await runtime.pause(config.runId, {
+      actorId: 'qualification-operator',
+      reasonCode: 'selected-lifecycle-restart',
+      details: { stage: 'prepare-recovery' },
+    });
+    const checkpoints = await controller.port.readCheckpoints(config.runId);
+    await writeResult('controller-prepare-result.json', {
+      schemaVersion: 1,
+      classification: 'selected-application-lifecycle-development',
+      researchFinding: false,
+      b12Closed: false,
+      stage,
+      runId: config.runId,
+      createdState: created.state,
+      firstTurn: first.turn,
+      firstPhase: first.phase,
+      pausedState: paused.state,
+      pausedTurn: paused.turn,
+      checkpointReasons: checkpoints.map((entry) => entry.reason),
+      processIds: {
+        controller: process.pid,
+        evidenceWriter: controller.processId,
+        gateway: gatewayProcessId,
+        checkpoint: checkpoint.processId,
+        anchor: anchor.processId,
+        auditInterpreter: audit.processId,
+      },
+    });
+  } else if (stage === 'recover') {
+    const recovered = await runtime.recover(config.runId);
+    const resumed = await runtime.resume(config.runId, {
+      actorId: 'qualification-operator',
+      reasonCode: 'selected-lifecycle-prefix-verified',
+      details: { stage: 'recover' },
+    });
+    const second = await runtime.step(config.runId);
+    const final = runtime.getRun(config.runId);
+    assert.ok(final !== undefined);
+    const auditEntryCount = await appendDelayedAudit();
+    const checkpoints = await controller.port.readCheckpoints(config.runId);
+    const interventions = await controller.port.readEvents(config.runId, 'intervention');
+    const bundle = await runtime.exportBundle(config.runId, join(outputRoot, 'bundle'));
+    await writeResult('controller-recovery-result.json', {
+      schemaVersion: 1,
+      classification: 'selected-application-lifecycle-development',
+      researchFinding: false,
+      b12Closed: false,
+      stage,
+      runId: config.runId,
+      recoveredState: recovered.state,
+      recoveredTurn: recovered.turn,
+      resumedState: resumed.state,
+      secondTurn: second.turn,
+      secondPhase: second.phase,
+      finalState: final.state,
+      finalTurn: final.turn,
+      auditEntryCount,
+      checkpointReasons: checkpoints.map((entry) => entry.reason),
+      interventionTypes: interventions.map((entry) =>
+        JSON.parse(entry.canonicalJson).eventType),
+      processIds: {
+        controller: process.pid,
+        evidenceWriter: controller.processId,
+        gateway: gatewayProcessId,
+        checkpoint: checkpoint.processId,
+        anchor: anchor.processId,
+        auditInterpreter: audit.processId,
+      },
+      bundleRunId: bundle.runId,
+    });
+  } else {
+    await runtime.createRun(config);
+    const first = await runtime.step(config.runId);
+    const second = await runtime.step(config.runId);
+    const auditEntryCount = await appendDelayedAudit();
+    const bundle = await runtime.exportBundle(config.runId, join(outputRoot, 'bundle'));
+    await writeResult('controller-result.json', {
+      schemaVersion: 1,
+      classification: 'selected-application-development-execution',
+      researchFinding: false,
+      b12Closed: false,
+      publicChainTransaction: false,
+      externalSpendingUsd: 0,
+      runId: config.runId,
+      turns: [first.turn, second.turn],
+      auditEntryCount,
+      processIds: {
+        controller: process.pid,
+        evidenceWriter: controller.processId,
+        gateway: gatewayProcessId,
+        checkpoint: checkpoint.processId,
+        anchor: anchor.processId,
+        auditInterpreter: audit.processId,
+      },
+      bundleRunId: bundle.runId,
+    });
+  }
 } finally {
   await Promise.all([...factories.values()].map((factory) => factory.dispose()));
 }

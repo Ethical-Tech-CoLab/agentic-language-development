@@ -58,6 +58,26 @@ const protocolV6 = JSON.parse(readFileSync(
     serviceStates: Record<string, { status: string; exitCode: number }>;
   };
 };
+const lifecycleProtocol = JSON.parse(readFileSync(
+  'protocols/mode-r-application-lifecycle-development.v1.json',
+  'utf8',
+)) as {
+  schemaVersion: number;
+  status: string;
+  runId: string;
+  compose: {
+    basePath: string;
+    baseSha256: string;
+    overlayPath: string;
+    overlaySha256: string;
+  };
+  execution: { recreatedServices: string[]; persistentServices: string[] };
+  acceptance: {
+    recreatedServiceIdentityChanges: number;
+    persistentServiceIdentityChanges: number;
+    finalState: string;
+  };
+};
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -159,6 +179,39 @@ describe('selected Mode R application Compose', () => {
       .toHaveLength(4);
     expect(createHash('sha256').update(readFileSync(protocolV6.compose.path))
       .digest('hex')).toBe(protocolV6.compose.sha256);
+  });
+
+  it('freezes the selected pause/restart/recover development path', () => {
+    expect(lifecycleProtocol).toMatchObject({
+      schemaVersion: 1,
+      status: 'design-locked-not-executed',
+      runId: 'mode-r-application-lifecycle-v1',
+    });
+    expect(lifecycleProtocol.execution.recreatedServices).toHaveLength(6);
+    expect(lifecycleProtocol.execution.persistentServices).toHaveLength(10);
+    expect(lifecycleProtocol.acceptance).toMatchObject({
+      recreatedServiceIdentityChanges: 6,
+      persistentServiceIdentityChanges: 0,
+      finalState: 'sealing',
+    });
+    expect(createHash('sha256').update(readFileSync(lifecycleProtocol.compose.basePath))
+      .digest('hex')).toBe(lifecycleProtocol.compose.baseSha256);
+    expect(createHash('sha256').update(readFileSync(lifecycleProtocol.compose.overlayPath))
+      .digest('hex')).toBe(lifecycleProtocol.compose.overlaySha256);
+    const controller = readFileSync('deploy/mode-r/application-controller.mjs', 'utf8');
+    expect(controller).toContain("stage === 'prepare-recovery'");
+    expect(controller).toContain("stage === 'recover'");
+    expect(controller).toContain('await runtime.recover(config.runId)');
+    expect(controller).toContain('await runtime.pause(config.runId');
+    expect(controller).toContain('await runtime.resume(config.runId');
+    const collector = readFileSync(
+      'scripts/run-mode-r-application-lifecycle-development.mjs',
+      'utf8',
+    );
+    expect(collector).toContain("'rm', '--stop', '--force'");
+    expect(collector).toContain('recreatedServiceIdentityChanges');
+    expect(collector).toContain('persistentServiceIdentityChanges');
+    expect(collector).toContain("'offline-verifier'");
   });
 
   it('declares the exact 17-process graph and three internal networks', () => {
