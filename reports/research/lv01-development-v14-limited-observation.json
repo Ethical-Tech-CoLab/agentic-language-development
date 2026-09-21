@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-fixture-attempt",
+  "status": "completed-limited-observation-authority-collector-failed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v14-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v14.json",
+    "executionCommit": "ac98566",
+    "evidenceRoot": "evidence/lv01/development-v14/lv01-development-v14-p0001",
+    "retainedFiles": [
+      {"path": "output/lv01-fixture-result.json", "sha256": "sha256:68dffd1b59053a629c84c09dcd44ac5e46c34eff204afd01de86473df16b5e6e"},
+      {"path": "output/offline-verification.json", "sha256": "sha256:d128fb670963a9d8d3ecac6f94c00493849e9866706973a6f103a7b1660c1947"},
+      {"path": "output/lv01-authority-failure.json", "sha256": "sha256:41ea6c365c229d3fac7732f0898c70f6e9edd11c75f6ce91bfc165be80f94a14"},
+      {"path": "output/lv01-fixture-resources.json", "sha256": "sha256:e71dcb5ec1386bdf65b789ee811455857a5e96772718428d54919f24ce22d7e5"}
+    ]
+  },
+  "observed": {
+    "trainingTurns": 64,
+    "evaluationTurns": 24,
+    "checkpointCount": 12,
+    "offlineVerifierExitCode": 0,
+    "resourceSamples": 445,
+    "nonEmptyResourceSamples": 315,
+    "serviceCount": 17
+  },
+  "failure": {
+    "stage": "authority-observation",
+    "reason": "The collector checked Docker's raw network_mode none representation before normalizing its pseudo-network name, so it incorrectly rejected an isolated model adapter as networked."
+  },
+  "requiredCorrection": "Apply the network normalization before the route-count assertion, bind fresh identifiers, and repeat the authority observation. Do not reuse v14 identifiers or seeds.",
+  "claimBoundary": "This retained attempt provides no authority qualification, calibration, pilot, behavioral result, or scientific finding."
+}
