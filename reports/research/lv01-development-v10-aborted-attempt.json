@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-fixture-attempt",
+  "status": "aborted-collector-defect",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v10-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v10.json",
+    "executionCommit": "2c12c2e",
+    "evidenceRoot": "evidence/lv01/development-v10/lv01-development-v10-p0001",
+    "retainedFiles": [
+      {"path":"config/run-config.json","sha256":"sha256:e8ddc8b020bd3fe53f8fcf8dc882a99558378df72e6675660c50171ecc43c969"},
+      {"path":"runtime/public-keys/audit.json","status":"retained"},
+      {"path":"runtime/public-keys/baby-a-ledger.json","status":"retained"},
+      {"path":"runtime/public-keys/baby-b-ledger.json","status":"retained"},
+      {"path":"runtime/public-keys/channel.json","status":"retained"},
+      {"path":"runtime/public-keys/witness.json","status":"retained"}
+    ]
+  },
+  "failure": {
+    "stage": "container-build-and-startup",
+    "cause": "The collector's periodic sampler called docker compose ps while docker compose up --build held the project operation. The synchronous sampler call blocked the collector before a terminal fixture result could be written.",
+    "operatorAction": "The isolated v10 collector and its project-labelled containers were terminated. No other project-labelled containers were targeted.",
+    "terminalFixtureResult": false,
+    "authorityObservation": false,
+    "resourceObservation": false
+  },
+  "requiredCorrection": "Use Docker label-filtered ps and inspect calls for measurement and authority observation, avoiding nested Compose operations. Bind that correction to a fresh allocation and do not reuse the v10 identifier or seeds.",
+  "claimBoundary": "This retained aborted attempt provides no topology qualification, resource measurement, calibration, pilot, behavioral result, or scientific finding."
+}

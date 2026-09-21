@@ -44,10 +44,14 @@ function inspectServiceAccess(containerId, service, target) {
   return { service, target, exitCode, denied: exitCode === 1 };
 }
 
-function authorityObservation(compose, environment) {
-  const ids = execFileSync('docker', [...compose, 'ps', '--all', '--quiet'], {
-    env: environment, encoding: 'utf8',
-  }).trim().split('\n').filter(Boolean);
+function projectContainerIds(project, all = false) {
+  return execFileSync('docker', ['ps', ...(all ? ['--all'] : []), '--quiet',
+    '--filter', `label=com.docker.compose.project=${project}`], { encoding: 'utf8' })
+    .trim().split('\n').filter(Boolean);
+}
+
+function authorityObservation(project) {
+  const ids = projectContainerIds(project, true);
   if (ids.length !== APPLICATION_SERVICES.length) return null;
   const containers = JSON.parse(execFileSync('docker', ['inspect', ...ids], { encoding: 'utf8' }));
   const services = new Map(containers.map((container) => [
@@ -200,10 +204,9 @@ function bytes(value) {
   return Math.round(Number(match[1]) * scale);
 }
 
-function resourceSnapshot(compose, environment) {
+function resourceSnapshot(project) {
   const capturedAt = new Date().toISOString();
-  const ids = execFileSync('docker', [...compose, 'ps', '--quiet'], { env: environment, encoding: 'utf8' })
-    .trim().split('\n').filter(Boolean);
+  const ids = projectContainerIds(project);
   if (ids.length === 0) return [];
   try {
     return execFileSync('docker', ['stats', '--no-stream', '--format', '{{json .}}', ...ids], {
@@ -237,14 +240,15 @@ function summarizeResources(samples) {
 
 async function runComposeWithMeasurements(compose, environment) {
   const startedAt = new Date().toISOString();
+  const project = compose[compose.indexOf('--project-name') + 1];
   const samples = [];
   let authority = null;
   let authorityFailure = null;
   const sample = () => {
-    try { samples.push({ capturedAt: new Date().toISOString(), rows: resourceSnapshot(compose, environment) }); }
+    try { samples.push({ capturedAt: new Date().toISOString(), rows: resourceSnapshot(project) }); }
     catch { /* Resource observation must not alter the fixture outcome. */ }
     if (authority === null && authorityFailure === null) {
-      try { authority = authorityObservation(compose, environment); }
+      try { authority = authorityObservation(project); }
       catch (error) { authorityFailure = `${error.name}: ${error.message}`; }
     }
   };
