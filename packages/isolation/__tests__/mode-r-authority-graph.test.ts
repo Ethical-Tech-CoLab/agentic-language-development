@@ -183,7 +183,9 @@ describe('prospective Mode R authority graph', () => {
     expect(controller).not.toContain('run.writer.appendAnalysisAttachment(');
     expect(controller).not.toContain('run.writer.appendExperimentRecord(');
     expect(controller).not.toContain('run.writer.recover(');
+    expect(controller).not.toContain('writer.registerRun(runConfig)');
     expect(controller).toContain('run.controllerEvidence.appendInterventionEvent(');
+    expect(controller).toContain('await controllerEvidence.registerRun(runConfig)');
     const receiverPath = controller.split('async #runReceiver(')[1]?.split('  #episodeIndex(')[0];
     expect(receiverPath).toBeDefined();
     expect(receiverPath).not.toContain('run.writer.appendLedgerEvent(');

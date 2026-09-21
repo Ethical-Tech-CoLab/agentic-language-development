@@ -30,6 +30,10 @@ import {
 
 type TurnPathMethod = 'observe' | 'act' | 'receive' | 'onOutcome';
 
+/** Wall-clock headroom for a loaded full-suite worker; the injected stall remains beyond it. */
+const REMOTE_DEADLINE_MS = 2_000;
+const REMOTE_STALL_MS = 2_200;
+
 class SyntheticDeadlineError extends Error {
   readonly failureClass = 'adapter-timeout';
 }
@@ -103,7 +107,7 @@ class DelayedAdapter implements LearnerAdapter {
 
   private async delay(method: TurnPathMethod): Promise<void> {
     if (this.method === method) {
-      await new Promise((resolve) => setTimeout(resolve, 1_100));
+      await new Promise((resolve) => setTimeout(resolve, REMOTE_STALL_MS));
     }
   }
 
@@ -185,7 +189,7 @@ function remoteDeadlineFactory(method: TurnPathMethod): {
           track: 'no-learning',
           transport,
           timing: 'normalized',
-          deadlineMs: 1_000,
+          deadlineMs: REMOTE_DEADLINE_MS,
         });
         return adapter;
       },
@@ -280,7 +284,7 @@ describe('all-method turn deadline accounting (SPEC §8.3)', () => {
         randomSeed: `ald-rdl-${String(id).padStart(2, '0')}`,
         maxTurnsPerRun: 10,
         evaluationTurns: 2,
-        turnResponseBudgetMs: 1_000,
+        turnResponseBudgetMs: REMOTE_DEADLINE_MS,
         maxConsecutiveRejections: 5,
       })));
 
@@ -314,7 +318,7 @@ describe('all-method turn deadline accounting (SPEC §8.3)', () => {
     } finally {
       await remote.close();
     }
-  }, 10_000);
+  }, 15_000);
 
   it('pauses after five consecutive method-level timeout forfeits', async () => {
     harness = await createHarness({

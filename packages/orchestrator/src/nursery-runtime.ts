@@ -695,7 +695,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       clock: this.#clock,
       softwareCommit: this.#options.softwareCommit,
     });
-    const { configurationHash } = writer.registerRun(runConfig);
+    const controllerEvidence = controllerEvidencePortForWriter(runId, writer);
+    const { configurationHash } = await controllerEvidence.registerRun(runConfig);
 
     const lifecycle = new RunLifecycle(runId, 'draft');
     lifecycle.apply('preregister');
@@ -726,7 +727,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       preRegistration,
       configurationHash,
       writer,
-      controllerEvidence: controllerEvidencePortForWriter(runId, writer),
+      controllerEvidence,
       signers,
       lifecycle,
       gateway,

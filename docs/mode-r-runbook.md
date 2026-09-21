@@ -80,6 +80,11 @@ signed-stream reads. Integrity prechecks parse stored canonical rows before
 chain verification, preserving the existing verification semantics across the
 asynchronous boundary. Public synchronous query/replay methods and initial
 writer construction remain local.
+New-run registration now uses the awaited Controller capability and confirms
+the configuration hash before lifecycle initialization. A source guard rejects
+return to direct writer registration. The writer object is still constructed
+inside Nursery, so this is a provisioning prerequisite rather than remote
+writer integration.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
