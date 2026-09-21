@@ -120,4 +120,50 @@ describe('createProductionRuntime (ALD-072)', () => {
     expect(report.gaps.filter((gap) => gap.startsWith('lineage-'))).toEqual([]);
     production.close();
   });
+
+  it('provisions concurrent runs with independent evidence contexts', async () => {
+    root = await mkdtemp(join(tmpdir(), 'ald-production-contexts-'));
+    const production = createProductionRuntime({
+      databasePath: join(root, 'evidence.sqlite'),
+      bundleRoot: join(root, 'bundles'),
+      softwareCommit: 'git:production-context-test',
+    });
+    const configFor = (runId: string) => buildRunConfig({
+      runId,
+      experimentId: 'E03',
+      randomSeed: `${runId}-seed`,
+      deploymentMode: 'prototype',
+      babyA: {
+        track: 'no-learning',
+        modelRef: 'uniform-random-v1',
+        trainingIsolation: 'independent',
+      },
+      babyB: {
+        track: 'no-learning',
+        modelRef: 'uniform-random-v1',
+        trainingIsolation: 'independent',
+      },
+      learningSignal: 'none',
+      communicationCondition: 'disabled',
+      maxTurnsPerRun: 1,
+      evaluationTurns: 1,
+    });
+    const runIds = ['production-context-a', 'production-context-b'];
+
+    await Promise.all(runIds.map((runId) =>
+      production.runtime.createRun(configFor(runId)),
+    ));
+    await Promise.all(runIds.map((runId) =>
+      production.runtime.runToCompletion(runId),
+    ));
+
+    for (const runId of runIds) {
+      expect(production.runtime.turnRecords(runId)).toHaveLength(2);
+      expect(production.runtime.checkpoints(runId).length).toBeGreaterThan(0);
+      expect(
+        production.runtime.writerFor(runId).readRunMetadata(runId)?.runId,
+      ).toBe(runId);
+    }
+    production.close();
+  });
 });

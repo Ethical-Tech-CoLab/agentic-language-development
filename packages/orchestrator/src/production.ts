@@ -20,7 +20,6 @@
 import type {
   AnchorPublisher,
   BabyRole,
-  CheckpointService,
   Clock,
   LearnerAdapterFactory,
   RunConfig,
@@ -31,9 +30,10 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { InMemorySignerRegistry } from '@ald/hashing';
 import {
+  SqliteEvidenceWriter,
+  controllerEvidencePortForWriter,
   openEvidenceDatabase,
   type EvidenceDatabase,
-  type SqliteEvidenceWriter,
 } from '@ald/evidence';
 import { EvidenceCheckpointService } from '@ald/checkpoint';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
@@ -90,14 +90,9 @@ export interface ProductionRuntime {
 /**
  * Builds one production `NurseryRuntimeImpl` over one open evidence store.
  *
- * `checkpointFactory` and `proofWriter` share one `CheckpointService` per run:
- * `NurseryRuntimeImpl.createRun` calls `signerProvider(runId)` and then
- * `checkpointFactory(evidence, signers)` synchronously, with no `await`
- * between the two calls (verified against `nursery-runtime.ts`), so recording
- * the run id in `signerProvider` and reading it back in `checkpointFactory`
- * is safe even if a caller starts two `createRun` calls without awaiting the
- * first — JS never preempts that synchronous span, so the second call's
- * prefix cannot interleave with the first's.
+ * The per-run evidence-context factory constructs one SQLite transaction
+ * owner and issues the narrow Controller and Gateway capabilities around it.
+ * The same checkpoint service is retained for proof export by run id.
  */
 export function createProductionRuntime(
   options: ProductionRuntimeOptions,
@@ -114,34 +109,34 @@ export function createProductionRuntime(
       clock,
     });
 
-  let pendingRunId: string | undefined;
   const checkpointServices = new Map<string, EvidenceCheckpointService>();
 
-  const signerProvider = (runId: string): SignerRegistry => {
-    pendingRunId = runId;
-    return options.signerProvider?.(runId) ?? InMemorySignerRegistry.generate(runId);
-  };
+  const signerProvider = (runId: string): SignerRegistry =>
+    options.signerProvider?.(runId) ?? InMemorySignerRegistry.generate(runId);
 
-  const checkpointFactory = (
-    evidence: SqliteEvidenceWriter,
+  const evidenceContextFactory = (
+    runId: string,
     signers: SignerRegistry,
-  ): CheckpointService => {
-    const runId = pendingRunId;
-    if (runId === undefined) {
-      throw new Error(
-        'createProductionRuntime: checkpointFactory invoked before ' +
-          'signerProvider — NurseryRuntimeImpl.createRun ordering invariant ' +
-          'violated',
-      );
-    }
+  ) => {
+    const localWriter = new SqliteEvidenceWriter({
+      database,
+      signers,
+      clock,
+      softwareCommit: options.softwareCommit,
+    });
     const service = new EvidenceCheckpointService({
-      evidence,
+      evidence: localWriter,
       signers,
       clock,
       softwareCommit: options.softwareCommit,
     });
     checkpointServices.set(runId, service);
-    return service;
+    return {
+      localWriter,
+      controller: controllerEvidencePortForWriter(runId, localWriter),
+      gateway: localWriter,
+      checkpoints: service,
+    };
   };
 
   const proofWriter = async (
@@ -177,7 +172,7 @@ export function createProductionRuntime(
     database,
     softwareCommit: options.softwareCommit,
     bundleRoot: options.bundleRoot,
-    checkpointFactory,
+    evidenceContextFactory,
     signerProvider,
     clock,
     anchorPolicy: options.anchorPolicy ?? 'skip',

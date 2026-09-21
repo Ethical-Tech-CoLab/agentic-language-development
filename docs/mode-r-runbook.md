@@ -92,6 +92,15 @@ checkpoint counters no longer read the broad writer directly. The remaining
 concrete handle serves synchronous public inspection/export surfaces, the
 private learner-ledger client, delayed-audit construction, and local component
 assembly. This narrows the selected ownership seam but does not qualify B12.
+Nursery now requests one explicit evidence context per run instead of separately
+constructing writer, Controller, Gateway, and Checkpoint dependencies in both
+creation and reconstruction. Production provisions exactly one local writer
+owner, issues its run-bound Controller and Gateway capabilities, and retains the
+same Checkpoint Service for proof export without a mutable pending-run handoff;
+concurrent-run coverage verifies the identities remain separated. The context's
+local-writer field is deliberately labeled transitional because synchronous
+inspection and learner/audit clients still require it. Remote contexts cannot be
+claimed until those consumers migrate and the selected process mounts qualify.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

@@ -178,6 +178,7 @@ import {
   TurnDeadlineExceededError,
   carrierInventory,
   withTurnDeadline,
+  type GatewayEvidencePort,
 } from '@ald/gateway';
 
 import {
@@ -307,10 +308,19 @@ export interface NurseryRuntimeOptions {
   /** Bundles are written to `<bundleRoot>/runs/<runId>`. */
   bundleRoot: string;
   /** Builds the Checkpoint Service for one run's writer (LEDGER §7-§9). */
-  checkpointFactory: (
+  checkpointFactory?: (
     evidence: SqliteEvidenceWriter,
     signers: SignerRegistry,
   ) => CheckpointService;
+  /**
+   * Provisions one run's evidence capabilities. The local writer is retained
+   * explicitly for legacy synchronous inspection and learner-ledger surfaces;
+   * it is not a second writer owner. Omit to use the local SQLite assembly.
+   */
+  evidenceContextFactory?: (
+    runId: string,
+    signers: SignerRegistry,
+  ) => NurseryRunEvidenceContext | Promise<NurseryRunEvidenceContext>;
   /**
    * Per-run signer registry (LEDGER §11). Defaults to freshly generated
    * in-memory keys; public studies inject a provider backed by Fort's
@@ -371,6 +381,15 @@ export interface NurseryRuntimeOptions {
   causalPredictionFor?: (
     config: RunConfig,
   ) => CausalPredictionRuntimeProvider | undefined;
+}
+
+/** One coherent evidence owner and the narrow capabilities issued for a run. */
+export interface NurseryRunEvidenceContext {
+  /** Transitional local handle; remaining consumers are tracked under B12. */
+  localWriter: SqliteEvidenceWriter;
+  controller: ControllerEvidencePort;
+  gateway: GatewayEvidencePort;
+  checkpoints: CheckpointService;
 }
 
 export interface CausalPredictionProviderInput {
@@ -595,6 +614,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   readonly #scenarioBundleRegistry: ScenarioBundleRegistry;
 
   constructor(options: NurseryRuntimeOptions) {
+    if (
+      options.checkpointFactory === undefined &&
+      options.evidenceContextFactory === undefined
+    ) {
+      throw new Error(
+        'Nursery runtime requires checkpointFactory or evidenceContextFactory',
+      );
+    }
     this.#options = options;
     this.#clock = options.clock ?? { now: () => new Date().toISOString() };
     this.#scenarioBundleRegistry =
@@ -689,13 +716,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     const signers = this.#signerProvider()(runId);
-    const writer = new SqliteEvidenceWriter({
-      database: this.#options.database,
-      signers,
-      clock: this.#clock,
-      softwareCommit: this.#options.softwareCommit,
-    });
-    const controllerEvidence = controllerEvidencePortForWriter(runId, writer);
+    const evidence = await this.#evidenceContext(runId, signers);
+    const writer = evidence.localWriter;
+    const controllerEvidence = evidence.controller;
     const { configurationHash } = await controllerEvidence.registerRun(runConfig);
 
     const lifecycle = new RunLifecycle(runId, 'draft');
@@ -718,7 +741,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         symbolInventory,
         seed: runConfig.seedBindings?.gateway ?? runConfig.randomSeed,
       },
-      await writeJournal.openPort(writer),
+      await writeJournal.openPort(evidence.gateway),
     );
 
     const run: RunRuntime = {
@@ -734,7 +757,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       writeJournal,
       engine,
       adapters,
-      checkpoints: this.#options.checkpointFactory(writer, signers),
+      checkpoints: evidence.checkpoints,
       contracts,
       symbolInventory,
       bundleDir: this.#bundleDirFor(runId),
@@ -3344,6 +3367,33 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     );
   }
 
+  async #evidenceContext(
+    runId: string,
+    signers: SignerRegistry,
+  ): Promise<NurseryRunEvidenceContext> {
+    if (this.#options.evidenceContextFactory !== undefined) {
+      return this.#options.evidenceContextFactory(runId, signers);
+    }
+    const localWriter = new SqliteEvidenceWriter({
+      database: this.#options.database,
+      signers,
+      clock: this.#clock,
+      softwareCommit: this.#options.softwareCommit,
+    });
+    const checkpointFactory = this.#options.checkpointFactory;
+    if (checkpointFactory === undefined) {
+      throw new Error(
+        'Nursery runtime requires checkpointFactory or evidenceContextFactory',
+      );
+    }
+    return {
+      localWriter,
+      controller: controllerEvidencePortForWriter(runId, localWriter),
+      gateway: localWriter,
+      checkpoints: checkpointFactory(localWriter, signers),
+    };
+  }
+
   #buildEngine(config: RunConfig): ScenarioEngine {
     if (this.#options.scenarioFactory) {
       return this.#options.scenarioFactory(config);
@@ -3518,13 +3568,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async #reconstruct(runId: string): Promise<RunRuntime> {
     const signers = this.#signerProvider()(runId);
-    const writer = new SqliteEvidenceWriter({
-      database: this.#options.database,
-      signers,
-      clock: this.#clock,
-      softwareCommit: this.#options.softwareCommit,
-    });
-    const controllerEvidence = controllerEvidencePortForWriter(runId, writer);
+    const evidence = await this.#evidenceContext(runId, signers);
+    const writer = evidence.localWriter;
+    const controllerEvidence = evidence.controller;
     const metadata = await controllerEvidence.readRunMetadata(runId);
     if (metadata === undefined) {
       throw new UnknownRunError(runId);
@@ -3695,12 +3741,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           symbolInventory,
           seed: config.seedBindings?.gateway ?? config.randomSeed,
         },
-        await writeJournal.openPort(writer),
+        await writeJournal.openPort(evidence.gateway),
       ),
       writeJournal,
       engine,
       adapters,
-      checkpoints: this.#options.checkpointFactory(writer, signers),
+      checkpoints: evidence.checkpoints,
       contracts,
       symbolInventory,
       bundleDir: this.#bundleDirFor(runId),

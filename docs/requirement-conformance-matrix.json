@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.238"
+    "version": "0.1.239"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -1092,7 +1092,8 @@
     "packages/orchestrator/__tests__/experiments/production-runtime.test.ts": {
       "selectors": [
         "opens, completes a tiny no-learning run, and closes cleanly",
-        "supplies the immutable parent bundle when verifying a derived run"
+        "supplies the immutable parent bundle when verifying a derived run",
+        "provisions concurrent runs with independent evidence contexts"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/orchestrator/__tests__/experiments/production-runtime.test.ts"
     },
