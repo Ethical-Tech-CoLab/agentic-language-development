@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-resource-observation-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v9-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v9.json",
+    "executionCommit": "db7ef2a",
+    "evidenceRoot": "evidence/lv01/development-v9/lv01-development-v9-p0001",
+    "bundleManifestHash": "sha256:bfd43d8d5e2bbd049f6ed3f338e7d01f51d3ce738fa468588e357ff457582e10"
+  },
+  "fixture": {
+    "state": "sealed",
+    "trainingTurns": 64,
+    "evaluationTurns": 24,
+    "checkpointCount": 12,
+    "offlineVerifierExitCode": 0
+  },
+  "resourceObservation": {
+    "wallSeconds": 796.452,
+    "samplingIntervalMs": 1000,
+    "sampleCount": 466,
+    "nonEmptySampleCount": 316,
+    "serviceCount": 17,
+    "sampledEstimatedCpuSeconds": 13.321,
+    "observedPeakMemoryMiB": 87.36
+  },
+  "limitations": [
+    "CPU seconds are a one-second sampled estimate, not cgroup accounting.",
+    "Startup and teardown time are included in wall time.",
+    "This one bounded fixture does not authorize five full-calibration dyads, a pilot, or confirmatory collection.",
+    "No independent anchor RPC endpoint or separate proof files were used by the local verifier."
+  ],
+  "claimBoundary": "This receipt supports only bounded local topology and resource observations. It establishes no behavioral, ledger-fidelity, utility, cost, or language-emergence result."
+}
