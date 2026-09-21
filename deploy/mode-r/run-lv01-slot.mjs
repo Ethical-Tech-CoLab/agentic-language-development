@@ -105,20 +105,18 @@ function resourceSnapshot(compose, environment) {
   const capturedAt = new Date().toISOString();
   const ids = execFileSync('docker', [...compose, 'ps', '--quiet'], { env: environment, encoding: 'utf8' })
     .trim().split('\n').filter(Boolean);
-  return ids.flatMap((id) => {
-    try {
-      const raw = execFileSync('docker', ['stats', '--no-stream', '--format', '{{json .}}', id], {
-        encoding: 'utf8',
-      }).trim();
-      const stat = JSON.parse(raw);
+  if (ids.length === 0) return [];
+  try {
+    return execFileSync('docker', ['stats', '--no-stream', '--format', '{{json .}}', ...ids], {
+      encoding: 'utf8',
+    }).trim().split('\n').filter(Boolean).flatMap((line) => {
+      const stat = JSON.parse(line);
       const memory = bytes(String(stat.MemUsage ?? '').split('/')[0] ?? '');
       const cpuPercent = Number.parseFloat(String(stat.CPUPerc ?? '').replace('%', ''));
-      return [{ capturedAt, container: String(stat.Name ?? id), cpuPercent: Number.isFinite(cpuPercent) ? cpuPercent : null,
+      return [{ capturedAt, container: String(stat.Name ?? 'unknown'), cpuPercent: Number.isFinite(cpuPercent) ? cpuPercent : null,
         memoryBytes: memory, pids: Number.parseInt(String(stat.PIDs ?? ''), 10) || null }];
-    } catch {
-      return [];
-    }
-  });
+    });
+  } catch { return []; }
 }
 
 function summarizeResources(samples) {
