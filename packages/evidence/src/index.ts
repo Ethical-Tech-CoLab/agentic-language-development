@@ -16,6 +16,11 @@ export {
   type AuditEvidencePort,
 } from './audit-rpc.js';
 export {
+  connectCheckpointEvidenceRpc,
+  createCheckpointEvidenceRpcServer,
+  type CheckpointEvidencePort,
+} from './checkpoint-rpc.js';
+export {
   connectControllerEvidenceRpc,
   createControllerEvidenceRpcServer,
   type ControllerEvidencePort,
