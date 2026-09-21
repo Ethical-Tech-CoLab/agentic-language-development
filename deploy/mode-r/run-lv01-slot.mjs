@@ -124,9 +124,20 @@ const environment = {
 const compose = ['compose', '--project-name', `ald-lv01-development-v${version}`,
   '--file', 'deploy/mode-r/docker-compose.application.v1.yml',
   '--file', 'deploy/mode-r/docker-compose.lv01.v1.yml'];
-const result = execFileSync('docker', [...compose, 'up', '--build', '--abort-on-container-exit', '--exit-code-from', 'offline-verifier'], {
-  env: environment, encoding: 'utf8', timeout: 900_000, maxBuffer: 16 * 1024 * 1024,
-});
+let result;
+try {
+  result = execFileSync('docker', [...compose, 'up', '--build', '--abort-on-container-exit', '--exit-code-from', 'offline-verifier'], {
+    env: environment, encoding: 'utf8', timeout: 900_000, maxBuffer: 16 * 1024 * 1024,
+  });
+} catch (error) {
+  writeFileSync(join(slotRoot, 'fixture-failure.json'), `${JSON.stringify({
+    schemaVersion: 1, classification: 'lv01-development-topology-fixture', researchFinding: false,
+    scientificDisposition: 'not-tested', runId, stage: 'container-execution',
+    failure: `${error.name}: ${error.message.split('\n')[0]}`,
+    claimBoundary: 'The development fixture reached the selected container topology but did not complete. No pilot, scientific result, or resource measurement exists.',
+  }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+  throw error;
+}
 assert.ok(result.length >= 0);
 assert.ok(existsSync(resultPath), 'controller did not write the LV01 fixture result');
 const fixture = JSON.parse(readFileSync(resultPath, 'utf8'));
