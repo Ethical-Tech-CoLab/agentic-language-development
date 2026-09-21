@@ -57,6 +57,14 @@ records zero started application processes, turns, and audit entries. The v2
 protocol prospectively quotes all four values, tests the parsed single-item
 form, parameterizes the fresh run identity, and does not change the scientific
 design or acceptance thresholds. The v1 identity must not be reused.
+The v2 attempt created all seventeen containers but stopped during application
+startup with zero turns: the host UID/GID differed from the Compose default,
+the two model adapters inherited an `/app`-only Node permission entrypoint, and
+the signer identity guard excluded versioned application run IDs. Its raw logs
+and receipt remain under the consumed v2 identity. The prospective v3 packet
+binds the invoking UID/GID, uses explicit model-host entrypoints inside the
+locked-down containers, extends the signer guard, and records live container
+state even when a wait fails. Thresholds and scientific design remain unchanged.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

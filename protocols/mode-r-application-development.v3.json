@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 3,
+  "classification": "selected-mode-r-application-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-v3",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-application-development-v2-failure.json",
+    "stage": "application-service-startup",
+    "containersCreated": 17,
+    "turnsRecorded": 0
+  },
+  "authorityGraph": {
+    "path": "protocols/mode-r-authority-graph.v6.json",
+    "sha256": "aaafc8aecb844942118e2fb6e279019d4be193ba4013dfd737685db2c6f26db3"
+  },
+  "compose": {
+    "path": "deploy/mode-r/docker-compose.application.v1.yml",
+    "sha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"
+  },
+  "correction": {
+    "scope": [
+      "bind-container-user-to-invoking-host-uid-gid",
+      "use-explicit-model-host-entrypoints-for-selected-unix-sockets",
+      "accept-prospectively-versioned-application-signer-identities",
+      "retain-live-container-observations-after-wait-failure"
+    ],
+    "scientificDesignChanged": false,
+    "thresholdChanged": false
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "trainingTurns": 2,
+    "evaluationTurns": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attempts": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "networkCount": 3,
+    "controllerExitCode": 0,
+    "offlineVerifierExitCode": 0,
+    "recordedTurnCount": 2,
+    "auditEntryCount": 1,
+    "distinctContainerIdCount": 17,
+    "distinctHostPidCount": 15,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "scope": {
+    "included": [
+      "seventeen-container-application-startup",
+      "two-signed-turns",
+      "delayed-audit-entry",
+      "bundle-export-and-offline-typescript-verification",
+      "live-network-mount-resource-and-teardown-reconciliation"
+    ],
+    "excluded": [
+      "behavioral-or-scientific-finding",
+      "complete-lifecycle-restore-and-fault-matrix",
+      "independent-rust-bundle-audit",
+      "selected-resource-envelope-qualification",
+      "b12-closure",
+      "independent-review-and-publication-readiness"
+    ]
+  },
+  "claimBoundary": "A passing v3 development execution establishes only the bounded selected-shape application path. It cannot close B12 or supply a behavioral result."
+}

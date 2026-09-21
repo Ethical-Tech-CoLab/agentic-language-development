@@ -37,6 +37,10 @@ const protocolV2 = JSON.parse(readFileSync(
   compose: { path: string; sha256: string };
   correction: { scientificDesignChanged: boolean; thresholdChanged: boolean };
 };
+const protocolV3 = JSON.parse(readFileSync(
+  'protocols/mode-r-application-development.v3.json',
+  'utf8',
+)) as typeof protocolV2;
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -73,10 +77,24 @@ describe('selected Mode R application Compose', () => {
       scientificDesignChanged: false,
       thresholdChanged: false,
     });
-    expect(protocolV2.compose.path)
-      .toBe('deploy/mode-r/docker-compose.application.v1.yml');
-    expect(createHash('sha256').update(readFileSync(protocolV2.compose.path))
-      .digest('hex')).toBe(protocolV2.compose.sha256);
+    expect(protocolV2.compose).toEqual({
+      path: 'deploy/mode-r/docker-compose.application.v1.yml',
+      sha256: 'b45400cf705c7ee20e11b4dbf6bc6a8afbe5682683e3ec99640e0b550c761474',
+    });
+  });
+
+  it('uses a fresh v3 identity after preserving the v2 startup failure', () => {
+    expect(protocolV3.schemaVersion).toBe(3);
+    expect(protocolV3.status).toBe('design-locked-not-executed');
+    expect(protocolV3.runId).toBe('mode-r-application-v3');
+    expect(protocolV3.predecessorFailure.path)
+      .toBe('reports/research/mode-r-application-development-v2-failure.json');
+    expect(protocolV3.correction).toMatchObject({
+      scientificDesignChanged: false,
+      thresholdChanged: false,
+    });
+    expect(createHash('sha256').update(readFileSync(protocolV3.compose.path))
+      .digest('hex')).toBe(protocolV3.compose.sha256);
   });
 
   it('declares the exact 17-process graph and three internal networks', () => {

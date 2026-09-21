@@ -12,9 +12,9 @@ import { join, resolve } from 'node:path';
 import { buildRunConfig } from '@ald/lifecycle';
 
 const mode = process.argv[2];
-assert.ok(['--run-v1', '--audit-v1', '--run-v2', '--audit-v2'].includes(mode),
-  'expected --run-v1, --audit-v1, --run-v2, or --audit-v2');
-const version = mode.endsWith('v2') ? 2 : 1;
+assert.ok(/^--(?:run|audit)-v[123]$/u.test(mode ?? ''),
+  'expected a --run-vN or --audit-vN mode for N=1..3');
+const version = Number(mode.at(-1));
 const runMode = mode.startsWith('--run');
 const protocolPath = `protocols/mode-r-application-development.v${String(version)}.json`;
 const evidenceRoot = `evidence/mode-r-application-development-v${String(version)}`;
@@ -28,6 +28,8 @@ const environment = {
   ALD_MODE_R_APPLICATION_ROOT: resolve(evidenceRoot),
   ALD_SOFTWARE_COMMIT: commit,
   ALD_MODE_R_RUN_ID: protocol.runId,
+  ALD_MODE_R_UID: String(process.getuid?.() ?? 1000),
+  ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
 };
 const compose = (...args) => command('docker', [
   'compose', '-p', project, '-f', composePath, ...args,
@@ -140,8 +142,12 @@ try {
   compose('build');
   resolved = JSON.parse(compose('config', '--format', 'json'));
   compose('up', '-d');
-  compose('wait', 'controller-scenario');
-  compose('wait', 'offline-verifier');
+  try {
+    compose('wait', 'controller-scenario');
+    compose('wait', 'offline-verifier');
+  } catch (error) {
+    failure = error instanceof Error ? error.message : String(error);
+  }
   const serviceNames = Object.keys(resolved.services).sort();
   observations = serviceNames.map((name) => {
     const id = compose('ps', '-aq', name);
@@ -177,10 +183,12 @@ try {
       'stats', '--no-stream', '--format', '{{json .}}', ...runningIds,
     ]).split('\n').filter(Boolean).map(JSON.parse);
   }
-  controller = readJson(join(evidenceRoot, 'output/controller-result.json'));
-  offlineVerification = readJson(join(evidenceRoot, 'output/offline-verification.json'));
+  if (failure === undefined) {
+    controller = readJson(join(evidenceRoot, 'output/controller-result.json'));
+    offlineVerification = readJson(join(evidenceRoot, 'output/offline-verification.json'));
+  }
 } catch (error) {
-  failure = error instanceof Error ? error.message : String(error);
+  failure ??= error instanceof Error ? error.message : String(error);
 } finally {
   try {
     writeFileSync(join(evidenceRoot, 'compose-logs.txt'),

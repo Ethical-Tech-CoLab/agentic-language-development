@@ -3,7 +3,8 @@ import { SIGNER_DOMAINS } from '@ald/types';
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 
 const [domain, runId] = process.argv.slice(2);
-if (!SIGNER_DOMAINS.includes(domain) || !/^mode-r-study-[a-z-]+$/u.test(runId ?? '')) {
+if (!SIGNER_DOMAINS.includes(domain) ||
+    !/^mode-r-(?:study|application)-[a-z0-9-]+$/u.test(runId ?? '')) {
   throw new Error('invalid qualification signer identity');
 }
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-startup-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "95e6cfde02ff64254184747ee5f0abcf17643c23",
+  "attemptedRunId": "mode-r-application-v2",
+  "stage": "application-service-startup",
+  "containersCreated": 17,
+  "controllerExitCode": 1,
+  "turnsRecorded": 0,
+  "auditEntriesRecorded": 0,
+  "causes": [
+    "The Compose default container UID/GID was 1000:1000 while the host-owned mode-0700 runtime tree was 1001:1001.",
+    "The model-adapter services inherited the image permission-model entrypoint, whose /app-only filesystem allowance denied the selected Unix socket directory.",
+    "The signer run-identity validator accepted study identities but not the prospectively parameterized application v2 identity."
+  ],
+  "correctionPolicy": "Retain the v2 raw receipt and logs, bind the invoking host UID/GID, use explicit model-host entrypoints within the locked-down containers, extend the signer validator to application identities, capture live container observations even after a wait failure, and use a fresh v3 identity.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-development-v2/receipt.json",
+    "bytes": 7024,
+    "sha256": "sha256:9a260985296bbb54790a94fc25749170e2ea920983fd7036801d9851010a1bad",
+    "retention": "local-ignored-original"
+  },
+  "claimBoundary": "This is an application-startup failure with no recorded turn or audit evidence, not a behavioral result, B12 closure, or publication evidence."
+}

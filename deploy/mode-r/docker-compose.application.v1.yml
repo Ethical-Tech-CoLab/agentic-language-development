@@ -26,6 +26,7 @@ x-config-mount: &config-mount
 services:
   model-adapter-a:
     <<: *app
+    entrypoint: ["/usr/local/bin/node", "/app/packages/isolation/bin/ald-learner-host.js"]
     command:
       - --transport=unix
       - --socket-path=/run/ald-mode-r/model-a/model.sock
@@ -40,6 +41,7 @@ services:
 
   model-adapter-b:
     <<: *app
+    entrypoint: ["/usr/local/bin/node", "/app/packages/isolation/bin/ald-learner-host.js"]
     command:
       - --transport=unix
       - --socket-path=/run/ald-mode-r/model-b/model.sock
