@@ -201,8 +201,15 @@ authenticate the responding process, did not make liveness an explicit
 acceptance metric, and could exit on a client reset. The prospectively amended
 collector requires a target-specific response, tolerates reset errors, counts
 non-running processes, and uses a fresh development evidence identity. It is
-not yet qualified, no selected execution has occurred, and no topology
-observation is claimed at this source version.
+not yet qualified. Its second development attempt also failed because an outer
+`docker exec` timeout returned status zero together with `ETIMEDOUT`, which the
+collector had not rejected. That raw receipt is also preserved and its apparent
+universal reachability is not a topology observation. The next prospective
+collector batches probes by source process, requires an explicit completion
+payload, rejects every subprocess error or signal, counts incomplete and
+wrong-responder outcomes, and uses a third fresh evidence identity. No selected
+execution has occurred and no topology observation is claimed at this source
+version.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

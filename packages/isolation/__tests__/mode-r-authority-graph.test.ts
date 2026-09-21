@@ -135,7 +135,10 @@ describe('prospective Mode R authority graph', () => {
     expect(collector).toContain("'--network', 'none'");
     expect(collector).toContain("spawnSync('docker', ['rm', '-f', container]");
     expect(collector).toContain('ALD_PROCESS_NAME=');
-    expect(collector).toContain('response===process.argv[1]');
+    expect(collector).toContain("marker:'ald-mode-r-probe-v1'");
+    expect(collector).toContain('result.error !== undefined');
+    expect(collector).toContain('incompleteProbeCount');
+    expect(collector).toContain('wrongResponderCount');
     expect(collector).toContain('notRunningProcessCount');
     expect(collector).toContain('researchFinding: false');
     expect(collector).toContain('b12Closed: false');

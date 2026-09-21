@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "qualificationId": "mode-r-boundary-v1",
+  "attemptId": "development-attempt-2",
+  "classification": "supplemental-failure-evidence",
+  "researchFinding": false,
+  "b12Closed": false,
+  "historicalEvidenceModified": false,
+  "attemptStatus": "failed",
+  "scientificDisposition": "not-tested",
+  "executionCommit": "27c080cacf6168bfb1837dca9b200cfd2dc8cb38",
+  "executionTree": "b19d8e603c62934a3a9aa5442723f518f5b1e97e",
+  "executionVersion": "0.1.252",
+  "collectorSha256": "64c3dc14d6d3449c7b1027c45adf04c07f231e5d49b17a9651e3a4a94b4be9dd",
+  "protocolSha256": "sha256:8b45b2083320d7fda62f01d21a8371e817ebf7bddb821861e2ebc96d6f458184",
+  "collectedAt": "2026-09-21T07:10:42.851Z",
+  "externalSpendingUsd": 0,
+  "plannedProcesses": 17,
+  "observedProcesses": 17,
+  "plannedRoutes": 272,
+  "observedRoutes": 272,
+  "summary": {
+    "networkMismatchCount": 238,
+    "mountMismatchCount": 0,
+    "keyDomainMismatchCount": 0,
+    "notRunningProcessCount": 0,
+    "duplicateContainerIdCount": 0,
+    "duplicateHostPidCount": 0,
+    "unexpectedExternalNetworkCount": 0
+  },
+  "networkMismatchBreakdown": [
+    {
+      "expectedReachable": false,
+      "observedReachable": true,
+      "count": 238
+    }
+  ],
+  "collectorDiagnosis": {
+    "scope": "development-probe-accounting-defect",
+    "outerTimeoutErrorWasRejected": false,
+    "outerTimeoutReturnedStatusZero": true,
+    "reproducedErrorCode": "ETIMEDOUT",
+    "selectedExecutionWasAttempted": false,
+    "correctionPolicy": "Preserve this receipt, require an explicit completed-probe payload while rejecting any subprocess error or signal, and use a fresh development evidence identity."
+  },
+  "retainedRawArtifact": {
+    "path": "evidence/mode-r-boundary-qualification-v1-development-attempt-2/receipt.json",
+    "bytes": 49870,
+    "sha256": "1de429779734c489128280776f17d0dc52e56d93bba5f66ad94c52e4a7afce3f"
+  },
+  "claimBoundary": "This is an append-only interpretation of a failed development collector qualification. The apparent universal reachability was a collector timeout-accounting defect, not a selected topology result. It is not B12 closure, a behavioral result, a negative scientific finding, independent review, or a public timestamp."
+}

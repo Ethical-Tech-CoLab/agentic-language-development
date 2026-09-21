@@ -18,7 +18,7 @@ assert.ok(modes.has(mode), 'expected --run-development, --audit-development, --r
 const development = mode.endsWith('development');
 const runMode = mode.startsWith('--run');
 const evidenceRoot = development
-  ? 'evidence/mode-r-boundary-qualification-v1-development-attempt-2'
+  ? 'evidence/mode-r-boundary-qualification-v1-development-attempt-3'
   : 'evidence/mode-r-boundary-qualification-v1';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const protocolPath = 'protocols/mode-r-boundary-qualification.v1.json';
@@ -55,25 +55,45 @@ const serverSource = [
   "net.createServer(s=>{s.on('error',()=>{});s.end(process.env.ALD_PROCESS_NAME)}).listen(4318,'0.0.0.0')",
   'setInterval(()=>{},1<<30)',
 ].join(';');
-const probeSource = [
+const probeBatchSource = [
   "const net=require('node:net')",
-  'const s=net.createConnection({host:process.argv[1],port:4318})',
-  "s.setEncoding('utf8')",
-  "let response=''",
-  'const t=setTimeout(()=>{s.destroy();process.exit(2)},750)',
-  "s.on('data',chunk=>{response+=chunk})",
-  "s.on('end',()=>{clearTimeout(t);process.exit(response===process.argv[1]?0:3)})",
-  "s.on('error',()=>{clearTimeout(t);process.exit(2)})",
+  'const targets=JSON.parse(process.argv[1])',
+  "const probe=target=>new Promise(resolve=>{let socket,timer,response='',done=false",
+  "const finish=(outcome,responder=null)=>{if(done)return;done=true;clearTimeout(timer);socket.destroy();resolve({target,outcome,responder})}",
+  "socket=net.createConnection({host:target,port:4318})",
+  "socket.setEncoding('utf8')",
+  "timer=setTimeout(()=>finish('denied'),750)",
+  "socket.on('data',chunk=>{response+=chunk})",
+  "socket.on('end',()=>finish(response===target?'reachable':'wrong-responder',response||null))",
+  "socket.on('error',()=>finish('denied'))})",
+  "Promise.all(targets.map(probe)).then(results=>process.stdout.write(JSON.stringify({marker:'ald-mode-r-probe-v1',results})))",
 ].join(';');
 
 function inspect(name) {
   return JSON.parse(command('docker', ['inspect', name]))[0];
 }
 
-function reachable(container, target) {
-  return spawnSync('docker', [
-    'exec', container, 'node', '-e', probeSource, target,
-  ], { encoding: 'utf8', timeout: 3_000 }).status === 0;
+function probeBatch(container, targets) {
+  const result = spawnSync('docker', [
+    'exec', container, 'node', '-e', probeBatchSource, JSON.stringify(targets),
+  ], { encoding: 'utf8', timeout: 30_000 });
+  const incomplete = (reason) => targets.map((target) => ({
+    target, outcome: 'incomplete', responder: null, reason,
+  }));
+  if (result.error !== undefined || result.signal !== null || result.status !== 0) {
+    return incomplete(result.error?.code ?? result.signal ?? `exit-${String(result.status)}`);
+  }
+  try {
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.marker, 'ald-mode-r-probe-v1');
+    assert.deepEqual(payload.results.map((entry) => entry.target), targets);
+    for (const entry of payload.results) {
+      assert.ok(['reachable', 'denied', 'wrong-responder'].includes(entry.outcome));
+    }
+    return payload.results;
+  } catch (error) {
+    return incomplete(`invalid-output:${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 function audit(receipt) {
@@ -95,6 +115,8 @@ function audit(receipt) {
   assert.equal(receipt.summary.mountMismatchCount, 0);
   assert.equal(receipt.summary.keyDomainMismatchCount, 0);
   assert.equal(receipt.summary.notRunningProcessCount, 0);
+  assert.equal(receipt.summary.incompleteProbeCount, 0);
+  assert.equal(receipt.summary.wrongResponderCount, 0);
   assert.equal(receipt.summary.duplicateContainerIdCount, 0);
   assert.equal(receipt.summary.duplicateHostPidCount, 0);
   assert.equal(receipt.summary.unexpectedExternalNetworkCount, 0);
@@ -110,6 +132,9 @@ function audit(receipt) {
       processes[route.to].networks.includes(network));
     assert.equal(route.expectedReachable, shared);
     assert.equal(route.observedReachable, shared);
+    assert.equal(route.probeCompleted, true);
+    assert.equal(route.probeOutcome, shared ? 'reachable' : 'denied');
+    assert.equal(route.responderIdentity, shared ? route.to : null);
   }
   return receipt;
 }
@@ -178,7 +203,7 @@ try {
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const ready = processNames.filter((name) => processes[name].networks.length > 0)
-      .every((name) => reachable(`${prefix}-${name}`, name));
+      .every((name) => probeBatch(`${prefix}-${name}`, [name])[0]?.outcome === 'reachable');
     if (ready) break;
     assert.notEqual(attempt, 19, 'network probe listeners did not become ready');
   }
@@ -205,15 +230,24 @@ try {
   });
   const routes = [];
   for (const from of processNames) {
+    const targets = processNames.filter((to) => from !== to);
+    const probed = new Map(probeBatch(`${prefix}-${from}`, targets)
+      .map((observation) => [observation.target, observation]));
     for (const to of processNames) {
       if (from === to) continue;
       const expectedReachable = processes[from].networks.some((network) =>
         processes[to].networks.includes(network));
+      const observation = probed.get(to);
+      const probeCompleted = observation?.outcome !== 'incomplete';
       routes.push({
         from,
         to,
         expectedReachable,
-        observedReachable: reachable(`${prefix}-${from}`, to),
+        observedReachable: observation?.outcome === 'reachable',
+        probeCompleted,
+        probeOutcome: observation?.outcome ?? 'incomplete',
+        responderIdentity: observation?.responder ?? null,
+        incompleteReason: probeCompleted ? null : observation?.reason ?? 'missing-result',
       });
     }
   }
@@ -226,6 +260,9 @@ try {
     observation.keyDomain !== expectedKeyDomain(observation.name)).length;
   const notRunningProcessCount = processObservations.filter((observation) =>
     !observation.running).length;
+  const incompleteProbeCount = routes.filter((route) => !route.probeCompleted).length;
+  const wrongResponderCount = routes.filter((route) =>
+    route.probeOutcome === 'wrong-responder').length;
   const duplicateContainerIdCount = processObservations.length -
     new Set(processObservations.map((observation) => observation.containerId)).size;
   const duplicateHostPidCount = processObservations.length -
@@ -238,6 +275,8 @@ try {
     mountMismatchCount,
     keyDomainMismatchCount,
     notRunningProcessCount,
+    incompleteProbeCount,
+    wrongResponderCount,
     duplicateContainerIdCount,
     duplicateHostPidCount,
     unexpectedExternalNetworkCount,
