@@ -113,7 +113,8 @@ export function controllerEvidencePortForWriter(
         throw new Error('controller evidence request run ID does not match');
       }
       const operation = writer[method] as (...values: unknown[]) => unknown;
-      return resultFor(method, await operation.apply(writer, args), runId);
+      const result = await operation.apply(writer, args);
+      return resultFor(method, result === undefined ? null : result, runId);
     },
   ])) as ControllerEvidencePort;
 }

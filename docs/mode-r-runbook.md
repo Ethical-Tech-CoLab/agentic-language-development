@@ -68,6 +68,12 @@ analysis attachments, and recovery. Source guards prevent those operations
 from returning to the broad writer handle. Registration, synchronous research
 queries, experiment-record history, and reconstruction reads still use the
 local writer, so a remote endpoint cannot yet replace it.
+Experiment-record construction now awaits the Controller capability for prior
+versions, analysis-attachment references, and the append itself; seal-file
+rewrites and the `run.sealed` checkpoint reference use the same read surface.
+The local adapter normalizes void writes exactly like the socket wire. Public
+synchronous research getters and restart reconstruction still retain direct
+local-reader dependencies.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

@@ -765,7 +765,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     await this.#initializeAdapters(run);
     this.#assertDeploymentMode(runConfig, adapters, true);
     await this.#recordInitialPolicies(run);
-    this.#appendExperimentRecord(run, {
+    await this.#appendExperimentRecord(run, {
       disposition: 'invalid',
       checkpointManifestRef: GENESIS_HASH,
       anchorTxRef: UNANCHORED_TX_REF,
@@ -1665,7 +1665,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         `unplanned-intervention:${event.entryHash}:` +
         intervention.reasonCode;
       run.deviations.push(deviation);
-      this.#appendExperimentRecord(run, {
+      await this.#appendExperimentRecord(run, {
         disposition: 'invalid',
         checkpointManifestRef: checkpoint.checkpointHash,
         anchorTxRef: UNANCHORED_TX_REF,
@@ -1721,7 +1721,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     const anchor = await this.#anchor(run, manifest);
     if (anchor.blocked) {
-      this.#appendExperimentRecord(run, {
+      await this.#appendExperimentRecord(run, {
         disposition: 'aborted',
         checkpointManifestRef: manifest.checkpointHash,
         anchorTxRef: UNANCHORED_TX_REF,
@@ -1734,7 +1734,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return this.#summary(run);
     }
 
-    this.#appendExperimentRecord(run, {
+    await this.#appendExperimentRecord(run, {
       disposition: 'aborted',
       checkpointManifestRef: manifest.checkpointHash,
       anchorTxRef: anchor.receipt?.transactionHash ?? UNANCHORED_TX_REF,
@@ -1836,7 +1836,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (!run.deviations.includes(SEAL_ABANDONED_DEVIATION)) {
       run.deviations.push(SEAL_ABANDONED_DEVIATION);
     }
-    this.#appendExperimentRecord(run, {
+    await this.#appendExperimentRecord(run, {
       disposition: 'invalid',
       checkpointManifestRef: run.finalCheckpointHash ?? GENESIS_HASH,
       anchorTxRef: run.anchorReceipt?.transactionHash ?? UNANCHORED_TX_REF,
@@ -1870,7 +1870,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (anchor.blocked) {
       // §7.2: export or anchor unavailable after bounded retry.
       run.lifecycle.apply('seal-blocked');
-      this.#appendExperimentRecord(run, {
+      await this.#appendExperimentRecord(run, {
         disposition: openDisposition,
         checkpointManifestRef: manifest.checkpointHash,
         anchorTxRef: UNANCHORED_TX_REF,
@@ -1883,7 +1883,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     const anchored = anchor.receipt?.status === 'confirmed';
-    this.#appendExperimentRecord(run, {
+    await this.#appendExperimentRecord(run, {
       disposition: openDisposition,
       checkpointManifestRef: manifest.checkpointHash,
       anchorTxRef: anchor.receipt?.transactionHash ?? UNANCHORED_TX_REF,
@@ -1905,7 +1905,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     // §15.1: the Verifier is authoritative for integrity, so a run is only
     // `valid` once it is anchored *and* the report passed.
-    this.#appendExperimentRecord(run, {
+    await this.#appendExperimentRecord(run, {
       disposition: aborted
         ? 'aborted'
         : anchored && report?.exitCode === 0
@@ -3073,7 +3073,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async #appendRunSealedEvents(run: RunRuntime): Promise<void> {
     // The final checkpoint is created immediately after these events, so its
     // sequence is the next one the manifest chain will assign.
-    const checkpointRef = `checkpoint:${run.writer.readCheckpoints(run.runId).length}`;
+    const checkpointRef = `checkpoint:${(await run.controllerEvidence
+      .readCheckpoints(run.runId)).length}`;
     for (const role of BABY_ROLES) {
       await run.gateway.appendLifecycleLedgerEvent(run.turn, role, {
         eventType: 'run.sealed',
@@ -3093,7 +3094,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   }
 
   /** SPEC §11.9: append-only, versioned by `(runId, recordVersion)`. */
-  #appendExperimentRecord(
+  async #appendExperimentRecord(
     run: RunRuntime,
     fields: Pick<
       ExperimentRecord,
@@ -3103,8 +3104,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       | 'verifierReportRef'
       | 'deviations'
     >,
-  ): ExperimentRecord {
-    const previous = run.writer.readExperimentRecords(run.runId);
+  ): Promise<ExperimentRecord> {
+    const previous = await run.controllerEvidence.readExperimentRecords(run.runId);
     const contract = run.contracts.find(
       (candidate) => candidate.track === run.config.babyA.track,
     );
@@ -3118,14 +3119,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       runConfigRef: run.configurationHash,
       protocolGitCommit: run.config.protocolGitCommit,
       preRegistrationHash: run.config.preRegistrationHash,
-      analysisAttachmentRefs: run.writer
-        .readAnalysisAttachments(run.runId)
+      analysisAttachmentRefs: (await run.controllerEvidence
+        .readAnalysisAttachments(run.runId))
         .map((attachment) => attachment.descriptor.sha256),
       claimBoundaryStatement:
         CLAIM_BOUNDARY_STATEMENTS[run.config.deploymentMode],
       ...fields,
     };
-    run.writer.appendExperimentRecord(record);
+    await run.controllerEvidence.appendExperimentRecord(record);
     return record;
   }
 
@@ -3136,7 +3137,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * versions exist.
    */
   async #writeExperimentRecordFile(run: RunRuntime): Promise<void> {
-    const history = run.writer.readExperimentRecords(run.runId);
+    const history = await run.controllerEvidence.readExperimentRecords(run.runId);
     const current = history.at(-1);
     if (current === undefined) {
       return;
