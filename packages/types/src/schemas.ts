@@ -256,6 +256,8 @@ export const RunConfigSchema = z
     turnResponseBudgetMs: z.number().int().min(1_000),
     maxTurnsPerRun: positiveInteger,
     evaluationTurns: positiveInteger.optional(), // evaluation-phase budget; runtime default 200
+    /** A derived frozen-policy run may begin directly in held-out evaluation. */
+    evaluationOnly: z.boolean().optional(),
     maxConsecutiveRejections: positiveInteger,
     ledgerLagTurns: z.number().int().min(0).max(2),
     curriculumMode: z.enum(['fixed-schedule', 'adaptive-guided']),

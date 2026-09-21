@@ -274,23 +274,20 @@ describe('run creation guard rails', () => {
     ).rejects.toThrow(/scenarioBundleHash/u);
   }, 60_000);
 
-  it('refuses the shuffled condition for a learning track', async () => {
+  it('requires stateful shuffled controls to use derived evaluation-only execution', async () => {
     harness = await createHarness();
-    await expect(
-      harness.runtime.createRun(
-        testConfig({
-          runId: 'run-shuffled-rl',
-          experimentId: 'E03',
-          randomSeed: 'ald-shuffled-rl',
-          babyA: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' },
-          babyB: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' },
-          learningSignal: 'extrinsic-task',
-          communicationCondition: 'shuffled',
-          maxTurnsPerRun: 2,
-          evaluationTurns: 2,
-        }),
-      ),
-    ).rejects.toThrow(/no-learning/u);
+    const runId = 'run-shuffled-rl';
+    await expect(harness.runtime.createRun(testConfig({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'ald-shuffled-rl',
+      babyA: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' },
+      babyB: { track: 'scratch-rl', modelRef: 'tabular-reinforce-v1' },
+      learningSignal: 'extrinsic-task',
+      communicationCondition: 'shuffled',
+      maxTurnsPerRun: 2,
+      evaluationTurns: 2,
+    }))).rejects.toThrow(/evaluationOnly/u);
   });
 
   it('refuses to skip anchoring outside prototype mode', async () => {

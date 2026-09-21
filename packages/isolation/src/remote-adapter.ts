@@ -164,6 +164,10 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
 
   /** Present exactly when the hosted adapter has it (SPEC §6.2). */
   updatePolicy?: (batch: UpdateBatch) => Promise<PolicyCheckpointRef>;
+  previewAct?: (input: {
+    observation: Observation;
+    budget: TurnBudget;
+  }) => Promise<TurnProposalEnvelope>;
   measureAffect?: () => Promise<AffectStateMeasurement>;
   applyCurriculumStage?: (stage: CurriculumStage) => Promise<void>;
   describeProvenance?: () => LearnerProvenance;
@@ -460,6 +464,19 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
             (value, deadlineAt) => this.syncPolicy(value.policyDigest, 'update_policy', deadlineAt),
           );
           return result.checkpoint;
+        };
+        return;
+      case 'previewAct':
+        this.previewAct = async ({ observation, budget }): Promise<TurnProposalEnvelope> => {
+          const result = await this.call(
+            'preview_act',
+            { observation, budget },
+            (raw) => EnvelopeResultSchema.parse(raw),
+          );
+          if (result.policyDigest !== this.policy?.digest) {
+            throw new IsolationError('protocol-violation', { method: 'preview_act' });
+          }
+          return result.envelope as TurnProposalEnvelope;
         };
         return;
       case 'measureAffect':

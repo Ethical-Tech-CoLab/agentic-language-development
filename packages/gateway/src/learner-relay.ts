@@ -43,6 +43,7 @@ const RESULT_SCHEMAS = {
   init: InitResultSchema,
   observe: PolicyStateResultSchema,
   act: EnvelopeResultSchema,
+  preview_act: EnvelopeResultSchema,
   receive: EnvelopeResultSchema,
   on_outcome: PolicyStateResultSchema,
   update_policy: CheckpointResultSchema,
@@ -266,6 +267,13 @@ export class GatewayLearnerRelay {
     if (method === 'observe' && value['recipient'] !== this.options.role) {
       this.diagnostics.rejectedRequests += 1;
       throw new HostProtocolError('invalid-params');
+    }
+    if (method === 'preview_act') {
+      const observation = value['observation'] as Record<string, unknown> | undefined;
+      if (observation?.['recipient'] !== this.options.role) {
+        this.diagnostics.rejectedRequests += 1;
+        throw new HostProtocolError('invalid-params');
+      }
     }
     if (method === 'receive' && value['logicalSender'] === this.options.role) {
       this.diagnostics.rejectedRequests += 1;

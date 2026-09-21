@@ -173,6 +173,22 @@ export class LearnerHost {
         );
         return { envelope, policyDigest: this.policyDigest() };
       }
+      case 'preview_act': {
+        const adapter = this.requireAdapter();
+        if (adapter.previewAct === undefined) {
+          throw new HostProtocolError('unsupported-method');
+        }
+        const { observation, budget } = parsed.data as {
+          observation: Parameters<LearnerAdapter['observe']>[0];
+          budget: Parameters<LearnerAdapter['act']>[0];
+        };
+        const before = this.policyDigest();
+        const envelope = await adapter.previewAct({ observation, budget });
+        if (this.policyDigest() !== before) {
+          throw new HostProtocolError('internal');
+        }
+        return { envelope, policyDigest: before };
+      }
       case 'receive': {
         const adapter = this.requireAdapter();
         const envelope = await adapter.receive(

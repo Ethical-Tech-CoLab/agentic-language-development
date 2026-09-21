@@ -744,6 +744,14 @@ export interface LearnerAdapter {
   init(context: LearnerInitContext): Promise<void>;
   observe(observation: Observation): Promise<void>;
   act(turnBudget: TurnBudget): Promise<TurnProposalEnvelope>;
+  /**
+   * Optional read-only sender preview used only by recurrent shuffled controls.
+   * It must not mutate this adapter's policy, hidden state, or private ledger.
+   */
+  previewAct?(input: {
+    observation: Observation;
+    budget: TurnBudget;
+  }): Promise<TurnProposalEnvelope>;
   receive(delivery: DeliveredChannelArtifact): Promise<LedgerDraftEnvelope>;
   onOutcome(outcome: OutcomeEvent): Promise<void>;
   updatePolicy?(batch: UpdateBatch): Promise<PolicyCheckpointRef>;
