@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-pre-start-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "362706d7b20573448a4cce01ca7914ecb197ae5b",
+  "attemptedRunId": "mode-r-application-v1",
+  "stage": "compose-container-creation",
+  "applicationProcessesStarted": 0,
+  "turnsRecorded": 0,
+  "auditEntriesRecorded": 0,
+  "cause": "The unquoted inline tmpfs value was parsed as three YAML flow-sequence items, so Docker rejected nosuid as a non-absolute mount path before any container started.",
+  "correctionPolicy": "Retain the v1 raw receipt, quote every tmpfs value, add a parsed-value regression test, bind the corrected Compose in a prospective v2 protocol, and use a fresh evidence identity.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-development-v1/receipt.json",
+    "bytes": 2411,
+    "sha256": "sha256:22afc746863116cae4221ffe9c8b5dd1aeaf9886865fa01c0c31fcb9cd01396c",
+    "retention": "local-ignored-original"
+  },
+  "claimBoundary": "This is a pre-start deployment failure, not an application qualification attempt outcome, behavioral result, B12 closure, or publication evidence."
+}

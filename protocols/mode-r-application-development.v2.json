@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "classification": "selected-mode-r-application-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-v2",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-application-development-v1-failure.json",
+    "stage": "compose-container-creation",
+    "applicationProcessesStarted": 0
+  },
+  "authorityGraph": {
+    "path": "protocols/mode-r-authority-graph.v6.json",
+    "sha256": "aaafc8aecb844942118e2fb6e279019d4be193ba4013dfd737685db2c6f26db3"
+  },
+  "compose": {
+    "path": "deploy/mode-r/docker-compose.application.v1.yml",
+    "sha256": "b45400cf705c7ee20e11b4dbf6bc6a8afbe5682683e3ec99640e0b550c761474"
+  },
+  "correction": {
+    "scope": "quote-four-tmpfs-flow-values",
+    "regressionCheck": "parsed-tmpfs-value-is-one-absolute-mount-specification",
+    "scientificDesignChanged": false,
+    "thresholdChanged": false
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "trainingTurns": 2,
+    "evaluationTurns": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attempts": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "networkCount": 3,
+    "controllerExitCode": 0,
+    "offlineVerifierExitCode": 0,
+    "recordedTurnCount": 2,
+    "auditEntryCount": 1,
+    "distinctContainerIdCount": 17,
+    "distinctHostPidCount": 15,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "scope": {
+    "included": [
+      "real-application-entrypoints",
+      "seventeen-distinct-containers",
+      "gateway-only-baby-networks",
+      "networkless-model-adapters-signers-and-verifier",
+      "caller-scoped-unix-socket-mounts",
+      "single-sqlite-owner",
+      "two-signed-turns",
+      "delayed-audit-entry",
+      "simulated-anchor-service",
+      "offline-typescript-verification",
+      "measured-container-state-and-resource-snapshot"
+    ],
+    "excluded": [
+      "registered-behavioral-experiment",
+      "scientific-finding",
+      "complete-lifecycle-and-restore",
+      "comprehensive-fault-matrix",
+      "independent-rust-bundle-audit",
+      "selected-resource-envelope-qualification",
+      "b12-closure",
+      "independent-review",
+      "public-chain-timestamp",
+      "publication-readiness"
+    ]
+  },
+  "claimBoundary": "A passing development execution establishes only the bounded selected-shape application path listed in scope.included. It cannot close B12 or supply a behavioral result."
+}

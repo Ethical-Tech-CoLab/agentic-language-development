@@ -50,6 +50,13 @@ fails closed on dirty source or reused evidence and compares resolved mounts and
 networks to live containers before teardown. The image builds and focused
 source tests pass; no application execution receipt exists yet, so this remains
 implemented but unexecuted development infrastructure and B12 stays open.
+The first v1 invocation stopped during Compose container creation before any
+container started because an unquoted inline tmpfs string was parsed into three
+items. Its raw failure receipt remains ignored and the portable failure summary
+records zero started application processes, turns, and audit entries. The v2
+protocol prospectively quotes all four values, tests the parsed single-item
+form, parameterizes the fresh run identity, and does not change the scientific
+design or acceptance thresholds. The v1 identity must not be reused.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

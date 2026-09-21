@@ -12,18 +12,22 @@ import { join, resolve } from 'node:path';
 import { buildRunConfig } from '@ald/lifecycle';
 
 const mode = process.argv[2];
-assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
-const protocolPath = 'protocols/mode-r-application-development.v1.json';
-const evidenceRoot = 'evidence/mode-r-application-development-v1';
+assert.ok(['--run-v1', '--audit-v1', '--run-v2', '--audit-v2'].includes(mode),
+  'expected --run-v1, --audit-v1, --run-v2, or --audit-v2');
+const version = mode.endsWith('v2') ? 2 : 1;
+const runMode = mode.startsWith('--run');
+const protocolPath = `protocols/mode-r-application-development.v${String(version)}.json`;
+const evidenceRoot = `evidence/mode-r-application-development-v${String(version)}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const composePath = 'deploy/mode-r/docker-compose.application.v1.yml';
-const project = 'ald-mode-r-application-development-v1';
+const project = `ald-mode-r-application-development-v${String(version)}`;
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
 const environment = {
   ...process.env,
   ALD_MODE_R_APPLICATION_ROOT: resolve(evidenceRoot),
   ALD_SOFTWARE_COMMIT: commit,
+  ALD_MODE_R_RUN_ID: protocol.runId,
 };
 const compose = (...args) => command('docker', [
   'compose', '-p', project, '-f', composePath, ...args,
@@ -71,7 +75,7 @@ function audit(receipt) {
   return receipt;
 }
 
-if (mode === '--audit') {
+if (!runMode) {
   assert.ok(existsSync(receiptPath), `missing ${receiptPath}`);
   audit(readJson(receiptPath));
   console.log('selected application development receipt valid; B12 remains open');
@@ -104,7 +108,7 @@ for (const directory of directories) {
 const runConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
-  randomSeed: 'selected-application-development-v1',
+  randomSeed: `selected-application-development-v${String(version)}`,
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',

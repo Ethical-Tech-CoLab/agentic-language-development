@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -9,6 +10,7 @@ type Service = {
   entrypoint?: string[];
   network_mode?: string;
   networks?: string[] | Record<string, unknown>;
+  tmpfs?: string[];
   volumes?: Mount[];
 };
 type Compose = {
@@ -20,6 +22,21 @@ const compose = parse(readFileSync(
   'deploy/mode-r/docker-compose.application.v1.yml',
   'utf8',
 )) as Compose;
+const protocolV2 = JSON.parse(readFileSync(
+  'protocols/mode-r-application-development.v2.json',
+  'utf8',
+)) as {
+  schemaVersion: number;
+  status: string;
+  runId: string;
+  predecessorFailure: {
+    path: string;
+    stage: string;
+    applicationProcessesStarted: number;
+  };
+  compose: { path: string; sha256: string };
+  correction: { scientificDesignChanged: boolean; thresholdChanged: boolean };
+};
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -43,6 +60,25 @@ function ownersOfTarget(target: string): string[] {
 }
 
 describe('selected Mode R application Compose', () => {
+  it('uses a fresh v2 identity after preserving the pre-start v1 failure', () => {
+    expect(protocolV2.schemaVersion).toBe(2);
+    expect(protocolV2.status).toBe('design-locked-not-executed');
+    expect(protocolV2.runId).toBe('mode-r-application-v2');
+    expect(protocolV2.predecessorFailure).toEqual({
+      path: 'reports/research/mode-r-application-development-v1-failure.json',
+      stage: 'compose-container-creation',
+      applicationProcessesStarted: 0,
+    });
+    expect(protocolV2.correction).toMatchObject({
+      scientificDesignChanged: false,
+      thresholdChanged: false,
+    });
+    expect(protocolV2.compose.path)
+      .toBe('deploy/mode-r/docker-compose.application.v1.yml');
+    expect(createHash('sha256').update(readFileSync(protocolV2.compose.path))
+      .digest('hex')).toBe(protocolV2.compose.sha256);
+  });
+
   it('declares the exact 17-process graph and three internal networks', () => {
     expect(Object.keys(compose.services).sort()).toEqual(processes);
     expect(Object.keys(compose.networks).sort()).toEqual([
@@ -62,6 +98,11 @@ describe('selected Mode R application Compose', () => {
       'signer-affect', 'signer-audit', 'signer-baby-a-ledger',
       'signer-baby-b-ledger', 'signer-channel', 'witness-signer',
     ]) expect(networks(compose.services[name]!)).toEqual([]);
+    for (const name of ['model-adapter-a', 'model-adapter-b', 'baby-a', 'baby-b']) {
+      expect(compose.services[name]!.tmpfs).toEqual([
+        '/tmp:noexec,nosuid,size=16m',
+      ]);
+    }
   });
 
   it('mounts each private application capability only in its two owners', () => {

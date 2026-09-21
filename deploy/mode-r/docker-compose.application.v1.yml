@@ -32,7 +32,7 @@ services:
       - --track=no-learning
       - --host-label=model-adapter-a
     network_mode: none
-    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    tmpfs: ["/tmp:noexec,nosuid,size=16m"]
     volumes:
       - type: bind
         source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-a
@@ -46,7 +46,7 @@ services:
       - --track=no-learning
       - --host-label=model-adapter-b
     network_mode: none
-    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    tmpfs: ["/tmp:noexec,nosuid,size=16m"]
     volumes:
       - type: bind
         source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-b
@@ -65,7 +65,7 @@ services:
       - --model-host-label=model-adapter-a
     depends_on: [model-adapter-a]
     networks: [baby-a-gateway]
-    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    tmpfs: ["/tmp:noexec,nosuid,size=16m"]
     volumes:
       - type: bind
         source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-a
@@ -84,7 +84,7 @@ services:
       - --model-host-label=model-adapter-b
     depends_on: [model-adapter-b]
     networks: [baby-b-gateway]
-    tmpfs: [/tmp:noexec,nosuid,size=16m]
+    tmpfs: ["/tmp:noexec,nosuid,size=16m"]
     volumes:
       - type: bind
         source: ${ALD_MODE_R_APPLICATION_ROOT}/runtime/model-b
@@ -92,7 +92,7 @@ services:
 
   signer-baby-a-ledger:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-a-ledger", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-a-ledger", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-baby-a-ledger/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
@@ -107,7 +107,7 @@ services:
 
   signer-baby-b-ledger:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-b-ledger", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "baby-b-ledger", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-baby-b-ledger/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
@@ -122,7 +122,7 @@ services:
 
   signer-channel:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "channel", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "channel", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-channel/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
@@ -137,7 +137,7 @@ services:
 
   signer-affect:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "affect", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "affect", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-affect/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
@@ -152,7 +152,7 @@ services:
 
   signer-audit:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "audit", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "audit", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-audit/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
@@ -167,7 +167,7 @@ services:
 
   witness-signer:
     <<: *node-host
-    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "witness", "mode-r-application-v1"]
+    command: ["/app/deploy/mode-r/domain-signer-host.mjs", "witness", "${ALD_MODE_R_RUN_ID:?set ALD_MODE_R_RUN_ID}"]
     environment:
       ALD_MODE_R_SIGNER_SOCKET: /run/ald-mode-r/signer-witness/signer.sock
       ALD_MODE_R_PUBLIC_KEYS_ROOT: /public-keys
