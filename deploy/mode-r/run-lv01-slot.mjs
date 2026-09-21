@@ -78,14 +78,14 @@ function authorityObservation(project) {
   assert.ok(!mountTargets('baby-a').has('/run/ald-mode-r/model-b'));
   assert.ok(mountTargets('baby-b').has('/run/ald-mode-r/model-b'));
   assert.ok(!mountTargets('baby-b').has('/run/ald-mode-r/model-a'));
+  const networks = (service) => Object.keys(services.get(service).NetworkSettings.Networks)
+    .filter((network) => network !== 'none').sort();
   for (const service of ['model-adapter-a', 'model-adapter-b', 'signer-baby-a-ledger',
     'signer-baby-b-ledger', 'signer-channel', 'signer-affect', 'signer-audit',
     'witness-signer', 'offline-verifier']) {
-    assert.equal(Object.keys(services.get(service).NetworkSettings.Networks).length, 0,
+    assert.equal(networks(service).length, 0,
       `${service} must have no network route`);
   }
-  const networks = (service) => Object.keys(services.get(service).NetworkSettings.Networks)
-    .filter((network) => network !== 'none').sort();
   assert.equal(networks('baby-a').some((network) => networks('baby-b').includes(network)), false,
     'the two learner roles must not share a network');
   const access = [
