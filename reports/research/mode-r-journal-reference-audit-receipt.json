@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "classification": "bounded-mode-r-journal-reference-independent-audit",
+  "executionCommit": "ad81bb289284136cee5eb7ffa4cefd28db72b925",
+  "executionTree": "d0fc8724b697c49a142fffe01fa52ad0e12bf8ca",
+  "executionVersion": "0.1.216",
+  "auditCommit": "cf15985d0dfd5d868ee7da2f9cc5472657dac433",
+  "originalEvidenceRoot": "evidence/validation/mode-r-study-2724959",
+  "originalTerminalSha256": "sha256:12304233982d6f037b3e2a79c4d8109ab72dd8a38344acf9df022e50956b3867",
+  "rustAuditorSha256": "sha256:2a81ee950998c91a14801d7d9adde514b5856aa3ad4f6da594f273bf060f307c",
+  "runs": [
+    {
+      "track": "no-learning",
+      "runId": "mode-r-study-no-learning",
+      "summarySha256": "sha256:6c988d96bd43aba9810c70d3d8079001cb76b247ad43ff2ce59d3f001a70e01f",
+      "bundleManifestHash": "sha256:9c123dbc84b6527ec37768c10e61357523d7b8f7d26c9b0f8c18852252112fec",
+      "signedEventCount": 59,
+      "checkpointCount": 10,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "731d78bfcd7c277c3dd3c5f5eac60f1b777e16b32acd7697744ad750c8f70769",
+        "signer-baby-b-ledger": "b45de0d8408ff7d150294bf049005d6906dbd11c6ff2ae015b4dc6fe489385c1",
+        "signer-channel": "07c27f318d56dcb18587d2da66d574a2ff808444ed7b41c0e5990cc880973941",
+        "signer-affect": "22ed528f5ae58e8e6a79d69c7a0451a2f4072f3e42cca6ce8026bbada4ace708",
+        "signer-audit": "08325f40f6507047983a420ac4fffe144e36b00f1a543669773f182898bfd40d",
+        "signer-witness": "9eb50708c4eafab71c972d5957e1589f45a6c2c1daa83bb31016721ea4e9ba06"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true,
+      "journal": {
+        "intentCount": 16,
+        "confirmationCount": 16,
+        "unresolvedCount": 0,
+        "logicalBytes": 6216,
+        "allocatedBytes": 135168
+      }
+    },
+    {
+      "track": "scratch-rl",
+      "runId": "mode-r-study-scratch-rl",
+      "summarySha256": "sha256:62debcd654afd7c77a4bb7c089b92f066dd1f7c41cc146e9da1a2d4d042267f1",
+      "bundleManifestHash": "sha256:8fde0e20fe9ace98c21dcd8ef568136361c5d1f6da356dd2aac9618ce6ccb08a",
+      "signedEventCount": 77,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "af7d480c7f5581efa0db455999313353a11fc60b48f16406d4ce7ef0a73e3939",
+        "signer-baby-b-ledger": "72e2ac5d30bc0db48be7c8d7f42a6cab445b6fc659386c21e957059995f81fcb",
+        "signer-channel": "0accf48a550b7db5232410be88b6149219ed9f776c52563f09759feb24669d1e",
+        "signer-affect": "55787a790b2bd9773353ad3d88b13d97d7ae741549e251607c88017dc127e566",
+        "signer-audit": "04731b290337d1f8100b8bac1a3e11960c0596bd779fa17a8eea77744dfff592",
+        "signer-witness": "30f0677ae698d610677c10c1d288fbb25b0446d35e9d343d10b6872b200e17ad"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true,
+      "journal": {
+        "intentCount": 16,
+        "confirmationCount": 16,
+        "unresolvedCount": 0,
+        "logicalBytes": 6184,
+        "allocatedBytes": 135168
+      }
+    },
+    {
+      "track": "self-supervised",
+      "runId": "mode-r-study-self-supervised",
+      "summarySha256": "sha256:4316dbef53dbf36833d6386e217ad868a3da2ac3283653e7293a71028037e3b4",
+      "bundleManifestHash": "sha256:892e856ee7f0960f6270207ecb1ce3eab5f60428782b511541ae243e18dc467a",
+      "signedEventCount": 81,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "ffa3543c4389b289baddae821c9020f294e473dedb5a0057dc659baf108815b4",
+        "signer-baby-b-ledger": "3c9aa2bf50d1c9aa08cd7abdf1e7f9ca5180bbf5e2b5e1d5d5f3bf4b3e01c5a9",
+        "signer-channel": "5074b28bb7f43f76d1cdf2571892f79335e1777f4e3b0d843e1f5601704808b1",
+        "signer-affect": "1422dbd9cc80545ced41a224e94622655389f02eb48e3219c868f128acb7ca80",
+        "signer-audit": "d785f573e0be0a6e85007bb08971d57b577ceaa1d62f6a8797687bd0e011e012",
+        "signer-witness": "678a19df8eaee4e4e53f7aa0c0ba62f46110f9fbd9e1f8a25c50cea05723bb58"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true,
+      "journal": {
+        "intentCount": 16,
+        "confirmationCount": 16,
+        "unresolvedCount": 0,
+        "logicalBytes": 6344,
+        "allocatedBytes": 135168
+      }
+    },
+    {
+      "track": "hybrid",
+      "runId": "mode-r-study-hybrid",
+      "summarySha256": "sha256:52037930cc370e2016659519a207501b15b4a2ccbfc248573b3b6136ef5ca866",
+      "bundleManifestHash": "sha256:f9a2502c3302d402bccc1ed59cbdd223a10393342837c9c8dea803a59a8df33a",
+      "signedEventCount": 80,
+      "checkpointCount": 13,
+      "signerContainerIds": {
+        "signer-baby-a-ledger": "1dadd3472a90d5a996d360d614c76810d40379109cc0472fff41ea73a3f3c1ce",
+        "signer-baby-b-ledger": "6de6f28757bbb6da123ab297d04debba8d423ff064fa62b5c17f5275c0883a6a",
+        "signer-channel": "ae408db13337f054f76bab660e7113b8499d05304fee79de9227bdd0e9b7d151",
+        "signer-affect": "162278433eb88cca23e2f90c0879949283a60d6dd3c3aed0711e137412641d2f",
+        "signer-audit": "75b4e4b17773629ae132058497319f51d6d9ba80556da9d15c9ea482cc40e4ab",
+        "signer-witness": "2a2c1123ced7082f702fffbbe203f6639e85fcdba1c74775f9627f02fed7e18b"
+      },
+      "typescriptVerified": true,
+      "rustVerified": true,
+      "journal": {
+        "intentCount": 16,
+        "confirmationCount": 16,
+        "unresolvedCount": 0,
+        "logicalBytes": 6056,
+        "allocatedBytes": 135168
+      }
+    }
+  ],
+  "allFourOriginalBundlesVerified": true,
+  "researchFinding": false,
+  "publicChainTransaction": false,
+  "b12Closed": false,
+  "limits": [
+    "Host container inspection is an original-run assertion, not independently replayable after cleanup.",
+    "The anchor is local and simulated; it is not a public-chain transaction.",
+    "Adapter hosts are not separate Baby-twin processes; Gateway, writer, and Controller remain in Nursery.",
+    "The six signer keys are ephemeral, not Fort-provisioned per domain.",
+    "The local write-intent journal is operational, not signed research evidence or a remote writer process.",
+    "This small reference measures journal bytes but not selected-campaign storage or fsync latency bounds.",
+    "This reference does not qualify the selected E10+ topology or establish a behavioral result."
+  ]
+}

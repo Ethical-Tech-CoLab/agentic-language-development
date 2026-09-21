@@ -96,6 +96,17 @@ ignored `evidence/validation/mode-r-study-2358394/` directory and a built Rust
 auditor, run `pnpm run audit:mode-r-signer-reference:live` to recompute all four
 original bundles. The portable check alone does not replay raw evidence.
 
+The later v0.1.216 journal-bearing reference has a separate
+[portable audit receipt](../reports/research/mode-r-journal-reference-audit-receipt.json).
+From a clean checkout, check its commit ancestry and bounded claims with
+`pnpm run audit:mode-r-journal-reference:receipt`. With its ignored original
+`evidence/validation/mode-r-study-2724959/` directory and the built Rust
+auditor, run `pnpm run audit:mode-r-journal-reference:live` to independently
+recheck all four bundles and 64 paired write intents. The journal's measured
+24,800 logical bytes and 540,672 allocated bytes are for this small reference,
+not a full-campaign storage projection. The original terminal still records
+that the later independent Rust audit was not part of its execution.
+
 This is a bounded software/topology qualification only, not the selected E10+
 process/key topology. Its receipt states
 `researchFinding: false` and `publicChainTransaction: false`; the local fake-chain
