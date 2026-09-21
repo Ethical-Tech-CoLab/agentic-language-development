@@ -1,17 +1,24 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { verifyBundle } from '@ald/verifier';
+import { GatewayWriteIntentJournal } from '@ald/gateway';
 
 const mode = process.argv[2];
-assert.ok(process.argv.length === 3 && ['--audit', '--write'].includes(mode),
-  'usage: node scripts/audit-mode-r-signer-reference.mjs --audit|--write');
+assert.ok(process.argv.length === 3 &&
+  ['--audit', '--write', '--audit-journal', '--write-journal'].includes(mode),
+  'usage: node scripts/audit-mode-r-signer-reference.mjs --audit|--write|--audit-journal|--write-journal');
 
-const root = 'evidence/validation/mode-r-study-2358394';
-const receiptPath = 'reports/research/mode-r-signer-reference-audit-receipt.json';
+const journalReference = mode.endsWith('-journal');
+const root = journalReference
+  ? 'evidence/validation/mode-r-study-2724959'
+  : 'evidence/validation/mode-r-study-2358394';
+const receiptPath = journalReference
+  ? 'reports/research/mode-r-journal-reference-audit-receipt.json'
+  : 'reports/research/mode-r-signer-reference-audit-receipt.json';
 const auditorPath = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const tracks = ['no-learning', 'scratch-rl', 'self-supervised', 'hybrid'];
 const signerServices = ['signer-baby-a-ledger', 'signer-baby-b-ledger',
@@ -83,12 +90,36 @@ for (const [index, track] of tracks.entries()) {
   assert.equal(rust.anchored, true, `${track}: local simulated anchor missing`);
   assert.deepEqual(rust.issues, []);
   assert.equal(rust.checkpointCount, summary.checkpointCount);
+  let journal;
+  if (journalReference) {
+    const directory = join(bundle, 'gateway-write-intents');
+    const files = readdirSync(directory);
+    const intents = files.filter((file) => file.endsWith('.intent.json'));
+    const confirmations = files.filter((file) => file.endsWith('.confirmed.json'));
+    const unresolved = await new GatewayWriteIntentJournal(directory, runId)
+      .unresolvedIntents();
+    assert.equal(intents.length, 16, `${track}: unexpected Gateway intent count`);
+    assert.equal(confirmations.length, intents.length,
+      `${track}: unconfirmed Gateway write`);
+    assert.equal(unresolved.length, 0, `${track}: unresolved Gateway write`);
+    const stats = files.map((file) => lstatSync(join(directory, file)));
+    assert.ok(stats.every((file) => file.isFile()), `${track}: non-file journal entry`);
+    journal = {
+      intentCount: intents.length,
+      confirmationCount: confirmations.length,
+      unresolvedCount: unresolved.length,
+      logicalBytes: stats.reduce((sum, file) => sum + file.size, 0),
+      allocatedBytes: lstatSync(directory).blocks * 512 +
+        stats.reduce((sum, file) => sum + file.blocks * 512, 0),
+    };
+  }
   runs.push({
     track, runId, summarySha256: sha256(summaryPath),
     bundleManifestHash: verification.bundleManifestHash,
     signedEventCount: rust.eventCount, checkpointCount: rust.checkpointCount,
     signerContainerIds,
     typescriptVerified: true, rustVerified: true,
+    ...(journal === undefined ? {} : { journal }),
   });
 }
 assert.equal(new Set(originalContainerIds).size, tracks.length * signerServices.length);
@@ -99,7 +130,9 @@ assert.equal(git('status', '--porcelain'), '', 'source changed during independen
 
 const receipt = {
   schemaVersion: 1,
-  classification: 'bounded-mode-r-signer-reference-independent-audit',
+  classification: journalReference
+    ? 'bounded-mode-r-journal-reference-independent-audit'
+    : 'bounded-mode-r-signer-reference-independent-audit',
   executionCommit: terminal.execution.commit,
   executionTree: terminal.execution.tree,
   executionVersion: terminal.execution.version,
@@ -117,11 +150,15 @@ const receipt = {
     'The anchor is local and simulated; it is not a public-chain transaction.',
     'Adapter hosts are not separate Baby-twin processes; Gateway, writer, and Controller remain in Nursery.',
     'The six signer keys are ephemeral, not Fort-provisioned per domain.',
+    ...(journalReference ? [
+      'The local write-intent journal is operational, not signed research evidence or a remote writer process.',
+      'This small reference measures journal bytes but not selected-campaign storage or fsync latency bounds.',
+    ] : []),
     'This reference does not qualify the selected E10+ topology or establish a behavioral result.',
   ],
 };
 
-if (mode === '--write') {
+if (mode === '--write' || mode === '--write-journal') {
   writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
 }
 process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
