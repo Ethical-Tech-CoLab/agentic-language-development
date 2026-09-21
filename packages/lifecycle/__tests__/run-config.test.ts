@@ -517,8 +517,24 @@ describe('experiment and mode coverage (ALD-023)', () => {
   });
 
   it('admits the scoped LV01 identifier without treating it as a portfolio experiment', () => {
-    expect(() => buildRunConfig({ ...BASE, experimentId: 'LV01' })).not.toThrow();
-    expect(valid(buildRunConfig({ ...BASE, experimentId: 'LV01' })).warnings).toEqual([]);
+    const ledgerValuePlan = {
+      version: 1 as const,
+      designCommitmentHash: 'a'.repeat(64),
+      analysisCommitmentHash: 'b'.repeat(64),
+      seedResourceCommitmentHash: 'c'.repeat(64),
+      predictionFunctionVersion: 'lv01-ledger-value-prediction/v1' as const,
+      partitionContractVersion: 'lv01-within-support/v1' as const,
+    };
+    expect(() => buildRunConfig({ ...BASE, experimentId: 'LV01', ledgerValuePlan }))
+      .not.toThrow();
+    expect(valid(buildRunConfig({ ...BASE, experimentId: 'LV01', ledgerValuePlan })).warnings)
+      .toEqual([]);
+    expect(paths({ ...buildRunConfig(BASE), experimentId: 'LV01' })).toContain(
+      'ledgerValuePlan',
+    );
+    expect(paths({ ...buildRunConfig(BASE), ledgerValuePlan })).toContain(
+      'ledgerValuePlan',
+    );
   });
 });
 

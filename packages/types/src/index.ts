@@ -39,6 +39,7 @@ import {
   ExperimentIdSchema,
   ExperimentRecordSchema,
   LedgerDraftEnvelopeSchema,
+  LedgerValuePlanSchema,
   LedgerEventSchema,
   ObservationSchema,
   RunConfigSchema,
@@ -49,6 +50,7 @@ import {
 
 export const schemaRegistry = {
   ExperimentIdSchema,
+  LedgerValuePlanSchema,
   RunConfigSchema,
   RunSeedBindingsSchema,
   ObservationSchema,

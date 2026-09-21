@@ -171,6 +171,22 @@ const causalPredictionPlanSchema = z
   })
   .strict();
 
+/**
+ * The LV01-specific binding. It is intentionally distinct from E16's causal
+ * plan: the two studies have different predictors, data boundaries, and
+ * scientific questions.
+ */
+export const LedgerValuePlanSchema = z
+  .object({
+    version: z.literal(1),
+    designCommitmentHash: hashString,
+    analysisCommitmentHash: hashString,
+    seedResourceCommitmentHash: hashString,
+    predictionFunctionVersion: z.literal('lv01-ledger-value-prediction/v1'),
+    partitionContractVersion: z.literal('lv01-within-support/v1'),
+  })
+  .strict();
+
 /** Prospectively allocated, role-separated seeds for registered research runs. */
 export const RunSeedBindingsSchema = z
   .object({
@@ -236,6 +252,8 @@ export const RunConfigSchema = z
     experimentId: ExperimentIdSchema,
     /** E16 comparator/native-predictor identities committed before run creation. */
     causalPredictionPlan: causalPredictionPlanSchema.optional(),
+    /** LV01's separate design, analysis, resource, and predictor binding. */
+    ledgerValuePlan: LedgerValuePlanSchema.optional(),
     /** SPEC §15.1: absent means `qualification` (non-confirmatory). */
     registrationClass: RegistrationClassSchema.optional(),
     /** SPEC §15.2 / §18: pre-registered interventions (ALD-072). */
@@ -304,6 +322,22 @@ export const RunConfigSchema = z
         code: 'custom',
         path: ['causalPredictionPlan'],
         message: 'Causal prediction plans are restricted to E16',
+      });
+    }
+
+    if (config.experimentId === 'LV01' && config.ledgerValuePlan === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['ledgerValuePlan'],
+        message: 'LV01 requires its scoped ledgerValuePlan binding',
+      });
+    }
+
+    if (config.experimentId !== 'LV01' && config.ledgerValuePlan !== undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['ledgerValuePlan'],
+        message: 'ledgerValuePlan is restricted to LV01',
       });
     }
 

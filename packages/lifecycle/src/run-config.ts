@@ -501,6 +501,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     ...(overrides.causalPredictionPlan === undefined
       ? {}
       : { causalPredictionPlan: overrides.causalPredictionPlan }),
+    ...(overrides.ledgerValuePlan === undefined
+      ? {}
+      : { ledgerValuePlan: overrides.ledgerValuePlan }),
     ...(overrides.interventionPlan === undefined
       ? {}
       : { interventionPlan: overrides.interventionPlan }),
