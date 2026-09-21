@@ -8,6 +8,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { loadLearnerContract, promptBundleHash } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
@@ -15,8 +16,8 @@ import { ReferentialScenarioEngine } from '@ald/scenario';
 import { fixedTokenInventory } from '@ald/types';
 
 const mode = process.argv[2];
-assert.ok(/^--(?:run|audit)-v[1-5]$/u.test(mode ?? ''),
-  'expected a --run-vN or --audit-vN mode for N=1..5');
+assert.ok(/^--(?:run|audit)-v[1-6]$/u.test(mode ?? ''),
+  'expected a --run-vN or --audit-vN mode for N=1..6');
 const version = Number(mode.at(-1));
 const runMode = mode.startsWith('--run');
 const protocolPath = `protocols/mode-r-application-development.v${String(version)}.json`;
@@ -54,6 +55,26 @@ function sha256(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+async function waitForServiceExit(name, timeoutMs = 600_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const ids = command('docker', [
+      'ps', '-aq',
+      '--filter', `label=com.docker.compose.project=${project}`,
+      '--filter', `label=com.docker.compose.service=${name}`,
+    ]).split('\n').filter(Boolean);
+    assert.ok(ids.length <= 1, `${name} has multiple containers`);
+    if (ids.length === 1) {
+      const inspected = JSON.parse(command('docker', ['inspect', ids[0]]))[0];
+      if (inspected.State.Status === 'exited') {
+        return { containerId: inspected.Id, exitCode: inspected.State.ExitCode };
+      }
+    }
+    await delay(250);
+  }
+  throw new Error(`${name} did not exit within ${String(timeoutMs)} ms`);
+}
+
 function audit(receipt) {
   assert.equal(receipt.schemaVersion, 1);
   assert.equal(receipt.classification,
@@ -72,6 +93,7 @@ function audit(receipt) {
     protocol.acceptance.distinctHostPidCount);
   assert.equal(receipt.summary.networkMismatchCount, 0);
   assert.equal(receipt.summary.mountMismatchCount, 0);
+  assert.equal(receipt.summary.serviceStateMismatchCount, 0);
   assert.equal(receipt.summary.unexpectedRunningAfterTeardown, 0);
   assert.deepEqual(receipt.controller.turns, [0, 1]);
   assert.equal(receipt.controller.auditEntryCount, 1);
@@ -163,11 +185,13 @@ try {
   compose('build');
   resolved = JSON.parse(compose('config', '--format', 'json'));
   compose('up', '-d');
-  try {
-    compose('wait', 'controller-scenario');
-    compose('wait', 'offline-verifier');
-  } catch (error) {
-    failure = error instanceof Error ? error.message : String(error);
+  const controllerTerminal = await waitForServiceExit('controller-scenario');
+  if (controllerTerminal.exitCode !== 0) {
+    throw new Error(`controller-scenario exited ${String(controllerTerminal.exitCode)}`);
+  }
+  const verifierTerminal = await waitForServiceExit('offline-verifier');
+  if (verifierTerminal.exitCode !== 0) {
+    throw new Error(`offline-verifier exited ${String(verifierTerminal.exitCode)}`);
   }
   const serviceNames = Object.keys(resolved.services).sort();
   const ids = compose('ps', '--all', '--quiet').split('\n').filter(Boolean);
@@ -184,7 +208,11 @@ try {
     const expected = resolved.services[name];
     const expectedNetworks = Object.keys(expected.networks ?? {}).map(
       (logical) => resolved.networks[logical].name).sort();
-    const actualNetworks = Object.keys(inspected.NetworkSettings.Networks ?? {}).sort();
+    const dockerNetworks = Object.keys(inspected.NetworkSettings.Networks ?? {}).sort();
+    const dockerNetworkMode = inspected.HostConfig.NetworkMode;
+    const actualNetworks = expected.network_mode === 'none' && dockerNetworkMode === 'none'
+      ? []
+      : dockerNetworks;
     const expectedMounts = (expected.volumes ?? []).map((mount) => mount.target).sort();
     const actualMounts = inspected.Mounts
       .filter((mount) => mount.Type === 'bind')
@@ -197,6 +225,8 @@ try {
       exitCode: inspected.State.ExitCode,
       expectedNetworks,
       actualNetworks,
+      dockerNetworks,
+      dockerNetworkMode,
       expectedMounts,
       actualMounts,
       networkMatch: JSON.stringify(expectedNetworks) === JSON.stringify(actualNetworks),
@@ -230,6 +260,11 @@ const remaining = command('docker', [
 ]).split('\n').filter(Boolean);
 const networkMismatchCount = observations.filter((entry) => !entry.networkMatch).length;
 const mountMismatchCount = observations.filter((entry) => !entry.mountMatch).length;
+const serviceStateMismatchCount = Object.entries(protocol.acceptance.serviceStates ?? {})
+  .filter(([name, expected]) => {
+    const observed = observations.find((entry) => entry.name === name);
+    return observed?.status !== expected.status || observed.exitCode !== expected.exitCode;
+  }).length;
 const summary = {
   serviceCount: observations.length,
   networkCount: resolved ? Object.keys(resolved.networks).length : 0,
@@ -238,6 +273,7 @@ const summary = {
     .map((entry) => entry.hostPid).filter((pid) => pid > 0)).size,
   networkMismatchCount,
   mountMismatchCount,
+  serviceStateMismatchCount,
   unexpectedRunningAfterTeardown: remaining.length,
 };
 const passed = failure === undefined &&
@@ -245,7 +281,8 @@ const passed = failure === undefined &&
   summary.networkCount === protocol.acceptance.networkCount &&
   summary.distinctContainerIdCount === protocol.acceptance.distinctContainerIdCount &&
   summary.distinctHostPidCount >= protocol.acceptance.distinctHostPidCount &&
-  networkMismatchCount === 0 && mountMismatchCount === 0 && remaining.length === 0 &&
+  networkMismatchCount === 0 && mountMismatchCount === 0 &&
+  serviceStateMismatchCount === 0 && remaining.length === 0 &&
   JSON.stringify(controller?.turns) === '[0,1]' && controller?.auditEntryCount === 1 &&
   offlineVerification?.exitCode === 0;
 const receipt = {

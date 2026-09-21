@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-measurement-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "5f5d53addcd51e30476067df81ee246cd303d24e",
+  "attemptedRunId": "mode-r-application-v5",
+  "stage": "post-execution-topology-reconciliation",
+  "containersCreated": 17,
+  "controllerExitCode": 0,
+  "offlineVerifierExitCode": 0,
+  "turnsRecorded": 2,
+  "auditEntriesRecorded": 1,
+  "functionalPathCompleted": true,
+  "gatePassed": false,
+  "causes": [
+    "Sequential Compose wait attached after short-lived services had already completed and returned a no-containers error despite both exit codes and outputs being zero.",
+    "Docker inspection represents network_mode none with a synthetic none network key, while the collector compared that key with the resolved Compose empty network list.",
+    "The post-run live-PID threshold assumed only Controller and verifier exit, but the two one-admission Baby servers also exit normally after their Controller clients close."
+  ],
+  "correctionPolicy": "Retain every v5 artifact; poll the project-labeled container states directly; normalize network_mode none only when Docker also reports HostConfig.NetworkMode none; prospectively require the exact four successful terminal services and thirteen still-running services; and use a fresh v6 identity.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-development-v5/receipt.json",
+    "bytes": 18083,
+    "sha256": "sha256:d9159a6bea00dde4b7d2bf766949be639dfb6965c22cba6d52a71ce6c93a2b30",
+    "retention": "local-ignored-original"
+  },
+  "retainedOutputs": {
+    "controllerResult": {
+      "path": "evidence/mode-r-application-development-v5/output/controller-result.json",
+      "bytes": 488,
+      "sha256": "sha256:482674b1a22c73a6756a4eb0e8be57c7ecc2c22f20f080f82c260500b41a544a"
+    },
+    "offlineVerification": {
+      "path": "evidence/mode-r-application-development-v5/output/offline-verification.json",
+      "bytes": 2254,
+      "sha256": "sha256:aac06928baeb1d5481cdb1bdfae8995f091755ad2f6d595141122e1358bd9332"
+    }
+  },
+  "claimBoundary": "The v5 functional path completed, but its registered topology gate failed. It is not a passing qualification, behavioral result, B12 closure, or publication evidence."
+}

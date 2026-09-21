@@ -49,6 +49,15 @@ const protocolV5 = JSON.parse(readFileSync(
   'protocols/mode-r-application-development.v5.json',
   'utf8',
 )) as typeof protocolV4;
+const protocolV6 = JSON.parse(readFileSync(
+  'protocols/mode-r-application-development.v6.json',
+  'utf8',
+)) as typeof protocolV5 & {
+  acceptance: {
+    distinctHostPidCount: number;
+    serviceStates: Record<string, { status: string; exitCode: number }>;
+  };
+};
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -133,6 +142,25 @@ describe('selected Mode R application Compose', () => {
       .digest('hex')).toBe(protocolV5.compose.sha256);
   });
 
+  it('binds v6 to exact post-run service states after preserving v5', () => {
+    expect(protocolV6.schemaVersion).toBe(6);
+    expect(protocolV6.status).toBe('design-locked-not-executed');
+    expect(protocolV6.runId).toBe('mode-r-application-v6');
+    expect(protocolV6.predecessorFailure.path)
+      .toBe('reports/research/mode-r-application-development-v5-failure.json');
+    expect(protocolV6.correction).toMatchObject({
+      scientificDesignChanged: false,
+      thresholdChanged: true,
+    });
+    expect(protocolV6.acceptance.distinctHostPidCount).toBe(13);
+    expect(Object.keys(protocolV6.acceptance.serviceStates).sort()).toEqual(processes);
+    expect(Object.values(protocolV6.acceptance.serviceStates)
+      .filter((state) => state.status === 'exited' && state.exitCode === 0))
+      .toHaveLength(4);
+    expect(createHash('sha256').update(readFileSync(protocolV6.compose.path))
+      .digest('hex')).toBe(protocolV6.compose.sha256);
+  });
+
   it('declares the exact 17-process graph and three internal networks', () => {
     expect(Object.keys(compose.services).sort()).toEqual(processes);
     expect(Object.keys(compose.networks).sort()).toEqual([
@@ -200,12 +228,14 @@ describe('selected Mode R application Compose', () => {
     );
     expect(collector).toContain("command('git', ['status', '--porcelain'])");
     expect(collector).toContain("existsSync(evidenceRoot), false");
-    expect(collector).toContain("compose('wait', 'controller-scenario')");
-    expect(collector).toContain("compose('wait', 'offline-verifier')");
+    expect(collector).toContain("waitForServiceExit('controller-scenario')");
+    expect(collector).toContain("waitForServiceExit('offline-verifier')");
     expect(collector).toContain("compose('ps', '--all', '--quiet')");
     expect(collector).toContain('promptBundleHash: promptBundleHash(');
     expect(collector).toContain('tracks.map((track) => loadLearnerContract(track))');
     expect(collector).toContain('scenarioBundleHash: scenario.bundleHash');
+    expect(collector).toContain("expected.network_mode === 'none'");
+    expect(collector).toContain('serviceStateMismatchCount');
     expect(collector.indexOf('const runConfig = {'))
       .toBeLessThan(collector.indexOf('const directories = ['));
     expect(collector).toContain("compose('down', '--remove-orphans')");

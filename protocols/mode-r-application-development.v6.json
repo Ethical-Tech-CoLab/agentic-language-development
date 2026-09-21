@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 6,
+  "classification": "selected-mode-r-application-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "runId": "mode-r-application-v6",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-application-development-v5-failure.json",
+    "stage": "post-execution-topology-reconciliation",
+    "containersCreated": 17,
+    "turnsRecorded": 2
+  },
+  "authorityGraph": {
+    "path": "protocols/mode-r-authority-graph.v6.json",
+    "sha256": "aaafc8aecb844942118e2fb6e279019d4be193ba4013dfd737685db2c6f26db3"
+  },
+  "compose": {
+    "path": "deploy/mode-r/docker-compose.application.v1.yml",
+    "sha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"
+  },
+  "correction": {
+    "scope": [
+      "poll-project-labeled-one-shot-container-state",
+      "normalize-docker-none-network-against-host-network-mode",
+      "bind-exact-post-run-service-state-vector"
+    ],
+    "scientificDesignChanged": false,
+    "thresholdChanged": true,
+    "thresholdChangeRationale": "The earlier post-run live-PID threshold omitted the specified one-admission lifecycle of both Baby servers. V6 replaces that incorrect aggregate assumption with an exact prospective state and exit-code requirement for all seventeen containers; container identity, network, mount, turn, audit, verifier, and teardown thresholds are unchanged."
+  },
+  "execution": {
+    "learnerTrack": "no-learning",
+    "trainingTurns": 2,
+    "evaluationTurns": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attempts": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "networkCount": 3,
+    "controllerExitCode": 0,
+    "offlineVerifierExitCode": 0,
+    "recordedTurnCount": 2,
+    "auditEntryCount": 1,
+    "distinctContainerIdCount": 17,
+    "distinctHostPidCount": 13,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "serviceStateMismatchCount": 0,
+    "unexpectedRunningAfterTeardown": 0,
+    "serviceStates": {
+      "audit-interpreter": { "status": "running", "exitCode": 0 },
+      "baby-a": { "status": "exited", "exitCode": 0 },
+      "baby-b": { "status": "exited", "exitCode": 0 },
+      "checkpoint": { "status": "running", "exitCode": 0 },
+      "controller-scenario": { "status": "exited", "exitCode": 0 },
+      "evidence-writer": { "status": "running", "exitCode": 0 },
+      "gateway": { "status": "running", "exitCode": 0 },
+      "model-adapter-a": { "status": "running", "exitCode": 0 },
+      "model-adapter-b": { "status": "running", "exitCode": 0 },
+      "offline-verifier": { "status": "exited", "exitCode": 0 },
+      "signer-affect": { "status": "running", "exitCode": 0 },
+      "signer-audit": { "status": "running", "exitCode": 0 },
+      "signer-baby-a-ledger": { "status": "running", "exitCode": 0 },
+      "signer-baby-b-ledger": { "status": "running", "exitCode": 0 },
+      "signer-channel": { "status": "running", "exitCode": 0 },
+      "simulated-anchor": { "status": "running", "exitCode": 0 },
+      "witness-signer": { "status": "running", "exitCode": 0 }
+    }
+  },
+  "scope": {
+    "included": [
+      "seventeen-container-application-startup",
+      "two-signed-turns",
+      "delayed-audit-entry",
+      "bundle-export-and-offline-typescript-verification",
+      "live-network-mount-resource-state-and-teardown-reconciliation"
+    ],
+    "excluded": [
+      "behavioral-or-scientific-finding",
+      "complete-lifecycle-restore-and-fault-matrix",
+      "independent-rust-bundle-audit",
+      "selected-resource-envelope-qualification",
+      "b12-closure",
+      "independent-review-and-publication-readiness"
+    ]
+  },
+  "claimBoundary": "A passing v6 development execution establishes only the bounded selected-shape application path. It cannot close B12 or supply a behavioral result."
+}

@@ -83,6 +83,16 @@ is retained and the v4 identity is not reused. The prospective v5 packet loads
 contracts through an explicit one-argument callback and completes all fallible
 configuration materialization before allocating evidence. Its scientific design
 and thresholds remain unchanged.
+The v5 functional path then completed two turns, the delayed audit, bundle export,
+and offline verification, but the topology gate failed. Sequential Compose waiting
+raced already completed one-shot services; Docker reports `network_mode: none` as
+a synthetic `none` network; and the post-run PID threshold omitted the normal exit
+of both one-admission Baby servers. The v6 packet replaces the aggregate assumption
+with exact states and zero exit codes for all seventeen services, polls project-
+labeled containers directly, and normalizes the `none` key only when the inspected
+host network mode is also `none`. This changes the post-run live-PID threshold from
+fifteen to thirteen with a prospective rationale; all container, route, mount, turn,
+audit, verifier, and teardown thresholds remain unchanged.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
