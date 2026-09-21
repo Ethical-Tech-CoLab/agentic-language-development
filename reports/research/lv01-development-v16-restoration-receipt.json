@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-recurrent-restoration-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "sourceReceipt": "reports/research/lv01-development-v16-recurrent-receipt.json",
+  "attempt": {
+    "runId": "lv01-development-v16-p0001",
+    "evidenceRoot": "evidence/lv01/development-v16/lv01-development-v16-p0001",
+    "policyFiles": {
+      "baby-a": "sha256:f42f4b18ebc51453c9eabceee359246683d2830256604f49c8985275095de6c2",
+      "baby-b": "sha256:59101983b124c8bce7d671d041450e25290e1ca23667cc422ac821f879e10f68"
+    }
+  },
+  "probe": {
+    "turn": 89,
+    "symbolIndices": [1, 2],
+    "candidateTypeCodes": [0, 1, 2, 3],
+    "temperature": 1,
+    "advance": false,
+    "maximumAbsoluteDifference": 1e-8
+  },
+  "observed": {
+    "baby-a": {
+      "value": 0.3395741524428654,
+      "distribution": [0.23437578963717942, 0.4708012347783241, 0.1965401450228263, 0.09828283056167018],
+      "maxAbsoluteDifference": 0
+    },
+    "baby-b": {
+      "value": 0.6086792689963152,
+      "distribution": [0.23978893885340988, 0.239069098651038, 0.14705466471778708, 0.37408729777776506],
+      "maxAbsoluteDifference": 0
+    }
+  },
+  "limitations": [
+    "Each comparison restores two independent in-process models from the same sealed exported policy; it does not restart a selected container or recover a crashed application stage.",
+    "The fixed probe is a serialization and deterministic-forward check, not a behavioral outcome."
+  ],
+  "claimBoundary": "This receipt supports only exact local restoration of the retained recurrent checkpoint exports. It establishes no fault recovery, calibration, pilot, behavioral result, or scientific finding."
+}
