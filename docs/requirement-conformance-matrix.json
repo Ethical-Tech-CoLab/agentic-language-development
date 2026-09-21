@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.298"
+    "version": "0.1.315"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -812,6 +812,7 @@
         "builds a valid config for every communication condition",
         "builds a valid config for every affect, interaction, observation, and deployment mode",
         "rejects a malformed experiment identifier",
+        "admits the scoped LV01 identifier without treating it as a portfolio experiment",
         "rejects non-objects",
         "reports each missing required field by path",
         "reports a nested learner field by dotted path",
@@ -1297,6 +1298,9 @@
         "only targets held-out types in the held-out split",
         "draws evaluation targets from every type code",
         "targets every type code in the held-out split when nothing is held out",
+        "keeps the LV01 partition labels outside the generic scenario interface",
+        "uses balanced within-support target schedules for every receiver role",
+        "domain-separates every partition and rejects an unfrozen task configuration",
         "scores a seeded uniform selector inside [0.22, 0.28] over 4000 episodes",
         "scores a position-only selector at chance too",
         "rewards the target and only the target",
@@ -1331,6 +1335,8 @@
     "packages/types/__tests__/schema-manifest.test.ts": {
       "selectors": [
         "exports every schema required by specification section 11",
+        "admits only the original portfolio identifiers and scoped LV01",
+        "keeps LV01 operational status distinct from an empirical disposition",
         "accepts a valid root run configuration",
         "rejects incomplete derived-run lineage"
       ],
