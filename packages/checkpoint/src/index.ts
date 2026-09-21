@@ -29,6 +29,10 @@ export {
   type SchedulerTimerHandle,
 } from './scheduler.js';
 export {
+  connectCheckpointServiceRpc,
+  createCheckpointServiceRpcServer,
+} from './service-rpc.js';
+export {
   CheckpointIntegrityError,
   CheckpointNotFoundError,
   CheckpointProofRangeError,

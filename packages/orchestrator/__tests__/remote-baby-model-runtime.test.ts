@@ -6,10 +6,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
-import { EvidenceCheckpointService } from '@ald/checkpoint';
+import { connectCheckpointServiceRpc } from '@ald/checkpoint';
 import {
   connectAuditEvidenceRpc,
-  connectCheckpointEvidenceRpc,
   connectControllerEvidenceRpc,
 } from '@ald/evidence';
 import {
@@ -18,7 +17,6 @@ import {
   createGatewayRelayAdapterFactory,
   type GatewayRelayAdapterFactory,
 } from '@ald/gateway';
-import { connectDomainSignerRpc } from '@ald/hashing';
 import type { BabyRole, SignerRegistry } from '@ald/types';
 
 import {
@@ -37,6 +35,8 @@ const gatewayFixture = fileURLToPath(new URL(
   '../../gateway/__tests__/fixtures/symbol-gateway-child.mjs', import.meta.url));
 const signerFixture = fileURLToPath(new URL(
   '../../hashing/__tests__/fixtures/domain-signer-child.mjs', import.meta.url));
+const checkpointFixture = fileURLToPath(new URL(
+  '../../checkpoint/__tests__/fixtures/checkpoint-service-child.mjs', import.meta.url));
 const babyHost = fileURLToPath(new URL(
   '../../isolation/bin/ald-baby-host.js', import.meta.url));
 const modelHost = fileURLToPath(new URL(
@@ -117,6 +117,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
       audit: join(directory, 'audit.sock'),
     };
     const gatewaySocket = join(directory, 'gateway-controller.sock');
+    const checkpointServiceSocket = join(directory, 'checkpoint-service.sock');
     const roles: BabyRole[] = ['baby-a', 'baby-b'];
     const adapterFactories = new Map<BabyRole, GatewayRelayAdapterFactory>();
     const babyProcesses = new Map<BabyRole, ChildProcess>();
@@ -193,30 +194,29 @@ describe('remote runtime with distinct Baby and model processes', () => {
       publicKeys: ReturnType<SignerRegistry['publicKeys']>;
     };
 
-    const [controller, gatewayWriter, checkpoint, audit, witness] =
+    const checkpointProcess = spawn(process.execPath, [
+      checkpointFixture,
+      checkpointServiceSocket,
+      sockets.checkpoint,
+      witnessSocket,
+      runId,
+      softwareCommit,
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    children.push(checkpointProcess);
+    expect(await readyLine(checkpointProcess, 'checkpoint service')).toBe('ready\n');
+
+    const [controller, gatewayWriter, audit, checkpointService] =
       await Promise.all([
         connectControllerEvidenceRpc(sockets.controller, runId),
         connectGatewayEvidenceRpc(sockets.gateway, runId),
-        connectCheckpointEvidenceRpc(sockets.checkpoint, runId),
         connectAuditEvidenceRpc(sockets.audit, runId),
-        connectDomainSignerRpc(witnessSocket, runId, 'witness'),
+        connectCheckpointServiceRpc(checkpointServiceSocket, runId),
       ]);
     const signers: SignerRegistry = {
       runId,
-      signer: (domain) => {
-        if (domain !== 'witness') {
-          throw new Error('Controller holds only the witness signer client');
-        }
-        return witness.signer;
-      },
+      signer: () => { throw new Error('Controller holds no signer client'); },
       publicKeys: () => writerReady.publicKeys,
     };
-    const checkpoints = new EvidenceCheckpointService({
-      evidence: checkpoint.port,
-      signers,
-      clock: { now: () => new Date().toISOString() },
-      softwareCommit,
-    });
     let gatewayProcessId: number | undefined;
     const runtime = createNurseryRuntime({
       bundleRoot: join(directory, 'bundles'),
@@ -232,7 +232,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
           appendLedgerEvent: gatewayWriter.port.appendLedgerEvent,
         },
         audit: audit.port,
-        checkpoints,
+        checkpoints: checkpointService.service,
       }),
       gatewayFactory: async (input) => {
         const gatewayProcess = spawn(process.execPath, [
@@ -271,9 +271,11 @@ describe('remote runtime with distinct Baby and model processes', () => {
       witnessProcess.pid,
       writerProcess.pid,
       gatewayProcessId,
+      checkpointProcess.pid,
       ...babyProcessIds,
       ...modelProcessIds,
-    ]).size).toBe(8);
+    ]).size).toBe(9);
+    expect(checkpointService.processId).toBe(checkpointProcess.pid);
     expect(() => runtime.writerFor(runId)).toThrow(
       'local Evidence Writer inspection is unavailable',
     );
