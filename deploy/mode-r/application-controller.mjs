@@ -50,6 +50,9 @@ const lv01LearnerOptions = {
     maxGradientNorm: 1,
   },
 };
+const learnerOptionsFor = (track) => track === 'scratch-rl'
+  ? { learnerOptions: lv01LearnerOptions }
+  : {};
 const factories = new Map([
   ['baby-a', createGatewayRelayAdapterFactory({
     track: config.babyA.track,
@@ -57,7 +60,7 @@ const factories = new Map([
     hostLabel: 'baby-a-gateway-relay',
     timing: 'normalized',
     deadlineMs: 1_000,
-    learnerOptions: lv01LearnerOptions,
+    ...learnerOptionsFor(config.babyA.track),
   })],
   ['baby-b', createGatewayRelayAdapterFactory({
     track: config.babyB.track,
@@ -65,7 +68,7 @@ const factories = new Map([
     hostLabel: 'baby-b-gateway-relay',
     timing: 'normalized',
     deadlineMs: 1_000,
-    learnerOptions: lv01LearnerOptions,
+    ...learnerOptionsFor(config.babyB.track),
   })],
 ]);
 const signers = {
