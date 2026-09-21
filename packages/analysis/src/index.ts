@@ -32,6 +32,15 @@ export {
   type AnalysisErrorCode,
 } from './errors.js';
 export {
+  LV01_ANALYSIS_VERSION,
+  LV01_ORDINARY_PREDICTOR_IDS,
+  selectLv01OrdinaryPredictor,
+  type Lv01OrdinaryPredictor,
+  type Lv01OrdinaryPredictorId,
+  type Lv01OrdinaryRecord,
+  type Lv01OrdinarySelection,
+} from './ledger-value.js';
+export {
   carrierCapacity,
   type CarrierCapacity,
   type CarrierCapacityInput,
