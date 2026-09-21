@@ -76,6 +76,32 @@ const gatewayRecoveryAmendment = JSON.parse(
   readFileSync('protocols/mode-r-authority-graph.v4.json', 'utf8'),
 ) as GatewayRecoveryAmendment;
 
+type GatewayBabyRelayAmendment = {
+  schemaVersion: number;
+  status: string;
+  researchFinding: boolean;
+  b12Closed: boolean;
+  predecessor: { path: string; sha256: string };
+  controllerGatewayBabyRelays: Record<string, {
+    controllerEndpoint: string;
+    mountOnlyIn: string[];
+    gatewayDestination: string;
+    destinationNetwork: string;
+    runRoleBinding: string;
+  }>;
+  forwardMethods: string[];
+  reverseMethodPolicy: Record<string, {
+    forwardToController: boolean;
+    handledBy: string;
+    writerCapability: string;
+  }>;
+  authorityRules: string[];
+  qualificationRequired: string[];
+};
+const gatewayBabyRelayAmendment = JSON.parse(
+  readFileSync('protocols/mode-r-authority-graph.v5.json', 'utf8'),
+) as GatewayBabyRelayAmendment;
+
 type BoundaryQualification = {
   schemaVersion: number;
   status: string;
@@ -109,6 +135,40 @@ const babyModelBoundaryQualification = JSON.parse(
 ) as BabyModelBoundaryQualification;
 
 describe('prospective Mode R authority graph', () => {
+  it('freezes Gateway-hosted role-specific Baby relays before selected Compose', () => {
+    expect(gatewayBabyRelayAmendment.schemaVersion).toBe(5);
+    expect(gatewayBabyRelayAmendment.status).toBe('design-locked-not-implemented');
+    expect(gatewayBabyRelayAmendment.researchFinding).toBe(false);
+    expect(gatewayBabyRelayAmendment.b12Closed).toBe(false);
+    expect(gatewayBabyRelayAmendment.predecessor.path)
+      .toBe('protocols/mode-r-authority-graph.v4.json');
+    expect(createHash('sha256')
+      .update(readFileSync(gatewayBabyRelayAmendment.predecessor.path))
+      .digest('hex')).toBe(gatewayBabyRelayAmendment.predecessor.sha256);
+    const relays = gatewayBabyRelayAmendment.controllerGatewayBabyRelays;
+    expect(Object.keys(relays).sort()).toEqual(['baby-a', 'baby-b']);
+    for (const role of ['baby-a', 'baby-b']) {
+      expect(relays[role]?.mountOnlyIn).toEqual(['controller-scenario', 'gateway']);
+      expect(relays[role]?.runRoleBinding).toBe(role);
+      expect(relays[role]?.destinationNetwork).toBe(`${role}-gateway`);
+      expect(relays[role]?.gatewayDestination).toBe(`${role}:4318`);
+    }
+    expect(gatewayBabyRelayAmendment.forwardMethods).toContain('act');
+    expect(gatewayBabyRelayAmendment.forwardMethods).toContain('describe_isolation');
+    expect(gatewayBabyRelayAmendment.reverseMethodPolicy.ledger_append)
+      .toEqual(expect.objectContaining({
+        forwardToController: false,
+        handledBy: 'gateway',
+        writerCapability: 'gateway-writer.appendLedgerEvent',
+      }));
+    expect(gatewayBabyRelayAmendment.authorityRules).toContain(
+      'controller-connects-to-role-specific-gateway-relay-sockets-not-baby-networks',
+    );
+    expect(gatewayBabyRelayAmendment.qualificationRequired).toContain(
+      'controller-to-baby-direct-route-denial',
+    );
+  });
+
   it('freezes the Baby/model process qualification without closing B12', () => {
     expect(babyModelBoundaryQualification.schemaVersion).toBe(1);
     expect(babyModelBoundaryQualification.status).toBe('design-locked-not-executed');

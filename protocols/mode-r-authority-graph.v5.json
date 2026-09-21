@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 5,
+  "classification": "prospective-selected-mode-r-gateway-baby-relay-amendment",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "b12Closed": false,
+  "predecessor": {
+    "path": "protocols/mode-r-authority-graph.v4.json",
+    "sha256": "581727d747940a044fae312fe4090fa2ba1d00267e807ebaa25448b89f7b891d"
+  },
+  "amendmentReason": "The Controller currently invokes learner adapters directly. The v1 graph gives each Baby network adjacency only to the Gateway, so a selected Compose implementation needs Gateway-hosted role-specific learner relays before the real application can conform to that graph.",
+  "inheritedUnchanged": [
+    "v1-process-network-key-and-gate-definitions",
+    "v2-writer-capabilities-and-single-writer-policy",
+    "v3-controller-gateway-service-and-no-validation-override",
+    "v4-verified-prefix-gateway-recovery"
+  ],
+  "controllerGatewayBabyRelays": {
+    "baby-a": {
+      "controllerEndpoint": "/run/ald-mode-r/gateway-baby-a/learner.sock",
+      "mountOnlyIn": ["controller-scenario", "gateway"],
+      "gatewayDestination": "baby-a:4318",
+      "destinationNetwork": "baby-a-gateway",
+      "runRoleBinding": "baby-a"
+    },
+    "baby-b": {
+      "controllerEndpoint": "/run/ald-mode-r/gateway-baby-b/learner.sock",
+      "mountOnlyIn": ["controller-scenario", "gateway"],
+      "gatewayDestination": "baby-b:4318",
+      "destinationNetwork": "baby-b-gateway",
+      "runRoleBinding": "baby-b"
+    }
+  },
+  "forwardMethods": [
+    "init",
+    "observe",
+    "act",
+    "receive",
+    "on_outcome",
+    "update_policy",
+    "measure_affect",
+    "apply_curriculum_stage",
+    "describe_provenance",
+    "export_policy",
+    "describe_isolation",
+    "isolation_probe",
+    "shutdown"
+  ],
+  "reverseMethodPolicy": {
+    "ledger_append": {
+      "forwardToController": false,
+      "handledBy": "gateway",
+      "writerCapability": "gateway-writer.appendLedgerEvent",
+      "bindings": ["registered-run-id", "fixed-baby-role", "controller-owned-current-turn"],
+      "response": "signed-ledger-event-or-constant-shape-failure"
+    }
+  },
+  "authorityRules": [
+    "controller-connects-to-role-specific-gateway-relay-sockets-not-baby-networks",
+    "gateway-alone-connects-to-baby-a-gateway-and-baby-b-gateway-networks",
+    "each-relay-is-fixed-to-one-run-and-one-baby-role-before-init",
+    "gateway-validates-proposals-and-remains-the-only-holder-of-gateway-writer-capability",
+    "baby-ledger-append-never-forwards-to-controller",
+    "controller-cannot-select-a-different-baby-destination",
+    "relay-does-not-retry-an-unconfirmed-mutating-call",
+    "closing-or-timing-out-a-relay-quarantines-that-baby-for-the-attempt"
+  ],
+  "qualificationRequired": [
+    "exact-forward-method-and-strict-schema-coverage",
+    "wrong-run-role-and-destination-refusal",
+    "controller-to-baby-direct-route-denial",
+    "baby-to-controller-and-peer-route-denial",
+    "private-ledger-callback-terminates-at-gateway-writer",
+    "controller-never-receives-ledger-append-request",
+    "proposal-validation-remains-gateway-authoritative",
+    "response-loss-before-and-after-ledger-commit",
+    "baby-or-model-crash-and-late-callback-containment",
+    "fresh-gateway-restart-reconciles-before-relay-reopen",
+    "complete-selected-lifecycle-and-independent-bundle-audit",
+    "measured-selected-topology-resource-envelope"
+  ],
+  "claimBoundary": "This amendment freezes the missing selected application route. It is not implementation, execution, B12 closure, a behavioral result, or publication evidence."
+}
