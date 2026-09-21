@@ -1,0 +1,76 @@
+# LV01 must be combined with docker-compose.application.v1.yml. This overlay
+# selects the frozen recurrent track and imposes the prospective local limits;
+# it is not evidence that the selected topology has been qualified.
+services:
+  model-adapter-a:
+    command: ["--transport=unix", "--socket-path=/run/ald-mode-r/model-a/model.sock", "--track=scratch-rl", "--host-label=model-adapter-a"]
+    cpus: 1.0
+    mem_limit: 768m
+    memswap_limit: 768m
+  model-adapter-b:
+    command: ["--transport=unix", "--socket-path=/run/ald-mode-r/model-b/model.sock", "--track=scratch-rl", "--host-label=model-adapter-b"]
+    cpus: 1.0
+    mem_limit: 768m
+    memswap_limit: 768m
+  baby-a:
+    command: ["--transport=tcp", "--bind=0.0.0.0", "--port=4318", "--track=scratch-rl", "--host-label=baby-a", "--model-socket=/run/ald-mode-r/model-a/model.sock", "--model-host-label=model-adapter-a"]
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+  baby-b:
+    command: ["--transport=tcp", "--bind=0.0.0.0", "--port=4318", "--track=scratch-rl", "--host-label=baby-b", "--model-socket=/run/ald-mode-r/model-b/model.sock", "--model-host-label=model-adapter-b"]
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+  evidence-writer:
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+  gateway:
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+  checkpoint:
+    cpus: 0.25
+    mem_limit: 256m
+    memswap_limit: 256m
+  simulated-anchor:
+    cpus: 0.25
+    mem_limit: 256m
+    memswap_limit: 256m
+  audit-interpreter:
+    cpus: 0.25
+    mem_limit: 256m
+    memswap_limit: 256m
+  controller-scenario:
+    cpus: 1.0
+    mem_limit: 768m
+    memswap_limit: 768m
+  offline-verifier:
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+  signer-baby-a-ledger:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
+  signer-baby-b-ledger:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
+  signer-channel:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
+  signer-affect:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
+  signer-audit:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
+  witness-signer:
+    cpus: 0.1
+    mem_limit: 128m
+    memswap_limit: 128m
