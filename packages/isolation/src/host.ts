@@ -86,6 +86,8 @@ export interface LearnerHostOptions {
     track: LearnerTrackId,
     options: Record<string, unknown>,
   ) => LearnerAdapterFactory;
+  /** Qualification seam invoked only after the wire request is schema-valid. */
+  beforeDispatch?: (method: HostMethod) => Promise<void>;
   /** Called after a `shutdown` request has been answered. */
   onShutdown?: () => void;
 }
@@ -154,6 +156,7 @@ export class LearnerHost {
     if (!parsed.success) {
       throw new HostProtocolError('invalid-params');
     }
+    await this.options.beforeDispatch?.(name);
 
     switch (name) {
       case 'init':

@@ -1,0 +1,13 @@
+services:
+  model-adapter-a:
+    entrypoint: ["/usr/local/bin/node"]
+    command: ["/app/deploy/mode-r/application-delayed-model-adapter.mjs"]
+    environment:
+      ALD_MODE_R_DELAYED_MODEL_SOCKET: /run/ald-mode-r/model-a/model.sock
+      ALD_MODE_R_DELAYED_MODEL_METHOD: act
+      ALD_MODE_R_DELAYED_MODEL_MS: "1500"
+
+  controller-scenario:
+    command: ["/app/deploy/mode-r/application-late-callback-controller.mjs"]
+    environment:
+      ALD_MODE_R_LATE_CALLBACK_SETTLE_MS: "2500"

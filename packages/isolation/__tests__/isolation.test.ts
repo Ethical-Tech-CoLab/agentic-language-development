@@ -7,6 +7,7 @@ import {
   FrameConnection,
   MIN_FRAME_SIZE,
   DirectHostTransport,
+  LearnerHost,
   RemoteLearnerAdapter,
   createBabyProcessAdapterFactory,
   createIsolatedAdapterFactory,
@@ -80,6 +81,27 @@ describe('fixed-size canonical framing', () => {
     expect(pair.host.written.join('')).not.toContain('private adapter detail');
     runtime.close();
     host.close();
+  });
+
+  it('runs a qualification hook only after a request is schema-valid', async () => {
+    const pair = createLoopbackChannelPair();
+    const observed: string[] = [];
+    const runtime = new FrameConnection({ channel: pair.runtime, originator: 'r' });
+    const host = new LearnerHost({
+      channel: pair.host,
+      boundary: 'in-process',
+      beforeDispatch: async (method) => { observed.push(method); },
+    });
+
+    await expect(runtime.request('describe_isolation', {})).resolves.toMatchObject({
+      boundary: 'in-process',
+    });
+    await expect(runtime.request('describe_isolation', { unexpected: true }))
+      .rejects.toMatchObject({ code: 'host-error', hostCode: 'invalid-params' });
+    expect(observed).toEqual(['describe_isolation']);
+
+    runtime.close();
+    await host.close();
   });
 });
 
