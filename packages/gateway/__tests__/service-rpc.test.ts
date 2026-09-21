@@ -73,9 +73,10 @@ describe('Symbol Gateway service RPC', () => {
       expect(Object.keys(connected.gateway).sort()).toEqual([
         'allowedActionKinds', 'appendLifecycleLedgerEvent',
         'beginShuffledBatch', 'consecutiveRejections',
-        'discardShuffledBatchAfterRecovery', 'isEvidenceWriteQuarantined',
+        'isEvidenceWriteQuarantined',
         'preflightShuffledProposal', 'recordDerivedAffect', 'rejectForTimeout',
-        'resetRejectionCounter', 'runContext', 'sealShuffledBatch',
+        'resetRejectionCounter', 'restoreAfterVerifiedPrefix', 'runContext',
+        'sealShuffledBatch',
         'submitAffect', 'submitControlArtifact', 'submitInterpretation',
         'submitPreparedShuffledProposal', 'submitProposal',
         'submitReceiverTaskAction',
@@ -97,6 +98,15 @@ describe('Symbol Gateway service RPC', () => {
       expect(connected.gateway.consecutiveRejections()).toBe(1);
       await connected.gateway.resetRejectionCounter();
       expect(connected.gateway.consecutiveRejections()).toBe(0);
+      if (rejected.kind !== 'rejected') return;
+      await connected.gateway.restoreAfterVerifiedPrefix({
+        verifiedChannelHead: {
+          size: 1,
+          lastEntryHash: rejected.channelEvent.entryHash,
+        },
+        consecutiveRejections: 1,
+      });
+      expect(connected.gateway.consecutiveRejections()).toBe(1);
 
       const accepted = await connected.gateway.submitProposal(
         turn({ turn: 2 }),

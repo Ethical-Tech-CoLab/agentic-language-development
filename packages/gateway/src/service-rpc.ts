@@ -9,6 +9,7 @@ import {
   LedgerEventSchema,
   type AffectSubmitResult,
   type ArtifactProbeApplication,
+  type GatewayRecoveryState,
   type GatewaySubmitResult,
   type GatewayRunContext,
   type ShuffledPrepassResult,
@@ -22,11 +23,11 @@ import {
   isRpcRecord,
 } from '@ald/evidence';
 
-const PROTOCOL = 'symbol-gateway-v1';
+const PROTOCOL = 'symbol-gateway-v2';
 const METHODS = [
   'describe', 'submitProposal', 'beginShuffledBatch',
   'preflightShuffledProposal', 'sealShuffledBatch',
-  'submitPreparedShuffledProposal', 'discardShuffledBatchAfterRecovery',
+  'submitPreparedShuffledProposal', 'restoreAfterVerifiedPrefix',
   'rejectForTimeout', 'submitControlArtifact', 'submitInterpretation',
   'submitReceiverTaskAction', 'appendLifecycleLedgerEvent', 'submitAffect',
   'recordDerivedAffect', 'resetRejectionCounter',
@@ -40,7 +41,7 @@ const ARITY: Record<Method, number> = {
   preflightShuffledProposal: 2,
   sealShuffledBatch: 0,
   submitPreparedShuffledProposal: 1,
-  discardShuffledBatchAfterRecovery: 0,
+  restoreAfterVerifiedPrefix: 1,
   rejectForTimeout: 2,
   submitControlArtifact: 2,
   submitInterpretation: 3,
@@ -239,8 +240,8 @@ export async function connectSymbolGatewayRpc(
     sealShuffledBatch: async () => { await call('sealShuffledBatch', []); },
     submitPreparedShuffledProposal: async (turn) => parseSubmit(
       await call('submitPreparedShuffledProposal', [turn])),
-    discardShuffledBatchAfterRecovery: async () => {
-      await call('discardShuffledBatchAfterRecovery', []);
+    restoreAfterVerifiedPrefix: async (state: GatewayRecoveryState) => {
+      await call('restoreAfterVerifiedPrefix', [state]);
     },
     isEvidenceWriteQuarantined: () => quarantined,
     rejectForTimeout: async (turn, sender) => parseRejected(

@@ -21,6 +21,7 @@
  */
 import {
   babyIdForRole,
+  GENESIS_HASH,
   HASH_DOMAINS,
   LedgerDraftEnvelopeSchema,
   TurnProposalEnvelopeSchema,
@@ -34,6 +35,7 @@ import {
   type ChannelEvent,
   type DeliveredChannelArtifact,
   type GatewayRunContext,
+  type GatewayRecoveryState,
   type GatewaySubmitResult,
   type GatewayTurnContext,
   type LedgerDraftEnvelope,
@@ -442,7 +444,20 @@ export class SymbolGatewayImpl implements SymbolGateway {
     return result;
   }
 
-  async discardShuffledBatchAfterRecovery(): Promise<void> {
+  async restoreAfterVerifiedPrefix(state: GatewayRecoveryState): Promise<void> {
+    const { size, lastEntryHash } = state.verifiedChannelHead;
+    const rejections = state.consecutiveRejections;
+    const validHash = /^sha256:[a-f0-9]{64}$/u.test(lastEntryHash);
+    const validEmptyHead = size !== 0 || lastEntryHash === GENESIS_HASH;
+    const validNonemptyHead = size === 0 || lastEntryHash !== GENESIS_HASH;
+    if (!Number.isSafeInteger(size) || size < 0 || !validHash ||
+        !Number.isSafeInteger(rejections) || rejections < 0 ||
+        rejections > size ||
+        rejections > this.runContext.config.maxConsecutiveRejections ||
+        !validEmptyHead || !validNonemptyHead) {
+      throw new Error('Gateway recovery state is malformed');
+    }
+    this.rejections = rejections;
     this.shuffledBatch = undefined;
   }
 
@@ -510,6 +525,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
       deliveredArtifact: validated,
     });
 
+    this.rejections = 0;
     this.recordDelivery({
       turn: turn.turn,
       recipient: turn.recipient,

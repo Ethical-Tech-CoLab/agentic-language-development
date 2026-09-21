@@ -104,6 +104,30 @@ describe('rejection behaviour (SPEC §9.4, ALD-034)', () => {
     expect(gateway.consecutiveRejections()).toBe(0);
   });
 
+  it('restores only a bounded verified-prefix state', async () => {
+    const { gateway } = harness();
+    const rejected = await gateway.submitProposal(turn(), symbolEnvelope(BAD));
+    if (rejected.kind !== 'rejected') return;
+    await gateway.resetRejectionCounter();
+    await gateway.restoreAfterVerifiedPrefix({
+      verifiedChannelHead: {
+        size: 1,
+        lastEntryHash: rejected.channelEvent.entryHash,
+      },
+      consecutiveRejections: 1,
+    });
+    expect(gateway.consecutiveRejections()).toBe(1);
+
+    await expect(gateway.restoreAfterVerifiedPrefix({
+      verifiedChannelHead: {
+        size: 1,
+        lastEntryHash: rejected.channelEvent.entryHash,
+      },
+      consecutiveRejections: 6,
+    })).rejects.toThrow('recovery state is malformed');
+    expect(gateway.consecutiveRejections()).toBe(1);
+  });
+
   it('commits no sender ledger event for a rejected proposal', async () => {
     const { gateway, evidence, context } = harness();
     await gateway.submitProposal(turn(), symbolEnvelope(BAD));

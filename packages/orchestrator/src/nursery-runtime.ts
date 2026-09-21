@@ -74,6 +74,7 @@ import {
   type AnchorReceipt,
   type BabyRole,
   type ChannelEvent,
+  type ChainHead,
   type CheckpointManifest,
   type CheckpointReason,
   type CheckpointService,
@@ -83,6 +84,7 @@ import {
   type ExperimentRecord,
   type GatewaySubmitResult,
   type GatewayRunContext,
+  type GatewayRecoveryState,
   type GatewayTurnContext,
   type Intervention,
   type InterventionEvent,
@@ -2179,9 +2181,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         TurnRecordSchema.parse(parseCanonicalJson(event.canonicalJson)),
       );
     const recordedTurns = new Set(records.map((record) => record.turn));
+    const channelEvents = (await run.controllerEvidence.readEvents(runId, 'channel'))
+      .map((event) =>
+        ChannelEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      );
     const orphanedTurns = [
-      ...(await run.controllerEvidence.readEvents(runId, 'channel')).map((event) =>
-        ChannelEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
+      ...channelEvents.map((event) => event.turn),
       ...(await run.controllerEvidence.readEvents(runId, 'affect')).map((event) =>
         AffectEventSchema.parse(parseCanonicalJson(event.canonicalJson)).turn),
     ].filter((turn) => !recordedTurns.has(turn));
@@ -2201,7 +2206,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ).length;
     run.lastCheckpointEventTotal = await this.#eventTotal(run);
     run.batch = undefined;
-    await run.gateway.discardShuffledBatchAfterRecovery();
+    await run.gateway.restoreAfterVerifiedPrefix(
+      await this.#gatewayRecoveryState(run, report.heads, channelEvents),
+    );
 
     const sealCheckpoint = await this.#finalCheckpoint(run);
     if (sealCheckpoint !== undefined) {
@@ -3303,6 +3310,81 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // Integrity (LEDGER §15)
   // -------------------------------------------------------------------------
 
+  /** Reconstruct Gateway-only volatile safety state from the verified prefix. */
+  async #gatewayRecoveryState(
+    run: RunRuntime,
+    heads: readonly ChainHead[],
+    channelEvents: readonly ChannelEvent[],
+  ): Promise<GatewayRecoveryState> {
+    const refuse = (message: string): never => {
+      throw new RunConfigurationError([{
+        path: 'recovery.gatewayState',
+        message,
+      }]);
+    };
+    const channelHead = heads.find((head) => head.stream === 'channel');
+    const lastChannelEvent = channelEvents.at(-1);
+    if (channelHead === undefined || channelHead.size !== channelEvents.length ||
+        channelHead.lastEntryHash !==
+          (lastChannelEvent?.entryHash ?? GENESIS_HASH)) {
+      return refuse('verified channel head does not match the parsed prefix');
+    }
+
+    const interventionEvents = (await run.controllerEvidence
+      .readEvents(run.runId, 'intervention'))
+      .map((event) => InterventionEventSchema.parse(
+        parseCanonicalJson(event.canonicalJson),
+      ));
+    const latestResume = [...interventionEvents].reverse().find(
+      (event) => event.eventType === 'resume',
+    );
+    let reviewedSize = 0;
+    if (latestResume !== undefined) {
+      const recordedHeads = latestResume.details['heads'];
+      if (!Array.isArray(recordedHeads)) {
+        return refuse('latest resume has no verified evidence heads');
+      }
+      const recordedChannelHead = recordedHeads.find((value) =>
+        value !== null && typeof value === 'object' &&
+        (value as Record<string, unknown>)['stream'] === 'channel');
+      if (recordedChannelHead === undefined) {
+        return refuse('latest resume has no verified channel head');
+      }
+      const candidate = recordedChannelHead as Record<string, unknown>;
+      const size = candidate['size'];
+      const lastEntryHash = candidate['lastEntryHash'];
+      if (!Number.isSafeInteger(size) || Number(size) < 0 ||
+          typeof lastEntryHash !== 'string' ||
+          !/^sha256:[a-f0-9]{64}$/u.test(lastEntryHash)) {
+        return refuse('latest resume channel head is malformed');
+      }
+      reviewedSize = Number(size);
+      const reviewedLastHash = reviewedSize === 0
+        ? GENESIS_HASH
+        : channelEvents[reviewedSize - 1]?.entryHash;
+      if (reviewedSize > channelHead.size || reviewedLastHash !== lastEntryHash) {
+        return refuse('latest resume channel head does not match the verified prefix');
+      }
+    }
+
+    let consecutiveRejections = 0;
+    for (const event of channelEvents.slice(reviewedSize)) {
+      consecutiveRejections = event.gatewayValidationResult === 'accepted'
+        ? 0
+        : consecutiveRejections + 1;
+    }
+    if (consecutiveRejections > run.config.maxConsecutiveRejections) {
+      return refuse('verified rejection streak exceeds the configured ceiling');
+    }
+    return {
+      verifiedChannelHead: {
+        size: channelHead.size,
+        lastEntryHash: channelHead.lastEntryHash,
+      },
+      consecutiveRejections,
+    };
+  }
+
   /**
    * SPEC §7.3: verify the committed prefix before accepting new writes. The
    * read-only pre-check runs first so the `safety-trigger` audit entry can
@@ -3311,7 +3393,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async #verifyCommittedPrefix(
     run: RunRuntime,
-  ): Promise<{ ok: boolean; heads: { stream: EventStream; size: number }[] }> {
+  ): Promise<{ ok: boolean; heads: ChainHead[] }> {
     const findings = await this.#integrityFindings(run);
     if (findings.length > 0) {
       try {

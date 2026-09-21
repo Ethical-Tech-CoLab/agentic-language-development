@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.246"
+    "version": "0.1.247"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -467,6 +467,7 @@
         "honours a lower configured ceiling",
         "resets the counter after an accepted proposal",
         "resets the counter on request",
+        "restores only a bounded verified-prefix state",
         "commits no sender ledger event for a rejected proposal",
         "chains rejected and accepted channel events in one append-only stream",
         "records a timeout as a channel rejection with no payload (SPEC §8.3)",
@@ -1130,6 +1131,10 @@
         "quarantines a committed affect event with no completed turn record",
         "refuses another turn before adapter work when the Gateway is quarantined",
         "refuses recovery when a durable write intent has no reply or signed event",
+        "preserves the rejection safety ceiling across a restart",
+        "derives the streak after the latest audited resume head",
+        "refuses a malformed latest resume channel head",
+        "refuses a latest resume head that mismatches the verified prefix",
         "reconstructs the run at the last committed turn and continues",
         "marks the run forked-invalid and preserves both artifacts"
       ],

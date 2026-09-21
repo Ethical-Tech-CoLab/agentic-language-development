@@ -11,6 +11,7 @@ import { IncompleteTurnEvidenceError } from '../src/index.js';
 
 import {
   createHarness,
+  misbehavingFactory,
   noLearningOverrides,
   testConfig,
   type Harness,
@@ -195,6 +196,124 @@ describe('crash recovery (ALD-027)', () => {
     expect(restarted.runtime.turnRecords(runId)).toHaveLength(0);
   });
 
+  it('preserves the rejection safety ceiling across a restart', async () => {
+    harness = await createHarness({ adapterFactoryFor: () => misbehavingFactory });
+    const runId = 'run-rejection-streak-recovery';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'rejection-streak-recovery',
+      maxTurnsPerRun: 10,
+      evaluationTurns: 2,
+      maxConsecutiveRejections: 5,
+    })));
+    await harness.runtime.step(runId);
+    await harness.runtime.step(runId);
+    expect(harness.runtime.gatewayFor(runId).consecutiveRejections()).toBe(2);
+
+    restarted = harness.restart({ adapterFactoryFor: () => misbehavingFactory });
+    expect((await restarted.runtime.recover(runId)).state).toBe('running');
+    expect(restarted.runtime.gatewayFor(runId).consecutiveRejections()).toBe(2);
+    expect((await restarted.runtime.step(runId)).state).toBe('running');
+    expect((await restarted.runtime.step(runId)).state).toBe('running');
+    expect((await restarted.runtime.step(runId)).state).toBe('paused');
+    expect(restarted.runtime.gatewayFor(runId).consecutiveRejections()).toBe(5);
+  });
+
+  it('derives the streak after the latest audited resume head', async () => {
+    harness = await createHarness({ adapterFactoryFor: () => misbehavingFactory });
+    const runId = 'run-resumed-streak-recovery';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'resumed-streak-recovery',
+      maxTurnsPerRun: 12,
+      evaluationTurns: 2,
+      maxConsecutiveRejections: 5,
+    })));
+    for (let turn = 0; turn < 5; turn += 1) {
+      await harness.runtime.step(runId);
+    }
+    await harness.runtime.resume(runId, {
+      actorId: 'researcher:test-operator',
+      reasonCode: 'reviewed-before-restart',
+    });
+    await harness.runtime.step(runId);
+    expect(harness.runtime.gatewayFor(runId).consecutiveRejections()).toBe(1);
+
+    restarted = harness.restart({ adapterFactoryFor: () => misbehavingFactory });
+    await restarted.runtime.recover(runId);
+    expect(restarted.runtime.gatewayFor(runId).consecutiveRejections()).toBe(1);
+  });
+
+  it('refuses a malformed latest resume channel head', async () => {
+    harness = await createHarness({ adapterFactoryFor: () => misbehavingFactory });
+    const runId = 'run-malformed-resume-head';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'malformed-resume-head',
+      maxTurnsPerRun: 8,
+      evaluationTurns: 2,
+      maxConsecutiveRejections: 2,
+    })));
+    await harness.runtime.step(runId);
+    await harness.runtime.step(runId);
+    await harness.runtime.resume(runId, {
+      actorId: 'researcher:test-operator',
+      reasonCode: 'valid-review',
+    });
+    await harness.runtime.writerFor(runId).appendInterventionEvent({
+      runId,
+      eventType: 'resume',
+      actorId: 'researcher:test-operator',
+      reasonCode: 'malformed-review-evidence',
+      details: { heads: [{ stream: 'channel', size: 'two' }] },
+    });
+
+    restarted = harness.restart({ adapterFactoryFor: () => misbehavingFactory });
+    await expect(restarted.runtime.recover(runId)).rejects.toThrow(
+      'latest resume channel head is malformed',
+    );
+  });
+
+  it('refuses a latest resume head that mismatches the verified prefix', async () => {
+    harness = await createHarness({ adapterFactoryFor: () => misbehavingFactory });
+    const runId = 'run-mismatched-resume-head';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'mismatched-resume-head',
+      maxTurnsPerRun: 8,
+      evaluationTurns: 2,
+      maxConsecutiveRejections: 2,
+    })));
+    await harness.runtime.step(runId);
+    await harness.runtime.step(runId);
+    await harness.runtime.resume(runId, {
+      actorId: 'researcher:test-operator',
+      reasonCode: 'valid-review',
+    });
+    await harness.runtime.writerFor(runId).appendInterventionEvent({
+      runId,
+      eventType: 'resume',
+      actorId: 'researcher:test-operator',
+      reasonCode: 'mismatched-review-evidence',
+      details: {
+        heads: [{
+          stream: 'channel',
+          size: 1,
+          lastEntryHash: `sha256:${'0'.repeat(64)}`,
+        }],
+      },
+    });
+
+    restarted = harness.restart({ adapterFactoryFor: () => misbehavingFactory });
+    await expect(restarted.runtime.recover(runId)).rejects.toThrow(
+      'latest resume channel head does not match the verified prefix',
+    );
+  });
+
   it('reconstructs the run at the last committed turn and continues', async () => {
     harness = await createHarness({
       learnerOptions: { shared: { learningRate: 1, temperature: 0.5 } },
@@ -226,6 +345,7 @@ describe('crash recovery (ALD-027)', () => {
     const summary = await restarted.runtime.recover(runId);
     expect(summary.state).toBe('running');
     expect(summary.turn).toBe(30);
+    expect(restarted.runtime.gatewayFor(runId).consecutiveRejections()).toBe(0);
 
     const recovery = restarted.runtime
       .auditLog(runId)

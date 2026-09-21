@@ -28,8 +28,9 @@ binds v3 unchanged and replaces its batch-only recovery call with one verified
 prefix restoration. The Controller must reconstruct the rejection streak from
 signed channel evidence after the latest audited resume, while the Gateway
 atomically restores that counter and discards its volatile shuffled batch. The
-v4 design is locked but not implemented, so restart through a fresh remote
-Gateway remains an open fail-closed qualification item.
+v4 file preserves its design-time status; the exact `symbol-gateway-v2`
+recovery contract is now implemented and component-qualified below. This does
+not qualify the selected container topology or close B12.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
@@ -132,16 +133,16 @@ every append; a capture-only capability test checks those values and exposes
 no other method. Local assembly currently backs this port with the same writer
 used by the in-process Gateway. Moving Gateway and learners into the selected
 process graph, with caller-exclusive mounts, remains required for B12.
-The first `symbol-gateway-v1` service component now exposes the v3 method set
+The first `symbol-gateway-v1` service component exposed the v3 method set
 over the same bounded private-socket transport used by the writer capabilities.
 A distinct Gateway child connects to a distinct writer child through the
 durable no-retry journal; the Controller client checks run/configuration
 identity, validates replies, tracks only confirmed rejection state, and enters
 local quarantine after Gateway loss. Component coverage exercises wrong-run and
 wrong-configuration refusal, rejection/reset/accepted paths, distinct process
-IDs, socket mode, retained signed events, and post-crash refusal. Nursery does
-not yet provision this client, and the test is not selected-topology lifecycle,
-mount/network, comprehensive fault, resource, or independent-audit evidence.
+IDs, socket mode, retained signed events, and post-crash refusal. This remains
+component evidence rather than selected-topology lifecycle, mount/network,
+comprehensive fault, resource, or independent-audit evidence.
 Nursery creation and reconstruction now request a Gateway through an async
 run/configuration-bound factory; local operation retains the durable journal
 and in-process Gateway, while Mode R may inject the remote client without
@@ -150,9 +151,17 @@ closure: local assembly combines the durable journal and Gateway state so an
 unresolved pre-restart intent still refuses recovery, while a remote client
 reports its own fail-closed state. An integration test executes a real Nursery turn through
 a separate Gateway child and the parent-owned writer service, then verifies
-the retained signed channel event. Restart through a fresh remote Gateway,
-selected container routes/mounts, and lifecycle fault qualification remain
-open and must precede B12 closure.
+the retained signed channel event. The `symbol-gateway-v2` implementation now
+derives the consecutive-rejection streak only after the complete signed prefix
+and turn accounting verify. It checks the latest audited resume's recorded
+channel head, restores the current verified head and streak in one Gateway
+call, and clears volatile shuffled state. A fresh remote Gateway restart test
+retains two prior rejections and reaches the original safety pause after three
+more; local tests cover accepted-prefix reset, audited resume, malformed and
+mismatched heads, and the configured counter bound. Private RPC startup reclaims
+only an unreachable stale socket and refuses to unlink a live service. Selected
+container routes/mounts, broader lifecycle faults, resources, and independent
+audit remain open and must precede B12 closure.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

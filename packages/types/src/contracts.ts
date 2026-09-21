@@ -816,8 +816,8 @@ export interface SymbolGateway {
   sealShuffledBatch(): Promise<void>;
   /** Commit the exact eligible envelope retained during the pre-pass. */
   submitPreparedShuffledProposal(turn: GatewayTurnContext): Promise<GatewaySubmitResult>;
-  /** Discard volatile batch state only after recovery verified the signed prefix. */
-  discardShuffledBatchAfterRecovery(): Promise<void>;
+  /** Restore volatile safety state only after recovery verified the signed prefix. */
+  restoreAfterVerifiedPrefix(state: GatewayRecoveryState): Promise<void>;
   /** Operational refusal state of the Gateway evidence-write boundary. */
   isEvidenceWriteQuarantined(): boolean;
   /** Commit a timeout rejection after the adapter deadline, not a retry. */
@@ -862,6 +862,12 @@ export interface SymbolGateway {
 export type ShuffledPrepassResult =
   | { kind: 'eligible' }
   | Extract<GatewaySubmitResult, { kind: 'rejected' }>;
+
+/** Controller-derived Gateway state after the complete evidence prefix verifies. */
+export interface GatewayRecoveryState {
+  verifiedChannelHead: Pick<ChainHead, 'size' | 'lastEntryHash'>;
+  consecutiveRejections: number;
+}
 
 // ---------------------------------------------------------------------------
 // Nursery Controller runtime (SPEC §12.5, §12.6) — consumed by twin packs

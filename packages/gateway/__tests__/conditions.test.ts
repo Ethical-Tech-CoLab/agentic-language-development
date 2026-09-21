@@ -392,10 +392,14 @@ describe('SPEC §9.6 communication-control conditions', () => {
       gateway.submitProposal(turn(), symbolEnvelope(PROPOSED)),
     ).rejects.toBeInstanceOf(OracleRequiresControlArtifactError);
 
+    await gateway.rejectForTimeout(turn(), 'baby-a');
+    expect(gateway.consecutiveRejections()).toBe(1);
+
     const { channelEvent, delivery } = await gateway.submitControlArtifact(
       turn(),
       { symbols: ['S11', 'S12'] },
     );
+    expect(gateway.consecutiveRejections()).toBe(0);
     const parsed = ChannelEventSchema.parse(channelEvent);
     expect(parsed.origin).toBe('gateway-control');
     expect(parsed.communicationCondition).toBe('oracle');

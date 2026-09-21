@@ -1,4 +1,4 @@
-import { chmodSync, lstatSync } from 'node:fs';
+import { chmodSync, lstatSync, unlinkSync } from 'node:fs';
 import { createConnection, createServer, type Server, type Socket } from 'node:net';
 import { dirname } from 'node:path';
 
@@ -29,6 +29,57 @@ function privateSocket(socketPath: string, requireSocket: boolean): void {
   }
 }
 
+/** Reclaim a dead Unix-socket inode without ever unlinking a reachable server. */
+async function reclaimStaleSocket(socketPath: string): Promise<void> {
+  let original;
+  try {
+    original = lstatSync(socketPath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
+  }
+  if (!original.isSocket() || original.isSymbolicLink()) {
+    throw new Error('evidence RPC path exists and is not a socket');
+  }
+  const reachable = await new Promise<boolean>((resolve, reject) => {
+    const socket = createConnection(socketPath);
+    const timer = setTimeout(() => {
+      socket.destroy();
+      reject(new Error('existing evidence RPC socket did not answer promptly'));
+    }, 250);
+    const finish = (result: boolean) => {
+      clearTimeout(timer);
+      socket.destroy();
+      resolve(result);
+    };
+    socket.once('connect', () => finish(true));
+    socket.once('error', (error: NodeJS.ErrnoException) => {
+      clearTimeout(timer);
+      socket.destroy();
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOENT') {
+        resolve(false);
+      } else {
+        reject(error);
+      }
+    });
+  });
+  if (reachable) {
+    throw new Error('evidence RPC socket already accepts connections');
+  }
+  let current;
+  try {
+    current = lstatSync(socketPath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
+  }
+  if (!current.isSocket() || current.isSymbolicLink() ||
+      current.dev !== original.dev || current.ino !== original.ino) {
+    throw new Error('evidence RPC socket changed during stale-path check');
+  }
+  unlinkSync(socketPath);
+}
+
 /** The writer's private socket transport; callers supply an exact capability. */
 export async function createEvidenceRpcServer(
   socketPath: string,
@@ -39,6 +90,7 @@ export async function createEvidenceRpcServer(
   dispatch: (method: string, args: unknown[]) => Promise<unknown> | unknown,
 ): Promise<Server> {
   privateSocket(socketPath, false);
+  await reclaimStaleSocket(socketPath);
   if (!runId) throw new Error('evidence RPC run ID is required');
   const server = createServer((socket) => {
     let frame = '';
