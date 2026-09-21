@@ -17,21 +17,22 @@ import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-assert.ok(['--run', '--audit', '--run-lv01-v1', '--audit-lv01-v1'].includes(mode),
-  'expected --run, --audit, --run-lv01-v1, or --audit-lv01-v1');
-const lv01Mode = mode.endsWith('lv01-v1');
+assert.ok(['--run', '--audit', '--run-lv01-v1', '--audit-lv01-v1', '--run-lv01-v2', '--audit-lv01-v2'].includes(mode),
+  'expected a supported late-callback collection mode');
+const lv01Mode = mode.includes('lv01-');
+const lv01Version = mode.endsWith('lv01-v2') ? 2 : 1;
 const runMode = mode.startsWith('--run');
 const protocolPath = lv01Mode
-  ? 'protocols/lv01-late-callback-development.v1.json'
+  ? `protocols/lv01-late-callback-development.v${String(lv01Version)}.json`
   : 'protocols/mode-r-late-callback-development.v2.json';
 const evidenceRoot = lv01Mode
-  ? 'evidence/lv01/late-callback-v1/lv01-late-callback-v1-p0001'
+  ? `evidence/lv01/late-callback-v${String(lv01Version)}/lv01-late-callback-v${String(lv01Version)}-p0001`
   : 'evidence/mode-r-late-callback-development-v2';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const lv01ComposePath = 'deploy/mode-r/docker-compose.lv01.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-late-callback.v1.yml';
-const project = lv01Mode ? 'ald-lv01-late-callback-v1' : 'ald-mode-r-late-callback-development-v2';
+const project = lv01Mode ? `ald-lv01-late-callback-v${String(lv01Version)}` : 'ald-mode-r-late-callback-development-v2';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
