@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-fault-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": true,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-application-fault-development-v3",
+  "executionCommit": "057aa39b89aa72c1f8c71d014e9bc0ec146f895a",
+  "executionTree": "834832cdac7cbd9f7ddd97848142b3eaf23243cc",
+  "executionVersion": "0.1.286",
+  "startedAt": "2026-09-21T13:54:36.622Z",
+  "finishedAt": "2026-09-21T13:57:40.126Z",
+  "protocol": {
+    "path": "protocols/mode-r-application-fault-development.v3.json",
+    "bytes": 4187,
+    "sha256": "sha256:da60a1e73cbb512ad40296de0cec46d8dc61bae8b0f718a2206d5d2e985e92a4"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-fault-development-v3/receipt.json",
+    "bytes": 40709,
+    "sha256": "sha256:4991aa6d99b935417b8a19fde39d33b6a86f491ce99ea67a339f2b7e534ae9d8",
+    "retention": "local-ignored-original"
+  },
+  "v3Summary": {
+    "caseCount": 2,
+    "passedCaseCount": 2,
+    "failedCaseCount": 0,
+    "resourceSnapshotCount": 4,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "v3Cases": [
+    {
+      "id": "baby-peer-death",
+      "targetExitCode": 137,
+      "targetOomKilled": false,
+      "controllerExitCode": 0,
+      "disposition": "committed-adapter-failure",
+      "stateAfterFault": "paused",
+      "turnAfterFault": 2,
+      "turnRecordCount": 2,
+      "channelEventCount": 1,
+      "failedRole": "baby-a",
+      "prefixVerification": {
+        "typescriptExitCode": 0,
+        "rustIntegrityPass": true,
+        "rustEventCount": 8,
+        "rustCheckpointCount": 2,
+        "rustIssueCount": 0
+      },
+      "postFaultVerification": {
+        "typescriptExitCode": 0,
+        "rustIntegrityPass": true,
+        "rustEventCount": 10,
+        "rustCheckpointCount": 3,
+        "rustIssueCount": 0
+      }
+    },
+    {
+      "id": "anchor-service-death",
+      "targetExitCode": 137,
+      "targetOomKilled": false,
+      "controllerExitCode": 0,
+      "disposition": "sealing-blocked",
+      "stateAfterFault": "sealing-blocked",
+      "turnAfterFault": 1,
+      "experimentDisposition": "aborted",
+      "anchorReceiptCount": 0,
+      "anchorUnavailableDeviationCount": 1,
+      "prefixVerification": {
+        "typescriptExitCode": 0,
+        "rustIntegrityPass": true,
+        "rustEventCount": 8,
+        "rustCheckpointCount": 2,
+        "rustIssueCount": 0
+      },
+      "postFaultVerification": {
+        "typescriptExitCode": 0,
+        "rustIntegrityPass": true,
+        "rustEventCount": 11,
+        "rustCheckpointCount": 3,
+        "rustIssueCount": 0
+      }
+    }
+  ],
+  "cumulativeProspectiveCaseCoverage": {
+    "sourceAttempts": [
+      "mode-r-application-fault-development-v1",
+      "mode-r-application-fault-development-v3"
+    ],
+    "caseCount": 6,
+    "cases": [
+      "baby-peer-death",
+      "evidence-writer-death",
+      "channel-signer-death",
+      "checkpoint-service-death",
+      "anchor-service-death",
+      "audit-interpreter-death"
+    ],
+    "boundary": "Four individually passing cases are retained from the failed v1 matrix and two fresh corrective cases pass in v3. This cumulative statement does not relabel v1 or v2 as passing attempts."
+  },
+  "limitations": [
+    "The application uses no-learning learners, fixed-token carriers, simulated anchoring, and zero external spending.",
+    "The four v1 passing cases retain verified pre-fault prefixes but do not have the v3 dual-verifier post-fault bundle treatment.",
+    "Uncertain reply after a possible commit, late callbacks, malformed envelopes, and powered detector bounds remain outside this matrix.",
+    "Four periodic resource observations are not a cgroup peak or campaign resource-envelope qualification.",
+    "Selected E10+ learner and carrier bindings remain unresolved, so B12 remains open.",
+    "This is software qualification evidence, not a behavioral result, independent review, or publication evidence."
+  ],
+  "claimBoundary": "V3 passes the fresh Baby peer and anchor service-death corrections with dual-verifier post-fault bundles. Combined with four individually passing v1 cases, six selected-application service-death cases now have prospective bounded evidence. B12 and all behavioral claims remain open."
+}
