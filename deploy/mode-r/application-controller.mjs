@@ -20,7 +20,7 @@ import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
-assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture'].includes(stage),
+assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -160,9 +160,50 @@ async function runLv01Fixture() {
   });
 }
 
+/** Execute one isolated derived branch; the outer collector owns pairing. */
+async function runLv01PairedBranch() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.equal(config.babyA.track, 'scratch-rl');
+  assert.equal(config.babyB.track, 'scratch-rl');
+  assert.ok(config.parentRunId !== undefined, 'paired branch requires a parent run');
+  assert.ok(config.derivedFromCheckpointHash !== undefined,
+    'paired branch requires a parent checkpoint');
+  assert.ok(config.babyA.initialPolicyRef !== undefined,
+    'paired branch requires baby-a parent policy');
+  assert.ok(config.babyB.initialPolicyRef !== undefined,
+    'paired branch requires baby-b parent policy');
+  await runtime.createRun(config);
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'sealed');
+  const [turns, channels, checkpoints, bundle] = await Promise.all([
+    controller.port.readEvents(config.runId, 'turns'),
+    controller.port.readEvents(config.runId, 'channel'),
+    controller.port.readCheckpoints(config.runId),
+    runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
+  ]);
+  await writeResult('lv01-paired-branch-result.json', {
+    schemaVersion: 1,
+    classification: 'lv01-selected-paired-branch-development',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    parentRunId: config.parentRunId,
+    parentCheckpointHash: config.derivedFromCheckpointHash,
+    communicationCondition: config.communicationCondition,
+    state: summary.state,
+    turnCount: turns.length,
+    channelCount: channels.length,
+    checkpointCount: checkpoints.length,
+    bundleRunId: bundle.runId,
+    claimBoundary: 'One derived LV01 branch through the selected topology. Pairing, prospective predictions, and cross-branch chronology are established only by the outer collector.',
+  });
+}
+
 try {
   if (stage === 'lv01-fixture') {
     await runLv01Fixture();
+  } else if (stage === 'lv01-paired-branch') {
+    await runLv01PairedBranch();
   } else if (stage === 'prepare-recovery') {
     const created = await runtime.createRun(config);
     const first = await runtime.step(config.runId);
