@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 2,
+  "classification": "prospective-selected-mode-r-authority-graph-amendment",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "b12Closed": false,
+  "baseGraph": {
+    "path": "protocols/mode-r-authority-graph.v1.json",
+    "sha256": "9292d025a67683e32077968ed59531e554a412163a2828b0900f1e644f567202"
+  },
+  "amendmentReason": "The v1 call purposes predate Gateway-owned receiver and lifecycle ledger appends, omit the delayed audit interpreter as a separate caller, and do not enumerate the writer capabilities required for one transaction owner.",
+  "inheritedUnchanged": [
+    "base-process-definitions",
+    "process-zone-and-network-assignments",
+    "signer-key-domains-and-private-calls",
+    "baby-gateway-only-adjacency",
+    "gate.mustVerify"
+  ],
+  "addedProcesses": {
+    "audit-interpreter": {
+      "zone": "offline-analysis",
+      "networks": ["control-plane"],
+      "keyDomains": [],
+      "writableState": []
+    }
+  },
+  "amendmentRule": "Any change to these calls, methods, endpoint mounts, process identities, or threat assumptions requires a further prospective version before selected-topology qualification. Bind exact code and Compose identities at registration.",
+  "callUpdates": [
+    {
+      "from": "controller-scenario",
+      "to": "gateway",
+      "transport": "authenticated-control-plane",
+      "purpose": "registered configuration, role-private observations, receiver task actions, and policy/run-seal ledger drafts"
+    },
+    {
+      "from": "gateway",
+      "to": "evidence-writer",
+      "transport": "private-unix-socket",
+      "capability": "gateway-writer"
+    },
+    {
+      "from": "controller-scenario",
+      "to": "evidence-writer",
+      "transport": "private-unix-socket",
+      "capability": "controller-writer"
+    },
+    {
+      "from": "checkpoint",
+      "to": "evidence-writer",
+      "transport": "private-unix-socket",
+      "capability": "checkpoint-writer"
+    },
+    {
+      "from": "simulated-anchor",
+      "to": "evidence-writer",
+      "transport": "private-unix-socket",
+      "capability": "anchor-writer"
+    }
+  ],
+  "callAdditions": [
+    {
+      "from": "controller-scenario",
+      "to": "audit-interpreter",
+      "transport": "authenticated-control-plane",
+      "purpose": "delayed-audit-batch-request-only"
+    },
+    {
+      "from": "audit-interpreter",
+      "to": "evidence-writer",
+      "transport": "private-unix-socket",
+      "capability": "audit-writer"
+    }
+  ],
+  "writerCapabilities": {
+    "gateway-writer": {
+      "caller": "gateway",
+      "endpoint": "/run/ald-mode-r/evidence-gateway/writer.sock",
+      "mountOnlyIn": ["gateway", "evidence-writer"],
+      "methods": [
+        "commitTurn",
+        "commitRejection",
+        "commitControlArtifact",
+        "appendLedgerEvent",
+        "appendInterventionEvent",
+        "appendAffectEvent"
+      ]
+    },
+    "controller-writer": {
+      "caller": "controller-scenario",
+      "endpoint": "/run/ald-mode-r/evidence-controller/writer.sock",
+      "mountOnlyIn": ["controller-scenario", "evidence-writer"],
+      "methods": [
+        "registerRun",
+        "readRunMetadata",
+        "chainHead",
+        "readEvents",
+        "readCheckpoints",
+        "readAnchorReceipts",
+        "readExperimentRecords",
+        "readAnalysisAttachments",
+        "readRunSigners",
+        "readForkArtifacts",
+        "appendTurnRecord",
+        "appendInterventionEvent",
+        "appendAnalysisAttachment",
+        "appendExperimentRecord",
+        "recover"
+      ]
+    },
+    "checkpoint-writer": {
+      "caller": "checkpoint",
+      "endpoint": "/run/ald-mode-r/evidence-checkpoint/writer.sock",
+      "mountOnlyIn": ["checkpoint", "evidence-writer"],
+      "methods": [
+        "readRunMetadata",
+        "readCheckpoints",
+        "readEvents",
+        "insertCheckpointManifest"
+      ]
+    },
+    "anchor-writer": {
+      "caller": "simulated-anchor",
+      "endpoint": "/run/ald-mode-r/evidence-anchor/writer.sock",
+      "mountOnlyIn": ["simulated-anchor", "evidence-writer"],
+      "methods": [
+        "listRuns",
+        "readCheckpoints",
+        "readAnchorReceipts",
+        "insertAnchorReceipt"
+      ]
+    },
+    "audit-writer": {
+      "caller": "audit-interpreter",
+      "endpoint": "/run/ald-mode-r/evidence-audit/writer.sock",
+      "mountOnlyIn": ["audit-interpreter", "evidence-writer"],
+      "methods": [
+        "readEvents",
+        "appendAuditLedgerEntry"
+      ]
+    }
+  },
+  "endpointPolicy": {
+    "socketDirectoryMode": "0700",
+    "socketMode": "0600",
+    "authentication": "caller-exclusive-socket-mount-and-run-bound-handshake",
+    "singleWriterProcess": true,
+    "sqliteMountOnlyIn": ["evidence-writer"],
+    "noNetworkRouteFromBabiesToWriter": true,
+    "selectedQualificationRequired": true
+  }
+}

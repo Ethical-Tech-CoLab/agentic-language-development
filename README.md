@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.223 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.224 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -345,9 +345,10 @@ prospective amendment and allocation.
   hash-only write intents; it also leaves B12 open. Persistent study signers are
   accepted only from `si fort` files-mode materialization mounted into the Nursery;
   neither learner receives that mount or its path.
-  The [prospective selected authority graph](protocols/mode-r-authority-graph.v1.json)
-  fixes the required process, network, key, and call boundaries for the next
-  qualification; it is not an implemented-topology receipt.
+  The [prospective authority graph](protocols/mode-r-authority-graph.v1.json)
+  and its [v2 writer-capability amendment](protocols/mode-r-authority-graph.v2.json)
+  fix the intended process, network, key, and caller-specific writer boundaries
+  for the next qualification; neither is an implemented-topology receipt.
 - `@ald/crypto-research`: an E40 research-only, three-role instrumentation harness
   that records hash-chained ephemeral scheme changes and Eve recovery attempts over
   synthetic messages. A repository lint boundary prevents it from entering the

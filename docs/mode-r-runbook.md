@@ -10,10 +10,13 @@ still holds its signer registry in Nursery. Neither path clears V06/B12 or suppo
 Research-Grade claim sentence in `SPECIFICATION.md` §5.2 for E10+ studies.
 
 The [prospective selected authority graph](../protocols/mode-r-authority-graph.v1.json)
-names the remaining Baby, adapter, Gateway, Evidence Writer, signer, Controller,
-checkpoint, and offline-verifier processes and their permitted calls. Its status
-is `design-locked-not-implemented`; the current Compose file is intentionally a
-negative reference for the selected B12 gate.
+and its [v2 capability amendment](../protocols/mode-r-authority-graph.v2.json)
+name the required Baby, adapter, Gateway, Evidence Writer, signer, Controller,
+Checkpoint, Anchor, delayed Audit Interpreter, and offline-verifier processes.
+The amendment binds the unchanged v1 file by hash and assigns distinct writer
+sockets and method allowlists to Gateway, Controller, Checkpoint, Anchor, and
+Audit Interpreter. Both designs remain `design-locked-not-implemented`; the
+current Compose file is intentionally a negative reference for the B12 gate.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

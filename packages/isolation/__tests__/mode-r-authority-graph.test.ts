@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -14,7 +15,99 @@ type Graph = {
 
 const graph = JSON.parse(readFileSync('protocols/mode-r-authority-graph.v1.json', 'utf8')) as Graph;
 
+type WriterCapability = {
+  caller: string;
+  endpoint: string;
+  mountOnlyIn: string[];
+  methods: string[];
+};
+type Amendment = {
+  schemaVersion: number;
+  status: string;
+  b12Closed: boolean;
+  baseGraph: { path: string; sha256: string };
+  callUpdates: Array<{ from: string; to: string; capability?: string }>;
+  callAdditions: Array<{ from: string; to: string; capability?: string }>;
+  addedProcesses: Record<string, Process>;
+  writerCapabilities: Record<string, WriterCapability>;
+  endpointPolicy: { singleWriterProcess: boolean; sqliteMountOnlyIn: string[] };
+};
+const amendment = JSON.parse(
+  readFileSync('protocols/mode-r-authority-graph.v2.json', 'utf8'),
+) as Amendment;
+
 describe('prospective Mode R authority graph', () => {
+  it('binds the v2 capability amendment to unchanged v1 and one writer owner', () => {
+    expect(amendment.schemaVersion).toBe(2);
+    expect(amendment.status).toBe('design-locked-not-implemented');
+    expect(amendment.b12Closed).toBe(false);
+    expect(amendment.baseGraph.path).toBe('protocols/mode-r-authority-graph.v1.json');
+    expect(createHash('sha256').update(readFileSync(amendment.baseGraph.path))
+      .digest('hex')).toBe(amendment.baseGraph.sha256);
+    expect(amendment.endpointPolicy.singleWriterProcess).toBe(true);
+    expect(amendment.endpointPolicy.sqliteMountOnlyIn).toEqual(['evidence-writer']);
+    expect(Object.keys(amendment.addedProcesses)).toEqual(['audit-interpreter']);
+    expect(amendment.addedProcesses['audit-interpreter']!.keyDomains).toEqual([]);
+    expect(amendment.addedProcesses['audit-interpreter']!.writableState).toEqual([]);
+    for (const update of amendment.callUpdates) {
+      expect(graph.calls.filter((call) => call.from === update.from && call.to === update.to))
+        .toHaveLength(1);
+      if (update.capability !== undefined) {
+        expect(amendment.writerCapabilities[update.capability]?.caller).toBe(update.from);
+      }
+    }
+    for (const addition of amendment.callAdditions) {
+      expect(graph.calls.some((call) => call.from === addition.from &&
+        call.to === addition.to)).toBe(false);
+      expect({ ...graph.processes, ...amendment.addedProcesses }[addition.from]).toBeDefined();
+      expect({ ...graph.processes, ...amendment.addedProcesses }[addition.to]).toBeDefined();
+      if (addition.capability !== undefined) {
+        expect(amendment.writerCapabilities[addition.capability]?.caller).toBe(addition.from);
+      }
+    }
+  });
+
+  it('separates writer method sets and mounts by exact caller', () => {
+    const capabilities = amendment.writerCapabilities;
+    const expected: Record<string, string[]> = {
+      'gateway-writer': [
+        'commitTurn', 'commitRejection', 'commitControlArtifact',
+        'appendLedgerEvent', 'appendInterventionEvent', 'appendAffectEvent',
+      ],
+      'controller-writer': [
+        'registerRun', 'readRunMetadata', 'chainHead', 'readEvents',
+        'readCheckpoints', 'readAnchorReceipts', 'readExperimentRecords',
+        'readAnalysisAttachments', 'readRunSigners', 'readForkArtifacts',
+        'appendTurnRecord', 'appendInterventionEvent',
+        'appendAnalysisAttachment', 'appendExperimentRecord', 'recover',
+      ],
+      'checkpoint-writer': [
+        'readRunMetadata', 'readCheckpoints', 'readEvents',
+        'insertCheckpointManifest',
+      ],
+      'anchor-writer': [
+        'listRuns', 'readCheckpoints', 'readAnchorReceipts',
+        'insertAnchorReceipt',
+      ],
+      'audit-writer': ['readEvents', 'appendAuditLedgerEntry'],
+    };
+    expect(Object.keys(capabilities).sort()).toEqual(Object.keys(expected).sort());
+    const endpoints = new Set<string>();
+    for (const [name, methods] of Object.entries(expected)) {
+      const capability = capabilities[name]!;
+      expect(capability.methods).toEqual(methods);
+      expect(capability.mountOnlyIn).toEqual([capability.caller, 'evidence-writer']);
+      expect(capability.endpoint.startsWith('/run/ald-mode-r/')).toBe(true);
+      expect(endpoints.has(capability.endpoint)).toBe(false);
+      endpoints.add(capability.endpoint);
+    }
+    expect(capabilities['controller-writer']!.methods).not.toContain('appendLedgerEvent');
+    expect(capabilities['controller-writer']!.methods).not.toContain('commitTurn');
+    expect(capabilities['checkpoint-writer']!.methods).not.toContain('appendTurnRecord');
+    expect(capabilities['anchor-writer']!.methods).not.toContain('appendTurnRecord');
+    expect(capabilities['controller-writer']!.methods).not.toContain('appendAuditLedgerEntry');
+  });
+
   it('makes the Gateway the only Baby network peer', () => {
     expect(graph.schemaVersion).toBe(1);
     expect(graph.status).toBe('design-locked-not-implemented');
