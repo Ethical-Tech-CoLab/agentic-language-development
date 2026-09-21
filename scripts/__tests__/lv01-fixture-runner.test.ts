@@ -7,9 +7,9 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const runner = fileURLToPath(new URL('../../deploy/mode-r/run-lv01-slot.mjs', import.meta.url));
 
 describe('LV01 selected-topology fixture runner', () => {
-  it('accepts a fresh v6 fixture identity without creating evidence', () => {
-    const result = spawnSync(process.execPath, [runner, '--check', '6'], { cwd: root, encoding: 'utf8' });
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain('configured but unexecuted');
+  it('requires a prospective allocation before it configures a fixture', () => {
+    const result = spawnSync(process.execPath, [runner, '--check', '999'], { cwd: root, encoding: 'utf8' });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('missing protocols/lv01-development-resource-allocation.v999.json');
   });
 });

@@ -254,6 +254,8 @@ describe('selected Mode R application Compose', () => {
     expect(controller).toContain('await runtime.runToCompletion(config.runId)');
     expect(controller).toContain("classification: 'lv01-development-topology-fixture'");
     expect(controller).toContain('not seven-branch LV01 qualification');
+    expect(readFileSync('deploy/mode-r/docker-compose.lv01.v1.yml', 'utf8'))
+      .toContain('ALD_MODE_R_CONTROLLER_STAGE: ${ALD_MODE_R_CONTROLLER_STAGE:-complete}');
   });
 
   it('declares the exact 17-process graph and three internal networks', () => {

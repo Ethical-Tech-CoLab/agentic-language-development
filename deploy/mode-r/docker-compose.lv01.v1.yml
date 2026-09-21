@@ -43,6 +43,8 @@ services:
     mem_limit: 256m
     memswap_limit: 256m
   controller-scenario:
+    environment:
+      ALD_MODE_R_CONTROLLER_STAGE: ${ALD_MODE_R_CONTROLLER_STAGE:-complete}
     cpus: 1.0
     mem_limit: 768m
     memswap_limit: 768m
