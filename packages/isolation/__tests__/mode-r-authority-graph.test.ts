@@ -82,6 +82,12 @@ describe('prospective Mode R authority graph', () => {
     const controller = readFileSync('packages/orchestrator/src/nursery-runtime.ts', 'utf8');
     expect(controller).toContain('preflightShuffledProposal(');
     expect(controller).toContain('submitPreparedShuffledProposal(');
+    expect(controller).toContain('submitReceiverTaskAction(');
+    expect(controller).toContain('appendLifecycleLedgerEvent(');
+    expect(controller).not.toContain('run.writer.appendLedgerEvent(');
+    const receiverPath = controller.split('async #runReceiver(')[1]?.split('  #episodeIndex(')[0];
+    expect(receiverPath).toBeDefined();
+    expect(receiverPath).not.toContain('run.writer.appendLedgerEvent(');
     expect(controller).toContain('gateway: SymbolGateway;');
     expect(controller).not.toContain('gateway: SymbolGatewayImpl;');
     expect(controller).not.toContain('.carrierProtocol.validate(');

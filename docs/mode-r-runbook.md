@@ -49,6 +49,13 @@ and no-retry client are tested; the existing write-intent journal quarantines
 a call after writer death. This component is not wired into `nursery-study` or
 the selected Compose topology. Its socket permissions are not, by themselves,
 proof of authenticated role routes or Controller/Gateway process isolation.
+Receiver task-action validation and its private intention append now occur in
+the Gateway. The Controller audits an invalid task action and evaluates a valid
+one, but no longer calls the Evidence Writer's Baby-ledger append method.
+Controller-originated policy-checkpoint and run-seal drafts use a Gateway method
+restricted to those two event types. This source boundary is still in-process;
+the prospective authority graph needs a new version covering these calls and
+the exact Controller writer allowlist before selected-topology qualification.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

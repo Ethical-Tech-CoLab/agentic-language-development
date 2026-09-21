@@ -836,6 +836,18 @@ export interface SymbolGateway {
     recipient: BabyRole,
     envelope: LedgerDraftEnvelope,
   ): Promise<LedgerEvent>;
+  /** Validate a receiver task action and append its private intention through the Gateway. */
+  submitReceiverTaskAction(
+    turn: GatewayTurnContext,
+    recipient: BabyRole,
+    envelope: unknown,
+  ): Promise<Extract<AgentActionProposal, { kind: 'select_object' }> | null>;
+  /** Controller lifecycle drafts are limited to policy checkpoints and run seals. */
+  appendLifecycleLedgerEvent(
+    turn: number,
+    role: BabyRole,
+    draft: LedgerEventDraft,
+  ): Promise<LedgerEvent>;
   /** SPEC §9.3 declared/permuted/opaque: one `submit_affect` proposal per open window. */
   submitAffect?(window: AffectWindow, proposal: unknown): Promise<AffectSubmitResult>;
   /** SPEC §9.3 derived: the Gateway maps a private measurement to one display. */

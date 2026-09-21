@@ -62,7 +62,6 @@ import {
   PreRegistrationBindingSchema,
   RunConfigSchema,
   STREAM_SIGNER,
-  TurnProposalEnvelopeSchema,
   TurnRecordSchema,
   fixedTokenInventory,
   ledgerStreamForRole,
@@ -2570,8 +2569,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       ),
     );
 
-    const parsed = TurnProposalEnvelopeSchema.safeParse(envelope);
-    if (!parsed.success || parsed.data.proposal.kind !== 'select_object') {
+    const action = await run.gateway.submitReceiverTaskAction(
+      turnContext,
+      receiver,
+      envelope,
+    );
+    if (action === null) {
       // §10.1/§14.2: a blocked field is an audited event, never a silent drop.
       await run.writer.appendInterventionEvent({
         runId: run.runId,
@@ -2587,16 +2590,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       };
     }
 
-    await run.writer.appendLedgerEvent({
-      runId: run.runId,
-      babyId: babyIdForRole(receiver),
-      turn: turnContext.turn,
-      draft: parsed.data.privateLedgerDraft,
-    });
-
     return {
-      outcome: run.engine.evaluate(instance, parsed.data.proposal),
-      action: parsed.data.proposal,
+      outcome: run.engine.evaluate(instance, action),
+      action,
       pauseRequested: false,
     };
   }
@@ -3060,12 +3056,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         blindingNonce: this.#nonce(run),
         evidenceRefs: [],
       };
-      await run.writer.appendLedgerEvent({
-        runId: run.runId,
-        babyId: babyIdForRole(role),
-        turn,
-        draft,
-      });
+      await run.gateway.appendLifecycleLedgerEvent(turn, role, draft);
       await this.#writePolicyFile(run, role, String(turn));
       wrote = true;
     }
@@ -3079,18 +3070,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     // sequence is the next one the manifest chain will assign.
     const checkpointRef = `checkpoint:${run.writer.readCheckpoints(run.runId).length}`;
     for (const role of BABY_ROLES) {
-      await run.writer.appendLedgerEvent({
-        runId: run.runId,
-        babyId: babyIdForRole(role),
-        turn: run.turn,
-        draft: {
-          eventType: 'run.sealed',
-          contentSchema: 'agent-native-ledger',
-          subjectId: 'run',
-          content: { checkpointRef },
-          blindingNonce: this.#nonce(run),
-          evidenceRefs: [],
-        },
+      await run.gateway.appendLifecycleLedgerEvent(run.turn, role, {
+        eventType: 'run.sealed',
+        contentSchema: 'agent-native-ledger',
+        subjectId: 'run',
+        content: { checkpointRef },
+        blindingNonce: this.#nonce(run),
+        evidenceRefs: [],
       });
     }
   }

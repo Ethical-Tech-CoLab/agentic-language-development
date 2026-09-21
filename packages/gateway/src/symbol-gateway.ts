@@ -37,6 +37,7 @@ import {
   type GatewaySubmitResult,
   type GatewayTurnContext,
   type LedgerDraftEnvelope,
+  type LedgerEventDraft,
   type LedgerEvent,
   type RunConfig,
   type Sha256Hash,
@@ -595,6 +596,57 @@ export class SymbolGatewayImpl implements SymbolGateway {
       turn: turn.turn,
       draft,
       channelEventHash: parsed.channelEventHash,
+    });
+  }
+
+  /** Task actions are not public messages, but their private draft still crosses the Gateway. */
+  async submitReceiverTaskAction(
+    turn: GatewayTurnContext,
+    recipient: BabyRole,
+    envelope: unknown,
+  ): Promise<Extract<AgentActionProposal, { kind: 'select_object' }> | null> {
+    this.assertEvidenceOperational();
+    if (recipient !== turn.recipient) {
+      throw new Error('receiver task action role does not match the trusted turn');
+    }
+    if (!isWithinComplexityBudget(envelope)) return null;
+    const parsed = TurnProposalEnvelopeSchema.safeParse(envelope);
+    if (!parsed.success || parsed.data.proposal.kind !== 'select_object') return null;
+    let draft: ValidatedDraft;
+    try {
+      draft = validateLedgerEventDraft(parsed.data.privateLedgerDraft);
+    } catch {
+      return null;
+    }
+    if (draft.eventType !== 'intention.recorded') return null;
+    await this.evidence.appendLedgerEvent({
+      runId: this.runContext.runId,
+      babyId: babyIdForRole(recipient),
+      turn: turn.turn,
+      draft,
+    });
+    return parsed.data.proposal;
+  }
+
+  async appendLifecycleLedgerEvent(
+    turn: number,
+    role: BabyRole,
+    draft: LedgerEventDraft,
+  ): Promise<LedgerEvent> {
+    this.assertEvidenceOperational();
+    if (!Number.isSafeInteger(turn) || turn < 0) {
+      throw new Error('lifecycle ledger turn must be nonnegative');
+    }
+    const validated = validateLedgerEventDraft(draft);
+    if (validated.eventType !== 'policy.checkpointed' &&
+        validated.eventType !== 'run.sealed') {
+      throw new Error('Controller lifecycle ledger event type is not permitted');
+    }
+    return this.evidence.appendLedgerEvent({
+      runId: this.runContext.runId,
+      babyId: babyIdForRole(role),
+      turn,
+      draft: validated,
     });
   }
 
