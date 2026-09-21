@@ -21,9 +21,13 @@ writer, so this is not yet a process or runtime capability boundary.
 The Gateway now quarantines itself when that port reports a possibly committed
 write with no confirmed response. A running Controller refuses another turn
 before adapter work, and restart recovery refuses channel or affect events that
-lack a completed turn record. These checks do not replace a durable pre-send
-journal or qualify a remote Evidence Writer: an uncertain request with no
-committed event still needs attempt-level failure accounting before any restart.
+lack a completed turn record. A separate Gateway write-intent journal component
+now durably stores only request/response hashes and refuses an unresolved send
+after restart, including when no event committed. Its focused tests cover
+confirmed writes, a lost reply before commit, and a late commit after timeout.
+The current Nursery does not instantiate this component, so its attempt-level
+accounting is not active in the deployed path. It does not qualify a remote
+Evidence Writer or replace selected-topology fault and resource measurements.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

@@ -72,6 +72,7 @@ export {
 } from './symbol-gateway.js';
 export { EvidenceWriteUncertainError } from './evidence-port.js';
 export type { GatewayEvidencePort } from './evidence-port.js';
+export { GatewayWriteIntentJournal } from './write-intent-journal.js';
 export {
   assertEveryCarrierHasVectors,
   conformanceVectorsFor,
