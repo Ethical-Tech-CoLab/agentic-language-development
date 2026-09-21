@@ -34,11 +34,20 @@ export {
 export {
   LV01_ANALYSIS_VERSION,
   LV01_ORDINARY_PREDICTOR_IDS,
+  LV01_COMPONENT_IDS,
+  analyzeLv01Family,
+  scoreLv01Prediction,
   selectLv01OrdinaryPredictor,
   type Lv01OrdinaryPredictor,
   type Lv01OrdinaryPredictorId,
   type Lv01OrdinaryRecord,
   type Lv01OrdinarySelection,
+  type Lv01ComponentId,
+  type Lv01FamilyResult,
+  type Lv01PredictionComparison,
+  type Lv01PredictionLabel,
+  type Lv01PredictionScores,
+  type Lv01SeedComponentValues,
 } from './ledger-value.js';
 export {
   carrierCapacity,

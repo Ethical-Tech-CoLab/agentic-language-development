@@ -1,5 +1,6 @@
 /** Outcome-safe ordinary-record predictors and LV01 analysis primitives. */
 import { AnalysisError } from './errors.js';
+import { holmBonferroni, oneSampleTTest } from './hypothesis.js';
 
 export const LV01_ANALYSIS_VERSION = 'lv01-analysis/v1' as const;
 export const LV01_ORDINARY_PREDICTOR_IDS = [
@@ -130,4 +131,57 @@ export function selectLv01OrdinaryPredictor(input: {
   const refitRows = [...combined, ...input.validationSelection];
   const refit = selectedPredictorId === 'uniform' ? countModel('uniform', role, [], input.inventory) : selectedPredictorId === 'validation-majority' ? countModel(selectedPredictorId, role, [...input.validationFit, ...input.validationSelection], input.inventory) : selectedPredictorId === 'ordinary-record-softmax' ? softmaxModel(role, refitRows, input.inventory) : countModel(selectedPredictorId, role, refitRows, input.inventory);
   return { selectedPredictorId, validationBrierByPredictor: scores, candidatePredictors: candidates, refitPredictor: refit };
+}
+
+/** Labels stay explicit: predictions score actual actions; causal LV-L reads only target probability. */
+export interface Lv01PredictionLabel {
+  readonly actualSelectedCandidateIndex: number;
+  readonly taskTargetCandidateIndex: number;
+}
+export interface Lv01PredictionComparison {
+  readonly candidateTypeCodes: readonly number[];
+  readonly nativeDistribution: readonly number[];
+  readonly replayDistribution: readonly number[];
+  readonly label: Lv01PredictionLabel;
+}
+export interface Lv01PredictionScores {
+  readonly nativeBrier: number; readonly replayBrier: number;
+  readonly expectedExcessReplayBrier: number;
+  readonly replayTargetActionProbability: number;
+}
+function assertDistribution(values: readonly number[], label: string): void {
+  if (values.length !== CANDIDATES || values.some((x) => !Number.isFinite(x) || x < 0) || Math.abs(values.reduce((a, b) => a + b, 0) - 1) > 1e-10) fail(`${label} must be a four-candidate probability distribution`);
+}
+/** Score one pre-outcome prediction once its separate action/target labels are available. */
+export function scoreLv01Prediction(input: Lv01PredictionComparison): Lv01PredictionScores {
+  if (input.candidateTypeCodes.length !== CANDIDATES || new Set(input.candidateTypeCodes).size !== CANDIDATES) fail('prediction candidate order is invalid');
+  assertDistribution(input.nativeDistribution, 'native distribution'); assertDistribution(input.replayDistribution, 'replay distribution');
+  const { actualSelectedCandidateIndex: action, taskTargetCandidateIndex: target } = input.label;
+  if (!Number.isInteger(action) || action < 0 || action >= CANDIDATES || !Number.isInteger(target) || target < 0 || target >= CANDIDATES) fail('prediction labels are invalid');
+  return { nativeBrier: brier(input.nativeDistribution, action), replayBrier: brier(input.replayDistribution, action), expectedExcessReplayBrier: input.nativeDistribution.reduce((sum, value, index) => sum + (value - input.replayDistribution[index]!) ** 2, 0), replayTargetActionProbability: input.replayDistribution[target]! };
+}
+
+export const LV01_COMPONENT_IDS = ['fidelity', 'disabled', 'constant', 'random', 'shuffled', 'intervention'] as const;
+export type Lv01ComponentId = (typeof LV01_COMPONENT_IDS)[number];
+const BOUNDARY: Record<Lv01ComponentId, number> = { fidelity: -0.02, disabled: 0.05, constant: 0.05, random: 0.05, shuffled: 0.05, intervention: 0.05 };
+export interface Lv01SeedComponentValues { readonly seedId: string; readonly byRole: Readonly<Record<'baby-a' | 'baby-b', Readonly<Partial<Record<Lv01ComponentId, readonly number[]>>>>>; }
+export interface Lv01FamilyResult { readonly memberPValues: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', number>>; readonly adjustedPValues: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', number>>; readonly dispositions: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', 'supported' | 'not-supported' | 'inconclusive'>>; readonly seedStatistics: Readonly<Record<string, Readonly<Record<Lv01ComponentId, number>>>>; }
+/** Equal-role seed reduction plus LV01's fixed component/member/Holm procedure. */
+export function analyzeLv01Family(rows: readonly Lv01SeedComponentValues[]): Lv01FamilyResult {
+  if (rows.length < 2 || new Set(rows.map((row) => row.seedId)).size !== rows.length) fail('LV01 analysis requires at least two unique seeds');
+  const statistics: Record<string, Record<Lv01ComponentId, number>> = {};
+  for (const row of rows) {
+    const reduced = {} as Record<Lv01ComponentId, number>;
+    for (const component of LV01_COMPONENT_IDS) {
+      const left = row.byRole['baby-a'][component]; const right = row.byRole['baby-b'][component];
+      if (left === undefined || right === undefined || left.length === 0 || right.length === 0 || left.some((x) => !Number.isFinite(x)) || right.some((x) => !Number.isFinite(x))) fail(`LV01 ${component} requires finite values for both roles`);
+      reduced[component] = (left.reduce((a, b) => a + b, 0) / left.length + right.reduce((a, b) => a + b, 0) / right.length) / 2;
+    }
+    statistics[row.seedId] = reduced;
+  }
+  const tests = Object.fromEntries(LV01_COMPONENT_IDS.map((component) => [component, oneSampleTTest(rows.map((row) => statistics[row.seedId]![component]), BOUNDARY[component], 'greater')])) as Record<Lv01ComponentId, ReturnType<typeof oneSampleTTest>>;
+  const raw = [tests.fidelity.p, Math.max(tests.disabled.p, tests.constant.p, tests.random.p, tests.shuffled.p), tests.intervention.p];
+  if (tests.fidelity.degenerate || tests.disabled.degenerate || tests.constant.degenerate || tests.random.degenerate || tests.shuffled.degenerate || tests.intervention.degenerate) return { memberPValues: { 'LV-P': 1, 'LV-C': 1, 'LV-L': 1 }, adjustedPValues: { 'LV-P': 1, 'LV-C': 1, 'LV-L': 1 }, dispositions: { 'LV-P': 'inconclusive', 'LV-C': 'inconclusive', 'LV-L': 'inconclusive' }, seedStatistics: statistics };
+  const holm = holmBonferroni(raw, 0.05); const members = ['LV-P', 'LV-C', 'LV-L'] as const;
+  return { memberPValues: Object.fromEntries(members.map((id, index) => [id, raw[index]!])) as Lv01FamilyResult['memberPValues'], adjustedPValues: Object.fromEntries(members.map((id, index) => [id, holm.adjusted[index]!])) as Lv01FamilyResult['adjustedPValues'], dispositions: Object.fromEntries(members.map((id, index) => [id, holm.adjusted[index]! < 0.05 ? 'supported' : 'not-supported'])) as Lv01FamilyResult['dispositions'], seedStatistics: statistics };
 }
