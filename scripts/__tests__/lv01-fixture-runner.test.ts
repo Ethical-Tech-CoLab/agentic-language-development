@@ -37,5 +37,7 @@ describe('LV01 selected-topology fixture runner', () => {
     const source = readFileSync(runner, 'utf8');
     expect(source).toContain('label=com.docker.compose.project=${project}');
     expect(source).not.toContain("[...compose, 'ps'");
+    expect(source).toContain("'compose-output.log'");
+    expect(source).toContain("'lv01-authority-failure.json'");
   });
 });

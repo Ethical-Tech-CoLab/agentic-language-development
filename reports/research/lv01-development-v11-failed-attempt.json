@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-fixture-attempt",
+  "status": "failed-closed-missing-authority-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v11-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v11.json",
+    "executionCommit": "7db8c03",
+    "evidenceRoot": "evidence/lv01/development-v11/lv01-development-v11-p0001",
+    "retainedFiles": [
+      {"path":"config/run-config.json","sha256":"sha256:792a230ac350f6a104e4f2643542ac0666262bc30fcc9139de248afec8e75063"},
+      {"path":"output/lv01-fixture-resources.json","sha256":"sha256:d7c967a3fce92d1672d3adafac6545af6d148739ca1b0f52a301a600dab981bc"},
+      {"path":"fixture-failure.json","sha256":"sha256:047774d15d56d1030ce1ae87710ce9474b7d77569ff4f04d5452538596bddb4a"}
+    ]
+  },
+  "failure": {
+    "stage": "container-execution",
+    "reason": "The run completed without a live selected-application authority observation. The retained sampler file has 122 empty samples and zero observed services.",
+    "diagnosticLimitation": "The pre-correction runner did not persist Compose stdout/stderr before failure, so this record does not infer a cause beyond its retained terminal facts."
+  },
+  "requiredCorrection": "Persist Compose output and the authority-observation failure record before making a fresh development attempt. Do not reuse v11 identifiers or seeds.",
+  "claimBoundary": "This failed attempt provides no topology qualification, resource measurement, calibration, pilot, behavioral result, or scientific finding."
+}
