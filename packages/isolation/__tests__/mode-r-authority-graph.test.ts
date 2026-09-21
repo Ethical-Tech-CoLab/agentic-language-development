@@ -92,7 +92,43 @@ const boundaryQualification = JSON.parse(
   readFileSync('protocols/mode-r-boundary-qualification.v1.json', 'utf8'),
 ) as BoundaryQualification;
 
+type BabyModelBoundaryQualification = {
+  schemaVersion: number;
+  status: string;
+  researchFinding: boolean;
+  b12Closed: boolean;
+  authorityBindings: Array<{ path: string; sha256: string }>;
+  requiredChecks: string[];
+  exclusions: string[];
+};
+const babyModelBoundaryQualification = JSON.parse(
+  readFileSync(
+    'protocols/mode-r-baby-model-boundary-qualification.v1.json',
+    'utf8',
+  ),
+) as BabyModelBoundaryQualification;
+
 describe('prospective Mode R authority graph', () => {
+  it('freezes the Baby/model process qualification without closing B12', () => {
+    expect(babyModelBoundaryQualification.schemaVersion).toBe(1);
+    expect(babyModelBoundaryQualification.status).toBe('design-locked-not-executed');
+    expect(babyModelBoundaryQualification.researchFinding).toBe(false);
+    expect(babyModelBoundaryQualification.b12Closed).toBe(false);
+    for (const source of babyModelBoundaryQualification.authorityBindings) {
+      expect(createHash('sha256').update(readFileSync(source.path)).digest('hex'))
+        .toBe(source.sha256);
+    }
+    expect(babyModelBoundaryQualification.requiredChecks).toContain(
+      'the outer Baby is the sole normalized turn-deadline authority',
+    );
+    expect(babyModelBoundaryQualification.exclusions).toContain(
+      'selected container topology',
+    );
+    expect(babyModelBoundaryQualification.exclusions).toContain(
+      'scientific or behavioral findings',
+    );
+  });
+
   it('prospectively freezes a bounded zero-spend container qualification', () => {
     expect(boundaryQualification.schemaVersion).toBe(1);
     expect(boundaryQualification.status).toBe('design-locked-not-executed');

@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { access, readFile } from 'node:fs/promises';
 import { runLearnerAdapterConformance } from '@ald/learners';
 
 import {
   FrameAssembler,
   FrameConnection,
   MIN_FRAME_SIZE,
+  DirectHostTransport,
+  RemoteLearnerAdapter,
+  createBabyProcessAdapterFactory,
   createIsolatedAdapterFactory,
   createLoopbackChannelPair,
   decodeFrameLine,
@@ -113,3 +117,81 @@ describe('separate-process learner host', () => {
     }
   }, 20_000);
 });
+
+describe('distinct Baby and model-adapter processes', () => {
+  it('preserves the learner contract across both process boundaries', async () => {
+    const factory = createBabyProcessAdapterFactory({
+      track: 'no-learning',
+      timing: 'immediate',
+      deadlineMs: 5_000,
+      process: { stderr: 'count' },
+    });
+
+    let observedProcessIds: number[] = [];
+    try {
+      const result = await runLearnerAdapterConformance(factory, {
+        episodes: 1,
+        seed: 'baby-model-process-conformance',
+      });
+      expect(result.proposals).toBe(2);
+
+      const babyIds = factory.adapters.map((adapter) => adapter.isolation.processId);
+      expect(babyIds).toHaveLength(2);
+      expect(babyIds.every((id) => id !== undefined && id !== process.pid)).toBe(true);
+      expect(new Set(babyIds).size).toBe(2);
+
+      if (process.platform === 'linux') {
+        const modelIds = await Promise.all(
+          babyIds.map(async (babyId) => {
+            const children = await readFile(
+              `/proc/${String(babyId)}/task/${String(babyId)}/children`,
+              'utf8',
+            );
+            return children.trim().split(/\s+/u).filter(Boolean).map(Number);
+          }),
+        );
+        expect(modelIds.every((ids) => ids.length === 1)).toBe(true);
+        const flattened = modelIds.flat();
+        expect(new Set([...babyIds, ...flattened]).size).toBe(4);
+        observedProcessIds = [...babyIds, ...flattened] as number[];
+      }
+    } finally {
+      await factory.dispose();
+    }
+    if (process.platform === 'linux') {
+      await expectProcessesToExit(observedProcessIds);
+    }
+  }, 20_000);
+
+  it('refuses a nested normalized timer', () => {
+    const pair = createLoopbackChannelPair();
+    expect(() =>
+      new RemoteLearnerAdapter({
+        track: 'no-learning',
+        transport: new DirectHostTransport('in-process', pair.runtime),
+        timing: 'normalized',
+        turnDeadlineAuthority: 'upstream',
+      }),
+    ).toThrow();
+    pair.runtime.close();
+  });
+});
+
+async function expectProcessesToExit(processIds: readonly number[]): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  let live: number[] = [];
+  do {
+    live = [];
+    for (const processId of processIds) {
+      try {
+        await access(`/proc/${String(processId)}`);
+        live.push(processId);
+      } catch {
+        // Missing `/proc` entry means the process has exited.
+      }
+    }
+    if (live.length === 0) return;
+    await new Promise<void>((resolve) => setTimeout(resolve, 20));
+  } while (Date.now() < deadline);
+  expect(live).toEqual([]);
+}

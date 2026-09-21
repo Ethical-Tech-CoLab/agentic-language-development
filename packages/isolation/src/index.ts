@@ -28,6 +28,17 @@
  * which ones neither covers.
  */
 export {
+  defaultBabyHostEntry,
+  createBabyProcessAdapterFactory,
+  type BabyProcessAdapterFactory,
+  type BabyProcessAdapterFactoryOptions,
+} from './baby-factory.js';
+export {
+  parseBabyHostCliOptions,
+  runBabyHostCli,
+  type BabyHostCliOptions,
+} from './baby-host.js';
+export {
   FrameConnection,
   type ConnectionStats,
   type FrameChannel,

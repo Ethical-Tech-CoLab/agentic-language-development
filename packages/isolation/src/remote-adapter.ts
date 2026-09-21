@@ -127,6 +127,11 @@ export interface RemoteLearnerAdapterOptions {
   maxPayloadBytes?: number;
   /** Mode R requires `normalized` (SPEC §5.3). Default `normalized`. */
   timing?: 'normalized' | 'immediate';
+  /**
+   * `upstream` disables this proxy's turn-path timer because an outer Baby
+   * boundary owns it. Non-turn calls retain their ordinary deadline.
+   */
+  turnDeadlineAuthority?: 'self' | 'upstream';
   /** Overrides `RunConfig.turnResponseBudgetMs` as the per-call deadline. */
   deadlineMs?: number;
   timer?: IsolationTimer;
@@ -166,6 +171,7 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
   private readonly options: RemoteLearnerAdapterOptions;
   private readonly timer: IsolationTimer;
   private readonly timing: 'normalized' | 'immediate';
+  private readonly turnDeadlineAuthority: 'self' | 'upstream';
   private connection: FrameConnection | undefined;
   private ledger: PrivateLedgerClient | undefined;
   private config: LearnerVisibleRunConfig | undefined;
@@ -181,6 +187,10 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     this.track = options.track;
     this.timer = options.timer ?? systemTimer;
     this.timing = options.timing ?? 'normalized';
+    this.turnDeadlineAuthority = options.turnDeadlineAuthority ?? 'self';
+    if (this.turnDeadlineAuthority === 'upstream' && this.timing !== 'immediate') {
+      throw new IsolationError('configuration');
+    }
 
     const processId = options.transport.current()?.processId;
     this.descriptor = {
@@ -552,10 +562,18 @@ export class RemoteLearnerAdapter implements LearnerAdapter {
     const startedAt = this.timer.now();
     this.diagnostics.calls += 1;
     try {
+      const requestDeadline =
+        this.turnDeadlineAuthority === 'upstream' && TURN_PATH.has(method)
+          ? undefined
+          : this.remainingDeadline(
+              deadlineMs,
+              normalize ? startedAt + deadlineMs : undefined,
+              method,
+            );
       const raw = await connection.request(
         method,
         params,
-        this.remainingDeadline(deadlineMs, normalize ? startedAt + deadlineMs : undefined, method),
+        requestDeadline,
       );
       let value: T;
       try {

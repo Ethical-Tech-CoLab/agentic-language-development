@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "classification": "prospective-mode-r-baby-model-process-development-qualification",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "scope": "Process-development qualification of the Controller-to-Baby-to-model-adapter learner contract before selected container integration.",
+  "authorityBindings": [
+    { "path": "protocols/mode-r-authority-graph.v1.json", "sha256": "9292d025a67683e32077968ed59531e554a412163a2828b0900f1e644f567202" },
+    { "path": "protocols/mode-r-authority-graph.v2.json", "sha256": "802d81e66b0e4d281e408421944458cef81f898a1a36a808b963ba08b4046b13" },
+    { "path": "protocols/mode-r-authority-graph.v3.json", "sha256": "8050aec662f1e466daadd91b917a053c8c13fdcf2257893072fb3bcc0d50b70a" },
+    { "path": "protocols/mode-r-authority-graph.v4.json", "sha256": "581727d747940a044fae312fe4090fa2ba1d00267e807ebaa25448b89f7b891d" }
+  ],
+  "requiredChecks": [
+    "two roles use distinct Baby process identities",
+    "each Baby has exactly one distinct model-adapter child process",
+    "the complete LearnerAdapter conformance path crosses both boundaries",
+    "private ledger append traverses model adapter through its Baby boundary",
+    "the outer Baby is the sole normalized turn-deadline authority",
+    "disposing the runtime-side adapter terminates the Baby and model-adapter process tree",
+    "wrong track and malformed protocol requests fail closed"
+  ],
+  "exclusions": [
+    "selected container topology",
+    "Gateway and Evidence Writer service integration",
+    "network-route absence",
+    "signer key-domain isolation",
+    "dynamic fault and late-callback containment",
+    "detector bounds",
+    "resource envelope",
+    "sealed TypeScript and Rust bundle audit",
+    "scientific or behavioral findings"
+  ],
+  "acceptance": "All required checks pass on exact clean code and the result is preserved in an immutable qualification receipt. This packet alone cannot close B12."
+}

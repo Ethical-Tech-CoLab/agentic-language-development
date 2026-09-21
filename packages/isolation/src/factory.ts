@@ -180,6 +180,9 @@ export function createIsolatedAdapterFactory(
           ? {}
           : { maxPayloadBytes: options.maxPayloadBytes }),
         ...(options.timing === undefined ? {} : { timing: options.timing }),
+        ...(options.turnDeadlineAuthority === undefined
+          ? {}
+          : { turnDeadlineAuthority: options.turnDeadlineAuthority }),
         ...(options.deadlineMs === undefined
           ? {}
           : { deadlineMs: options.deadlineMs }),
