@@ -467,6 +467,8 @@ interface BatchSlot {
   instance: ScenarioInstance;
   /** The Gateway retains accepted pre-pass envelopes; the Controller does not. */
   prepared?: true;
+  /** Hash of a stateful adapter's read-only preview proposal. */
+  previewedProposalHash?: Sha256Hash;
   /** Set instead of `prepared` when the pre-pass proposal was rejected. */
   rejection?: Extract<GatewaySubmitResult, { kind: 'rejected' }>;
 }
@@ -809,7 +811,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       symbolInventory,
       bundleDir: this.#bundleDirFor(runId),
       turn: 0,
-      trainingCount: 0,
+      trainingCount: runConfig.evaluationOnly === true ? runConfig.maxTurnsPerRun : 0,
       evaluationCount: 0,
       evaluationTurns: runConfig.evaluationTurns ?? this.#evaluationTurnsDefault,
       policyRefs: {},
@@ -847,6 +849,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     // §7.2 `initializing --ready--> running` requires checkpoint 0 first.
     await this.#checkpoint(run, 'run-initialized');
     lifecycle.apply('ready');
+    await this.#applyStageTransitions(run, 0);
 
     return this.#summary(run);
   }
@@ -2215,7 +2218,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
     const last = records.at(-1);
     run.turn = last === undefined ? 0 : last.turn + 1;
-    run.trainingCount = records.filter(
+    run.trainingCount = run.config.evaluationOnly === true
+      ? run.config.maxTurnsPerRun
+      : records.filter(
       (record) =>
         record.phase === 'running' && record.repairAttempt === undefined,
     ).length;
@@ -2597,6 +2602,26 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
 
     if (slot?.prepared === true) {
+      if (slot.previewedProposalHash !== undefined) {
+        const live = await this.#callAdapter(run, sender, 'act', () =>
+          this.#awaitTurnResponse(
+            run,
+            sender,
+            run.adapters[sender].act({
+              turn: turnContext.turn,
+              role: 'sender',
+              responseBudgetMs: run.config.turnResponseBudgetMs,
+              availableActions: [...run.gateway.allowedActionKinds],
+            }),
+          ),
+        );
+        if (hashCanonical(HASH_DOMAINS.babyProposal, live.proposal) !== slot.previewedProposalHash) {
+          throw new RunConfigurationError([{
+            path: 'communicationCondition',
+            message: 'the live evaluation proposal differs from its sealed shuffled preview',
+          }]);
+        }
+      }
       return run.gateway.submitPreparedShuffledProposal(turnContext);
     }
 
@@ -2717,8 +2742,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * The pre-pass is only sound for a stateless adapter, which is why
    * `shuffled` is restricted to the `no-learning` track: a learning adapter
    * would be acting on turn `n + k` before it has seen the outcome of turn
-   * `n`. The Gateway retains the validated envelope for its later turn, so no
-   * adapter is asked to act twice for the same turn.
+   * `n`. Stateful adapters use a restored-policy preview here, so their live
+   * state cannot be advanced before an earlier shuffled outcome is known.
    */
   async #slotFor(
     run: RunRuntime,
@@ -2766,18 +2791,44 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // SPEC §11.4: every private ledger event an adapter appends inside this
       // slot's calls belongs to the slot's turn, not to the batch head the
       // runtime's own cursor still names.
+      const senderAdapter = run.adapters[slotSender];
+      const preview = senderAdapter.previewAct;
+      if (senderAdapter.updatePolicy !== undefined && preview === undefined) {
+        throw new RunConfigurationError([{
+          path: `${slotSender}.previewAct`,
+          message: 'stateful shuffled control requires a read-only restored-policy preview',
+        }]);
+      }
+      const usesPreview = preview !== undefined;
       const envelope: unknown = await this.#withPrivateLedgerTurn(
         run,
         slotTurn,
         async () => {
+          if (preview !== undefined) {
+            return this.#callAdapter(run, slotSender, 'act', () =>
+              this.#awaitTurnResponse(
+                run,
+                slotSender,
+                preview.call(senderAdapter, {
+                  observation: slotObservation,
+                  budget: {
+                    turn: slotTurn,
+                    role: 'sender',
+                    responseBudgetMs: run.config.turnResponseBudgetMs,
+                    availableActions: [...run.gateway.allowedActionKinds],
+                  },
+                }),
+              ),
+            );
+          }
           await this.#callAdapter(run, slotSender, 'observe', () =>
-            run.adapters[slotSender].observe(slotObservation),
+            senderAdapter.observe(slotObservation),
           );
           return this.#callAdapter(run, slotSender, 'act', () =>
             this.#awaitTurnResponse(
               run,
               slotSender,
-              run.adapters[slotSender].act({
+              senderAdapter.act({
                 turn: slotTurn,
                 role: 'sender',
                 responseBudgetMs: run.config.turnResponseBudgetMs,
@@ -2797,7 +2848,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         continue;
       }
 
-      batch.slots.push({ turn: slotTurn, instance, prepared: true });
+      batch.slots.push({
+        turn: slotTurn,
+        instance,
+        prepared: true,
+        ...(usesPreview
+          ? { previewedProposalHash: hashCanonical(HASH_DOMAINS.babyProposal,
+            (envelope as { proposal: unknown }).proposal) }
+          : {}),
+      });
     }
 
     await run.gateway.sealShuffledBatch();
@@ -4040,16 +4099,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   }
 
   #assertConditionSupported(config: RunConfig): void {
-    if (config.communicationCondition !== 'shuffled') {
+    if (config.communicationCondition !== 'shuffled' || config.evaluationOnly === true) {
       return;
     }
-    if (
-      config.babyA.track !== 'no-learning' ||
-      config.babyB.track !== 'no-learning'
-    ) {
+    const tracks = [config.babyA.track, config.babyB.track];
+    if (tracks.some((track) => track !== 'no-learning' && track !== 'frozen-llm')) {
       throw new UnsupportedConditionError(
-        'the shuffled condition pre-generates a batch of proposals and is ' +
-          'therefore restricted to the stateless no-learning track (SPEC §9.6)',
+        'a stateful shuffled control must use an immutable derived policy and evaluationOnly execution',
       );
     }
   }

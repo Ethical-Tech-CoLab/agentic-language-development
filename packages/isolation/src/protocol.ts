@@ -48,6 +48,7 @@ export const HOST_METHODS = [
   'init',
   'observe',
   'act',
+  'preview_act',
   'receive',
   'on_outcome',
   'update_policy',
@@ -78,6 +79,7 @@ export type RuntimeMethod = (typeof RUNTIME_METHODS)[number];
 export const TURN_PATH_METHODS: readonly HostMethod[] = [
   'observe',
   'act',
+  'preview_act',
   'receive',
   'on_outcome',
   'measure_affect',
@@ -218,6 +220,7 @@ export const LearnerProvenanceSchema = z.strictObject({
 /** Optional `LearnerAdapter` members a host reports after `init`. */
 export const HOST_CAPABILITIES = [
   'updatePolicy',
+  'previewAct',
   'measureAffect',
   'applyCurriculumStage',
   'describeProvenance',
@@ -246,6 +249,12 @@ export const InitResultSchema = z.strictObject({
 export const EnvelopeResultSchema = z.strictObject({
   envelope: z.unknown(),
   policyDigest: hashSchema,
+});
+
+/** One independently restored sender preview for a recurrent shuffled batch. */
+export const PreviewActParamsSchema = z.strictObject({
+  observation: z.strictObject(ObservationSchema.shape),
+  budget: TurnBudgetSchema,
 });
 
 export const PolicyStateResultSchema = z.strictObject({
@@ -337,6 +346,7 @@ export const HOST_PARAM_SCHEMAS = {
   init: InitParamsSchema,
   observe: z.strictObject(ObservationSchema.shape),
   act: TurnBudgetSchema,
+  preview_act: PreviewActParamsSchema,
   receive: z.strictObject(DeliveredChannelArtifactSchema.shape),
   on_outcome: OutcomeEventSchema,
   update_policy: UpdateBatchSchema,

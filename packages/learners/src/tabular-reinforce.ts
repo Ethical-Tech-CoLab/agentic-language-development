@@ -267,7 +267,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
   /** Non-fatal findings from the last `initialPolicy` load (SPEC §7.4). */
   private diagnostics: string[] = [];
 
-  constructor(private readonly options: TabularReinforceOptions = {}) {}
+  constructor(
+    private readonly options: TabularReinforceOptions = {},
+    private readonly previewMode = false,
+  ) {}
 
   /**
    * Differences between the loaded checkpoint's hyperparameters and this
@@ -394,6 +397,26 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     return turnBudget.role === 'sender'
       ? this.actAsSender(state, turnBudget)
       : this.actAsReceiver(state, turnBudget);
+  }
+
+  /**
+   * Produce a sender proposal from an independently restored policy snapshot.
+   * The live adapter is not observed, acted, or written through this path.
+   */
+  async previewAct(input: {
+    observation: Observation;
+    budget: TurnBudget;
+  }): Promise<TurnProposalEnvelope> {
+    const state = this.requireState();
+    const before = hashCanonical(HASH_DOMAINS.policyCheckpoint, this.exportPolicy());
+    const preview = new TabularReinforceAdapter(this.options, true);
+    await preview.init({ ...state.context, initialPolicy: this.exportPolicy() });
+    await preview.observe(input.observation);
+    const envelope = await preview.act(input.budget);
+    if (hashCanonical(HASH_DOMAINS.policyCheckpoint, this.exportPolicy()) !== before) {
+      throw new LearnerStateError('previewAct() mutated the live policy');
+    }
+    return envelope;
   }
 
   private async actAsSender(
@@ -1184,6 +1207,10 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     for (const mark of marks) {
       const key = markKey(state.support, mark);
       if (seen.has(key)) {
+        continue;
+      }
+      if (this.previewMode) {
+        seen.add(key);
         continue;
       }
       const draft: LedgerEventDraft = buildNoncedDraft(state.nonces, {

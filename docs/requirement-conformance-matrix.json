@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.387"
+    "version": "0.1.388"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -733,6 +733,7 @@
       "selectors": [
         "passes the adapter conformance harness",
         "exposes updatePolicy, unlike the control tracks (SPEC §6.2)",
+        "previews a sender proposal from restored state without writing live state",
         "starts from seeded random parameters and exposes their initial hash",
         "reaches above-chance referential success on every seed",
         "trains both roles privately inside one adapter",
@@ -1184,7 +1185,7 @@
         "blocks sealing when the publisher cannot anchor",
         "forfeits a turn whose sender misses the response deadline",
         "fills in placeholder bundle hashes and rejects a mismatch",
-        "refuses the shuffled condition for a learning track",
+        "requires stateful shuffled controls to use derived evaluation-only execution",
         "refuses to skip anchoring outside prototype mode",
         "refuses a publisher whose simulated/public class differs from RunConfig",
         "refuses an external learner boundary under Prototype Mode",

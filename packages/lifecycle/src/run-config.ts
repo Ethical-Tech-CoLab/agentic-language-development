@@ -301,6 +301,22 @@ export function validateRunConfig(input: unknown): RunConfigValidation {
   }
 
   const config = parsed.data;
+  if (
+    config.evaluationOnly === true &&
+    (config.parentRunId === undefined ||
+      config.derivedFromCheckpointHash === undefined ||
+      config.babyA.initialPolicyRef === undefined ||
+      config.babyB.initialPolicyRef === undefined)
+  ) {
+    return {
+      ok: false,
+      errors: [{
+        path: 'evaluationOnly',
+        message: 'evaluation-only execution requires immutable derived policies for both Babies',
+      }],
+      warnings: [],
+    };
+  }
   const errors = collectCrossFieldErrors(config);
   const warnings = collectWarnings(config);
   if (errors.length > 0) {

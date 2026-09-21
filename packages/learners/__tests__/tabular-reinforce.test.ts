@@ -96,6 +96,33 @@ describe('TabularReinforceAdapter conformance (ALD-045)', () => {
     expect(typeof adapter.updatePolicy).toBe('function');
   });
 
+  it('previews a sender proposal from restored state without writing live state', async () => {
+    const { adapter, ledger, config } = await initAdapter(TRAINING_OPTIONS);
+    const observation = {
+      runId: config.runId,
+      turn: 1,
+      recipient: 'baby-a' as const,
+      encoding: 'opaque-numeric' as const,
+      payload: [[0, 0, 1], [1, 1, 0]],
+      scenarioRef: 'scenario:preview',
+    };
+    const budget = {
+      turn: 1,
+      role: 'sender' as const,
+      responseBudgetMs: 1_000,
+      availableActions: ['emit_symbols'],
+    };
+    const before = hashCanonical(HASH_DOMAINS.policyCheckpoint, adapter.exportPolicy());
+
+    const preview = await adapter.previewAct({ observation, budget });
+
+    expect(hashCanonical(HASH_DOMAINS.policyCheckpoint, adapter.exportPolicy())).toBe(before);
+    expect(ledger.drafts).toHaveLength(0);
+
+    await adapter.observe(observation);
+    expect((await adapter.act(budget)).proposal).toEqual(preview.proposal);
+  });
+
   it('starts from seeded random parameters and exposes their initial hash', async () => {
     const first = await initAdapter({}, { seed: 'random-init-a' });
     const again = await initAdapter({}, { seed: 'random-init-a' });
