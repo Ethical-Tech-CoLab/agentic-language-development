@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 6,
+  "classification": "selected-mode-r-uncertain-write-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v6",
+  "runId": "mode-r-application-uncertain-write-development-v6",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-uncertain-write-development-v5-failure.json",
+    "sha256": "6cc8ae8dff1bd86464aec236f18fd95ab85a43d559baef6930e2430765f1e0c2"
+  },
+  "prerequisite": {
+    "path": "reports/research/mode-r-application-fault-development-v3-qualification-receipt.json",
+    "sha256": "7d6d5f23dc1c26d5564b384e888268f3ce5aad046bc0fcff5168f08e8d510100"
+  },
+  "sources": [
+    {
+      "path": "deploy/mode-r/Dockerfile",
+      "sha256": "43a12cb1140687a6e83bb167f43d5019e3a464bdf4a4a8e27787e1c7103cd35e"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application.v1.yml",
+      "sha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application-uncertain-write.v1.yml",
+      "sha256": "3fe69eab9b6afe0a1ba8109f558da6a754d64d94d82fcae8288b8a1338c23a21"
+    },
+    {
+      "path": "deploy/mode-r/application-uncertain-write-controller.mjs",
+      "sha256": "e2121008ce0742fba4400d91202d5097afaf8333ecc7c7a756d7c8cdefb23fdd"
+    }
+  ],
+  "injection": {
+    "method": "commitTurn",
+    "writerResponseDelayMs": 1500,
+    "gatewayWriterDeadlineMs": 1000,
+    "semantics": "The Evidence Writer commits before delaying its reply. The Gateway deadline expires before confirmation, leaving one durable unresolved intent."
+  },
+  "recreation": {
+    "freshGatewayProcessRequired": true,
+    "services": [
+      "model-adapter-a",
+      "model-adapter-b",
+      "baby-a",
+      "baby-b",
+      "gateway",
+      "controller-scenario"
+    ],
+    "ownedSocketsRemoved": [
+      "runtime/gateway-controller/gateway.sock",
+      "runtime/gateway-baby-a/learner.sock",
+      "runtime/gateway-baby-b/learner.sock"
+    ]
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "state": "running",
+    "turn": 0,
+    "operationalQuarantine": "evidence-write-uncertain",
+    "recoveryErrorName": "IncompleteTurnEvidenceError",
+    "recoveryQuarantine": "incomplete-turn-evidence",
+    "channelDeltaAfterCommit": 1,
+    "senderLedgerDeltaAfterCommit": 2,
+    "turnRecordDeltaAfterCommit": 0,
+    "journal": {
+      "intentCount": 1,
+      "confirmationCount": 0
+    },
+    "typescriptVerifierExitCode": 0,
+    "rustIntegrityPass": true,
+    "minimumResourceSnapshots": 2
+  },
+  "correction": {
+    "scientificDesignChanged": false,
+    "scientificThresholdChanged": false,
+    "executionChanged": false,
+    "reason": "V5 completed both stages and observed the intended fail-closed behavior, but its prospective wrapper required a reconstructed runtime to inherit the live process's epistemic uncertainty label. V6 distinguishes the live evidence-write-uncertain state from the reconstructed runtime's semantic incomplete-turn-evidence classification."
+  },
+  "scope": {
+    "included": [
+      "selected-application-topology",
+      "commit-before-delayed-confirmation",
+      "durable-unresolved-gateway-intent",
+      "live-gateway-terminal-quarantine",
+      "no-retry-or-second-write",
+      "fresh-gateway-recovery-refusal",
+      "typescript-and-independent-rust-cryptographic-prefix-verification"
+    ],
+    "excluded": [
+      "generic-network-partition-model",
+      "late-learner-callback-injection",
+      "malformed-envelope-injection",
+      "detector-positive-and-negative-statistical-bounds",
+      "cgroup-peak-resource-envelope",
+      "selected-e10-plus-learner-and-carrier-bindings",
+      "b12-closure",
+      "behavioral-or-scientific-finding"
+    ]
+  },
+  "claimBoundary": "A pass establishes one bounded selected-topology commit-without-confirmation case: the original write may commit, the live Gateway records an unresolved intent and quarantines without retry, and a reconstructed Gateway refuses recovery because the committed prefix is semantically incomplete. Passing cryptographic bundle verification does not make that prefix resumable and does not close B12."
+}

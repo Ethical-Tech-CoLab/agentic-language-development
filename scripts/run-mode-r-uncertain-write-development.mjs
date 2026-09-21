@@ -22,12 +22,12 @@ import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-uncertain-write-development.v5.json';
-const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v5';
+const protocolPath = 'protocols/mode-r-uncertain-write-development.v6.json';
+const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v6';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-uncertain-write.v1.yml';
-const project = 'ald-mode-r-uncertain-write-development-v5';
+const project = 'ald-mode-r-uncertain-write-development-v6';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -166,9 +166,9 @@ function audit(receipt) {
   assert.equal(receipt.inject.afterFirst.turns - receipt.inject.before.turns,
     acceptance.turnRecordDeltaAfterCommit);
   assert.equal(equalCounts(receipt.inject.afterFirst, receipt.inject.afterSecond), true);
-  assert.equal(receipt.recovery.recoveryError.name, acceptance.quarantineErrorName);
-  assert.equal(receipt.recovery.stepError.name, acceptance.quarantineErrorName);
-  assert.equal(receipt.recovery.operationalQuarantine, acceptance.operationalQuarantine);
+  assert.equal(receipt.recovery.recoveryError.name, acceptance.recoveryErrorName);
+  assert.equal(receipt.recovery.stepError.name, acceptance.recoveryErrorName);
+  assert.equal(receipt.recovery.operationalQuarantine, acceptance.recoveryQuarantine);
   assert.equal(equalCounts(receipt.recovery.before, receipt.recovery.afterRecovery), true);
   assert.equal(equalCounts(receipt.recovery.afterRecovery, receipt.recovery.afterStep), true);
   assert.equal(equalCounts(receipt.inject.afterSecond, receipt.recovery.afterStep), true);
@@ -333,9 +333,9 @@ const passed = failure === null && inject !== null && recovery !== null &&
   inject.firstError?.name === acceptance.remoteUnconfirmedErrorName &&
   inject.secondError?.name === acceptance.quarantineErrorName &&
   inject.operationalQuarantine === acceptance.operationalQuarantine &&
-  recovery.recoveryError?.name === acceptance.quarantineErrorName &&
-  recovery.stepError?.name === acceptance.quarantineErrorName &&
-  recovery.operationalQuarantine === acceptance.operationalQuarantine &&
+  recovery.recoveryError?.name === acceptance.recoveryErrorName &&
+  recovery.stepError?.name === acceptance.recoveryErrorName &&
+  recovery.operationalQuarantine === acceptance.recoveryQuarantine &&
   equalCounts(inject.afterFirst, inject.afterSecond) &&
   equalCounts(recovery.before, recovery.afterRecovery) &&
   equalCounts(recovery.afterRecovery, recovery.afterStep) &&

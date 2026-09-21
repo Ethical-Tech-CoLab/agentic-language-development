@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v5",
+  "executionCommit": "c0817ea3514f454b53eaae6daa700fe38baedac7",
+  "executionTree": "d0af2dd99daa35187ae3f571a12190a75ff79d9d",
+  "executionVersion": "0.1.293",
+  "startedAt": "2026-09-21T15:13:11.651Z",
+  "finishedAt": "2026-09-21T15:15:51.519Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v5.json",
+    "bytes": 4176,
+    "sha256": "sha256:8d6f48510548d5ece5dcfaa15e6faebed01b9d0d75f6d5630de41d10076bebd8"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v5/receipt.json",
+    "bytes": 19523,
+    "sha256": "sha256:12543603522daea239e04b8089060b413b2750bbb830271c8369f8c66845891c",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 0,
+    "recoveryControllerExitCode": 0,
+    "controllerOomKilled": false,
+    "recoveryControllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "observedInjection": {
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "operationalQuarantine": "evidence-write-uncertain",
+    "channelDelta": 1,
+    "senderLedgerDelta": 2,
+    "turnRecordDelta": 0,
+    "secondAttemptAddedEvidence": false,
+    "journalIntentCount": 1,
+    "journalConfirmationCount": 0
+  },
+  "observedRecovery": {
+    "errorName": "IncompleteTurnEvidenceError",
+    "stepErrorName": "IncompleteTurnEvidenceError",
+    "operationalQuarantine": "incomplete-turn-evidence",
+    "recoveryAddedEvidence": false,
+    "stepAddedEvidence": false
+  },
+  "verification": {
+    "injectTypeScriptExitCode": 0,
+    "injectRustIntegrityPass": true,
+    "recoveryTypeScriptExitCode": 0,
+    "recoveryRustIntegrityPass": true,
+    "resourceSnapshotCount": 2
+  },
+  "cause": "The complete two-stage execution produced the intended fail-closed behavior, but the protocol expected the fresh runtime to inherit the live process's uncertainty classification. Recovery instead classified the signed channel event without a turn record more specifically as incomplete-turn evidence.",
+  "interpretation": "The intended safety behavior occurred and both incomplete prefixes passed both cryptographic verifiers, but v5 remains a failed qualification because its prospective recovery error and quarantine labels were wrong.",
+  "nextAction": "Register v6 with unchanged execution and evidence thresholds, expecting evidence-write-uncertain only in the live process and incomplete-turn-evidence after reconstruction.",
+  "claimBoundary": "V5 is a failed qualification wrapper despite observing the intended safety outcome. It is not relabeled as a pass, does not close B12, and is not a behavioral result."
+}
