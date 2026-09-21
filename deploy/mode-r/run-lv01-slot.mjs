@@ -38,9 +38,13 @@ function verifyAllocation() {
   assert.equal(allocation.allocation.smallFixture.validationSelectionCases, 24);
   assert.equal(allocation.allocation.smallFixture.withinSupportTestCases, 24);
   assert.equal(allocation.seedDerivation.slots.length, 6);
-  assert.ok(allocation.sourceFreeze.artifacts.some((artifact) =>
-    artifact.path === 'deploy/mode-r/run-lv01-slot.mjs'),
-  'allocation source closure does not bind this runner; compile a fresh version');
+  assert.equal(execFileSync('git', ['rev-parse', `${allocation.sourceFreeze.commit}^{tree}`], { encoding: 'utf8' }).trim(), allocation.sourceFreeze.tree);
+  assert.equal(JSON.parse(execFileSync('git', ['show', `${allocation.sourceFreeze.commit}:package.json`], { encoding: 'utf8' })).version, allocation.sourceFreeze.version);
+  for (const artifact of allocation.sourceFreeze.artifacts) {
+    const bytes = execFileSync('git', ['show', `${allocation.sourceFreeze.commit}:${artifact.path}`]);
+    assert.equal(`sha256:${createHash('sha256').update(bytes).digest('hex')}`, artifact.sha256);
+  }
+  assert.ok(allocation.sourceFreeze.artifacts.some((artifact) => artifact.path === 'deploy/mode-r/run-lv01-slot.mjs'), 'allocation source closure does not bind this runner; compile a fresh version');
 }
 
 function config() {
