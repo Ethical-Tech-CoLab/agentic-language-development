@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-recurrent-selected-lifecycle-development-attempt",
+  "attemptStatus": "failed-before-first-turn",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "publicChainTransaction": false,
+  "externalSpend": 0,
+  "protocol": "protocols/lv01-recurrent-lifecycle-development.v2.json",
+  "runId": "lv01-recurrent-lifecycle-v2-p0001",
+  "executionCommit": "637968a",
+  "retainedEvidence": {
+    "receipt": {"path": "receipt.json", "sha256": "sha256:a191bb1102b41069fdcb2f91d0981f6817a28ea3454846e9bed9c92118cee3c3"},
+    "composeLogs": {"path": "compose-logs.txt", "sha256": "sha256:30513079d8e7b98cf6b3a2263d81745c08ed33d3f77116cfcc3cfeff7c191409"}
+  },
+  "failure": "All domain signer containers rejected the new lv01-recurrent-lifecycle-v2-p0001 identity before publishing their public keys. Dependent services then failed readiness; the controller recorded no turn.",
+  "correction": "Extend the local ephemeral qualification signer allowlist to the explicitly bounded recurrent-lifecycle run-ID family and cover it with the existing identity test. Keep signer-domain and format restrictions intact.",
+  "successor": "protocols/lv01-recurrent-lifecycle-development.v3.json",
+  "claimBoundary": "This retained topology-start failure supplies no recurrent-restoration, resource, or behavioral result. The v2 identity cannot be retried."
+}
