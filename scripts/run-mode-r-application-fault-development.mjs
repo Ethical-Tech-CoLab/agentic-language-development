@@ -17,14 +17,15 @@ import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
-const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-application-fault-development.v1.json';
-const evidenceRoot = 'evidence/mode-r-application-fault-development-v1';
+assert.match(mode ?? '', /^--(?:run|audit)-v2$/u, 'expected --run-v2 or --audit-v2');
+const runMode = mode === '--run-v2';
+const version = 2;
+const protocolPath = `protocols/mode-r-application-fault-development.v${String(version)}.json`;
+const evidenceRoot = `evidence/mode-r-application-fault-development-v${String(version)}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-fault.v1.yml';
-const project = 'ald-mode-r-application-fault-development-v1';
+const project = `ald-mode-r-application-fault-development-v${String(version)}`;
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -133,7 +134,12 @@ function audit(receipt) {
   for (const entry of receipt.cases) {
     assert.equal(entry.declaredServiceCount, acceptance.serviceCount);
     assert.equal(entry.ready.prefixTurn, acceptance.prefixTurn);
-    assert.equal(entry.faultResult.postFaultRejected, acceptance.postFaultRejected);
+    const expected = protocol.cases.find((fault) => fault.id === entry.id);
+    assert.ok(expected, `${entry.id} is not in the protocol`);
+    assert.equal(entry.faultResult.postFaultDisposition,
+      expected.expectedDisposition);
+    assert.equal(entry.faultResult.stateAfterFault, expected.expectedState);
+    assert.equal(entry.faultResult.turnAfterFault, expected.expectedTurnAfterFault);
     assert.equal(entry.targetTerminal.exitCode, acceptance.targetExitCode);
     assert.equal(entry.targetTerminal.oomKilled, false);
     assert.equal(entry.typescriptVerification.exitCode,
@@ -162,6 +168,8 @@ assert.equal(existsSync(rustAuditor), true, 'independent Rust auditor is missing
 assert.equal(protocol.status, 'design-locked-not-executed');
 assert.equal(protocol.researchFinding, false);
 assert.equal(protocol.b12Closed, false);
+assert.equal(sha256(protocol.predecessorFailure.path),
+  protocol.predecessorFailure.sha256);
 assert.equal(sha256(protocol.prerequisite.path), protocol.prerequisite.sha256);
 assert.equal(sha256(protocol.compose.basePath), protocol.compose.baseSha256);
 assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha256);
@@ -285,7 +293,9 @@ for (const fault of protocol.cases) {
       entry.targetTerminal.exitCode === protocol.acceptance.targetExitCode &&
       entry.targetTerminal.oomKilled === false &&
       entry.controllerTerminal.exitCode === 0 &&
-      entry.faultResult.postFaultRejected === true &&
+      entry.faultResult.postFaultDisposition === fault.expectedDisposition &&
+      entry.faultResult.stateAfterFault === fault.expectedState &&
+      entry.faultResult.turnAfterFault === fault.expectedTurnAfterFault &&
       entry.typescriptVerification.exitCode === 0 &&
       entry.rustVerification.integrityPass === true &&
       entry.resourceSnapshots.length >=

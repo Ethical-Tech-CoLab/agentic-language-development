@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-fault-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-application-fault-development-v1",
+  "executionCommit": "ae68690005c372fe3a39281dba5c2728e5834f31",
+  "executionTree": "42fde88cbed6838e115a73944db3ca8c8a997a0b",
+  "executionVersion": "0.1.284",
+  "startedAt": "2026-09-21T13:25:34.496Z",
+  "finishedAt": "2026-09-21T13:31:27.002Z",
+  "protocol": {
+    "path": "protocols/mode-r-application-fault-development.v1.json",
+    "bytes": 3498,
+    "sha256": "sha256:3a334188001d4c04d8163523253f165abaeafe2290745acc4654bc01c4f6057a"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-fault-development-v1/receipt.json",
+    "bytes": 100129,
+    "sha256": "sha256:1a1091ca08049439103d24729767e347b9044d0d19c50cf6202cf98413777f5b",
+    "retention": "local-ignored-original"
+  },
+  "summary": {
+    "caseCount": 6,
+    "passedCaseCount": 4,
+    "failedCaseCount": 2,
+    "resourceSnapshotCount": 12,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "passingCases": [
+    "evidence-writer-death",
+    "channel-signer-death",
+    "checkpoint-service-death",
+    "audit-interpreter-death"
+  ],
+  "deviations": [
+    {
+      "case": "baby-peer-death",
+      "prospectiveExpectation": "the post-fault step throws and is rejected",
+      "observation": "the runtime instead committed a signed adapter-failure turn, emitted no new channel event, and entered paused at turn 2",
+      "interpretation": "the application failed closed through its recorded rejection path; the v1 acceptance rule incorrectly required an exception"
+    },
+    {
+      "case": "anchor-service-death",
+      "prospectiveExpectation": "the next ordinary step exercises the unavailable anchor and is rejected",
+      "observation": "the ordinary step completed because anchoring occurs during terminal abort or seal, not each interval checkpoint",
+      "interpretation": "the v1 action did not reach the intended anchor boundary"
+    }
+  ],
+  "verifiedPrefixEvidence": {
+    "typescriptPassCount": 6,
+    "rustIntegrityPassCount": 6,
+    "eventsPerCase": 8,
+    "checkpointsPerCase": 2,
+    "issueCount": 0
+  },
+  "nextAction": "Register a fresh two-case v2 supplement that prospectively accepts the signed adapter-failure pause path and invokes terminal abort to exercise anchor unavailability.",
+  "claimBoundary": "V1 is a failed development qualification with four passing service-death cases and two informative acceptance/action deviations. It is not a passing matrix, B12 closure, a behavioral result, or publication evidence."
+}

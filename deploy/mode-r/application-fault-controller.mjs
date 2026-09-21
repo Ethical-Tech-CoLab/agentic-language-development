@@ -133,9 +133,51 @@ try {
   });
   await waitForTrigger();
   let observedError;
+  let postFaultDisposition = 'unexpected-success';
+  let faultObservation = null;
   try {
     if (faultCase === 'audit-interpreter-death') {
       await appendDelayedAudit();
+    } else if (faultCase === 'anchor-service-death') {
+      const summary = await runtime.abort(config.runId, {
+        actorId: 'qualification-operator',
+        reasonCode: 'selected-fault-anchor-unavailable',
+        details: { faultCase },
+      });
+      faultObservation = {
+        summaryState: summary.state,
+        summaryTurn: summary.turn,
+        deviations: summary.deviations,
+        anchorReceiptCount: (await controller.port
+          .readAnchorReceipts(config.runId)).length,
+      };
+      if (summary.state === 'sealing-blocked' &&
+          summary.deviations.some((deviation) =>
+            deviation.startsWith('anchor-unavailable:')) &&
+          faultObservation.anchorReceiptCount === 0) {
+        postFaultDisposition = 'sealing-blocked';
+      }
+    } else if (faultCase === 'baby-peer-death') {
+      const summary = await runtime.step(config.runId);
+      const turns = await controller.port.readEvents(config.runId, 'turns');
+      const channels = await controller.port.readEvents(config.runId, 'channel');
+      const lastTurn = turns.at(-1);
+      const lastTurnValue = lastTurn === undefined
+        ? null : JSON.parse(lastTurn.canonicalJson);
+      faultObservation = {
+        summaryState: summary.state,
+        summaryTurn: summary.turn,
+        turnRecordCount: turns.length,
+        channelEventCount: channels.length,
+        lastTurnOutcome: lastTurnValue?.outcome ?? null,
+      };
+      if (summary.state === 'paused' && summary.turn === 2 &&
+          turns.length === 2 && channels.length === 1 &&
+          lastTurnValue?.outcome?.success === false &&
+          lastTurnValue?.outcome?.details?.reason === 'adapter-failure' &&
+          lastTurnValue?.outcome?.details?.role === 'baby-a') {
+        postFaultDisposition = 'committed-adapter-failure';
+      }
     } else {
       await runtime.step(config.runId);
     }
@@ -149,6 +191,7 @@ try {
         ? { name: error.cause.name, message: error.cause.message }
         : null,
     };
+    postFaultDisposition = 'rpc-rejected';
   }
   const final = runtime.getRun(config.runId);
   result = {
@@ -160,16 +203,24 @@ try {
     faultCase,
     prefixTurn: prefix.turn,
     postFaultAction: faultCase === 'audit-interpreter-death'
-      ? 'interpret-audit-batch' : 'step',
+      ? 'interpret-audit-batch'
+      : faultCase === 'anchor-service-death' ? 'abort' : 'step',
     postFaultRejected: observedError !== undefined,
+    postFaultDisposition,
+    faultObservation,
     observedError: observedError ?? null,
     stateAfterFault: final?.state ?? null,
     turnAfterFault: final?.turn ?? null,
     operationalQuarantine: final?.operationalQuarantine ?? null,
   };
   await writeJsonAtomic('fault-result.json', result);
-  assert.equal(result.postFaultRejected, true,
-    `${faultCase} post-fault action unexpectedly succeeded`);
+  const expectedDisposition = faultCase === 'baby-peer-death'
+    ? 'committed-adapter-failure'
+    : faultCase === 'anchor-service-death'
+      ? 'sealing-blocked'
+      : 'rpc-rejected';
+  assert.equal(result.postFaultDisposition, expectedDisposition,
+    `${faultCase} produced an unexpected post-fault disposition`);
 } finally {
   await Promise.all([...factories.values()].map((factory) => factory.dispose()));
 }
