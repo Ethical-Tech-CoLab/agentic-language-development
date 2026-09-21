@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-recurrent-selected-lifecycle-development-attempt",
+  "attemptStatus": "aborted-before-container-execution",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "publicChainTransaction": false,
+  "externalSpend": 0,
+  "protocol": "protocols/lv01-recurrent-lifecycle-development.v1.json",
+  "runId": "lv01-recurrent-lifecycle-v1-p0001",
+  "executionCommit": "8c22916ab0356325b37cf2e8b22e2119d60c1906",
+  "observed": {
+    "configWrittenAt": "2026-09-21T22:26:10.687Z",
+    "configSha256": "sha256:dabce9c3805e45b84b494a571afeda7c2c04c92ea08e1ad4f80229d0bdd6a696",
+    "retainedFiles": ["config/run-config.json"],
+    "composeContainersAfterInterruption": 0,
+    "terminalCollectorReceipt": "absent"
+  },
+  "reason": "The bounded local command was interrupted after configuration creation and before Docker Compose created a container or the collector could write its terminal receipt. The attempt identity is spent and cannot be rerun.",
+  "successor": "protocols/lv01-recurrent-lifecycle-development.v2.json",
+  "claimBoundary": "This is failure accounting only. It supplies no topology, recurrent-restoration, resource, or behavioral result."
+}

@@ -19,15 +19,18 @@ import { ReferentialScenarioEngine } from '@ald/scenario';
 import { fixedTokenInventory } from '@ald/types';
 
 const mode = process.argv[2];
+const version = process.argv[3] ?? '1';
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
+assert.match(version, /^[1-9]\d*$/u, 'expected a positive protocol version');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/lv01-recurrent-lifecycle-development.v1.json';
+const protocolPath = `protocols/lv01-recurrent-lifecycle-development.v${version}.json`;
 const protocol = readJson(protocolPath);
-const evidenceRoot = `evidence/lv01/recurrent-lifecycle-v${protocol.version}/${protocol.runId}`;
+assert.equal(String(protocol.version), version, 'protocol version does not match the requested version');
+const evidenceRoot = `evidence/lv01/recurrent-lifecycle-v${version}/${protocol.runId}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
-const project = `ald-lv01-recurrent-lifecycle-v${protocol.version}`;
+const project = `ald-lv01-recurrent-lifecycle-v${version}`;
 const commit = command('git', ['rev-parse', 'HEAD']);
 const baseEnvironment = {
   ...process.env,
