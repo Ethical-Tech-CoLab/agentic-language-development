@@ -91,6 +91,11 @@ export {
 export * from './experiments/index.js';
 export * from './production.js';
 export {
+  createEvidenceWriterRpcHost,
+  type EvidenceWriterCapabilitySockets,
+  type EvidenceWriterRpcHost,
+} from './evidence-writer-host.js';
+export {
   FORT_SIGNER_SEEDS_FILE_ENV,
   FORBIDDEN_SIGNER_SEEDS_VALUE_ENV,
   signerProviderFromFortEnvironment,

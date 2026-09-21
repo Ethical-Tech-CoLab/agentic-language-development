@@ -49,6 +49,14 @@ then verifies its manifest, inclusion/consistency proofs, proof files, skipped
 interval, and refusal after signer death. Current Nursery assembly still
 injects in-process evidence; this does not establish selected mounts, routes,
 resource bounds, or comprehensive fault behavior.
+The single-owner writer host can open the Controller, Gateway, Checkpoint,
+simulated Anchor, and Audit Interpreter capability sockets over one writer
+object and SQLite connection. Its integration test registers through the
+Controller socket, commits a turn through Gateway, appends a delayed audit,
+creates a witness-signed checkpoint, and confirms a local simulated anchor;
+all five clients report the same distinct writer-process identity and expose
+the v2 graph's exact method sets. This does not establish caller-exclusive
+container mounts or migrate the live Nursery runtime onto those clients.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
