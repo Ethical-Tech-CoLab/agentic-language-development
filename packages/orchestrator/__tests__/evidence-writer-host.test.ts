@@ -11,6 +11,7 @@ import {
   connectAuditEvidenceRpc,
   connectCheckpointEvidenceRpc,
   connectControllerEvidenceRpc,
+  exportRunBundle,
   openEvidenceDatabase,
 } from '@ald/evidence';
 import { connectGatewayEvidenceRpc } from '@ald/gateway';
@@ -183,6 +184,23 @@ describe('single-owner Evidence Writer RPC host', () => {
       const confirmed = await publisher.awaitConfirmation(submitted);
       expect(confirmed.status).toBe('confirmed');
       expect(await controller.port.readAnchorReceipts(config.runId)).toHaveLength(1);
+
+      const bundleDir = join(directory, 'bundle');
+      const bundleManifest = await exportRunBundle(
+        controller.port,
+        config.runId,
+        bundleDir,
+        {
+          softwareCommit: 'git:writer-host-test',
+          learnerContracts: [...new Set([config.babyA.track, config.babyB.track])]
+            .map((track) => ({ track, version: 'test', text: `# ${track}\n` })),
+        },
+      );
+      expect(bundleManifest.runId).toBe(config.runId);
+      expect(JSON.parse(readFileSync(
+        join(bundleDir, 'anchors', 'base-receipts.json'), 'utf8'))).toHaveLength(1);
+      expect(readFileSync(join(bundleDir, 'channel-transcript.jsonl'), 'utf8'))
+        .toContain(turn.channelEvent.entryHash);
 
       await stop(writer);
       await expect(controller.port.readRunMetadata(config.runId)).rejects.toThrow();

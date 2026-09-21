@@ -57,6 +57,11 @@ creates a witness-signed checkpoint, and confirms a local simulated anchor;
 all five clients report the same distinct writer-process identity and expose
 the v2 graph's exact method sets. This does not establish caller-exclusive
 container mounts or migrate the live Nursery runtime onto those clients.
+Bundle export now awaits its complete read surface, so the same Controller
+capability can produce the canonical bundle without direct SQLite access. The
+shared-host test exports the remotely read signed channel event and simulated
+anchor receipt. Nursery lifecycle and recovery reads remain synchronous and
+must migrate before the live runtime can use this path end to end.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

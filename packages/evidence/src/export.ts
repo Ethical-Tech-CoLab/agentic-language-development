@@ -28,8 +28,10 @@ import {
   RunManifestSchema,
   STREAM_HASH_DOMAIN,
   STREAM_SIGNER,
+  type AnchorReceipt,
+  type CheckpointManifest,
   type EventStream,
-  type EvidenceReader,
+  type ExperimentRecord,
   type RunConfig,
   type RunManifest,
   type ModeROnlyClaimLabel,
@@ -37,6 +39,8 @@ import {
   type RunMetadataRecord,
   type Sha256Hash,
   type SignerPublicKey,
+  type StoredAnalysisAttachment,
+  type StoredEvent,
   type StreamDeclaration,
 } from '@ald/types';
 import {
@@ -96,10 +100,18 @@ export interface ExportBundleOptions {
   experimentRecordFallback?: never;
 }
 
-/** Read surface the exporter needs; `SqliteEvidenceWriter` satisfies it. */
-export type BundleReader = EvidenceReader & {
-  readRunSigners(runId: string): SignerPublicKey[];
-};
+type MaybePromise<T> = T | Promise<T>;
+
+/** Read surface the exporter needs; local and RPC-backed readers satisfy it. */
+export interface BundleReader {
+  readRunMetadata(runId: string): MaybePromise<RunMetadataRecord | undefined>;
+  readEvents(runId: string, stream: EventStream): MaybePromise<StoredEvent[]>;
+  readCheckpoints(runId: string): MaybePromise<CheckpointManifest[]>;
+  readAnchorReceipts(runId: string): MaybePromise<AnchorReceipt[]>;
+  readExperimentRecords(runId: string): MaybePromise<ExperimentRecord[]>;
+  readAnalysisAttachments(runId: string): MaybePromise<StoredAnalysisAttachment[]>;
+  readRunSigners(runId: string): MaybePromise<SignerPublicKey[]>;
+}
 
 export interface RunManifestInput {
   metadata: RunMetadataRecord;
@@ -261,16 +273,15 @@ export async function exportRunBundle(
   outputDir: string,
   options: ExportBundleOptions,
 ): Promise<RunManifest> {
-  const metadata = reader.readRunMetadata(runId);
+  const metadata = await reader.readRunMetadata(runId);
   if (!metadata) {
     throw new UnknownRunError(runId);
   }
   await assertWritableDirectory(outputDir, options.overwrite === true);
 
   const config = RunConfigSchema.parse(JSON.parse(metadata.configurationJson));
-  const events = new Map(
-    EVENT_STREAMS.map((stream) => [stream, reader.readEvents(runId, stream)]),
-  );
+  const events = new Map(await Promise.all(EVENT_STREAMS.map(async (stream) =>
+    [stream, await reader.readEvents(runId, stream)] as const)));
   const exported = EVENT_STREAMS.filter(
     (stream) =>
       ALWAYS_EXPORTED.includes(stream) ||
@@ -281,7 +292,7 @@ export async function exportRunBundle(
   const manifest = buildRunManifest({
     metadata,
     config,
-    signers: reader.readRunSigners(runId),
+    signers: await reader.readRunSigners(runId),
     streams: exported,
     softwareCommit: options.softwareCommit,
     learnerContracts: options.learnerContracts,
@@ -314,7 +325,7 @@ export async function exportRunBundle(
     );
   }
 
-  for (const checkpoint of reader.readCheckpoints(runId)) {
+  for (const checkpoint of await reader.readCheckpoints(runId)) {
     await writeCanonical(
       join(
         outputDir,
@@ -327,7 +338,7 @@ export async function exportRunBundle(
 
   await writeCanonical(
     join(outputDir, 'anchors', 'base-receipts.json'),
-    reader.readAnchorReceipts(runId),
+    await reader.readAnchorReceipts(runId),
   );
   await writeCanonical(
     join(outputDir, 'configuration', 'run-config.json'),
@@ -363,7 +374,7 @@ export async function exportRunBundle(
     await writeCanonical(join(outputDir, 'policies', file), policy);
   }
 
-  const attachments = reader.readAnalysisAttachments(runId);
+  const attachments = await reader.readAnalysisAttachments(runId);
   for (const attachment of attachments) {
     parseCanonicalJson(attachment.canonicalJson);
     const bytes = `${attachment.canonicalJson}\n`;
@@ -386,7 +397,7 @@ export async function exportRunBundle(
     }),
   );
 
-  const records = reader.readExperimentRecords(runId);
+  const records = await reader.readExperimentRecords(runId);
   const current = records.at(-1);
   if (current) {
     await writeCanonical(join(outputDir, 'experiment-record.json'), {
