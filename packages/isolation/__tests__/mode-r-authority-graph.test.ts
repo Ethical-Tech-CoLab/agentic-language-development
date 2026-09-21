@@ -134,6 +134,9 @@ describe('prospective Mode R authority graph', () => {
     expect(collector).toContain('for (const to of processNames)');
     expect(collector).toContain("'--network', 'none'");
     expect(collector).toContain("spawnSync('docker', ['rm', '-f', container]");
+    expect(collector).toContain('ALD_PROCESS_NAME=');
+    expect(collector).toContain('response===process.argv[1]');
+    expect(collector).toContain('notRunningProcessCount');
     expect(collector).toContain('researchFinding: false');
     expect(collector).toContain('b12Closed: false');
   });

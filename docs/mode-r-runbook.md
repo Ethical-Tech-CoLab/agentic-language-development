@@ -194,9 +194,15 @@ It refuses a dirty tree or reused evidence root, verifies the pinned image
 without pulling, creates uniquely prefixed internal networks and hardened
 containers, probes every ordered process pair, inspects exact mounts, signer
 domain declarations, container IDs, and host PIDs, and removes only resources
-bearing its unique prefix. Failures retain a single-use raw receipt. The
-collector itself is not yet development-qualified and no topology observation
-is claimed at this source version.
+bearing its unique prefix. Failures retain a single-use raw receipt. The first
+development attempt failed with 212 route mismatches. Its raw receipt remains
+unchanged, and a portable failure supplement records that the fixture did not
+authenticate the responding process, did not make liveness an explicit
+acceptance metric, and could exit on a client reset. The prospectively amended
+collector requires a target-specific response, tolerates reset errors, counts
+non-running processes, and uses a fresh development evidence identity. It is
+not yet qualified, no selected execution has occurred, and no topology
+observation is claimed at this source version.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

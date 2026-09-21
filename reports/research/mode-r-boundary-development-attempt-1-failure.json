@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "qualificationId": "mode-r-boundary-v1",
+  "attemptId": "development-attempt-1",
+  "classification": "supplemental-failure-evidence",
+  "researchFinding": false,
+  "b12Closed": false,
+  "historicalEvidenceModified": false,
+  "attemptStatus": "failed",
+  "scientificDisposition": "not-tested",
+  "executionCommit": "f922629fe61c95f8dce4818d8f7afdca58df8816",
+  "executionTree": "fdb8bc2a70d27bfbf20e73697f2ad7f8eced8d2d",
+  "executionVersion": "0.1.251",
+  "collectorSha256": "52ca4f0e6b2d81d75d3d42bebea78e3824c159fddd86f4f347addd11c92f58b7",
+  "protocolSha256": "sha256:8b45b2083320d7fda62f01d21a8371e817ebf7bddb821861e2ebc96d6f458184",
+  "collectedAt": "2026-09-21T06:44:37.116Z",
+  "externalSpendingUsd": 0,
+  "plannedProcesses": 17,
+  "observedProcesses": 17,
+  "plannedRoutes": 272,
+  "observedRoutes": 272,
+  "summary": {
+    "networkMismatchCount": 212,
+    "mountMismatchCount": 0,
+    "keyDomainMismatchCount": 0,
+    "duplicateContainerIdCount": 0,
+    "duplicateHostPidCount": 0,
+    "unexpectedExternalNetworkCount": 0
+  },
+  "networkMismatchBreakdown": [
+    {
+      "expectedReachable": false,
+      "observedReachable": true,
+      "count": 185
+    },
+    {
+      "expectedReachable": true,
+      "observedReachable": false,
+      "count": 27
+    }
+  ],
+  "collectorDiagnosis": {
+    "scope": "development-fixture-defect",
+    "socketResetWasUnhandled": true,
+    "responderIdentityWasNotAuthenticated": true,
+    "processLivenessWasNotAnExplicitAcceptanceMetric": true,
+    "selectedExecutionWasAttempted": false,
+    "correctionPolicy": "Preserve this receipt, amend the collector prospectively, and use a fresh development evidence identity."
+  },
+  "retainedRawArtifact": {
+    "path": "evidence/mode-r-boundary-qualification-v1-development/receipt.json",
+    "bytes": 49463,
+    "sha256": "3180c1304c48cb47212d5dff443c22ba639a7b755c08de7896536986037e4968"
+  },
+  "claimBoundary": "This is an append-only interpretation of a failed development collector qualification. It is not a selected topology qualification, B12 closure, behavioral result, negative scientific finding, independent review, or public timestamp."
+}

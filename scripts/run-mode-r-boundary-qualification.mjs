@@ -18,7 +18,7 @@ assert.ok(modes.has(mode), 'expected --run-development, --audit-development, --r
 const development = mode.endsWith('development');
 const runMode = mode.startsWith('--run');
 const evidenceRoot = development
-  ? 'evidence/mode-r-boundary-qualification-v1-development'
+  ? 'evidence/mode-r-boundary-qualification-v1-development-attempt-2'
   : 'evidence/mode-r-boundary-qualification-v1';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const protocolPath = 'protocols/mode-r-boundary-qualification.v1.json';
@@ -52,14 +52,17 @@ const expectedMounts = Object.fromEntries(processNames.map((name) => [
 const expectedKeyDomain = (name) => protocol.keyDomainPolicy[name] ?? null;
 const serverSource = [
   "const net=require('node:net')",
-  "net.createServer(s=>s.end('ok')).listen(4318,'0.0.0.0')",
+  "net.createServer(s=>{s.on('error',()=>{});s.end(process.env.ALD_PROCESS_NAME)}).listen(4318,'0.0.0.0')",
   'setInterval(()=>{},1<<30)',
 ].join(';');
 const probeSource = [
   "const net=require('node:net')",
   'const s=net.createConnection({host:process.argv[1],port:4318})',
+  "s.setEncoding('utf8')",
+  "let response=''",
   'const t=setTimeout(()=>{s.destroy();process.exit(2)},750)',
-  "s.on('connect',()=>{clearTimeout(t);s.destroy();process.exit(0)})",
+  "s.on('data',chunk=>{response+=chunk})",
+  "s.on('end',()=>{clearTimeout(t);process.exit(response===process.argv[1]?0:3)})",
   "s.on('error',()=>{clearTimeout(t);process.exit(2)})",
 ].join(';');
 
@@ -91,6 +94,7 @@ function audit(receipt) {
   assert.equal(receipt.summary.networkMismatchCount, 0);
   assert.equal(receipt.summary.mountMismatchCount, 0);
   assert.equal(receipt.summary.keyDomainMismatchCount, 0);
+  assert.equal(receipt.summary.notRunningProcessCount, 0);
   assert.equal(receipt.summary.duplicateContainerIdCount, 0);
   assert.equal(receipt.summary.duplicateHostPidCount, 0);
   assert.equal(receipt.summary.unexpectedExternalNetworkCount, 0);
@@ -99,6 +103,7 @@ function audit(receipt) {
     assert.deepEqual(observation.declaredNetworks, processes[observation.name].networks);
     assert.deepEqual(observation.qualificationMounts, expectedMounts[observation.name]);
     assert.equal(observation.keyDomain, expectedKeyDomain(observation.name));
+    assert.equal(observation.running, true);
   }
   for (const route of receipt.observations.routes) {
     const shared = processes[route.from].networks.some((network) =>
@@ -151,7 +156,8 @@ try {
     const declaredNetworks = processes[name].networks;
     const args = ['run', '-d', '--name', container, '--hostname', name,
       '--label', `ald.qualification=${prefix}`, '--read-only', '--cap-drop', 'ALL',
-      '--security-opt', 'no-new-privileges:true', '--pids-limit', '32'];
+      '--security-opt', 'no-new-privileges:true', '--pids-limit', '32',
+      '--env', `ALD_PROCESS_NAME=${name}`];
     if (declaredNetworks.length === 0) {
       args.push('--network', 'none');
     } else {
@@ -190,6 +196,7 @@ try {
       name,
       containerId: details.Id,
       hostPid: details.State.Pid,
+      running: details.State.Running,
       declaredNetworks: processes[name].networks,
       observedNetworks: actualNetworks,
       qualificationMounts: mounts,
@@ -217,6 +224,8 @@ try {
       JSON.stringify(expectedMounts[observation.name])).length;
   const keyDomainMismatchCount = processObservations.filter((observation) =>
     observation.keyDomain !== expectedKeyDomain(observation.name)).length;
+  const notRunningProcessCount = processObservations.filter((observation) =>
+    !observation.running).length;
   const duplicateContainerIdCount = processObservations.length -
     new Set(processObservations.map((observation) => observation.containerId)).size;
   const duplicateHostPidCount = processObservations.length -
@@ -228,6 +237,7 @@ try {
     networkMismatchCount,
     mountMismatchCount,
     keyDomainMismatchCount,
+    notRunningProcessCount,
     duplicateContainerIdCount,
     duplicateHostPidCount,
     unexpectedExternalNetworkCount,
