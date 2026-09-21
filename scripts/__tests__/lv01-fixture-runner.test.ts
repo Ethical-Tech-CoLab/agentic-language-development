@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -30,5 +31,11 @@ describe('LV01 selected-topology fixture runner', () => {
     const result = spawnSync(process.execPath, [runner, '--check', '999'], { cwd: root, encoding: 'utf8' });
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('missing protocols/lv01-development-resource-allocation.v999.json');
+  });
+
+  it('keeps sampler inspection outside the active Compose operation', () => {
+    const source = readFileSync(runner, 'utf8');
+    expect(source).toContain('label=com.docker.compose.project=${project}');
+    expect(source).not.toContain("[...compose, 'ps'");
   });
 });
