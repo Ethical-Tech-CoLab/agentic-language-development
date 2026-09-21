@@ -7,6 +7,10 @@
 export const EXPECTED_SCHEMA_EXPORTS = [
   'ExperimentIdSchema',
   'LedgerValuePlanSchema',
+  'Lv01StageSchema',
+  'Lv01AttemptStatusSchema',
+  'Lv01ScientificDispositionSchema',
+  'Lv01StageStatusReceiptSchema',
   'RunConfigSchema',
   'RunSeedBindingsSchema',
   'ObservationSchema',

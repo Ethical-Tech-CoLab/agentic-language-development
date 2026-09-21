@@ -187,6 +187,35 @@ export const LedgerValuePlanSchema = z
   })
   .strict();
 
+/** LV01 stage artifacts distinguish execution accounting from research results. */
+export const Lv01StageSchema = z.enum([
+  'development',
+  'qualification',
+  'pilot',
+  'confirmatory',
+  'replication',
+]);
+export const Lv01AttemptStatusSchema = z.enum([
+  'unstarted', 'running', 'completed', 'failed', 'aborted', 'unresolved',
+]);
+export const Lv01ScientificDispositionSchema = z.enum([
+  'not-tested', 'supported', 'not-supported', 'inconclusive',
+]);
+export const Lv01StageStatusReceiptSchema = z.object({
+  schemaVersion: z.literal(1),
+  studyId: z.literal('LV01'),
+  stage: Lv01StageSchema,
+  version: positiveInteger,
+  attemptStatus: Lv01AttemptStatusSchema,
+  scientificDisposition: Lv01ScientificDispositionSchema,
+  researchFinding: z.boolean(),
+  externalSpend: z.literal(0),
+  registrationSha256: hashString.nullable(),
+  evidenceManifestSha256: hashString.nullable(),
+  decisionReasons: z.array(nonEmptyString),
+  claimBoundary: nonEmptyString,
+}).strict();
+
 /** Prospectively allocated, role-separated seeds for registered research runs. */
 export const RunSeedBindingsSchema = z
   .object({
@@ -734,6 +763,10 @@ export const VerificationReportSchema = z.object({
 
 export type LearnerTrackId = z.infer<typeof LearnerTrackIdSchema>;
 export type RegistrationClass = z.infer<typeof RegistrationClassSchema>;
+export type Lv01Stage = z.infer<typeof Lv01StageSchema>;
+export type Lv01AttemptStatus = z.infer<typeof Lv01AttemptStatusSchema>;
+export type Lv01ScientificDisposition = z.infer<typeof Lv01ScientificDispositionSchema>;
+export type Lv01StageStatusReceipt = z.infer<typeof Lv01StageStatusReceiptSchema>;
 export type CarrierLeakageProbePlan = z.infer<
   typeof CarrierLeakageProbePlanSchema
 >;

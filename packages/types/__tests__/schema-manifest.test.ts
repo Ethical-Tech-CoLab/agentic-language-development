@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   EXPECTED_SCHEMA_EXPORTS,
   ExperimentIdSchema,
+  Lv01StageStatusReceiptSchema,
   RunConfigSchema,
   schemaRegistry,
 } from '../src/index.js';
@@ -23,6 +24,23 @@ describe('schema registry', () => {
     for (const experimentId of ['LV02', 'E1', 'X01', 'ledger-value']) {
       expect(ExperimentIdSchema.safeParse(experimentId).success).toBe(false);
     }
+  });
+
+  it('keeps LV01 operational status distinct from an empirical disposition', () => {
+    expect(Lv01StageStatusReceiptSchema.safeParse({
+      schemaVersion: 1,
+      studyId: 'LV01',
+      stage: 'pilot',
+      version: 1,
+      attemptStatus: 'failed',
+      scientificDisposition: 'not-tested',
+      researchFinding: false,
+      externalSpend: 0,
+      registrationSha256: null,
+      evidenceManifestSha256: null,
+      decisionReasons: ['topology qualification failed'],
+      claimBoundary: 'A failed collection attempt is not a negative research finding.',
+    }).success).toBe(true);
   });
 
   it('accepts a valid root run configuration', () => {
