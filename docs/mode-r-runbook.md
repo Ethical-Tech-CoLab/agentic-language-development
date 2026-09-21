@@ -47,9 +47,8 @@ networkless Baby/model sockets, six signer domains, and the v6 witness mount.
 Real deployment entrypoints execute two signed development turns, one delayed
 audit append, bundle export, and offline verification. The single-use collector
 fails closed on dirty source or reused evidence and compares resolved mounts and
-networks to live containers before teardown. The image builds and focused
-source tests pass; no application execution receipt exists yet, so this remains
-implemented but unexecuted development infrastructure and B12 stays open.
+networks to live containers before teardown. Three retained attempts have not
+completed this bounded path, so B12 stays open.
 The first v1 invocation stopped during Compose container creation before any
 container started because an unquoted inline tmpfs string was parsed into three
 items. Its raw failure receipt remains ignored and the portable failure summary
@@ -65,6 +64,19 @@ and receipt remain under the consumed v2 identity. The prospective v3 packet
 binds the invoking UID/GID, uses explicit model-host entrypoints inside the
 locked-down containers, extends the signer guard, and records live container
 state even when a wait fails. Thresholds and scientific design remain unchanged.
+The v3 attempt created all seventeen containers and registered the run, but the
+Controller stopped before the first turn during Gateway identity negotiation.
+Nursery had resolved the generated prompt and scenario hashes while the remote
+Gateway retained their genesis placeholders, so the exact configuration hashes
+correctly differed. The raw receipt, logs, configuration, and zero-turn database
+remain under the consumed v3 identity. Its per-service observation list is empty
+because the collector used an ambiguous stopped-service query; the Compose
+transcript is the source for the seventeen-container creation count.
+The prospective v4 packet pre-binds the exact generated prompt and scenario
+hashes in the configuration shared by Nursery and Gateway, and snapshots all
+project containers before service reconciliation. It preserves the v3 scientific
+design and thresholds and requires a fresh identity. No passing v4 receipt exists
+until that exact clean committed packet executes successfully.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-identity-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "5b86bfa449f428732f8c0f4704736c4ba259a9f7",
+  "attemptedRunId": "mode-r-application-v3",
+  "stage": "gateway-identity-negotiation",
+  "containersCreated": 17,
+  "controllerExitCode": 1,
+  "turnsRecorded": 0,
+  "auditEntriesRecorded": 0,
+  "cause": "Nursery resolved the genesis prompt and scenario hashes before opening the run, while the separately started Gateway retained the unresolved configuration file and correctly rejected the resulting configuration-hash mismatch.",
+  "accountingLimitation": "The v3 collector queried stopped services one at a time with an ambiguous Compose option form, so its terminal receipt retained no per-service observations even though the Compose transcript records all seventeen containers. The SQLite evidence contains one registered run and zero turn, ledger, or audit rows.",
+  "correctionPolicy": "Retain the v3 raw receipt, logs, configuration, and SQLite database; pre-bind the exact generated prompt and scenario hashes in the shared configuration; enumerate all project containers before per-service reconciliation; and use a fresh v4 identity.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-development-v3/receipt.json",
+    "bytes": 7002,
+    "sha256": "sha256:21fcd0f742dbfcd09f79e02b07276b3bd040abc2cda7af2b5b4597ea190c2d9a",
+    "retention": "local-ignored-original"
+  },
+  "claimBoundary": "This is a pre-turn application identity failure, not a behavioral result, B12 closure, or publication evidence."
+}

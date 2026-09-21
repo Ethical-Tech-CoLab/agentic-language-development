@@ -41,6 +41,10 @@ const protocolV3 = JSON.parse(readFileSync(
   'protocols/mode-r-application-development.v3.json',
   'utf8',
 )) as typeof protocolV2;
+const protocolV4 = JSON.parse(readFileSync(
+  'protocols/mode-r-application-development.v4.json',
+  'utf8',
+)) as typeof protocolV3;
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -95,6 +99,20 @@ describe('selected Mode R application Compose', () => {
     });
     expect(createHash('sha256').update(readFileSync(protocolV3.compose.path))
       .digest('hex')).toBe(protocolV3.compose.sha256);
+  });
+
+  it('uses a fresh v4 identity after preserving the v3 identity failure', () => {
+    expect(protocolV4.schemaVersion).toBe(4);
+    expect(protocolV4.status).toBe('design-locked-not-executed');
+    expect(protocolV4.runId).toBe('mode-r-application-v4');
+    expect(protocolV4.predecessorFailure.path)
+      .toBe('reports/research/mode-r-application-development-v3-failure.json');
+    expect(protocolV4.correction).toMatchObject({
+      scientificDesignChanged: false,
+      thresholdChanged: false,
+    });
+    expect(createHash('sha256').update(readFileSync(protocolV4.compose.path))
+      .digest('hex')).toBe(protocolV4.compose.sha256);
   });
 
   it('declares the exact 17-process graph and three internal networks', () => {
@@ -166,6 +184,9 @@ describe('selected Mode R application Compose', () => {
     expect(collector).toContain("existsSync(evidenceRoot), false");
     expect(collector).toContain("compose('wait', 'controller-scenario')");
     expect(collector).toContain("compose('wait', 'offline-verifier')");
+    expect(collector).toContain("compose('ps', '--all', '--quiet')");
+    expect(collector).toContain('promptBundleHash: promptBundleHash(');
+    expect(collector).toContain('scenarioBundleHash: scenario.bundleHash');
     expect(collector).toContain("compose('down', '--remove-orphans')");
     expect(collector).toContain('researchFinding: false');
     expect(collector).toContain('b12Closed: false');

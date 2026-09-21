@@ -9,11 +9,14 @@ import {
 } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import { loadLearnerContract, promptBundleHash } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
+import { ReferentialScenarioEngine } from '@ald/scenario';
+import { fixedTokenInventory } from '@ald/types';
 
 const mode = process.argv[2];
-assert.ok(/^--(?:run|audit)-v[123]$/u.test(mode ?? ''),
-  'expected a --run-vN or --audit-vN mode for N=1..3');
+assert.ok(/^--(?:run|audit)-v[1-4]$/u.test(mode ?? ''),
+  'expected a --run-vN or --audit-vN mode for N=1..4');
 const version = Number(mode.at(-1));
 const runMode = mode.startsWith('--run');
 const protocolPath = `protocols/mode-r-application-development.v${String(version)}.json`;
@@ -107,7 +110,7 @@ const directories = [
 for (const directory of directories) {
   mkdirSync(join(evidenceRoot, directory), { recursive: true, mode: 0o700 });
 }
-const runConfig = buildRunConfig({
+const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
   randomSeed: `selected-application-development-v${String(version)}`,
@@ -129,6 +132,21 @@ const runConfig = buildRunConfig({
   checkpointEventInterval: 1,
   protocolGitCommit: commit,
 });
+const tracks = [...new Set([
+  unresolvedConfig.babyA.track,
+  unresolvedConfig.babyB.track,
+])];
+const scenario = new ReferentialScenarioEngine({
+  version: 1,
+  symbolInventory: fixedTokenInventory(unresolvedConfig.symbolInventorySize ?? 32),
+  interactionMode: unresolvedConfig.interactionMode,
+  heldOutTypeCodes: unresolvedConfig.interventionPlan?.heldOutTypeCodes ?? [],
+}, unresolvedConfig.randomSeed);
+const runConfig = {
+  ...unresolvedConfig,
+  promptBundleHash: promptBundleHash(tracks.map(loadLearnerContract)),
+  scenarioBundleHash: scenario.bundleHash,
+};
 writeFileSync(join(evidenceRoot, 'config/run-config.json'),
   `${JSON.stringify(runConfig, null, 2)}\n`, { mode: 0o600 });
 
@@ -149,10 +167,17 @@ try {
     failure = error instanceof Error ? error.message : String(error);
   }
   const serviceNames = Object.keys(resolved.services).sort();
+  const ids = compose('ps', '--all', '--quiet').split('\n').filter(Boolean);
+  const inspectedContainers = ids.length === 0
+    ? []
+    : JSON.parse(command('docker', ['inspect', ...ids]));
+  const containersByService = new Map(inspectedContainers.map((container) => [
+    container.Config.Labels['com.docker.compose.service'],
+    container,
+  ]));
   observations = serviceNames.map((name) => {
-    const id = compose('ps', '-aq', name);
-    assert.notEqual(id, '', `${name} has no container`);
-    const inspected = JSON.parse(command('docker', ['inspect', id]))[0];
+    const inspected = containersByService.get(name);
+    assert.ok(inspected, `${name} has no container`);
     const expected = resolved.services[name];
     const expectedNetworks = Object.keys(expected.networks ?? {}).map(
       (logical) => resolved.networks[logical].name).sort();

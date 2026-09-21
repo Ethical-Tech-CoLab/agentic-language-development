@@ -39,6 +39,9 @@ importers:
       '@ald/redteam':
         specifier: workspace:*
         version: link:packages/redteam
+      '@ald/scenario':
+        specifier: workspace:*
+        version: link:packages/scenario
       '@ald/types':
         specifier: workspace:*
         version: link:packages/types
