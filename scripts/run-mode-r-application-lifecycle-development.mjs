@@ -18,12 +18,12 @@ import { fixedTokenInventory } from '@ald/types';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-application-lifecycle-development.v1.json';
-const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v1';
+const protocolPath = 'protocols/mode-r-application-lifecycle-development.v2.json';
+const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v2';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
-const project = 'ald-mode-r-application-lifecycle-development-v1';
+const project = 'ald-mode-r-application-lifecycle-development-v2';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
 const baseEnvironment = {
@@ -130,6 +130,11 @@ function audit(receipt) {
     'selected-mode-r-application-lifecycle-development');
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.b12Closed, false);
+  assert.equal(receipt.failure, null);
+  assert.ok(receipt.prepare !== null, 'missing prepare-stage result');
+  assert.ok(receipt.recovery !== null, 'missing recovery-stage result');
+  assert.ok(receipt.offlineVerification !== null,
+    'missing offline-verification result');
   assert.equal(receipt.protocolSha256, sha256(protocolPath));
   assert.equal(receipt.prepare.firstTurn, acceptance.firstTurn);
   assert.equal(receipt.prepare.firstPhase, acceptance.firstPhase);
@@ -139,6 +144,8 @@ function audit(receipt) {
   assert.equal(receipt.recovery.resumedState, acceptance.resumedState);
   assert.equal(receipt.recovery.secondTurn, acceptance.secondTurn);
   assert.equal(receipt.recovery.secondPhase, acceptance.secondPhase);
+  assert.equal(receipt.recovery.evaluationTurn, acceptance.evaluationTurn);
+  assert.equal(receipt.recovery.evaluationPhase, acceptance.evaluationPhase);
   assert.equal(receipt.recovery.finalState, acceptance.finalState);
   assert.equal(receipt.recovery.finalTurn, acceptance.finalTurn);
   assert.equal(receipt.recovery.auditEntryCount, acceptance.auditEntryCount);
@@ -186,7 +193,7 @@ assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha25
 const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
-  randomSeed: 'selected-application-lifecycle-development-v1',
+  randomSeed: 'selected-application-lifecycle-development-v2',
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',
@@ -306,8 +313,27 @@ const summary = {
   mountMismatchCount: secondObservations.filter((entry) => !entry.mountMatch).length,
   unexpectedRunningAfterTeardown: remaining.length,
 };
+const lifecycleMatches = prepare !== undefined && recovery !== undefined &&
+  offlineVerification !== undefined &&
+  prepare.firstTurn === protocol.acceptance.firstTurn &&
+  prepare.firstPhase === protocol.acceptance.firstPhase &&
+  prepare.pausedState === protocol.acceptance.pausedState &&
+  recovery.recoveredState === protocol.acceptance.recoveredState &&
+  recovery.recoveredTurn === protocol.acceptance.recoveredTurn &&
+  recovery.resumedState === protocol.acceptance.resumedState &&
+  recovery.secondTurn === protocol.acceptance.secondTurn &&
+  recovery.secondPhase === protocol.acceptance.secondPhase &&
+  recovery.evaluationTurn === protocol.acceptance.evaluationTurn &&
+  recovery.evaluationPhase === protocol.acceptance.evaluationPhase &&
+  recovery.finalState === protocol.acceptance.finalState &&
+  recovery.finalTurn === protocol.acceptance.finalTurn &&
+  recovery.auditEntryCount === protocol.acceptance.auditEntryCount &&
+  protocol.acceptance.requiredCheckpointReasons.every((reason) =>
+    recovery.checkpointReasons.includes(reason)) &&
+  protocol.acceptance.requiredInterventionTypes.every((type) =>
+    recovery.interventionTypes.includes(type));
 const passed = failure === undefined &&
-  prepare !== undefined && recovery !== undefined && offlineVerification !== undefined &&
+  lifecycleMatches &&
   summary.recreatedServiceIdentityChanges ===
     protocol.acceptance.recreatedServiceIdentityChanges &&
   summary.persistentServiceIdentityChanges === 0 &&

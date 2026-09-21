@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-lifecycle-transition-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "cb55f074eebbef391369e8e8eee2c4f5f4899254",
+  "attemptedRunId": "mode-r-application-lifecycle-v1",
+  "stage": "prepare-lifecycle-transition",
+  "containersCreated": 16,
+  "controllerExitCode": 1,
+  "turnsRecorded": 1,
+  "channelEventsRecorded": 1,
+  "ledgerEventsRecorded": 5,
+  "auditEntriesRecorded": 0,
+  "interventionEventsRecorded": 1,
+  "checkpointsRecorded": 2,
+  "restoreAttempted": false,
+  "offlineVerifierAttempted": false,
+  "gatePassed": false,
+  "cause": "The accepted turn exhausted the packet's one-turn training budget, so the runtime correctly transitioned from running to evaluating before the Controller requested an explicit pause. The lifecycle state machine permits that pause only from running and refused the request.",
+  "collectorDiagnosticLimitation": "The write-once receipt retained the primary nonzero Controller exit, but the terminal receipt audit dereferenced the absent prepare result and printed a secondary TypeError after teardown. The v2 collector validates failure and missing-stage fields explicitly before accessing them.",
+  "correctionPolicy": "Retain every v1 artifact; use a fresh v2 run and evidence identity; prospectively allocate two training turns so the pre-restart accepted turn remains pausable; complete the second training turn and one held-out evaluation turn after verified recovery; and require all lifecycle fields before marking the receipt passed.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-lifecycle-development-v1/receipt.json",
+    "bytes": 1185,
+    "sha256": "sha256:7f8c64ebf92c58579e8fd8e75c82c979edee401bed1c10895c0541abcb95cdb3",
+    "retention": "local-ignored-original"
+  },
+  "rawLogs": {
+    "path": "evidence/mode-r-application-lifecycle-development-v1/compose-logs.txt",
+    "bytes": 1201,
+    "sha256": "sha256:4019ad37e16a9e6362b7a5babc3cc6aa41c2995d987db7910884416bb1e7b6ce"
+  },
+  "retainedDatabase": {
+    "path": "evidence/mode-r-application-lifecycle-development-v1/evidence/evidence.sqlite",
+    "bytes": 204800,
+    "sha256": "sha256:ee1fd98c7aee1b9ed47d15f359a5e6755dbc9b410e3c52d451f43bd0734626e6"
+  },
+  "claimBoundary": "This failed lifecycle transition is not a passing qualification, behavioral result, B12 closure, or publication result."
+}

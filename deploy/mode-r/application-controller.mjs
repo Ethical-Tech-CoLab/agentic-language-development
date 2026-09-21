@@ -148,6 +148,7 @@ try {
       details: { stage: 'recover' },
     });
     const second = await runtime.step(config.runId);
+    const evaluation = await runtime.step(config.runId);
     const final = runtime.getRun(config.runId);
     assert.ok(final !== undefined);
     const auditEntryCount = await appendDelayedAudit();
@@ -166,6 +167,8 @@ try {
       resumedState: resumed.state,
       secondTurn: second.turn,
       secondPhase: second.phase,
+      evaluationTurn: evaluation.turn,
+      evaluationPhase: evaluation.phase,
       finalState: final.state,
       finalTurn: final.turn,
       auditEntryCount,

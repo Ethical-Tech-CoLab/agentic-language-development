@@ -59,22 +59,31 @@ const protocolV6 = JSON.parse(readFileSync(
   };
 };
 const lifecycleProtocol = JSON.parse(readFileSync(
-  'protocols/mode-r-application-lifecycle-development.v1.json',
+  'protocols/mode-r-application-lifecycle-development.v2.json',
   'utf8',
 )) as {
   schemaVersion: number;
   status: string;
   runId: string;
+  predecessorFailure: { path: string; stage: string; turnsRecorded: number };
   compose: {
     basePath: string;
     baseSha256: string;
     overlayPath: string;
     overlaySha256: string;
   };
-  execution: { recreatedServices: string[]; persistentServices: string[] };
+  execution: {
+    trainingTurns: number;
+    evaluationTurns: number;
+    recreatedServices: string[];
+    persistentServices: string[];
+  };
   acceptance: {
     recreatedServiceIdentityChanges: number;
     persistentServiceIdentityChanges: number;
+    resumedState: string;
+    secondPhase: string;
+    evaluationPhase: string;
     finalState: string;
   };
 };
@@ -181,17 +190,29 @@ describe('selected Mode R application Compose', () => {
       .digest('hex')).toBe(protocolV6.compose.sha256);
   });
 
-  it('freezes the selected pause/restart/recover development path', () => {
+  it('uses a fresh v2 identity for the corrected pause/restart/recover path', () => {
     expect(lifecycleProtocol).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: 'design-locked-not-executed',
-      runId: 'mode-r-application-lifecycle-v1',
+      runId: 'mode-r-application-lifecycle-v2',
+      predecessorFailure: {
+        path: 'reports/research/mode-r-application-lifecycle-development-v1-failure.json',
+        stage: 'prepare-lifecycle-transition',
+        turnsRecorded: 1,
+      },
+    });
+    expect(lifecycleProtocol.execution).toMatchObject({
+      trainingTurns: 2,
+      evaluationTurns: 1,
     });
     expect(lifecycleProtocol.execution.recreatedServices).toHaveLength(6);
     expect(lifecycleProtocol.execution.persistentServices).toHaveLength(10);
     expect(lifecycleProtocol.acceptance).toMatchObject({
       recreatedServiceIdentityChanges: 6,
       persistentServiceIdentityChanges: 0,
+      resumedState: 'running',
+      secondPhase: 'running',
+      evaluationPhase: 'evaluating',
       finalState: 'sealing',
     });
     expect(createHash('sha256').update(readFileSync(lifecycleProtocol.compose.basePath))

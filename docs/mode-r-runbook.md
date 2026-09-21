@@ -100,18 +100,24 @@ The portable supplemental receipt binds the ignored original by hash. This is
 application-development qualification only: complete lifecycle/fault/detector and
 resource qualification, B12 closure, behavioral findings, and independent review
 remain open.
-The prospective lifecycle development packet builds on that receipt without
-modifying it. It uses a separate Compose overlay and a fresh single-use evidence
-identity. The first Controller process creates the run, completes one training
-turn, and pauses. The collector then replaces only the two model adapters, two
-Babies, Gateway, and Controller while leaving all signer, writer, checkpoint,
-anchor, and audit services live. A new Controller verifies the retained prefix,
-recovers the paused run, resumes into held-out evaluation, completes one evaluation
-turn, exports the bundle, and invokes the offline verifier. The collector records
-container identity changes, exact routes and mounts, checkpoints, interventions,
-resources, and teardown. A pass would qualify only this bounded lifecycle path;
-the injected-fault matrix, detector bounds, peak resource envelope, Rust audit,
-B12 closure, and behavioral findings remain separate gates.
+The first lifecycle v1 attempt builds on that receipt without modifying it and
+uses a separate Compose overlay and single-use evidence identity. It created the
+selected application, committed one valid training turn, and then correctly
+failed before pause: that turn exhausted its one-turn training budget and advanced
+the state to evaluation, where the lifecycle does not permit an explicit pause.
+The retained receipt, logs, database, and portable failure report record one turn,
+no restore, no offline verification, and clean teardown. They are not reused.
+The prospective v2 packet allocates two training turns so the first Controller can
+create the run, complete one training turn, and pause while still running. The
+collector then replaces only the two model adapters, two Babies, Gateway, and
+Controller while leaving all signer, writer, checkpoint, anchor, and audit services
+live. A new Controller must verify the retained prefix, recover the paused run,
+resume, complete the second training turn and one held-out evaluation turn, export
+the bundle, and invoke the offline verifier. The collector records container
+identity changes, exact routes and mounts, checkpoints, interventions, resources,
+and teardown. A pass would qualify only this bounded lifecycle path; the injected-
+fault matrix, detector bounds, peak resource envelope, Rust audit, B12 closure,
+and behavioral findings remain separate gates.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
