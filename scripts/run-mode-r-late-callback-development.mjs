@@ -17,14 +17,21 @@ import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
-const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-late-callback-development.v2.json';
-const evidenceRoot = 'evidence/mode-r-late-callback-development-v2';
+assert.ok(['--run', '--audit', '--run-lv01-v1', '--audit-lv01-v1'].includes(mode),
+  'expected --run, --audit, --run-lv01-v1, or --audit-lv01-v1');
+const lv01Mode = mode.endsWith('lv01-v1');
+const runMode = mode.startsWith('--run');
+const protocolPath = lv01Mode
+  ? 'protocols/lv01-late-callback-development.v1.json'
+  : 'protocols/mode-r-late-callback-development.v2.json';
+const evidenceRoot = lv01Mode
+  ? 'evidence/lv01/late-callback-v1/lv01-late-callback-v1-p0001'
+  : 'evidence/mode-r-late-callback-development-v2';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
+const lv01ComposePath = 'deploy/mode-r/docker-compose.lv01.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-late-callback.v1.yml';
-const project = 'ald-mode-r-late-callback-development-v2';
+const project = lv01Mode ? 'ald-lv01-late-callback-v1' : 'ald-mode-r-late-callback-development-v2';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -49,6 +56,7 @@ function compose(...args) {
   return command('docker', [
     'compose', '-p', project,
     '-f', baseComposePath,
+    ...(lv01Mode ? ['-f', lv01ComposePath] : []),
     '-f', overlayComposePath,
     ...args,
   ], { env: environment, timeout: 600_000 });
@@ -106,7 +114,9 @@ function sameCounts(left, right) {
 function audit(receipt) {
   const acceptance = protocol.acceptance;
   assert.equal(receipt.schemaVersion, 1);
-  assert.equal(receipt.classification, 'selected-mode-r-late-callback-development');
+  assert.equal(receipt.classification, lv01Mode
+    ? 'lv01-selected-late-callback-development'
+    : 'selected-mode-r-late-callback-development');
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.b12Closed, false);
   assert.equal(receipt.protocolSha256, sha256(protocolPath));
@@ -158,7 +168,7 @@ assert.equal(existsSync(evidenceRoot), false, 'late-callback evidence is single-
 assert.equal(existsSync(rustAuditor), true, 'independent Rust auditor is missing');
 assert.equal(protocol.status, 'design-locked-not-executed');
 assert.equal(protocol.researchFinding, false);
-assert.equal(protocol.b12Closed, false);
+  assert.equal(protocol.b12Closed, false);
 assert.equal(sha256(protocol.prerequisite.path), protocol.prerequisite.sha256);
 assert.equal(sha256(protocol.predecessorFailure.path), protocol.predecessorFailure.sha256);
 for (const source of protocol.sources) assert.equal(sha256(source.path), source.sha256);
@@ -170,15 +180,15 @@ const unresolvedConfig = buildRunConfig({
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',
-    modelRef: 'selected-application-no-learning',
+    modelRef: lv01Mode ? 'gru-actor-critic-v1' : 'selected-application-no-learning',
     trainingIsolation: 'independent',
   },
   babyB: {
     track: 'no-learning',
-    modelRef: 'selected-application-no-learning',
+    modelRef: lv01Mode ? 'gru-actor-critic-v1' : 'selected-application-no-learning',
     trainingIsolation: 'independent',
   },
-  learningSignal: 'none',
+  learningSignal: lv01Mode ? 'extrinsic-task' : 'none',
   communicationCondition: 'normal',
   maxTurnsPerRun: 3,
   evaluationTurns: 1,
@@ -281,7 +291,9 @@ const passed = failure === null && result !== null && controllerTerminal?.exitCo
   unexpectedRunningAfterTeardown === 0;
 const receipt = {
   schemaVersion: 1,
-  classification: 'selected-mode-r-late-callback-development',
+  classification: lv01Mode
+    ? 'lv01-selected-late-callback-development'
+    : 'selected-mode-r-late-callback-development',
   researchFinding: false,
   b12Closed: false,
   publicChainTransaction: false,
