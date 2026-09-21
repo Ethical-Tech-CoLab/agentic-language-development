@@ -184,7 +184,6 @@ describe('Nursery remote Gateway provisioning', () => {
           ));
         }
         return {
-          localWriter: writer,
           controller: controllerEvidencePortForWriter(runId, writer),
           gateway: writer,
           privateLedger: writer,
@@ -217,6 +216,9 @@ describe('Nursery remote Gateway provisioning', () => {
       }));
       const original = runtime();
       await original.createRun(config);
+      expect(() => original.writerFor(config.runId)).toThrow(
+        'local Evidence Writer inspection is unavailable',
+      );
       await original.step(config.runId);
       await original.step(config.runId);
       expect(original.gatewayFor(config.runId).consecutiveRejections()).toBe(2);

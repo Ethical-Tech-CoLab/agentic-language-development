@@ -162,6 +162,17 @@ mismatched heads, and the configured counter bound. Private RPC startup reclaims
 only an unreachable stale socket and refuses to unlink a live service. Selected
 container routes/mounts, broader lifecycle faults, resources, and independent
 audit remain open and must precede B12 closure.
+Nursery's evidence context now makes its local inspection writer optional, and
+the runtime database option may be omitted when a remote context factory is
+present. Core creation, checkpointing, turn execution, and bundle export use
+only the issued capabilities. A multi-process integration test gives Nursery
+no database and no writer handle, connects it to a distinct single-owner writer
+process and a distinct Gateway process, executes one signed turn, reads it
+through the Controller capability, and exports the bundle. The intervention
+schedule's ledger reads also use that capability. Synchronous inspection and
+some live analysis helpers remain deliberately local-only and fail explicitly
+on this remote context; separate signer ownership, caller-exclusive container
+mounts, routes, complete lifecycle faults, and resources remain unqualified.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

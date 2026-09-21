@@ -310,8 +310,8 @@ export const REJECTION_STREAK_REASON = 'max-consecutive-rejections';
 export const TURN_DEADLINE_QUARANTINE_REASON = 'turn-deadline-quarantine';
 
 export interface NurseryRuntimeOptions {
-  /** Open evidence store shared by every run of this runtime (LEDGER §3). */
-  database: EvidenceDatabase;
+  /** Local evidence store; omitted when an evidenceContextFactory is remote. */
+  database?: EvidenceDatabase;
   /** Commit of the running software, recorded in checkpoints and manifests. */
   softwareCommit: string;
   /** Bundles are written to `<bundleRoot>/runs/<runId>`. */
@@ -322,9 +322,9 @@ export interface NurseryRuntimeOptions {
     signers: SignerRegistry,
   ) => CheckpointService;
   /**
-   * Provisions one run's evidence capabilities. The local writer is retained
-   * explicitly for legacy synchronous inspection and learner-ledger surfaces;
-   * it is not a second writer owner. Omit to use the local SQLite assembly.
+   * Provisions one run's evidence capabilities. A selected remote context
+   * omits both `database` above and its optional local inspection handle.
+   * Omit this factory to use the local SQLite assembly.
    */
   evidenceContextFactory?: (
     runId: string,
@@ -407,8 +407,8 @@ export interface NurseryGatewayFactoryInput {
 
 /** One coherent evidence owner and the narrow capabilities issued for a run. */
 export interface NurseryRunEvidenceContext {
-  /** Transitional local handle; remaining consumers are tracked under B12. */
-  localWriter: SqliteEvidenceWriter;
+  /** Optional local inspection handle; selected remote contexts omit it. */
+  localWriter?: SqliteEvidenceWriter;
   controller: ControllerEvidencePort;
   gateway: GatewayEvidencePort;
   privateLedger: PrivateLedgerEvidencePort;
@@ -477,7 +477,8 @@ interface RunRuntime {
   config: RunConfig;
   preRegistration: PreRegistrationBinding | undefined;
   configurationHash: Sha256Hash;
-  writer: SqliteEvidenceWriter;
+  /** Present only for local inspection surfaces; live execution uses capabilities. */
+  writer: SqliteEvidenceWriter | undefined;
   /** Exact run-bound Controller capability; local today, remote-ready. */
   controllerEvidence: ControllerEvidencePort;
   /** Append-only capability used by role-bound private-ledger clients. */
@@ -649,6 +650,11 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ) {
       throw new Error(
         'Nursery runtime requires checkpointFactory or evidenceContextFactory',
+      );
+    }
+    if (options.database === undefined && options.evidenceContextFactory === undefined) {
+      throw new Error(
+        'Nursery runtime requires a local database or evidenceContextFactory',
       );
     }
     this.#options = options;
@@ -2285,7 +2291,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   /** SPEC §14.3 scenario replay from the recorded configuration and seed. */
   scenarioReplayCheck(runId: string): ScenarioReplayResult {
     const run = this.#requireRun(runId);
-    const stored = run.writer.readRunMetadata(runId);
+    const stored = this.#localWriter(run).readRunMetadata(runId);
     const config = stored
       ? RunConfigSchema.parse(JSON.parse(stored.configurationJson))
       : run.config;
@@ -2499,15 +2505,18 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   }
 
   checkpoints(runId: string): CheckpointManifest[] {
-    return this.#requireRun(runId).writer.readCheckpoints(runId);
+    const run = this.#requireRun(runId);
+    return this.#localWriter(run).readCheckpoints(runId);
   }
 
   anchorReceipts(runId: string): AnchorReceipt[] {
-    return this.#requireRun(runId).writer.readAnchorReceipts(runId);
+    const run = this.#requireRun(runId);
+    return this.#localWriter(run).readAnchorReceipts(runId);
   }
 
   experimentRecords(runId: string): ExperimentRecord[] {
-    return this.#requireRun(runId).writer.readExperimentRecords(runId);
+    const run = this.#requireRun(runId);
+    return this.#localWriter(run).readExperimentRecords(runId);
   }
 
   turnRecords(runId: string): TurnRecord[] {
@@ -2544,7 +2553,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   // -------------------------------------------------------------------------
 
   writerFor(runId: string): SqliteEvidenceWriter {
-    return this.#requireRun(runId).writer;
+    return this.#localWriter(this.#requireRun(runId));
   }
 
   gatewayFor(runId: string): SymbolGateway {
@@ -2912,7 +2921,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (suite === undefined || run.probeSchedule !== null) {
       return;
     }
-    const plan = this.#buildInterventionPlan(run, run.turn);
+    const plan = await this.#buildInterventionPlan(run, run.turn);
     run.probeSchedule = plan.probeSchedule;
     await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
@@ -2928,8 +2937,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     });
   }
 
-  #buildInterventionPlan(run: RunRuntime, firstEvaluationTurn: number) {
-    const ledgers = this.ledgers(run.runId);
+  async #buildInterventionPlan(run: RunRuntime, firstEvaluationTurn: number) {
+    const readLedger = async (stream: 'baby-a-ledger' | 'baby-b-ledger') =>
+      (await run.controllerEvidence.readEvents(run.runId, stream)).map((event) =>
+        LedgerEventSchema.parse(parseCanonicalJson(event.canonicalJson)),
+      );
+    const [babyA, babyB] = await Promise.all([
+      readLedger('baby-a-ledger'),
+      readLedger('baby-b-ledger'),
+    ]);
     return buildInterventionRunPlan({
       config: run.config,
       evaluationTurns: evaluationTurnRange(
@@ -2937,10 +2953,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         run.evaluationTurns,
       ),
       ledgers: {
-        babyA: ledgers.babyA.filter(
+        babyA: babyA.filter(
           (event) => event.turn < run.config.maxTurnsPerRun,
         ),
-        babyB: ledgers.babyB.filter(
+        babyB: babyB.filter(
           (event) => event.turn < run.config.maxTurnsPerRun,
         ),
       },
@@ -3482,8 +3498,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (this.#options.evidenceContextFactory !== undefined) {
       return this.#options.evidenceContextFactory(runId, signers);
     }
+    const database = this.#options.database;
+    if (database === undefined) {
+      throw new Error('local evidence context requires a database');
+    }
     const localWriter = new SqliteEvidenceWriter({
-      database: this.#options.database,
+      database,
       signers,
       clock: this.#clock,
       softwareCommit: this.#options.softwareCommit,
@@ -4417,7 +4437,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   #readStream(runId: string, stream: EventStream): Record<string, unknown>[] {
     const run = this.#requireRun(runId);
-    return run.writer
+    return this.#localWriter(run)
       .readEvents(runId, stream)
       .map(
         (event) =>
@@ -4426,7 +4446,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   }
 
   #turnRecords(run: RunRuntime): TurnRecord[] {
-    return run.writer
+    return this.#localWriter(run)
       .readEvents(run.runId, 'turns')
       .map((event) =>
         TurnRecordSchema.parse(parseCanonicalJson(event.canonicalJson)),
@@ -4439,6 +4459,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new UnknownRunError(runId);
     }
     return run;
+  }
+
+  #localWriter(run: RunRuntime): SqliteEvidenceWriter {
+    if (run.writer === undefined) {
+      throw new Error(
+        'local Evidence Writer inspection is unavailable for this remotely provisioned run',
+      );
+    }
+    return run.writer;
   }
 
   #summary(run: RunRuntime): RunSummary {
