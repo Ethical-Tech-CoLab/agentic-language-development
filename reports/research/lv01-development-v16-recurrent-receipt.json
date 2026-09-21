@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-recurrent-path-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v16-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v16.json",
+    "executionCommit": "8f22f8e",
+    "evidenceRoot": "evidence/lv01/development-v16/lv01-development-v16-p0001",
+    "retainedFiles": [
+      {"path": "output/lv01-fixture-result.json", "sha256": "sha256:42f30f3b5a28acf841a39ba0ed489374fa2c95ae6e885a9576e672898d7acdf7"},
+      {"path": "output/offline-verification.json", "sha256": "sha256:6c595afe11eedf59ce0dd56c29ddf3c9add78b0d77e091dad46533e78faed8ef"},
+      {"path": "output/lv01-authority-observation.json", "sha256": "sha256:f9231a3326baaaf0b53f5c67d605ed66b0329c4bb74f0603da1f32920a46481f"},
+      {"path": "output/lv01-fixture-resources.json", "sha256": "sha256:ffa5dfb60e569091c25084d6cb379aee730a375668768474b3bfd212526539a7"},
+      {"path": "output/bundle/baby-a-ledger.jsonl", "sha256": "sha256:7498863b056969991899a7a21e3a57fbb80bf9fe53860d45780b8afd5b9b178d"},
+      {"path": "output/bundle/baby-b-ledger.jsonl", "sha256": "sha256:beb1ad7594e09a896890f58779de59ba0873aa6fd5777de4b603089dfe0f54cc"},
+      {"path": "output/bundle/policies/baby-a-policy-initial.json", "sha256": "sha256:6c298196f6a7e13a0cebf26d2f1fca20e10b1fac0bbd9365219a6dc2c96ccd65"},
+      {"path": "output/bundle/policies/baby-a-latest.json", "sha256": "sha256:f42f4b18ebc51453c9eabceee359246683d2830256604f49c8985275095de6c2"},
+      {"path": "output/bundle/policies/baby-b-policy-initial.json", "sha256": "sha256:008fc7d20825e8e52ac2918f4ef18b0a51731afc4e983036b762ccbe72b6dda8"},
+      {"path": "output/bundle/policies/baby-b-latest.json", "sha256": "sha256:59101983b124c8bce7d671d041450e25290e1ca23667cc422ac821f879e10f68"}
+    ]
+  },
+  "observed": {
+    "state": "sealed",
+    "trainingTurns": 64,
+    "evaluationTurns": 24,
+    "checkpointCount": 12,
+    "offlineVerifierExitCode": 0,
+    "recurrentArchitecture": "gru-actor-critic-v1",
+    "parameterCount": 4049,
+    "hiddenSize": 16,
+    "initialUpdateCount": 0,
+    "finalUpdateCountByRole": {"baby-a": 64, "baby-b": 64},
+    "evaluationPolicyHashes": {
+      "baby-a": ["sha256:88b2fa8630a2cbbe0d7b89f4488b55f66fe8756684edc3b8861e3b71d4ccb78d", "sha256:88b2fa8630a2cbbe0d7b89f4488b55f66fe8756684edc3b8861e3b71d4ccb78d"],
+      "baby-b": ["sha256:b601e13a74faedae4503798b1035b943c673a4bfb0154a120f586944c09d117a", "sha256:b601e13a74faedae4503798b1035b943c673a4bfb0154a120f586944c09d117a"]
+    },
+    "authorityObservationServiceCount": 17,
+    "deniedPrivateModelAccessProbes": 4
+  },
+  "limitations": [
+    "The resource sampler observed 16 services, not a complete all-service resource measurement; this receipt does not close the full-calibration resource gate.",
+    "The verifier rebuilt disclosed roots but reports no separate inclusion or consistency proof files.",
+    "The simulated anchor was not checked against an independent RPC endpoint.",
+    "This single local fixture does not exercise separate restoration, seven-branch chronology, crash recovery, malformed-envelope handling, deadline or safety behavior, calibration, a pilot, or a behavioral study."
+  ],
+  "claimBoundary": "This receipt supports only the listed local recurrent-path, evidence-path, and selected-topology observations. It establishes no semantic-ledger fidelity, utility, cost, language-emergence, or scientific result."
+}
