@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.285",
+  "version": "0.1.286",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -40,8 +40,8 @@
     "audit:mode-r-application-lifecycle-failure:live": "node scripts/check-mode-r-application-lifecycle-failure.mjs --live-evidence",
     "audit:mode-r-application-lifecycle-receipt": "node scripts/check-mode-r-application-lifecycle-receipt.mjs",
     "audit:mode-r-application-lifecycle-receipt:live": "node scripts/check-mode-r-application-lifecycle-receipt.mjs --live-evidence",
-    "qualify:mode-r-application-fault-development": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-mode-r-application-fault-development.mjs --run-v2",
-    "audit:mode-r-application-fault-development:live": "node scripts/run-mode-r-application-fault-development.mjs --audit-v2",
+    "qualify:mode-r-application-fault-development": "pnpm run build && CARGO_TARGET_DIR=.artifacts/cargo-target cargo build --locked --release --manifest-path tools/integrity-auditor/Cargo.toml && node scripts/run-mode-r-application-fault-development.mjs --run-v3",
+    "audit:mode-r-application-fault-development:live": "node scripts/run-mode-r-application-fault-development.mjs --audit-v3",
     "audit:mode-r-application-fault-failure": "node scripts/check-mode-r-application-fault-failure.mjs",
     "audit:mode-r-application-fault-failure:live": "node scripts/check-mode-r-application-fault-failure.mjs --live-evidence",
     "audit:mode-r-signer-reference:receipt": "node scripts/check-mode-r-signer-reference-receipt.mjs",

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-fault-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-application-fault-development-v2",
+  "executionCommit": "587e4d9ffa2d60d84e3fd1f1ca833b8c18963f65",
+  "executionTree": "4452294a1a43edd1069f700503b01d956a9150bc",
+  "executionVersion": "0.1.285",
+  "startedAt": "2026-09-21T13:42:20.708Z",
+  "finishedAt": "2026-09-21T13:45:24.915Z",
+  "protocol": {
+    "path": "protocols/mode-r-application-fault-development.v2.json",
+    "bytes": 4006,
+    "sha256": "sha256:ca36fc60fea632573898a603bb3435641eab320995ba6841f4462abb4acc6128"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-fault-development-v2/receipt.json",
+    "bytes": 34901,
+    "sha256": "sha256:71408c132097b2cc86a07946b2c344de4c3c6f782d4045502ce73493cba0048d",
+    "retention": "local-ignored-original"
+  },
+  "summary": {
+    "caseCount": 2,
+    "passedCaseCount": 0,
+    "failedCaseCount": 2,
+    "resourceSnapshotCount": 4,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "deviations": [
+    {
+      "case": "baby-peer-death",
+      "expectedDisposition": "committed-adapter-failure",
+      "observedApplicationState": "paused at persisted turn 2 with two signed turn records, one channel event, and adapter-failure for baby-a",
+      "collectorFailure": "the controller compared the step return's completed-turn index 1 with the persisted next-turn index 2",
+      "interpretation": "the intended application behavior occurred, but the qualification instrumentation rejected it"
+    },
+    {
+      "case": "anchor-service-death",
+      "expectedDisposition": "sealing-blocked",
+      "observedApplicationState": "sealing-blocked at turn 1 with zero anchor receipts and an aborted experiment record carrying anchor-unavailable",
+      "collectorFailure": "the controller read deviations from the run summary even though deviations are stored on the experiment record",
+      "interpretation": "the intended application behavior occurred, but the qualification instrumentation threw after observing it"
+    }
+  ],
+  "verifiedPrefixEvidence": {
+    "typescriptPassCount": 2,
+    "rustIntegrityPassCount": 2,
+    "eventsPerCase": 8,
+    "checkpointsPerCase": 2,
+    "issueCount": 0
+  },
+  "nextAction": "Register a fresh v3 supplement that reads persisted post-fault state and experiment-record deviations correctly and verifies a post-fault bundle with both implementations.",
+  "claimBoundary": "V2 is a failed qualification wrapper despite both intended application outcomes occurring. It is not a passing matrix, B12 closure, a behavioral result, or publication evidence."
+}

@@ -17,9 +17,9 @@ import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-assert.match(mode ?? '', /^--(?:run|audit)-v2$/u, 'expected --run-v2 or --audit-v2');
-const runMode = mode === '--run-v2';
-const version = 2;
+assert.match(mode ?? '', /^--(?:run|audit)-v3$/u, 'expected --run-v3 or --audit-v3');
+const runMode = mode === '--run-v3';
+const version = 3;
 const protocolPath = `protocols/mode-r-application-fault-development.v${String(version)}.json`;
 const evidenceRoot = `evidence/mode-r-application-fault-development-v${String(version)}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
@@ -146,6 +146,10 @@ function audit(receipt) {
       acceptance.prefixTypeScriptVerifierExitCode);
     assert.equal(entry.rustVerification.integrityPass,
       acceptance.prefixRustIntegrityPass);
+    assert.equal(entry.postFaultTypeScriptVerification.exitCode,
+      acceptance.postFaultTypeScriptVerifierExitCode);
+    assert.equal(entry.postFaultRustVerification.integrityPass,
+      acceptance.postFaultRustIntegrityPass);
     assert.ok(entry.resourceSnapshots.length >=
       acceptance.minimumResourceSnapshotsPerCase);
     assert.equal(entry.passed, true);
@@ -250,6 +254,8 @@ for (const fault of protocol.cases) {
     faultResult: null,
     typescriptVerification: null,
     rustVerification: null,
+    postFaultTypeScriptVerification: null,
+    postFaultRustVerification: null,
     resourceSnapshots: [],
     failure: null,
     passed: false,
@@ -288,6 +294,17 @@ for (const fault of protocol.cases) {
     entry.rustVerification = JSON.parse(command(rustAuditor, [
       join(caseRoot, 'output/prefix-bundle'),
     ]));
+    entry.postFaultTypeScriptVerification = await verifyBundle(
+      join(caseRoot, 'output/post-fault-bundle'),
+      {
+        verifierVersion: VERIFIER_VERSION,
+        now: () => new Date().toISOString(),
+        allowUnanchored: true,
+      },
+    );
+    entry.postFaultRustVerification = JSON.parse(command(rustAuditor, [
+      join(caseRoot, 'output/post-fault-bundle'),
+    ]));
     entry.passed = entry.declaredServiceCount === protocol.acceptance.serviceCount &&
       entry.ready.prefixTurn === protocol.acceptance.prefixTurn &&
       entry.targetTerminal.exitCode === protocol.acceptance.targetExitCode &&
@@ -298,6 +315,8 @@ for (const fault of protocol.cases) {
       entry.faultResult.turnAfterFault === fault.expectedTurnAfterFault &&
       entry.typescriptVerification.exitCode === 0 &&
       entry.rustVerification.integrityPass === true &&
+      entry.postFaultTypeScriptVerification.exitCode === 0 &&
+      entry.postFaultRustVerification.integrityPass === true &&
       entry.resourceSnapshots.length >=
         protocol.acceptance.minimumResourceSnapshotsPerCase;
   } catch (error) {

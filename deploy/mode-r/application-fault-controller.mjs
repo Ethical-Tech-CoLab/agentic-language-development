@@ -144,16 +144,21 @@ try {
         reasonCode: 'selected-fault-anchor-unavailable',
         details: { faultCase },
       });
+      const experimentRecords = await controller.port
+        .readExperimentRecords(config.runId);
+      const currentRecord = experimentRecords.at(-1);
       faultObservation = {
         summaryState: summary.state,
         summaryTurn: summary.turn,
-        deviations: summary.deviations,
+        deviations: currentRecord?.deviations ?? [],
+        experimentDisposition: currentRecord?.disposition ?? null,
         anchorReceiptCount: (await controller.port
           .readAnchorReceipts(config.runId)).length,
       };
       if (summary.state === 'sealing-blocked' &&
-          summary.deviations.some((deviation) =>
+          faultObservation.deviations.some((deviation) =>
             deviation.startsWith('anchor-unavailable:')) &&
+          faultObservation.experimentDisposition === 'aborted' &&
           faultObservation.anchorReceiptCount === 0) {
         postFaultDisposition = 'sealing-blocked';
       }
@@ -171,7 +176,7 @@ try {
         channelEventCount: channels.length,
         lastTurnOutcome: lastTurnValue?.outcome ?? null,
       };
-      if (summary.state === 'paused' && summary.turn === 2 &&
+      if (summary.state === 'paused' && summary.turn === 1 &&
           turns.length === 2 && channels.length === 1 &&
           lastTurnValue?.outcome?.success === false &&
           lastTurnValue?.outcome?.details?.reason === 'adapter-failure' &&
@@ -194,6 +199,8 @@ try {
     postFaultDisposition = 'rpc-rejected';
   }
   const final = runtime.getRun(config.runId);
+  const postFaultBundle = await runtime.exportBundle(
+    config.runId, join(outputRoot, 'post-fault-bundle'));
   result = {
     schemaVersion: 1,
     classification: 'selected-mode-r-application-fault-development-case',
@@ -212,6 +219,7 @@ try {
     stateAfterFault: final?.state ?? null,
     turnAfterFault: final?.turn ?? null,
     operationalQuarantine: final?.operationalQuarantine ?? null,
+    postFaultBundleRunId: postFaultBundle.runId,
   };
   await writeJsonAtomic('fault-result.json', result);
   const expectedDisposition = faultCase === 'baby-peer-death'
