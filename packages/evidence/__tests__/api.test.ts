@@ -27,6 +27,7 @@ const EXPECTED_EXPORTS = [
   'connectAuditEvidenceRpc',
   'connectCheckpointEvidenceRpc',
   'connectControllerEvidenceRpc',
+  'controllerEvidencePortForWriter',
   'createAnchorEvidenceRpcServer',
   'createAuditEvidenceRpcServer',
   'createCheckpointEvidenceRpcServer',

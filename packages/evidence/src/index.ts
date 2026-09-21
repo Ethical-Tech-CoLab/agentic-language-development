@@ -27,6 +27,7 @@ export {
 } from './checkpoint-rpc.js';
 export {
   connectControllerEvidenceRpc,
+  controllerEvidencePortForWriter,
   createControllerEvidenceRpcServer,
   type ControllerEvidencePort,
 } from './controller-rpc.js';

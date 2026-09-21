@@ -98,6 +98,26 @@ function resultFor(method: ControllerMethod, result: unknown, runId: string): un
   return result;
 }
 
+/**
+ * Gives the in-process runtime the same asynchronous, run-bound capability as
+ * the socket client. Keeping this adapter exact lets Nursery migrate call
+ * sites before selecting whether the endpoint is local or remote.
+ */
+export function controllerEvidencePortForWriter(
+  runId: string,
+  writer: SqliteEvidenceWriter,
+): ControllerEvidencePort {
+  return Object.fromEntries(METHODS.map((method) => [method,
+    async (...args: unknown[]) => {
+      if (callRunId(method, args) !== runId) {
+        throw new Error('controller evidence request run ID does not match');
+      }
+      const operation = writer[method] as (...values: unknown[]) => unknown;
+      return resultFor(method, await operation.apply(writer, args), runId);
+    },
+  ])) as ControllerEvidencePort;
+}
+
 /** A caller-exclusive socket mount is required; this component alone is not B12. */
 export async function createControllerEvidenceRpcServer(
   socketPath: string,

@@ -141,7 +141,9 @@ import {
 } from '@ald/leakage';
 import {
   SqliteEvidenceWriter,
+  controllerEvidencePortForWriter,
   exportRunBundle,
+  type ControllerEvidencePort,
   type EvidenceDatabase,
 } from '@ald/evidence';
 import { RunLifecycle, validateRunConfig } from '@ald/lifecycle';
@@ -433,6 +435,8 @@ interface RunRuntime {
   preRegistration: PreRegistrationBinding | undefined;
   configurationHash: Sha256Hash;
   writer: SqliteEvidenceWriter;
+  /** Exact run-bound Controller capability; local today, remote-ready. */
+  controllerEvidence: ControllerEvidencePort;
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
   gateway: SymbolGateway;
@@ -722,6 +726,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       preRegistration,
       configurationHash,
       writer,
+      controllerEvidence: controllerEvidencePortForWriter(runId, writer),
       signers,
       lifecycle,
       gateway,
@@ -886,7 +891,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // §14.5: every trigger writes a `safety-trigger` entry with a
       // machine-readable reason code. The adapter's message is truncated and
       // its payload is never recorded (§10.3).
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'safety-trigger',
         actorId: this.#actorId,
@@ -903,7 +908,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       });
     }
     if (deadline !== undefined) {
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'runtime-attestation',
         actorId: this.#actorId,
@@ -927,7 +932,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       ...(outcome.agreement === undefined ? {} : { agreement: outcome.agreement }),
       ...(outcome.utilities === undefined ? {} : { utilities: outcome.utilities }),
     };
-    const turnRecord = await run.writer.appendTurnRecord({
+    const turnRecord = await run.controllerEvidence.appendTurnRecord({
       runId,
       turn,
       phase,
@@ -990,7 +995,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         split: scratch.split,
         instance,
       };
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'repair-turn',
         actorId: this.#actorId,
@@ -1081,7 +1086,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           adapter.exportPolicy(),
         );
       }
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId: run.runId,
         eventType: 'curriculum-transition',
         actorId: this.#actorId,
@@ -1143,7 +1148,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       if (!(error instanceof HygieneViolationError)) {
         throw error;
       }
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'hygiene-block',
         actorId: this.#actorId,
@@ -1340,7 +1345,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       testCases: [testCase],
       nativeLedger,
     });
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'prediction-commitment',
       actorId: this.#actorId,
@@ -1402,7 +1407,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         }),
       };
     }
-    await run.writer.appendAnalysisAttachment({
+    await run.controllerEvidence.appendAnalysisAttachment({
       runId: run.runId,
       path: `analysis/e16-causal-prediction-turn-${String(turnRecord.turn).padStart(6, '0')}.json`,
       kind: 'causal-prediction',
@@ -1427,7 +1432,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const application =
       submission.kind === 'accepted' ? submission.probeApplication : undefined;
     const applied = application?.status === 'applied';
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'causal-probe',
       actorId: this.#actorId,
@@ -1562,7 +1567,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new RunStateError(runId, run.lifecycle.state, 'pause');
     }
     run.lifecycle.apply('pause');
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'pause',
       actorId: intervention.actorId,
@@ -1603,7 +1608,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       return this.#summary(run);
     }
 
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'resume',
       actorId: intervention.actorId,
@@ -1645,7 +1650,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (run.lifecycle.isTerminal) {
       throw new RunStateError(runId, run.lifecycle.state, 'running');
     }
-    const event = await run.writer.appendInterventionEvent({
+    const event = await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'annotate',
       actorId: intervention.actorId,
@@ -1681,7 +1686,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     intervention: Intervention,
   ): Promise<InterventionEvent> {
     const run = this.#requireRun(runId);
-    return run.writer.appendInterventionEvent({
+    return run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'human-view',
       actorId: intervention.actorId,
@@ -1698,7 +1703,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new RunStateError(runId, run.lifecycle.state, 'abort');
     }
     run.lifecycle.apply('abort');
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'abort',
       actorId: intervention.actorId,
@@ -1785,7 +1790,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     run.lifecycle.apply('seal-retry');
     // §14.2: the recovery attempt is itself audited, so the record shows how
     // many times the export/anchor path was tried.
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'recovery',
       actorId: this.#actorId,
@@ -1817,7 +1822,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new RunStateError(runId, run.lifecycle.state, 'abandon-recovery');
     }
     run.lifecycle.apply('abandon-recovery');
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'governance-decision',
       actorId: intervention.actorId,
@@ -1920,7 +1925,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // `aborted-sealed`. From `sealing` that is reached through the
       // `seal-blocked --abandon-recovery-->` pair, and the decision is
       // audited so the record shows why the run ended there.
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'governance-decision',
         actorId: this.#actorId,
@@ -1954,7 +1959,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     run: RunRuntime,
     report: VerificationReport,
   ): Promise<void> {
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'safety-trigger',
       actorId: this.#actorId,
@@ -2083,7 +2088,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       // §14.5: the trigger is audited (the intervention stream is unsigned,
       // so this cannot itself extend a signed chain), then the recovery is
       // refused before any signed event is written.
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId,
         eventType: 'safety-trigger',
         actorId: this.#actorId,
@@ -2143,7 +2148,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const curriculumStageRestored = await this.#restoreCurriculumState(run);
     const probeScheduleRestored = await this.#restoreProbeSchedule(run);
 
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId,
       eventType: 'recovery',
       actorId: this.#actorId,
@@ -2327,7 +2332,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (run.lifecycle.state !== 'running') {
       throw new RunStateError(request.runId, run.lifecycle.state, 'running');
     }
-    const attachment = await run.writer.appendAnalysisAttachment(request);
+    const attachment = await run.controllerEvidence.appendAnalysisAttachment(request);
     await this.#checkpoint(run, 'intervention');
     return attachment;
   }
@@ -2576,7 +2581,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     );
     if (action === null) {
       // §10.1/§14.2: a blocked field is an audited event, never a silent drop.
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId: run.runId,
         eventType: 'hygiene-block',
         actorId: this.#actorId,
@@ -2753,7 +2758,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     // `safety-trigger` entry is already committed, so record why nothing
     // paused rather than silently continuing.
     const state = run.lifecycle.state;
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'safety-trigger',
       actorId: this.#actorId,
@@ -2828,7 +2833,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
     const plan = this.#buildInterventionPlan(run, run.turn);
     run.probeSchedule = plan.probeSchedule;
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'probe-schedule',
       actorId: this.#actorId,
@@ -2973,7 +2978,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
                 babyB: run.config.babyB.initialPolicyRef,
               },
             };
-      await run.writer.appendInterventionEvent({
+      await run.controllerEvidence.appendInterventionEvent({
         runId: run.runId,
         eventType: 'runtime-attestation',
         actorId: this.#actorId,
@@ -3192,7 +3197,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
     // §7.2: skipping the anchor is an audited governance decision and a
     // permanent deviation; the run can never be marked valid.
-    await run.writer.appendInterventionEvent({
+    await run.controllerEvidence.appendInterventionEvent({
       runId: run.runId,
       eventType: 'governance-decision',
       actorId: this.#actorId,
@@ -3233,7 +3238,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const findings = this.#integrityFindings(run);
     if (findings.length > 0) {
       try {
-        await run.writer.appendInterventionEvent({
+        await run.controllerEvidence.appendInterventionEvent({
           runId: run.runId,
           eventType: 'safety-trigger',
           actorId: this.#actorId,
@@ -3248,7 +3253,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       }
     }
 
-    const report = await run.writer.recover(run.runId);
+    const report = await run.controllerEvidence.recover(run.runId);
     if (!report.ok) {
       if (run.lifecycle.canApply('fork-detected')) {
         run.lifecycle.apply('fork-detected');
@@ -3645,6 +3650,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       preRegistration: this.#recordedPreRegistration(interventionEvents),
       configurationHash: strictHash(metadata.configurationHash),
       writer,
+      controllerEvidence: controllerEvidencePortForWriter(runId, writer),
       signers,
       lifecycle: new RunLifecycle(runId, state),
       gateway: new SymbolGatewayImpl(

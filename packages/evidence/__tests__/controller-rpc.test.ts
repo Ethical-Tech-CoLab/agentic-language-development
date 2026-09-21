@@ -5,9 +5,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { InMemorySignerRegistry } from '@ald/hashing';
 import { describe, expect, it } from 'vitest';
 
-import { connectControllerEvidenceRpc, openEvidenceDatabase } from '../src/index.js';
+import {
+  SqliteEvidenceWriter,
+  connectControllerEvidenceRpc,
+  controllerEvidencePortForWriter,
+  openEvidenceDatabase,
+} from '../src/index.js';
 import { hash, runConfig } from './fixtures/support.js';
 
 const fixture = fileURLToPath(new URL('./fixtures/controller-writer-child.mjs', import.meta.url));
@@ -25,6 +31,40 @@ function rawRequest(socketPath: string, value: unknown): Promise<string> {
 }
 
 describe('Controller evidence port over a distinct writer process', () => {
+  it('uses the same asynchronous run-bound capability in process', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ald-controller-local-port-'));
+    const config = runConfig({ runId: 'run-controller-local-port' });
+    const database = openEvidenceDatabase(join(directory, 'evidence.sqlite'));
+    const writer = new SqliteEvidenceWriter({
+      database,
+      signers: InMemorySignerRegistry.generate(config.runId),
+      clock: { now: () => new Date('2026-01-01T00:00:00.000Z').toISOString() },
+    });
+    try {
+      const port = controllerEvidencePortForWriter(config.runId, writer);
+      expect(Object.keys(port).sort()).toEqual([
+        'appendAnalysisAttachment', 'appendExperimentRecord', 'appendInterventionEvent',
+        'appendTurnRecord', 'chainHead', 'readAnalysisAttachments',
+        'readAnchorReceipts', 'readCheckpoints', 'readEvents', 'readExperimentRecords',
+        'readForkArtifacts', 'readRunMetadata', 'readRunSigners', 'recover', 'registerRun',
+      ]);
+      const registration = await port.registerRun(config);
+      expect((await port.readRunMetadata(config.runId))?.configurationHash)
+        .toBe(registration.configurationHash);
+      await port.appendInterventionEvent({
+        runId: config.runId,
+        eventType: 'annotate',
+        actorId: 'controller-local-test',
+        reasonCode: 'async-capability',
+      });
+      expect(await port.readEvents(config.runId, 'intervention')).toHaveLength(1);
+      await expect(port.readRunMetadata('wrong-run')).rejects.toThrow();
+    } finally {
+      database.close();
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it('rejects a malformed confirmed turn result without retrying', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'ald-controller-rpc-shape-'));
     const socketPath = join(directory, 'writer.sock');

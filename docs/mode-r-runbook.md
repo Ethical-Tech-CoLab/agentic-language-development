@@ -62,6 +62,12 @@ capability can produce the canonical bundle without direct SQLite access. The
 shared-host test exports the remotely read signed channel event and simulated
 anchor receipt. Nursery lifecycle and recovery reads remain synchronous and
 must migrate before the live runtime can use this path end to end.
+Nursery now constructs the exact asynchronous Controller capability even for
+its local writer and uses it for turn records, lifecycle interventions,
+analysis attachments, and recovery. Source guards prevent those operations
+from returning to the broad writer handle. Registration, synchronous research
+queries, experiment-record history, and reconstruction reads still use the
+local writer, so a remote endpoint cannot yet replace it.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
