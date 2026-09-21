@@ -82,6 +82,8 @@ describe('prospective Mode R authority graph', () => {
     const controller = readFileSync('packages/orchestrator/src/nursery-runtime.ts', 'utf8');
     expect(controller).toContain('preflightShuffledProposal(');
     expect(controller).toContain('submitPreparedShuffledProposal(');
+    expect(controller).toContain('gateway: SymbolGateway;');
+    expect(controller).not.toContain('gateway: SymbolGatewayImpl;');
     expect(controller).not.toContain('.carrierProtocol.validate(');
     expect(controller).not.toContain('.carrierContext');
     expect(controller).not.toContain('batchArtifacts');

@@ -100,7 +100,7 @@ describe('rejection behaviour (SPEC §9.4, ALD-034)', () => {
     const { gateway } = harness();
     await gateway.submitProposal(turn(), symbolEnvelope(BAD));
     expect(gateway.consecutiveRejections()).toBe(1);
-    gateway.resetRejectionCounter();
+    await gateway.resetRejectionCounter();
     expect(gateway.consecutiveRejections()).toBe(0);
   });
 

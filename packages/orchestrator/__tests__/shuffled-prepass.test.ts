@@ -8,7 +8,7 @@
  * `channel.rejected` event rather than an exception that escapes `step()`
  * without a turn record (§8.3, §9.4, §11.3).
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   DeliveredChannelArtifact,
   LearnerAdapter,
@@ -94,6 +94,51 @@ describe('shuffled pre-pass (SPEC §9.6)', () => {
     await harness?.cleanup();
     harness = undefined;
   });
+
+  it('waits for asynchronous Gateway batch setup and seal before delivery', async () => {
+    harness = await createHarness();
+    const runId = 'run-shuffled-async-boundary';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'ald-shuffled-async-boundary',
+      communicationCondition: 'shuffled',
+      maxTurnsPerRun: 1,
+      evaluationTurns: 2,
+    })));
+    const gateway = harness.runtime.gatewayFor(runId);
+    const originalBegin = gateway.beginShuffledBatch.bind(gateway);
+    const originalSeal = gateway.sealShuffledBatch.bind(gateway);
+    let beginReached!: () => void;
+    let releaseBegin!: () => void;
+    let sealReached!: () => void;
+    let releaseSeal!: () => void;
+    const atBegin = new Promise<void>((resolve) => { beginReached = resolve; });
+    const beginGate = new Promise<void>((resolve) => { releaseBegin = resolve; });
+    const atSeal = new Promise<void>((resolve) => { sealReached = resolve; });
+    const sealGate = new Promise<void>((resolve) => { releaseSeal = resolve; });
+    vi.spyOn(gateway, 'beginShuffledBatch').mockImplementation(async (turns) => {
+      beginReached();
+      await beginGate;
+      await originalBegin(turns);
+    });
+    vi.spyOn(gateway, 'sealShuffledBatch').mockImplementation(async () => {
+      sealReached();
+      await sealGate;
+      await originalSeal();
+    });
+
+    const pending = harness.runtime.step(runId);
+    await atBegin;
+    expect(harness.runtime.transcript(runId)).toHaveLength(0);
+    releaseBegin();
+    await atSeal;
+    expect(harness.runtime.transcript(runId)).toHaveLength(0);
+    releaseSeal();
+    const result = await pending;
+    expect(result.turn).toBe(0);
+    expect(harness.runtime.transcript(runId)).toHaveLength(1);
+  }, 60_000);
 
   it('stamps each pre-pass ledger event with its own slot turn', async () => {
     harness = await createHarness();

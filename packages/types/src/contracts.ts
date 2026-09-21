@@ -806,18 +806,25 @@ export interface SymbolGateway {
     envelope: TurnProposalEnvelope,
   ): Promise<GatewaySubmitResult>;
   /** Define the exact shuffled turn set before the pre-pass begins. */
-  beginShuffledBatch(turns: readonly number[]): void;
+  beginShuffledBatch(turns: readonly number[]): Promise<void>;
   /** Gateway-owned validation during a shuffled batch pre-pass. */
   preflightShuffledProposal(
     turn: GatewayTurnContext,
     envelope: unknown,
   ): Promise<ShuffledPrepassResult>;
   /** Freeze the validated artifact set before the first delivery. */
-  sealShuffledBatch(): void;
+  sealShuffledBatch(): Promise<void>;
   /** Commit the exact eligible envelope retained during the pre-pass. */
   submitPreparedShuffledProposal(turn: GatewayTurnContext): Promise<GatewaySubmitResult>;
   /** Discard volatile batch state only after recovery verified the signed prefix. */
-  discardShuffledBatchAfterRecovery(): void;
+  discardShuffledBatchAfterRecovery(): Promise<void>;
+  /** Operational refusal state of the Gateway evidence-write boundary. */
+  isEvidenceWriteQuarantined(): boolean;
+  /** Commit a timeout rejection after the adapter deadline, not a retry. */
+  rejectForTimeout(
+    turn: GatewayTurnContext,
+    sender: BabyRole,
+  ): Promise<Extract<GatewaySubmitResult, { kind: 'rejected' }>>;
   /** E03 `oracle`: commit a Scenario Engine artifact with no learner output. */
   submitControlArtifact(
     turn: GatewayTurnContext,
@@ -837,7 +844,7 @@ export interface SymbolGateway {
     measurement: AffectStateMeasurement,
   ): Promise<AffectSubmitResult>;
   consecutiveRejections(): number;
-  resetRejectionCounter(): void;
+  resetRejectionCounter(): Promise<void>;
 }
 
 export type ShuffledPrepassResult =

@@ -359,7 +359,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     };
   }
 
-  beginShuffledBatch(turns: readonly number[]): void {
+  async beginShuffledBatch(turns: readonly number[]): Promise<void> {
     this.assertEvidenceOperational();
     if (this.condition !== 'shuffled' || turns.length === 0 ||
       turns.some((value, index) => !Number.isSafeInteger(value) || value < 0 ||
@@ -411,7 +411,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     return { kind: 'eligible' };
   }
 
-  sealShuffledBatch(): void {
+  async sealShuffledBatch(): Promise<void> {
     this.assertEvidenceOperational();
     const batch = this.shuffledBatch;
     if (this.condition !== 'shuffled' || batch === undefined || batch.sealed ||
@@ -441,7 +441,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     return result;
   }
 
-  discardShuffledBatchAfterRecovery(): void {
+  async discardShuffledBatchAfterRecovery(): Promise<void> {
     this.shuffledBatch = undefined;
   }
 
@@ -660,7 +660,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
     return this.rejections;
   }
 
-  resetRejectionCounter(): void {
+  async resetRejectionCounter(): Promise<void> {
     this.rejections = 0;
   }
 

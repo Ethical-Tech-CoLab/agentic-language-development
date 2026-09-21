@@ -38,6 +38,10 @@ set, and applies the seeded permutation from its own batch state. The
 Controller schedules scenario turns but cannot supply or replace the batch
 artifact list at delivery. This is still an in-process boundary; it is not
 the selected authenticated, separate Gateway process or a B12 qualification.
+The Controller now uses the Gateway interface and awaits batch setup, sealing,
+recovery discard, and rejection-counter reset. A held-response test verifies
+that delivery does not outrun setup or sealing. The writer and Gateway remain
+in the Nursery process, so these asynchronous calls are not remote RPC evidence.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

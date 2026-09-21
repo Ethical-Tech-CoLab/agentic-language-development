@@ -213,7 +213,7 @@ describe('fixed-token conformance vectors (ALD-036)', () => {
   it('commits exactly one channel event per submission', async () => {
     const { gateway, evidence, context } = harness();
     for (const vector of FIXED_TOKEN_VECTORS) {
-      gateway.resetRejectionCounter();
+      await gateway.resetRejectionCounter();
       await gateway.submitProposal(turn(), asEnvelope(vector.envelope));
     }
     expect(evidence.channelEvents(context.runId)).toHaveLength(

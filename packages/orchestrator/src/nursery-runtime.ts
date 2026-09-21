@@ -107,6 +107,7 @@ import {
   type Sha256Hash,
   type SignerRegistry,
   type StoredAnalysisAttachment,
+  type SymbolGateway,
   type TurnRecord,
   type VerificationReport,
 } from '@ald/types';
@@ -175,6 +176,7 @@ import {
   SymbolGatewayImpl,
   TurnDeadlineExceededError,
   carrierInventory,
+  withTurnDeadline,
 } from '@ald/gateway';
 
 import {
@@ -434,7 +436,7 @@ interface RunRuntime {
   writer: SqliteEvidenceWriter;
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
-  gateway: SymbolGatewayImpl;
+  gateway: SymbolGateway;
   writeJournal: GatewayWriteIntentJournal;
   engine: ScenarioEngine;
   adapters: Record<BabyRole, LearnerAdapter>;
@@ -1497,7 +1499,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const authority = run.adapters[role].isolation?.turnDeadlineAuthority;
     return authority === 'adapter'
       ? response
-      : run.gateway.withTurnDeadline(response, run.config.turnResponseBudgetMs);
+      : withTurnDeadline(response, run.config.turnResponseBudgetMs);
   }
 
   /**
@@ -1616,7 +1618,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     await this.#checkpoint(run, 'intervention');
     // §9.4: the rejection streak that triggered the pause has been reviewed
     // by the operator who resumed, so the counter starts again.
-    run.gateway.resetRejectionCounter();
+    await run.gateway.resetRejectionCounter();
     run.lifecycle.apply('resume-complete');
     // §7.2/§18: the stage transition the paused turn owed is applied before
     // the run accepts another turn, so a pause on the last budgeted turn
@@ -2121,7 +2123,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     ).length;
     run.lastCheckpointEventTotal = this.#eventTotal(run);
     run.batch = undefined;
-    run.gateway.discardShuffledBatchAfterRecovery();
+    await run.gateway.discardShuffledBatchAfterRecovery();
 
     const sealCheckpoint = this.#finalCheckpoint(run);
     if (sealCheckpoint !== undefined) {
@@ -2460,7 +2462,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     return this.#requireRun(runId).writer;
   }
 
-  gatewayFor(runId: string): SymbolGatewayImpl {
+  gatewayFor(runId: string): SymbolGateway {
     return this.#requireRun(runId).gateway;
   }
 
@@ -2639,7 +2641,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       split,
       slots: [],
     };
-    run.gateway.beginShuffledBatch(
+    await run.gateway.beginShuffledBatch(
       Array.from({ length: size }, (_, offset) => turn + offset),
     );
     let episodeIndex = this.#episodeIndex(run, phase);
@@ -2694,7 +2696,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       batch.slots.push({ turn: slotTurn, instance, prepared: true });
     }
 
-    run.gateway.sealShuffledBatch();
+    await run.gateway.sealShuffledBatch();
     run.batch = batch;
     return batch.slots.find((slot) => slot.turn === turn);
   }

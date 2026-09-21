@@ -37,13 +37,13 @@ async function prepareShuffledBatch(
   gateway: SymbolGateway,
   batch: readonly AgentActionProposal['publicArtifact'][],
 ): Promise<void> {
-  gateway.beginShuffledBatch(batch.map((_, index) => index + 1));
+  await gateway.beginShuffledBatch(batch.map((_, index) => index + 1));
   for (let index = 0; index < batch.length; index += 1) {
     expect(await gateway.preflightShuffledProposal(
       turn({ turn: index + 1 }), symbolEnvelope(symbolsOf(batch[index])),
     )).toEqual({ kind: 'eligible' });
   }
-  gateway.sealShuffledBatch();
+  await gateway.sealShuffledBatch();
 }
 
 describe('SPEC §9.6 communication-control conditions', () => {
@@ -299,7 +299,7 @@ describe('SPEC §9.6 communication-control conditions', () => {
 
   it('owns shuffled pre-pass validation without committing an eligible turn', async () => {
     const { gateway, evidence, context } = harness({ communicationCondition: 'shuffled' });
-    gateway.beginShuffledBatch([1, 2, 3]);
+    await gateway.beginShuffledBatch([1, 2, 3]);
     const eligible = await gateway.preflightShuffledProposal(
       turn(), symbolEnvelope(['S01']),
     );
@@ -314,7 +314,7 @@ describe('SPEC §9.6 communication-control conditions', () => {
     const malformed = await gateway.preflightShuffledProposal(turn({ turn: 3 }), undefined);
     expect(malformed).toMatchObject({ kind: 'rejected', reasonCode: 'invalid-envelope' });
     expect(evidence.channelEvents(context.runId)).toHaveLength(2);
-    gateway.sealShuffledBatch();
+    await gateway.sealShuffledBatch();
     const acceptedResult = accepted(await gateway.submitPreparedShuffledProposal(turn()));
     expect(symbolsOf(acceptedResult.delivery?.publicArtifact)).toEqual(['S01']);
     await expect(gateway.submitPreparedShuffledProposal(turn())).rejects.toBeInstanceOf(
@@ -348,15 +348,15 @@ describe('SPEC §9.6 communication-control conditions', () => {
     await expect(
       gateway.submitProposal(turn(), symbolEnvelope(['S01'])),
     ).rejects.toBeInstanceOf(ShuffledBatchRequiredError);
-    gateway.beginShuffledBatch([1, 2]);
+    await gateway.beginShuffledBatch([1, 2]);
     expect(await gateway.preflightShuffledProposal(turn(), symbolEnvelope(['S01']))).toEqual({
       kind: 'eligible',
     });
-    expect(() => gateway.sealShuffledBatch()).toThrow(/every turn/u);
+    await expect(gateway.sealShuffledBatch()).rejects.toThrow(/every turn/u);
     await expect(gateway.preflightShuffledProposal(turn(), symbolEnvelope(['S09'])))
       .rejects.toBeInstanceOf(ShuffledBatchRequiredError);
     await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S02']));
-    gateway.sealShuffledBatch();
+    await gateway.sealShuffledBatch();
     await expect(gateway.submitProposal(turn(), symbolEnvelope(['S09'])))
       .rejects.toBeInstanceOf(ShuffledBatchRequiredError);
     await expect(gateway.submitPreparedShuffledProposal(turn({ recipient: 'baby-a' })))
@@ -364,7 +364,7 @@ describe('SPEC §9.6 communication-control conditions', () => {
     await expect(
       gateway.submitPreparedShuffledProposal(turn({ turn: 4 })),
     ).rejects.toBeInstanceOf(ShuffledBatchRequiredError);
-    expect(() => gateway.beginShuffledBatch([3])).toThrow(/incomplete/u);
+    await expect(gateway.beginShuffledBatch([3])).rejects.toThrow(/incomplete/u);
   });
 
   it('shuffled with a single-episode batch can only deliver that episode', async () => {
@@ -374,10 +374,10 @@ describe('SPEC §9.6 communication-control conditions', () => {
       await gateway.submitPreparedShuffledProposal(turn()),
     );
     expect(symbolsOf(result.delivery?.publicArtifact)).toEqual(['S05']);
-    gateway.beginShuffledBatch([2]);
+    await gateway.beginShuffledBatch([2]);
     expect(await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S06'])))
       .toEqual({ kind: 'eligible' });
-    gateway.sealShuffledBatch();
+    await gateway.sealShuffledBatch();
     const next = accepted(await gateway.submitPreparedShuffledProposal(turn({ turn: 2 })));
     expect(symbolsOf(next.delivery?.publicArtifact)).toEqual(['S06']);
   });
@@ -448,10 +448,10 @@ describe('SPEC §9.6 communication-control conditions', () => {
     ] as const) {
       const { gateway } = harness({ communicationCondition: condition });
       if (condition === 'shuffled') {
-        gateway.beginShuffledBatch([1, 2]);
+        await gateway.beginShuffledBatch([1, 2]);
         await gateway.preflightShuffledProposal(turn(), symbolEnvelope(PROPOSED));
         await gateway.preflightShuffledProposal(turn({ turn: 2 }), symbolEnvelope(['S02']));
-        gateway.sealShuffledBatch();
+        await gateway.sealShuffledBatch();
       }
       const result = accepted(
         condition === 'shuffled'
