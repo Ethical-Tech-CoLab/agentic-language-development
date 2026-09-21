@@ -46,7 +46,10 @@ export {
   type SemanticLeakageEvaluationRequest,
   type RunToCompletionOptions,
 } from './nursery-runtime.js';
-export { RuntimePrivateLedgerClient } from './private-ledger.js';
+export {
+  RuntimePrivateLedgerClient,
+  type PrivateLedgerEvidencePort,
+} from './private-ledger.js';
 export {
   AUDIT_INTERPRETATION_DELAY_TURNS,
   AuditInterpreterError,

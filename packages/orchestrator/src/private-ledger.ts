@@ -16,9 +16,15 @@ import type {
   Sha256Hash,
 } from '@ald/types';
 
+/** The only Evidence Store operation a learner-private ledger client may use. */
+export type PrivateLedgerEvidencePort = Pick<
+  EvidenceWriter,
+  'appendLedgerEvent'
+>;
+
 export class RuntimePrivateLedgerClient implements PrivateLedgerClient {
   constructor(
-    private readonly writer: EvidenceWriter,
+    private readonly evidence: PrivateLedgerEvidencePort,
     private readonly runId: string,
     private readonly babyId: BabyId,
     /** Read at call time: the turn the Nursery Controller is executing. */
@@ -30,7 +36,7 @@ export class RuntimePrivateLedgerClient implements PrivateLedgerClient {
     options?: { channelEventHash?: Sha256Hash },
   ): Promise<LedgerEvent> {
     const channelEventHash = options?.channelEventHash;
-    return this.writer.appendLedgerEvent({
+    return this.evidence.appendLedgerEvent({
       runId: this.runId,
       babyId: this.babyId,
       turn: this.currentTurn(),

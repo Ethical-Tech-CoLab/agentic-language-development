@@ -195,7 +195,10 @@ import {
   VerifierNotConfiguredError,
   type AdapterMethod,
 } from './errors.js';
-import { RuntimePrivateLedgerClient } from './private-ledger.js';
+import {
+  RuntimePrivateLedgerClient,
+  type PrivateLedgerEvidencePort,
+} from './private-ledger.js';
 import {
   AuditLedgerInterpreter,
   type AuditInterpreterEvidencePort,
@@ -392,6 +395,7 @@ export interface NurseryRunEvidenceContext {
   localWriter: SqliteEvidenceWriter;
   controller: ControllerEvidencePort;
   gateway: GatewayEvidencePort;
+  privateLedger: PrivateLedgerEvidencePort;
   audit: AuditInterpreterEvidencePort;
   checkpoints: CheckpointService;
 }
@@ -460,6 +464,8 @@ interface RunRuntime {
   writer: SqliteEvidenceWriter;
   /** Exact run-bound Controller capability; local today, remote-ready. */
   controllerEvidence: ControllerEvidencePort;
+  /** Append-only capability used by role-bound private-ledger clients. */
+  privateLedgerEvidence: PrivateLedgerEvidencePort;
   /** Delayed interpreter's exact ledger-read/audit-append capability. */
   auditEvidence: AuditInterpreterEvidencePort;
   signers: SignerRegistry;
@@ -757,6 +763,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash,
       writer,
       controllerEvidence,
+      privateLedgerEvidence: evidence.privateLedger,
       auditEvidence: evidence.audit,
       signers,
       lifecycle,
@@ -3397,6 +3404,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       localWriter,
       controller: controllerEvidencePortForWriter(runId, localWriter),
       gateway: localWriter,
+      privateLedger: localWriter,
       audit: localWriter,
       checkpoints: checkpointFactory(localWriter, signers),
     };
@@ -3526,7 +3534,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           : (run.config.seedBindings?.babyB ?? deriveSeedHex(run.config.randomSeed, role)),
       symbolInventory: run.symbolInventory,
       ledger: new RuntimePrivateLedgerClient(
-        run.writer,
+        run.privateLedgerEvidence,
         run.runId,
         babyIdForRole(role),
         // SPEC §11.4: the turn being executed — the slot's turn inside the
@@ -3740,6 +3748,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: strictHash(metadata.configurationHash),
       writer,
       controllerEvidence,
+      privateLedgerEvidence: evidence.privateLedger,
       auditEvidence: evidence.audit,
       signers,
       lifecycle: new RunLifecycle(runId, state),

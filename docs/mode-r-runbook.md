@@ -112,6 +112,13 @@ already asynchronous exporter. Sealing no longer gives that component the
 concrete writer, while canonical metadata, stream, signer, checkpoint, anchor,
 attachment, and experiment-record reads remain unchanged and validated by the
 exporter. Synchronous public inspection methods remain transitional.
+Learner maintenance writes now receive an append-only private-ledger evidence
+port from the per-run context instead of a concrete writer. The role-bound
+client still fixes run ID, Baby ID, and the Controller-owned current turn for
+every append; a capture-only capability test checks those values and exposes
+no other method. Local assembly currently backs this port with the same writer
+used by the in-process Gateway. Moving Gateway and learners into the selected
+process graph, with caller-exclusive mounts, remains required for B12.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
