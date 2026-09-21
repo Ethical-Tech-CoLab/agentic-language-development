@@ -127,13 +127,12 @@ describe('remote runtime with distinct Baby and model processes', () => {
       babyPort: number;
     }> = {};
     for (const role of roles) {
-      const modelPort = await availablePort();
       const babyPort = await availablePort();
+      const modelSocket = join(directory, `${role}-model.sock`);
       const modelProcess = spawn(process.execPath, [
         modelHost,
-        '--transport=tcp',
-        `--port=${String(modelPort)}`,
-        '--bind=127.0.0.1',
+        '--transport=unix',
+        `--socket-path=${modelSocket}`,
         '--track=no-learning',
         `--host-label=${role}-model-adapter`,
       ], {
@@ -147,8 +146,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
         '--bind=127.0.0.1',
         '--track=no-learning',
         `--host-label=${role}`,
-        '--model-host=127.0.0.1',
-        `--model-port=${String(modelPort)}`,
+        `--model-socket=${modelSocket}`,
         `--model-host-label=${role}-model-adapter`,
       ], {
         env: { ALD_CONTAINER_ID: `${role}-baby-container` },

@@ -26,6 +26,7 @@ export interface BabyHostCliOptions {
   modelHostLabel?: string;
   modelHost?: string;
   modelPort?: number;
+  modelSocket?: string;
 }
 
 /** Parse the Baby host's deliberately small process-mode CLI. */
@@ -35,7 +36,10 @@ export function parseBabyHostCliOptions(argv: readonly string[]): BabyHostCliOpt
     const [flag, rawValue] = splitFlag(argument);
     switch (flag) {
       case '--transport':
-        options.transport = rawValue === 'tcp' ? 'tcp' : 'process';
+        if (rawValue !== 'process' && rawValue !== 'tcp') {
+          throw new Error('invalid baby-host transport');
+        }
+        options.transport = rawValue;
         break;
       case '--port':
         options.port = Number(rawValue);
@@ -60,6 +64,9 @@ export function parseBabyHostCliOptions(argv: readonly string[]): BabyHostCliOpt
         break;
       case '--model-port':
         options.modelPort = Number(rawValue);
+        break;
+      case '--model-socket':
+        options.modelSocket = rawValue;
         break;
       default:
         throw new Error(`unknown baby-host flag: ${flag}`);
@@ -103,7 +110,17 @@ export async function runBabyHostCli(argv: readonly string[]): Promise<void> {
       timing: 'immediate',
       turnDeadlineAuthority: 'upstream',
       ...(options.frameSize === undefined ? {} : { frameSize: options.frameSize }),
-      ...(modelEndpoint === undefined
+      ...(options.modelSocket !== undefined
+        ? {
+            transport: 'unix',
+            unix: {
+              socketPath: options.modelSocket,
+              attempts: 20,
+              retryDelayMs: 50,
+              hostLabel: options.modelHostLabel ?? `model-adapter-${track}`,
+            },
+          }
+        : modelEndpoint === undefined
         ? {
             process: {
               hostLabel: options.modelHostLabel ?? `model-adapter-${track}`,
@@ -132,7 +149,8 @@ export async function runBabyHostCli(argv: readonly string[]): Promise<void> {
     createFactory,
   };
   if (options.transport === 'process') {
-    if (options.modelHost !== undefined || options.modelPort !== undefined) {
+    if (options.modelHost !== undefined || options.modelPort !== undefined ||
+        options.modelSocket !== undefined) {
       throw new Error('process Baby host cannot use a container model endpoint');
     }
     const channel = new StdioFrameChannel();
@@ -153,11 +171,13 @@ export async function runBabyHostCli(argv: readonly string[]): Promise<void> {
     return;
   }
 
+  const tcpModel = options.modelHost !== undefined &&
+    options.modelPort !== undefined && Number.isInteger(options.modelPort);
+  const unixModel = options.modelSocket !== undefined;
   if (options.port === undefined || !Number.isInteger(options.port) ||
-      options.modelHost === undefined || options.modelPort === undefined ||
-      !Number.isInteger(options.modelPort)) {
+      tcpModel === unixModel) {
     throw new Error(
-      '--port, --model-host, and --model-port are required for --transport=tcp',
+      '--port and exactly one model endpoint are required for --transport=tcp',
     );
   }
   serverState.value = await createTcpFrameServer({

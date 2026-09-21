@@ -36,6 +36,7 @@ import {
 } from './tcp-transport.js';
 import type { FrameChannel } from './channel.js';
 import { canonicalPayload } from './frames.js';
+import { UnixHostTransport, type UnixConnectOptions } from './unix-transport.js';
 
 /** A learner host in its own OS process, spawned on construction. */
 export class ProcessHostTransport implements HostTransport {
@@ -107,12 +108,14 @@ export class ContainerHostTransport implements HostTransport {
 export interface IsolatedAdapterFactoryOptions
   extends Omit<RemoteLearnerAdapterOptions, 'transport' | 'track'> {
   track: LearnerTrackId;
-  /** `process` spawns a child; `container` connects to one (SPEC §5.3). */
-  transport?: 'process' | 'container';
+  /** `process` spawns; `container` uses TCP; `unix` uses a private socket. */
+  transport?: 'process' | 'container' | 'unix';
   /** Process transport knobs (permission model, entry, env, cwd, stderr). */
   process?: ProcessTransportOptions;
   /** Container endpoint. Required when `transport` is `container`. */
   endpoint?: TcpConnectOptions & { hostLabel?: string };
+  /** Private socket. Required when `transport` is `unix`. */
+  unix?: UnixConnectOptions;
 }
 
 export interface IsolatedAdapterFactory extends LearnerAdapterFactory {
@@ -142,6 +145,9 @@ export function createIsolatedAdapterFactory(
   if (transportKind === 'container' && options.endpoint === undefined) {
     throw new IsolationError('configuration');
   }
+  if (transportKind === 'unix' && options.unix === undefined) {
+    throw new IsolationError('configuration');
+  }
   if (options.learnerOptions !== undefined) {
     canonicalPayload(options.learnerOptions, 'learnerOptions');
   }
@@ -166,9 +172,11 @@ export function createIsolatedAdapterFactory(
               // an `init` that names another (`invalid-params`).
               hostArgs: options.process?.hostArgs ?? [`--track=${options.track}`],
             })
-          : new ContainerHostTransport(
-              options.endpoint as TcpConnectOptions & { hostLabel?: string },
-            );
+          : transportKind === 'container'
+            ? new ContainerHostTransport(
+                options.endpoint as TcpConnectOptions & { hostLabel?: string },
+              )
+            : new UnixHostTransport(options.unix as UnixConnectOptions);
       const adapter = new RemoteLearnerAdapter({
         track: options.track,
         transport,

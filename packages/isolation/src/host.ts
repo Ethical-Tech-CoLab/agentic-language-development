@@ -54,6 +54,7 @@ import {
   type ProbeOutcome,
 } from './protocol.js';
 import { createTcpFrameServer } from './tcp-transport.js';
+import { createUnixFrameServer } from './unix-transport.js';
 
 const HOST_METHOD_SET: ReadonlySet<string> = new Set(HOST_METHODS);
 
@@ -571,8 +572,9 @@ export class StdioFrameChannel implements FrameChannel {
 }
 
 export interface HostCliOptions {
-  transport: 'process' | 'tcp';
+  transport: 'process' | 'tcp' | 'unix';
   port?: number;
+  socketPath?: string;
   bindHost?: string;
   track?: LearnerTrackId;
   frameSize?: number;
@@ -587,13 +589,19 @@ export function parseHostCliOptions(argv: readonly string[]): HostCliOptions {
     const [flag, rawValue] = splitFlag(argument);
     switch (flag) {
       case '--transport':
-        options.transport = rawValue === 'tcp' ? 'tcp' : 'process';
+        if (rawValue !== 'process' && rawValue !== 'tcp' && rawValue !== 'unix') {
+          throw new Error('invalid learner-host transport');
+        }
+        options.transport = rawValue;
         break;
       case '--port':
         options.port = Number(rawValue);
         break;
       case '--bind':
         options.bindHost = rawValue;
+        break;
+      case '--socket-path':
+        options.socketPath = rawValue;
         break;
       case '--track':
         options.track = rawValue as LearnerTrackId;
@@ -636,6 +644,9 @@ export async function runLearnerHostCli(argv: readonly string[]): Promise<void> 
   };
 
   if (options.transport === 'process') {
+    if (options.port !== undefined || options.socketPath !== undefined) {
+      throw new Error('process learner host cannot use a listener endpoint');
+    }
     const channel = new StdioFrameChannel();
     const host = new LearnerHost({
       ...shared,
@@ -655,32 +666,45 @@ export async function runLearnerHostCli(argv: readonly string[]): Promise<void> 
     return;
   }
 
-  if (options.port === undefined || !Number.isInteger(options.port)) {
-    throw new Error('--port is required for --transport=tcp');
-  }
   const hosts = new Set<LearnerHost>();
-  const server = await createTcpFrameServer({
-    port: options.port,
-    ...(options.bindHost === undefined ? {} : { host: options.bindHost }),
-    ...(options.maxConnections === undefined
-      ? {}
-      : { maxConnections: options.maxConnections }),
-    onChannel: (channel) => {
-      const host = new LearnerHost({
-        ...shared,
-        channel,
-        boundary: 'separate-container',
-        onShutdown: () => {
-          void host.close();
-          hosts.delete(host);
-        },
-      });
-      hosts.add(host);
-      channel.onClose(() => {
+  const onChannel = (channel: FrameChannel): void => {
+    const host = new LearnerHost({
+      ...shared,
+      channel,
+      boundary: 'separate-container',
+      onShutdown: () => {
+        void host.close();
         hosts.delete(host);
-      });
-    },
-  });
+      },
+    });
+    hosts.add(host);
+    channel.onClose(() => {
+      hosts.delete(host);
+    });
+  };
+  const server = options.transport === 'tcp'
+    ? await (async () => {
+        if (options.port === undefined || !Number.isInteger(options.port)) {
+          throw new Error('--port is required for --transport=tcp');
+        }
+        return createTcpFrameServer({
+          port: options.port,
+          ...(options.bindHost === undefined ? {} : { host: options.bindHost }),
+          ...(options.maxConnections === undefined
+            ? {}
+            : { maxConnections: options.maxConnections }),
+          onChannel,
+        });
+      })()
+    : await (async () => {
+        if (options.socketPath === undefined) {
+          throw new Error('--socket-path is required for --transport=unix');
+        }
+        return createUnixFrameServer({
+          socketPath: options.socketPath,
+          onChannel,
+        });
+      })();
   const stop = (): void => {
     void server.close().then(() => {
       process.exit(0);

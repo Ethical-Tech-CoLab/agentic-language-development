@@ -64,6 +64,8 @@ export class UnixFrameChannel implements FrameChannel {
 export interface UnixConnectOptions {
   socketPath: string;
   timeoutMs?: number;
+  attempts?: number;
+  retryDelayMs?: number;
   hostLabel?: string;
 }
 
@@ -71,10 +73,29 @@ export async function connectUnixFrameChannel(
   options: UnixConnectOptions,
 ): Promise<UnixFrameChannel> {
   assertPrivateSocketDirectory(options.socketPath);
-  const target = lstatSync(options.socketPath);
-  if (!target.isSocket() || target.isSymbolicLink() || (target.mode & 0o077) !== 0) {
-    throw new IsolationError('connect-failed');
+  const attempts = Math.max(1, options.attempts ?? 1);
+  let lastCause: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const target = lstatSync(options.socketPath);
+      if (!target.isSocket() || target.isSymbolicLink() ||
+          (target.mode & 0o077) !== 0) {
+        throw new IsolationError('connect-failed');
+      }
+      return await connectUnixOnce(options);
+    } catch (cause) {
+      lastCause = cause;
+      if (attempt + 1 < attempts) {
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, options.retryDelayMs ?? 250);
+        });
+      }
+    }
   }
+  throw new IsolationError('connect-failed', { cause: lastCause });
+}
+
+function connectUnixOnce(options: UnixConnectOptions): Promise<UnixFrameChannel> {
   return new Promise<UnixFrameChannel>((resolve, reject) => {
     const socket = createConnection(options.socketPath);
     const fail = (cause: unknown): void => {
