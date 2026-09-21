@@ -189,6 +189,14 @@ Its scope deliberately excludes application service execution, lifecycle and
 fault qualification, resource measurement, independent audit, behavioral
 findings, and B12 closure. No boundary result exists until the registered
 collector runs and its raw receipt is separately checked.
+The packet-driven collector now has distinct development and selected modes.
+It refuses a dirty tree or reused evidence root, verifies the pinned image
+without pulling, creates uniquely prefixed internal networks and hardened
+containers, probes every ordered process pair, inspects exact mounts, signer
+domain declarations, container IDs, and host PIDs, and removes only resources
+bearing its unique prefix. Failures retain a single-use raw receipt. The
+collector itself is not yet development-qualified and no topology observation
+is claimed at this source version.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

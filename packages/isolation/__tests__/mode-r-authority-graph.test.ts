@@ -123,6 +123,21 @@ describe('prospective Mode R authority graph', () => {
     });
   });
 
+  it('keeps the boundary collector single-use, exhaustive, and scoped', () => {
+    const collector = readFileSync(
+      'scripts/run-mode-r-boundary-qualification.mjs',
+      'utf8',
+    );
+    expect(collector).toContain("git('status', '--porcelain')");
+    expect(collector).toContain("assert.equal(existsSync(evidenceRoot), false");
+    expect(collector).toContain('for (const from of processNames)');
+    expect(collector).toContain('for (const to of processNames)');
+    expect(collector).toContain("'--network', 'none'");
+    expect(collector).toContain("spawnSync('docker', ['rm', '-f', container]");
+    expect(collector).toContain('researchFinding: false');
+    expect(collector).toContain('b12Closed: false');
+  });
+
   it('prospectively binds fail-closed Gateway recovery to unchanged v3', () => {
     expect(gatewayRecoveryAmendment.schemaVersion).toBe(4);
     expect(gatewayRecoveryAmendment.status).toBe('design-locked-not-implemented');
