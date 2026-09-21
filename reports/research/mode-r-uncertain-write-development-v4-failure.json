@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v4",
+  "executionCommit": "0e8f7395b1c4bc6b5da6f79612047d39056afb8d",
+  "executionTree": "3e6da3743bea4117369ec0a873ee191a7d90cf28",
+  "executionVersion": "0.1.292",
+  "startedAt": "2026-09-21T15:03:37.659Z",
+  "finishedAt": "2026-09-21T15:05:30.249Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v4.json",
+    "bytes": 4065,
+    "sha256": "sha256:4394d862f62adbcc779c5386829cfbfcb2bff40a1344261fa5a6836ee8874af9"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v4/receipt.json",
+    "bytes": 7245,
+    "sha256": "sha256:dcdfb9d3eb53f18112422b5e157893c2e304062bf8739f05db9205f605f0e9f6",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "controllerExitCode": 0,
+    "controllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "observedInjection": {
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "state": "running",
+    "turn": 0,
+    "operationalQuarantine": "evidence-write-uncertain",
+    "channelDelta": 1,
+    "senderLedgerDelta": 2,
+    "turnRecordDelta": 0,
+    "secondAttemptAddedEvidence": false,
+    "journalIntentCount": 1,
+    "journalConfirmationCount": 0
+  },
+  "cause": "The runner recreated the Gateway after removing its three Unix sockets, but retained the old Baby/model processes. Each selected Baby exits when its one Gateway channel closes, and each model channel belongs to that Baby lifecycle, so the new Gateway could not finish reconnecting to the stale pair.",
+  "interpretation": "The repaired image and prospective live fault behavior both occurred, but the registered two-stage qualification is failed because the fresh recovery process was not given the already-qualified six-service restart set.",
+  "nextAction": "Register v5 with the selected lifecycle qualification's exact recreated service set: both model adapters, both Babies, the Gateway, and the Controller. Keep fault and safety thresholds unchanged.",
+  "claimBoundary": "V4 is a failed two-stage qualification. Its retained observations support diagnosis only; they do not constitute a passing uncertainty qualification, B12 closure, or a behavioral result."
+}

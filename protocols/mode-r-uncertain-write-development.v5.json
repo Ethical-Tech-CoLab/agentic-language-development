@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 5,
+  "classification": "selected-mode-r-uncertain-write-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v5",
+  "runId": "mode-r-application-uncertain-write-development-v5",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-uncertain-write-development-v4-failure.json",
+    "sha256": "f442440b01665be2bc8aba44cab4e4de938e917853b5be6ce752f8eea367c824"
+  },
+  "prerequisite": {
+    "path": "reports/research/mode-r-application-fault-development-v3-qualification-receipt.json",
+    "sha256": "7d6d5f23dc1c26d5564b384e888268f3ce5aad046bc0fcff5168f08e8d510100"
+  },
+  "sources": [
+    {
+      "path": "deploy/mode-r/Dockerfile",
+      "sha256": "43a12cb1140687a6e83bb167f43d5019e3a464bdf4a4a8e27787e1c7103cd35e"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application.v1.yml",
+      "sha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"
+    },
+    {
+      "path": "deploy/mode-r/docker-compose.application-uncertain-write.v1.yml",
+      "sha256": "3fe69eab9b6afe0a1ba8109f558da6a754d64d94d82fcae8288b8a1338c23a21"
+    },
+    {
+      "path": "deploy/mode-r/application-uncertain-write-controller.mjs",
+      "sha256": "e2121008ce0742fba4400d91202d5097afaf8333ecc7c7a756d7c8cdefb23fdd"
+    }
+  ],
+  "injection": {
+    "method": "commitTurn",
+    "writerResponseDelayMs": 1500,
+    "gatewayWriterDeadlineMs": 1000,
+    "semantics": "The Evidence Writer commits before delaying its reply. The Gateway deadline expires before confirmation, leaving one durable unresolved intent."
+  },
+  "recreation": {
+    "freshGatewayProcessRequired": true,
+    "services": [
+      "model-adapter-a",
+      "model-adapter-b",
+      "baby-a",
+      "baby-b",
+      "gateway",
+      "controller-scenario"
+    ],
+    "ownedSocketsRemoved": [
+      "runtime/gateway-controller/gateway.sock",
+      "runtime/gateway-baby-a/learner.sock",
+      "runtime/gateway-baby-b/learner.sock"
+    ]
+  },
+  "acceptance": {
+    "serviceCount": 17,
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "state": "running",
+    "turn": 0,
+    "operationalQuarantine": "evidence-write-uncertain",
+    "channelDeltaAfterCommit": 1,
+    "senderLedgerDeltaAfterCommit": 2,
+    "turnRecordDeltaAfterCommit": 0,
+    "journal": {
+      "intentCount": 1,
+      "confirmationCount": 0
+    },
+    "typescriptVerifierExitCode": 0,
+    "rustIntegrityPass": true,
+    "minimumResourceSnapshots": 2
+  },
+  "correction": {
+    "scientificDesignChanged": false,
+    "scientificThresholdChanged": false,
+    "reason": "V4 verified the repaired image and live uncertainty outcome, but retained Baby/model processes whose single Gateway and model channels terminate with their owning peer. V5 uses the six-service restart set already exercised by the selected lifecycle qualification. The fault and acceptance criteria are unchanged."
+  },
+  "scope": {
+    "included": [
+      "selected-application-topology",
+      "commit-before-delayed-confirmation",
+      "durable-unresolved-gateway-intent",
+      "live-gateway-terminal-quarantine",
+      "no-retry-or-second-write",
+      "fresh-gateway-recovery-refusal",
+      "typescript-and-independent-rust-cryptographic-prefix-verification"
+    ],
+    "excluded": [
+      "generic-network-partition-model",
+      "late-learner-callback-injection",
+      "malformed-envelope-injection",
+      "detector-positive-and-negative-statistical-bounds",
+      "cgroup-peak-resource-envelope",
+      "selected-e10-plus-learner-and-carrier-bindings",
+      "b12-closure",
+      "behavioral-or-scientific-finding"
+    ]
+  },
+  "claimBoundary": "A pass establishes one bounded selected-topology commit-without-confirmation case: the original write may commit, but the Gateway records an unresolved intent, quarantines, does not retry, and a fresh Gateway refuses recovery. Passing cryptographic bundle verification does not make the semantically incomplete turn resumable and does not close B12."
+}

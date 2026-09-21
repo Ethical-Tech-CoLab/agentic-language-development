@@ -22,12 +22,12 @@ import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-uncertain-write-development.v4.json';
-const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v4';
+const protocolPath = 'protocols/mode-r-uncertain-write-development.v5.json';
+const evidenceRoot = 'evidence/mode-r-uncertain-write-development-v5';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-uncertain-write.v1.yml';
-const project = 'ald-mode-r-uncertain-write-development-v4';
+const project = 'ald-mode-r-uncertain-write-development-v5';
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -281,8 +281,12 @@ try {
   inject = readJson(join(evidenceRoot, 'output/uncertain-inject-result.json'));
   journal = journalAccounting();
 
-  compose('recover', 'rm', '--stop', '--force', 'controller-scenario', 'gateway');
+  compose('recover', 'rm', '--stop', '--force',
+    'controller-scenario', 'gateway', 'baby-a', 'baby-b',
+    'model-adapter-a', 'model-adapter-b');
   removeGatewaySockets();
+  compose('recover', 'up', '-d', '--no-deps', 'model-adapter-a', 'model-adapter-b');
+  compose('recover', 'up', '-d', '--no-deps', 'baby-a', 'baby-b');
   compose('recover', 'up', '-d', '--no-deps', 'gateway');
   await waitForServiceLog('gateway', 'ready');
   compose('recover', 'up', '-d', '--no-deps', 'controller-scenario');
