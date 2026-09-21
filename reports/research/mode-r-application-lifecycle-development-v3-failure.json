@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-lifecycle-stale-socket-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "2b6264243063356d1131db08c7509e7393aa9022",
+  "attemptedRunId": "mode-r-application-lifecycle-v3",
+  "stage": "replacement-gateway-readiness",
+  "firstStageContainersObserved": 16,
+  "firstControllerExitCode": 0,
+  "turnsRecorded": 1,
+  "channelEventsRecorded": 1,
+  "ledgerEventsRecorded": 5,
+  "auditEntriesRecorded": 0,
+  "interventionEventsRecorded": 2,
+  "checkpointsRecorded": 3,
+  "pauseCompleted": true,
+  "replacementGatewayReady": false,
+  "recoveryControllerStarted": false,
+  "offlineVerifierAttempted": false,
+  "gatePassed": false,
+  "cause": "The six old containers were removed, but their bind-mounted private Unix socket inodes persisted. The replacement Gateway remained in retry while its learner-relay servers could not bind those stale paths and never emitted its readiness marker.",
+  "correctionPolicy": "Retain every v3 artifact; use a fresh v4 identity; after Docker confirms removal of the six old services, validate and unlink only the five exact socket inodes owned by those stopped model-adapter and Gateway processes; refuse non-socket or symlink paths; and still require Gateway readiness before starting the replacement Controller.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-lifecycle-development-v3/receipt.json",
+    "bytes": 15710,
+    "sha256": "sha256:ff804f11ce061dccc5dd898eef5a75b1589733d4ea39673859d93d15cd336976",
+    "retention": "local-ignored-original"
+  },
+  "rawLogs": {
+    "path": "evidence/mode-r-application-lifecycle-development-v3/compose-logs.txt",
+    "bytes": 109,
+    "sha256": "sha256:912b52ff4654cf6005dc0bee0c33cf330c7da8cc5356880778175c8df223d993"
+  },
+  "retainedDatabase": {
+    "path": "evidence/mode-r-application-lifecycle-development-v3/evidence/evidence.sqlite",
+    "bytes": 212992,
+    "sha256": "sha256:3ccb6840e84c55c49e2b8c0df093823a09ed8a1de8ea6eea7a13658f1743f4df"
+  },
+  "prepareResult": {
+    "path": "evidence/mode-r-application-lifecycle-development-v3/output/controller-prepare-result.json",
+    "bytes": 576,
+    "sha256": "sha256:cc932629359205d7fd3dd6b7bd6dc6b78256ea4fef351483a40435c7211b2ff9"
+  },
+  "claimBoundary": "This stopped readiness gate is not a passing qualification, behavioral result, B12 closure, or publication result."
+}

@@ -59,7 +59,7 @@ const protocolV6 = JSON.parse(readFileSync(
   };
 };
 const lifecycleProtocol = JSON.parse(readFileSync(
-  'protocols/mode-r-application-lifecycle-development.v3.json',
+  'protocols/mode-r-application-lifecycle-development.v4.json',
   'utf8',
 )) as {
   schemaVersion: number;
@@ -76,12 +76,14 @@ const lifecycleProtocol = JSON.parse(readFileSync(
     trainingTurns: number;
     evaluationTurns: number;
     replacementGatewayReadyLog: string;
+    staleOwnedSocketPaths: string[];
     recreatedServices: string[];
     persistentServices: string[];
   };
   acceptance: {
     recreatedServiceIdentityChanges: number;
     persistentServiceIdentityChanges: number;
+    staleOwnedSocketsRemoved: number;
     resumedState: string;
     secondPhase: string;
     evaluationPhase: string;
@@ -191,14 +193,14 @@ describe('selected Mode R application Compose', () => {
       .digest('hex')).toBe(protocolV6.compose.sha256);
   });
 
-  it('uses a fresh v3 identity and waits for the replacement Gateway', () => {
+  it('uses v4 to reclaim only stopped owners sockets before Gateway readiness', () => {
     expect(lifecycleProtocol).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       status: 'design-locked-not-executed',
-      runId: 'mode-r-application-lifecycle-v3',
+      runId: 'mode-r-application-lifecycle-v4',
       predecessorFailure: {
-        path: 'reports/research/mode-r-application-lifecycle-development-v2-failure.json',
-        stage: 'recovery-adapter-initialization',
+        path: 'reports/research/mode-r-application-lifecycle-development-v3-failure.json',
+        stage: 'replacement-gateway-readiness',
         turnsRecorded: 1,
       },
     });
@@ -209,9 +211,11 @@ describe('selected Mode R application Compose', () => {
     });
     expect(lifecycleProtocol.execution.recreatedServices).toHaveLength(6);
     expect(lifecycleProtocol.execution.persistentServices).toHaveLength(10);
+    expect(lifecycleProtocol.execution.staleOwnedSocketPaths).toHaveLength(5);
     expect(lifecycleProtocol.acceptance).toMatchObject({
       recreatedServiceIdentityChanges: 6,
       persistentServiceIdentityChanges: 0,
+      staleOwnedSocketsRemoved: 5,
       resumedState: 'running',
       secondPhase: 'running',
       evaluationPhase: 'evaluating',
@@ -232,7 +236,10 @@ describe('selected Mode R application Compose', () => {
       'utf8',
     );
     expect(collector).toContain("'rm', '--stop', '--force'");
-    expect(collector).toContain("waitForServiceLog('gateway', 'ready')");
+    expect(collector).toContain('unlinkOwnedSocket(path)');
+    expect(collector).toContain(
+      "waitForServiceLog('gateway', protocol.execution.replacementGatewayReadyLog)",
+    );
     expect(collector).toContain('recreatedServiceIdentityChanges');
     expect(collector).toContain('persistentServiceIdentityChanges');
     expect(collector).toContain("'offline-verifier'");

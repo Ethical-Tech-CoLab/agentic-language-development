@@ -116,9 +116,15 @@ learner-relay sockets, so recovery adapter initialization received `ECONNREFUSED
 The retained v2 evidence records a completed pause and six replacements, but no
 completed restore or offline verification. The raw receipt's ten persistent-service
 identity changes are an accounting artifact of its absent second snapshot and are
-not accepted as a measurement. The v3 collector requires the replacement Gateway
-to remain running and emit its existing `ready` marker—after both relay listeners
-open—before starting the replacement Controller. It also counts an identity change
+not accepted as a measurement. The v3 collector required the replacement Gateway
+to remain running and emit its existing `ready` marker before starting the
+replacement Controller. That gate stopped after sixty seconds: the removed single-
+admission processes had left their Unix socket inodes in bind-mounted runtime
+directories, so the replacement Gateway could not bind its relay sockets. No
+recovery Controller started. The v4 collector first confirms removal of all six
+old containers, then validates and unlinks only the five exact socket inodes owned
+by the stopped model-adapter and Gateway processes. It refuses a non-socket or
+symlink and still requires Gateway readiness. It also counts an identity change
 only when both snapshots contain that service. Every lifecycle turn and acceptance
 threshold remains unchanged. A pass would qualify only this bounded lifecycle path;
 the injected-fault matrix, detector bounds, peak resource envelope, Rust audit,

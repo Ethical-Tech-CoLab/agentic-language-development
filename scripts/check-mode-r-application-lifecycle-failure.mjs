@@ -3,11 +3,11 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
-const reports = [1, 2].map((version) => JSON.parse(readFileSync(
+const reports = [1, 2, 3].map((version) => JSON.parse(readFileSync(
   `reports/research/mode-r-application-lifecycle-development-v${version}-failure.json`,
   'utf8',
 )));
-const [v1, v2] = reports;
+const [v1, v2, v3] = reports;
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const command = (program, args) => execFileSync(program, args, { encoding: 'utf8' }).trim();
 
@@ -34,8 +34,18 @@ assert.equal(v2.firstControllerExitCode, 0);
 assert.equal(v2.recoveryControllerExitCode, 1);
 assert.equal(v2.pauseCompleted, true);
 assert.equal(v2.restoreCompleted, false);
+assert.equal(v3.classification,
+  'selected-mode-r-application-lifecycle-stale-socket-failure');
+assert.equal(v3.attemptedRunId, 'mode-r-application-lifecycle-v3');
+assert.equal(v3.stage, 'replacement-gateway-readiness');
+assert.equal(v3.firstControllerExitCode, 0);
+assert.equal(v3.pauseCompleted, true);
+assert.equal(v3.replacementGatewayReady, false);
+assert.equal(v3.recoveryControllerStarted, false);
 
-for (const [report, expectedVersion] of [[v1, '0.1.278'], [v2, '0.1.279']]) {
+for (const [report, expectedVersion] of [
+  [v1, '0.1.278'], [v2, '0.1.279'], [v3, '0.1.280'],
+]) {
   const sourcePackage = JSON.parse(command('git', [
     'show', `${report.executionCommit}:package.json`,
   ]));
@@ -66,6 +76,10 @@ if (process.argv.includes('--live-evidence')) {
   assert.equal(rawV2.prepare.pausedState, 'paused');
   assert.equal(rawV2.prepare.pausedTurn, 1);
   assert.equal(rawV2.summary.recreatedServiceIdentityChanges, 6);
+  const rawV3 = JSON.parse(readFileSync(v3.rawReceipt.path, 'utf8'));
+  assert.equal(rawV3.failure, 'gateway did not report ready within 60000 ms');
+  assert.equal(rawV3.prepare.pausedState, 'paused');
+  assert.equal(rawV3.summary.recreatedServiceIdentityChanges, 0);
 }
 
-console.log('selected application lifecycle v1/v2 failures reconcile; B12 remains open');
+console.log('selected application lifecycle v1-v3 failures reconcile; B12 remains open');

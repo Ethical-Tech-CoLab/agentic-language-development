@@ -3,8 +3,10 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -18,12 +20,12 @@ import { fixedTokenInventory } from '@ald/types';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-application-lifecycle-development.v3.json';
-const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v3';
+const protocolPath = 'protocols/mode-r-application-lifecycle-development.v4.json';
+const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v4';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
-const project = 'ald-mode-r-application-lifecycle-development-v3';
+const project = 'ald-mode-r-application-lifecycle-development-v4';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
 const baseEnvironment = {
@@ -61,6 +63,22 @@ function readJson(path) {
 
 function sha256(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+function unlinkOwnedSocket(relativePath) {
+  assert.match(relativePath, /^runtime\/[a-z0-9-]+\/[a-z0-9.-]+$/u);
+  const path = join(evidenceRoot, relativePath);
+  let target;
+  try {
+    target = lstatSync(path);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
+  assert.equal(target.isSocket(), true, `${relativePath} is not a socket`);
+  assert.equal(target.isSymbolicLink(), false, `${relativePath} is a symlink`);
+  unlinkSync(path);
+  return true;
 }
 
 async function waitForServiceExit(name, timeoutMs = 600_000) {
@@ -182,6 +200,8 @@ function audit(receipt) {
     acceptance.recreatedServiceIdentityChanges);
   assert.equal(receipt.summary.persistentServiceIdentityChanges,
     acceptance.persistentServiceIdentityChanges);
+  assert.equal(receipt.summary.staleOwnedSocketsRemoved,
+    acceptance.staleOwnedSocketsRemoved);
   assert.equal(receipt.summary.serviceCount, acceptance.serviceCount);
   assert.equal(receipt.summary.networkMismatchCount, acceptance.networkMismatchCount);
   assert.equal(receipt.summary.mountMismatchCount, acceptance.mountMismatchCount);
@@ -214,7 +234,7 @@ assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha25
 const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
-  randomSeed: 'selected-application-lifecycle-development-v3',
+  randomSeed: 'selected-application-lifecycle-development-v4',
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',
@@ -277,6 +297,7 @@ let resources = [];
 let prepare;
 let recovery;
 let offlineVerification;
+let staleOwnedSocketsRemoved = 0;
 try {
   compose('prepare-recovery', 'build');
   resolved = JSON.parse(compose('prepare-recovery', 'config', '--format', 'json'));
@@ -288,10 +309,12 @@ try {
 
   compose('recover', 'rm', '--stop', '--force',
     ...protocol.execution.recreatedServices);
+  staleOwnedSocketsRemoved = protocol.execution.staleOwnedSocketPaths
+    .filter((path) => unlinkOwnedSocket(path)).length;
   compose('recover', 'up', '-d', '--no-deps', 'model-adapter-a', 'model-adapter-b');
   compose('recover', 'up', '-d', '--no-deps', 'baby-a', 'baby-b');
   compose('recover', 'up', '-d', '--no-deps', 'gateway');
-  await waitForServiceLog('gateway', 'ready');
+  await waitForServiceLog('gateway', protocol.execution.replacementGatewayReadyLog);
   compose('recover', 'up', '-d', '--no-deps', 'controller-scenario');
   const secondTerminal = await waitForServiceExit('controller-scenario');
   assert.equal(secondTerminal.exitCode, 0, 'recovery controller failed');
@@ -334,6 +357,7 @@ const summary = {
   serviceCount: secondObservations.length,
   recreatedServiceIdentityChanges: identityChanges(protocol.execution.recreatedServices),
   persistentServiceIdentityChanges: identityChanges(protocol.execution.persistentServices),
+  staleOwnedSocketsRemoved,
   networkMismatchCount: secondObservations.filter((entry) => !entry.networkMatch).length,
   mountMismatchCount: secondObservations.filter((entry) => !entry.mountMatch).length,
   unexpectedRunningAfterTeardown: remaining.length,
@@ -362,6 +386,7 @@ const passed = failure === undefined &&
   summary.recreatedServiceIdentityChanges ===
     protocol.acceptance.recreatedServiceIdentityChanges &&
   summary.persistentServiceIdentityChanges === 0 &&
+  summary.staleOwnedSocketsRemoved === protocol.acceptance.staleOwnedSocketsRemoved &&
   summary.serviceCount === protocol.acceptance.serviceCount &&
   summary.networkMismatchCount === 0 && summary.mountMismatchCount === 0 &&
   offlineVerification.exitCode === 0 && remaining.length === 0;
