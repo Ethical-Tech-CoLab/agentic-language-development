@@ -40,6 +40,7 @@ export {
   senderForTurn,
   type NurseryRuntimeOptions,
   type NurseryRunEvidenceContext,
+  type NurseryGatewayFactoryInput,
   type CausalPredictionProviderInput,
   type CausalPredictionRuntimeProvider,
   type CarrierLeakageEvaluationRequest,

@@ -79,6 +79,8 @@ export interface ProductionRuntimeOptions {
    */
   scenarioBundleRegistry?: ScenarioBundleRegistry;
   retryBudget?: number;
+  /** Selected Mode R may inject the separately hosted Symbol Gateway client. */
+  gatewayFactory?: NurseryRuntimeOptions['gatewayFactory'];
 }
 
 export interface ProductionRuntime {
@@ -196,6 +198,9 @@ export function createProductionRuntime(
     ...(options.retryBudget === undefined
       ? {}
       : { retryBudget: options.retryBudget }),
+    ...(options.gatewayFactory === undefined
+      ? {}
+      : { gatewayFactory: options.gatewayFactory }),
   });
 
   return {

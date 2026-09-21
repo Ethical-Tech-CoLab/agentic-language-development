@@ -82,6 +82,7 @@ import {
   type EventStream,
   type ExperimentRecord,
   type GatewaySubmitResult,
+  type GatewayRunContext,
   type GatewayTurnContext,
   type Intervention,
   type InterventionEvent,
@@ -328,6 +329,13 @@ export interface NurseryRuntimeOptions {
     signers: SignerRegistry,
   ) => NurseryRunEvidenceContext | Promise<NurseryRunEvidenceContext>;
   /**
+   * Supplies the run-bound Symbol Gateway. Selected Mode R uses the remote
+   * client; omission retains the local durable-journal assembly.
+   */
+  gatewayFactory?: (
+    input: NurseryGatewayFactoryInput,
+  ) => SymbolGateway | Promise<SymbolGateway>;
+  /**
    * Per-run signer registry (LEDGER §11). Defaults to freshly generated
    * in-memory keys; public studies inject a provider backed by Fort's
    * short-lived file materialization so a restart reuses authorized keys.
@@ -387,6 +395,12 @@ export interface NurseryRuntimeOptions {
   causalPredictionFor?: (
     config: RunConfig,
   ) => CausalPredictionRuntimeProvider | undefined;
+}
+
+export interface NurseryGatewayFactoryInput {
+  context: GatewayRunContext;
+  journalDirectory: string;
+  recovering: boolean;
 }
 
 /** One coherent evidence owner and the narrow capabilities issued for a run. */
@@ -471,7 +485,8 @@ interface RunRuntime {
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
   gateway: SymbolGateway;
-  writeJournal: GatewayWriteIntentJournal;
+  /** Includes pre-call durable-journal quarantine for the local assembly. */
+  gatewayQuarantined: () => boolean;
   engine: ScenarioEngine;
   adapters: Record<BabyRole, LearnerAdapter>;
   checkpoints: CheckpointService;
@@ -742,18 +757,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       carrierForms.length > 0
         ? carrierForms
         : fixedTokenInventory(runConfig.symbolInventorySize ?? 32);
-    const writeJournal = new GatewayWriteIntentJournal(
-      join(this.#bundleDirFor(runId), 'gateway-write-intents'),
-      runId,
-    );
-    const gateway = new SymbolGatewayImpl(
+    const gatewayProvision = await this.#gateway(
       {
         runId,
         config: runConfig,
         symbolInventory,
         seed: runConfig.seedBindings?.gateway ?? runConfig.randomSeed,
       },
-      await writeJournal.openPort(evidence.gateway),
+      evidence.gateway,
+      false,
     );
 
     const run: RunRuntime = {
@@ -767,8 +779,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       auditEvidence: evidence.audit,
       signers,
       lifecycle,
-      gateway,
-      writeJournal,
+      gateway: gatewayProvision.gateway,
+      gatewayQuarantined: gatewayProvision.isQuarantined,
       engine,
       adapters,
       checkpoints: evidence.checkpoints,
@@ -831,7 +843,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async step(runId: string): Promise<TurnResult> {
     const run = this.#requireRun(runId);
-    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
+    if (run.gatewayQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -1635,7 +1647,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async resume(runId: string, intervention: Intervention): Promise<RunSummary> {
     const run = this.#requireRun(runId);
-    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
+    if (run.gatewayQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -2135,7 +2147,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async recover(runId: string): Promise<RunSummary> {
     const existing = this.#runs.get(runId);
     const run = existing ?? await this.#reconstruct(runId);
-    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
+    if (run.gatewayQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -3410,6 +3422,50 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     };
   }
 
+  async #gateway(
+    context: GatewayRunContext,
+    localEvidence: GatewayEvidencePort,
+    recovering: boolean,
+  ): Promise<{ gateway: SymbolGateway; isQuarantined: () => boolean }> {
+    const journalDirectory = join(
+      this.#bundleDirFor(context.runId),
+      'gateway-write-intents',
+    );
+    let journal: GatewayWriteIntentJournal | undefined;
+    const gateway = this.#options.gatewayFactory === undefined
+      ? await (async () => {
+          journal = new GatewayWriteIntentJournal(
+            journalDirectory,
+            context.runId,
+          );
+          return new SymbolGatewayImpl(
+            context,
+            await journal.openPort(localEvidence),
+          );
+        })()
+      : await this.#options.gatewayFactory({
+          context,
+          journalDirectory,
+          recovering,
+        });
+    if (
+      gateway.runContext.runId !== context.runId ||
+      hashCanonical(HASH_DOMAINS.runConfig, gateway.runContext.config) !==
+        hashCanonical(HASH_DOMAINS.runConfig, context.config)
+    ) {
+      throw new RunConfigurationError([{
+        path: 'gatewayFactory',
+        message: 'Gateway identity or configuration does not match the run',
+      }]);
+    }
+    return {
+      gateway,
+      isQuarantined: () =>
+        (journal?.isQuarantined() ?? false) ||
+        gateway.isEvidenceWriteQuarantined(),
+    };
+  }
+
   #buildEngine(config: RunConfig): ScenarioEngine {
     if (this.#options.scenarioFactory) {
       return this.#options.scenarioFactory(config);
@@ -3737,9 +3793,15 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       }
       deadlineQuarantine = { role, method, turn, quarantineFailed };
     }
-    const writeJournal = new GatewayWriteIntentJournal(
-      join(this.#bundleDirFor(runId), 'gateway-write-intents'),
-      runId,
+    const gatewayProvision = await this.#gateway(
+      {
+        runId,
+        config,
+        symbolInventory,
+        seed: config.seedBindings?.gateway ?? config.randomSeed,
+      },
+      evidence.gateway,
+      true,
     );
     const run: RunRuntime = {
       runId,
@@ -3752,16 +3814,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       auditEvidence: evidence.audit,
       signers,
       lifecycle: new RunLifecycle(runId, state),
-      gateway: new SymbolGatewayImpl(
-        {
-          runId,
-          config,
-          symbolInventory,
-          seed: config.seedBindings?.gateway ?? config.randomSeed,
-        },
-        await writeJournal.openPort(evidence.gateway),
-      ),
-      writeJournal,
+      gateway: gatewayProvision.gateway,
+      gatewayQuarantined: gatewayProvision.isQuarantined,
       engine,
       adapters,
       checkpoints: evidence.checkpoints,
@@ -4315,7 +4369,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: run.configurationHash,
       preRegistrationHash: run.config.preRegistrationHash,
       registrationClass: run.config.registrationClass ?? 'qualification',
-      ...(run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()
+      ...(run.gatewayQuarantined()
         ? { operationalQuarantine: 'evidence-write-uncertain' as const }
         : run.incompleteEvidenceTurns === null
           ? {}

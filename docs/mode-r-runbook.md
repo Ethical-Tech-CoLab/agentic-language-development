@@ -135,6 +135,17 @@ wrong-configuration refusal, rejection/reset/accepted paths, distinct process
 IDs, socket mode, retained signed events, and post-crash refusal. Nursery does
 not yet provision this client, and the test is not selected-topology lifecycle,
 mount/network, comprehensive fault, resource, or independent-audit evidence.
+Nursery creation and reconstruction now request a Gateway through an async
+run/configuration-bound factory; local operation retains the durable journal
+and in-process Gateway, while Mode R may inject the remote client without
+receiving a writer capability. `RunRuntime` retains only a narrow quarantine
+closure: local assembly combines the durable journal and Gateway state so an
+unresolved pre-restart intent still refuses recovery, while a remote client
+reports its own fail-closed state. An integration test executes a real Nursery turn through
+a separate Gateway child and the parent-owned writer service, then verifies
+the retained signed channel event. Restart through a fresh remote Gateway,
+selected container routes/mounts, and lifecycle fault qualification remain
+open and must precede B12 closure.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
