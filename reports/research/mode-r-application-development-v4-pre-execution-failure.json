@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-pre-execution-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "c98778baa2a6c68f53c6757ceb69807b33b780b7",
+  "attemptedRunId": "mode-r-application-v4",
+  "stage": "run-configuration-materialization",
+  "applicationProcessesStarted": 0,
+  "runRegistered": false,
+  "turnsRecorded": 0,
+  "auditEntriesRecorded": 0,
+  "cause": "Array.map passed its numeric index as the learner-contract loader's optional version argument, causing the one no-learning track at index zero to request nonexistent contract version zero.",
+  "evidenceAccounting": "The collector created the ignored v4 directory tree before the fallible contract load, but wrote no file, started no container, and created no receipt. The empty tree is retained and the v4 identity is conservatively not reused.",
+  "correctionPolicy": "Resolve and validate the complete configuration before allocating an evidence directory, load each contract through an explicit one-argument callback, and use a fresh v5 identity without changing the scientific design or acceptance thresholds.",
+  "claimBoundary": "This is a pre-execution collector failure with no application process or research record, not a qualification outcome, behavioral result, B12 closure, or publication evidence."
+}

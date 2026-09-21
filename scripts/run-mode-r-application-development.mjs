@@ -15,8 +15,8 @@ import { ReferentialScenarioEngine } from '@ald/scenario';
 import { fixedTokenInventory } from '@ald/types';
 
 const mode = process.argv[2];
-assert.ok(/^--(?:run|audit)-v[1-4]$/u.test(mode ?? ''),
-  'expected a --run-vN or --audit-vN mode for N=1..4');
+assert.ok(/^--(?:run|audit)-v[1-5]$/u.test(mode ?? ''),
+  'expected a --run-vN or --audit-vN mode for N=1..5');
 const version = Number(mode.at(-1));
 const runMode = mode.startsWith('--run');
 const protocolPath = `protocols/mode-r-application-development.v${String(version)}.json`;
@@ -96,20 +96,6 @@ assert.equal(protocol.b12Closed, false);
 assert.equal(sha256(protocol.authorityGraph.path), protocol.authorityGraph.sha256);
 assert.equal(sha256(protocol.compose.path), protocol.compose.sha256);
 
-const directories = [
-  'config', 'evidence', 'gateway-state', 'output',
-  'runtime/model-a', 'runtime/model-b', 'runtime/public-keys',
-  ...['baby-a-ledger', 'baby-b-ledger', 'channel', 'affect', 'audit', 'witness']
-    .map((domain) => `runtime/signers/${domain}`),
-  ...['controller', 'gateway', 'checkpoint', 'anchor', 'audit']
-    .map((name) => `runtime/evidence-${name}`),
-  'runtime/gateway-controller', 'runtime/gateway-baby-a',
-  'runtime/gateway-baby-b', 'runtime/checkpoint-service',
-  'runtime/anchor-service', 'runtime/audit-service',
-];
-for (const directory of directories) {
-  mkdirSync(join(evidenceRoot, directory), { recursive: true, mode: 0o700 });
-}
 const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
@@ -144,9 +130,26 @@ const scenario = new ReferentialScenarioEngine({
 }, unresolvedConfig.randomSeed);
 const runConfig = {
   ...unresolvedConfig,
-  promptBundleHash: promptBundleHash(tracks.map(loadLearnerContract)),
+  promptBundleHash: promptBundleHash(
+    tracks.map((track) => loadLearnerContract(track)),
+  ),
   scenarioBundleHash: scenario.bundleHash,
 };
+
+const directories = [
+  'config', 'evidence', 'gateway-state', 'output',
+  'runtime/model-a', 'runtime/model-b', 'runtime/public-keys',
+  ...['baby-a-ledger', 'baby-b-ledger', 'channel', 'affect', 'audit', 'witness']
+    .map((domain) => `runtime/signers/${domain}`),
+  ...['controller', 'gateway', 'checkpoint', 'anchor', 'audit']
+    .map((name) => `runtime/evidence-${name}`),
+  'runtime/gateway-controller', 'runtime/gateway-baby-a',
+  'runtime/gateway-baby-b', 'runtime/checkpoint-service',
+  'runtime/anchor-service', 'runtime/audit-service',
+];
+for (const directory of directories) {
+  mkdirSync(join(evidenceRoot, directory), { recursive: true, mode: 0o700 });
+}
 writeFileSync(join(evidenceRoot, 'config/run-config.json'),
   `${JSON.stringify(runConfig, null, 2)}\n`, { mode: 0o600 });
 

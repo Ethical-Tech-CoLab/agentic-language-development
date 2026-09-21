@@ -45,6 +45,10 @@ const protocolV4 = JSON.parse(readFileSync(
   'protocols/mode-r-application-development.v4.json',
   'utf8',
 )) as typeof protocolV3;
+const protocolV5 = JSON.parse(readFileSync(
+  'protocols/mode-r-application-development.v5.json',
+  'utf8',
+)) as typeof protocolV4;
 
 const processes = [
   'audit-interpreter', 'baby-a', 'baby-b', 'checkpoint',
@@ -113,6 +117,20 @@ describe('selected Mode R application Compose', () => {
     });
     expect(createHash('sha256').update(readFileSync(protocolV4.compose.path))
       .digest('hex')).toBe(protocolV4.compose.sha256);
+  });
+
+  it('uses a fresh v5 identity after preserving the v4 pre-execution stop', () => {
+    expect(protocolV5.schemaVersion).toBe(5);
+    expect(protocolV5.status).toBe('design-locked-not-executed');
+    expect(protocolV5.runId).toBe('mode-r-application-v5');
+    expect(protocolV5.predecessorFailure.path)
+      .toBe('reports/research/mode-r-application-development-v4-pre-execution-failure.json');
+    expect(protocolV5.correction).toMatchObject({
+      scientificDesignChanged: false,
+      thresholdChanged: false,
+    });
+    expect(createHash('sha256').update(readFileSync(protocolV5.compose.path))
+      .digest('hex')).toBe(protocolV5.compose.sha256);
   });
 
   it('declares the exact 17-process graph and three internal networks', () => {
@@ -186,7 +204,10 @@ describe('selected Mode R application Compose', () => {
     expect(collector).toContain("compose('wait', 'offline-verifier')");
     expect(collector).toContain("compose('ps', '--all', '--quiet')");
     expect(collector).toContain('promptBundleHash: promptBundleHash(');
+    expect(collector).toContain('tracks.map((track) => loadLearnerContract(track))');
     expect(collector).toContain('scenarioBundleHash: scenario.bundleHash');
+    expect(collector.indexOf('const runConfig = {'))
+      .toBeLessThan(collector.indexOf('const directories = ['));
     expect(collector).toContain("compose('down', '--remove-orphans')");
     expect(collector).toContain('researchFinding: false');
     expect(collector).toContain('b12Closed: false');

@@ -76,7 +76,13 @@ The prospective v4 packet pre-binds the exact generated prompt and scenario
 hashes in the configuration shared by Nursery and Gateway, and snapshots all
 project containers before service reconciliation. It preserves the v3 scientific
 design and thresholds and requires a fresh identity. No passing v4 receipt exists
-until that exact clean committed packet executes successfully.
+because its invocation stopped before Docker when an array index was accidentally
+passed as learner-contract version zero. The collector had created only an empty
+directory tree; it wrote no receipt and started no application process. That tree
+is retained and the v4 identity is not reused. The prospective v5 packet loads
+contracts through an explicit one-argument callback and completes all fallible
+configuration materialization before allocating evidence. Its scientific design
+and thresholds remain unchanged.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
