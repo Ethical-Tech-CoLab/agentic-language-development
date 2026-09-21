@@ -2491,7 +2491,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
   async exportBundle(runId: string, outputDir: string): Promise<RunManifest> {
     const run = this.#requireRun(runId);
     const policyFiles = await this.#exportedPolicyFiles(run);
-    return exportRunBundle(run.writer, runId, outputDir, {
+    return exportRunBundle(run.controllerEvidence, runId, outputDir, {
       softwareCommit: this.#options.softwareCommit,
       learnerContracts: run.contracts.map((contract) => ({
         track: contract.track,

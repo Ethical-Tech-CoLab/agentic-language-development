@@ -107,6 +107,11 @@ broad writer handle. Local production still supplies the in-process adapter,
 while a selected context may supply the already-tested audit socket client.
 This removes a live authority dependency but does not by itself place the
 interpreter in a distinct process or prove its exclusive mount.
+Nursery bundle export now supplies the run-bound Controller capability to the
+already asynchronous exporter. Sealing no longer gives that component the
+concrete writer, while canonical metadata, stream, signer, checkpoint, anchor,
+attachment, and experiment-record reads remain unchanged and validated by the
+exporter. Synchronous public inspection methods remain transitional.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.
