@@ -17,6 +17,12 @@ The amendment binds the unchanged v1 file by hash and assigns distinct writer
 sockets and method allowlists to Gateway, Controller, Checkpoint, Anchor, and
 Audit Interpreter. Both designs remain `design-locked-not-implemented`; the
 current Compose file is intentionally a negative reference for the B12 gate.
+The [v3 Gateway-service amendment](../protocols/mode-r-authority-graph.v3.json)
+binds v1/v2 unchanged and freezes the exact Controller-to-Gateway method set,
+private socket mount, identity descriptor, operational-status envelope, and
+no-retry quarantine behavior required before moving the live Gateway. It is
+prospective and explicitly not implemented; the current source has only the
+Gateway-to-writer transport, so v3 supplies no process-isolation evidence.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process

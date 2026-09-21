@@ -36,7 +36,69 @@ const amendment = JSON.parse(
   readFileSync('protocols/mode-r-authority-graph.v2.json', 'utf8'),
 ) as Amendment;
 
+type GatewayServiceAmendment = {
+  schemaVersion: number;
+  status: string;
+  b12Closed: boolean;
+  predecessors: Array<{ path: string; sha256: string }>;
+  gatewayService: {
+    caller: string;
+    server: string;
+    endpoint: string;
+    mountOnlyIn: string[];
+    methods: string[];
+    describeResult: string[];
+    replyStatus: string[];
+    clientRules: string[];
+  };
+  authorityRules: string[];
+  qualificationRequired: string[];
+};
+const gatewayServiceAmendment = JSON.parse(
+  readFileSync('protocols/mode-r-authority-graph.v3.json', 'utf8'),
+) as GatewayServiceAmendment;
+
 describe('prospective Mode R authority graph', () => {
+  it('binds the prospective Gateway service to unchanged v1 and v2 graphs', () => {
+    expect(gatewayServiceAmendment.schemaVersion).toBe(3);
+    expect(gatewayServiceAmendment.status).toBe('design-locked-not-implemented');
+    expect(gatewayServiceAmendment.b12Closed).toBe(false);
+    expect(gatewayServiceAmendment.predecessors.map(({ path }) => path)).toEqual([
+      'protocols/mode-r-authority-graph.v1.json',
+      'protocols/mode-r-authority-graph.v2.json',
+    ]);
+    for (const predecessor of gatewayServiceAmendment.predecessors) {
+      expect(createHash('sha256').update(readFileSync(predecessor.path))
+        .digest('hex')).toBe(predecessor.sha256);
+    }
+  });
+
+  it('freezes one fail-closed Controller-to-Gateway service capability', () => {
+    const service = gatewayServiceAmendment.gatewayService;
+    expect(service.caller).toBe('controller-scenario');
+    expect(service.server).toBe('gateway');
+    expect(service.mountOnlyIn).toEqual(['controller-scenario', 'gateway']);
+    expect(service.endpoint).toBe('/run/ald-mode-r/gateway-controller/gateway.sock');
+    expect(service.methods).toEqual([
+      'describe', 'submitProposal', 'beginShuffledBatch',
+      'preflightShuffledProposal', 'sealShuffledBatch',
+      'submitPreparedShuffledProposal', 'discardShuffledBatchAfterRecovery',
+      'rejectForTimeout', 'submitControlArtifact', 'submitInterpretation',
+      'submitReceiverTaskAction', 'appendLifecycleLedgerEvent', 'submitAffect',
+      'recordDerivedAffect', 'resetRejectionCounter',
+    ]);
+    expect(service.describeResult).toContain('configurationHash');
+    expect(service.replyStatus).toEqual([
+      'consecutiveRejections', 'evidenceWriteQuarantined',
+    ]);
+    expect(service.clientRules).toContain('never-retry-an-unconfirmed-mutating-call');
+    expect(service.clientRules).toContain('set-evidence-write-quarantined-on-unconfirmed-call');
+    expect(gatewayServiceAmendment.authorityRules)
+      .toContain('controller-cannot-call-gateway-writer-capability');
+    expect(gatewayServiceAmendment.qualificationRequired)
+      .toContain('complete-selected-lifecycle-and-independent-bundle-audit');
+  });
+
   it('binds the v2 capability amendment to unchanged v1 and one writer owner', () => {
     expect(amendment.schemaVersion).toBe(2);
     expect(amendment.status).toBe('design-locked-not-implemented');

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 3,
+  "classification": "prospective-selected-mode-r-gateway-service-amendment",
+  "status": "design-locked-not-implemented",
+  "researchFinding": false,
+  "b12Closed": false,
+  "predecessors": [
+    {
+      "path": "protocols/mode-r-authority-graph.v1.json",
+      "sha256": "9292d025a67683e32077968ed59531e554a412163a2828b0900f1e644f567202"
+    },
+    {
+      "path": "protocols/mode-r-authority-graph.v2.json",
+      "sha256": "802d81e66b0e4d281e408421944458cef81f898a1a36a808b963ba08b4046b13"
+    }
+  ],
+  "amendmentReason": "The v2 graph fixes Evidence Writer capabilities but does not define the authenticated service interface needed to move the live Symbol Gateway out of Nursery without recreating validation in the Controller.",
+  "inheritedUnchanged": [
+    "v1-process-network-key-and-gate-definitions",
+    "v2-writer-capabilities-and-single-writer-policy"
+  ],
+  "gatewayService": {
+    "caller": "controller-scenario",
+    "server": "gateway",
+    "endpoint": "/run/ald-mode-r/gateway-controller/gateway.sock",
+    "mountOnlyIn": [
+      "controller-scenario",
+      "gateway"
+    ],
+    "authentication": "caller-exclusive-socket-mount-and-run-bound-handshake",
+    "protocol": "symbol-gateway-v1",
+    "methods": [
+      "describe",
+      "submitProposal",
+      "beginShuffledBatch",
+      "preflightShuffledProposal",
+      "sealShuffledBatch",
+      "submitPreparedShuffledProposal",
+      "discardShuffledBatchAfterRecovery",
+      "rejectForTimeout",
+      "submitControlArtifact",
+      "submitInterpretation",
+      "submitReceiverTaskAction",
+      "appendLifecycleLedgerEvent",
+      "submitAffect",
+      "recordDerivedAffect",
+      "resetRejectionCounter"
+    ],
+    "describeResult": [
+      "runId",
+      "configurationHash",
+      "allowedActionKinds",
+      "consecutiveRejections",
+      "evidenceWriteQuarantined",
+      "processId"
+    ],
+    "replyStatus": [
+      "consecutiveRejections",
+      "evidenceWriteQuarantined"
+    ],
+    "clientRules": [
+      "validate-every-result-before-release",
+      "cache-only-server-confirmed-operational-status",
+      "set-evidence-write-quarantined-on-unconfirmed-call",
+      "never-retry-an-unconfirmed-mutating-call",
+      "reject-run-or-configuration-identity-mismatch"
+    ]
+  },
+  "authorityRules": [
+    "controller-cannot-call-gateway-writer-capability",
+    "controller-cannot-override-gateway-validation-or-carrier-controls",
+    "gateway-alone-mounts-both-baby-networks-and-gateway-writer-socket",
+    "babies-cannot-mount-gateway-controller-or-writer-sockets",
+    "gateway-restart-requires-controller-prefix-recovery-before-next-turn"
+  ],
+  "qualificationRequired": [
+    "exact-method-and-result-schema-tests",
+    "wrong-run-and-wrong-configuration-rejection",
+    "caller-exclusive-mount-and-network-route-tests",
+    "response-loss-before-and-after-writer-commit",
+    "gateway-crash-and-restart-prefix-reconciliation",
+    "late-callback-and-no-retry-containment",
+    "complete-selected-lifecycle-and-independent-bundle-audit",
+    "measured-selected-topology-resource-envelope"
+  ]
+}
