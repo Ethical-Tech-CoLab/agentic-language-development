@@ -130,12 +130,15 @@ concrete writer, while canonical metadata, stream, signer, checkpoint, anchor,
 attachment, and experiment-record reads remain unchanged and validated by the
 exporter. Synchronous public inspection methods remain transitional.
 Learner maintenance writes now receive an append-only private-ledger evidence
-port from the per-run context instead of a concrete writer. The role-bound
-client still fixes run ID, Baby ID, and the Controller-owned current turn for
-every append; a capture-only capability test checks those values and exposes
-no other method. Local assembly currently backs this port with the same writer
-used by the in-process Gateway. Moving Gateway and learners into the selected
-process graph, with caller-exclusive mounts, remains required for B12.
+port from the per-run context instead of a concrete writer. For local learners,
+the role-bound client fixes run ID, Baby ID, and the Controller-owned current
+turn for every append; a capture-only capability test checks those values and
+exposes no other method. A selected remote context may omit both that port and
+the Gateway writer capability when its Gateway-hosted relays terminate Baby
+ledger callbacks; an unexpected reverse callback then fails closed in Nursery.
+The eleven-process component fixture uses this shape, so its Controller holds
+neither capability. This is a source and component boundary, not selected mount
+evidence or B12 closure.
 The first `symbol-gateway-v1` service component exposed the v3 method set
 over the same bounded private-socket transport used by the writer capabilities.
 A distinct Gateway child connects to a distinct writer child through the

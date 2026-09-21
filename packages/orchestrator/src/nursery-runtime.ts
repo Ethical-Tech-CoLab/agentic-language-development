@@ -410,11 +410,24 @@ export interface NurseryRunEvidenceContext {
   /** Optional local inspection handle; selected remote contexts omit it. */
   localWriter?: SqliteEvidenceWriter;
   controller: ControllerEvidencePort;
-  gateway: GatewayEvidencePort;
-  privateLedger: PrivateLedgerEvidencePort;
+  /** Required only when Nursery constructs the Gateway in-process. */
+  gateway?: GatewayEvidencePort;
+  /**
+   * Required only when learner reverse-ledger calls terminate in Nursery.
+   * A Gateway-hosted relay terminates them before they reach the Controller.
+   */
+  privateLedger?: PrivateLedgerEvidencePort;
   audit: AuditInterpreterService;
   checkpoints: CheckpointService;
 }
+
+const unavailablePrivateLedgerEvidence: PrivateLedgerEvidencePort = {
+  appendLedgerEvent: async () => {
+    throw new Error(
+      'private-ledger evidence is unavailable because the selected relay owns it',
+    );
+  },
+};
 
 export interface CausalPredictionProviderInput {
   readonly runId: string;
@@ -783,7 +796,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash,
       writer,
       controllerEvidence,
-      privateLedgerEvidence: evidence.privateLedger,
+      privateLedgerEvidence: evidence.privateLedger ?? unavailablePrivateLedgerEvidence,
       auditInterpreter: evidence.audit,
       signers,
       lifecycle,
@@ -3526,7 +3539,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async #gateway(
     context: GatewayRunContext,
-    localEvidence: GatewayEvidencePort,
+    localEvidence: GatewayEvidencePort | undefined,
     recovering: boolean,
   ): Promise<{ gateway: SymbolGateway; isQuarantined: () => boolean }> {
     const journalDirectory = join(
@@ -3536,6 +3549,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let journal: GatewayWriteIntentJournal | undefined;
     const gateway = this.#options.gatewayFactory === undefined
       ? await (async () => {
+          if (localEvidence === undefined) {
+            throw new Error('local Gateway requires a Gateway evidence capability');
+          }
           journal = new GatewayWriteIntentJournal(
             journalDirectory,
             context.runId,
@@ -3912,7 +3928,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: strictHash(metadata.configurationHash),
       writer,
       controllerEvidence,
-      privateLedgerEvidence: evidence.privateLedger,
+      privateLedgerEvidence: evidence.privateLedger ?? unavailablePrivateLedgerEvidence,
       auditInterpreter: evidence.audit,
       signers,
       lifecycle: new RunLifecycle(runId, state),

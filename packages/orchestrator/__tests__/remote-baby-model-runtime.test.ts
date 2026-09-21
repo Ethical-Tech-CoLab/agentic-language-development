@@ -10,7 +10,6 @@ import { connectAnchorServiceRpc } from '@ald/anchor';
 import { connectCheckpointServiceRpc } from '@ald/checkpoint';
 import { connectControllerEvidenceRpc } from '@ald/evidence';
 import {
-  connectGatewayEvidenceRpc,
   connectSymbolGatewayRpc,
   createGatewayRelayAdapterFactory,
   type GatewayRelayAdapterFactory,
@@ -228,10 +227,9 @@ describe('remote runtime with distinct Baby and model processes', () => {
     expect(await readyLine(auditInterpreterProcess, 'Audit Interpreter'))
       .toBe('ready\n');
 
-    const [controller, gatewayWriter, auditInterpreter, checkpointService, anchorService] =
+    const [controller, auditInterpreter, checkpointService, anchorService] =
       await Promise.all([
         connectControllerEvidenceRpc(sockets.controller, runId),
-        connectGatewayEvidenceRpc(sockets.gateway, runId),
         connectAuditInterpreterRpc(auditInterpreterSocket, runId),
         connectCheckpointServiceRpc(checkpointServiceSocket, runId),
         connectAnchorServiceRpc(anchorServiceSocket, runId, {
@@ -254,10 +252,6 @@ describe('remote runtime with distinct Baby and model processes', () => {
       adapterFactoryFor: (_runConfig, role) => adapterFactories.get(role)!,
       evidenceContextFactory: () => ({
         controller: controller.port,
-        gateway: gatewayWriter.port,
-        privateLedger: {
-          appendLedgerEvent: gatewayWriter.port.appendLedgerEvent,
-        },
         audit: auditInterpreter.interpreter,
         checkpoints: checkpointService.service,
       }),
