@@ -25,9 +25,13 @@ lack a completed turn record. A separate Gateway write-intent journal component
 now durably stores only request/response hashes and refuses an unresolved send
 after restart, including when no event committed. Its focused tests cover
 confirmed writes, a lost reply before commit, and a late commit after timeout.
-The current Nursery does not instantiate this component, so its attempt-level
-accounting is not active in the deployed path. It does not qualify a remote
-Evidence Writer or replace selected-topology fault and resource measurements.
+The current Nursery now instantiates this journal for each run and checks it
+before another turn, resume, or recovery. A focused crash test confirms that
+even a lost reply with no signed event refuses recovery. This is local
+attempt-level accounting around an in-process writer, not a separate remote
+Evidence Writer, and it does not replace selected-topology fault or resource
+measurements. Historical runs without this journal do not acquire its coverage
+retroactively.
 
 The hashing package now has a bounded Unix-socket signer component: one signer
 domain per process, a private socket, exact run/domain identity checks, verified

@@ -155,6 +155,46 @@ describe('crash recovery (ALD-027)', () => {
     expect(harness.runtime.writerFor(runId).readEvents(runId, 'channel')).toHaveLength(0);
   });
 
+  it('refuses recovery when a durable write intent has no reply or signed event', async () => {
+    harness = await createHarness();
+    const runId = 'run-unconfirmed-write-recovery';
+    await harness.runtime.createRun(testConfig(noLearningOverrides({
+      runId,
+      experimentId: 'E03',
+      randomSeed: 'unconfirmed-write-recovery',
+      maxTurnsPerRun: 4,
+      evaluationTurns: 4,
+    })));
+    vi.spyOn(harness.runtime.writerFor(runId), 'commitTurn')
+      .mockRejectedValue(new Error('writer reply lost before commit'));
+    await expect(harness.runtime.gatewayFor(runId).submitProposal(
+      { turn: 0, sender: 'baby-a', recipient: 'baby-b' },
+      {
+        proposal: { kind: 'emit_symbols', publicArtifact: { symbols: ['S01'] } },
+        privateLedgerDraft: {
+          eventType: 'intention.recorded',
+          contentSchema: 'agent-native-ledger',
+          subjectId: 'subject-unconfirmed',
+          content: { artifactRef: 'artifact-unconfirmed' },
+          blindingNonce: 'nonce-unconfirmed',
+          evidenceRefs: [],
+        },
+      },
+    )).rejects.toBeInstanceOf(EvidenceWriteUncertainError);
+    expect(harness.runtime.writerFor(runId).readEvents(runId, 'channel')).toHaveLength(0);
+
+    restarted = harness.restart();
+    await expect(restarted.runtime.recover(runId)).rejects.toBeInstanceOf(
+      EvidenceWriteUncertainError,
+    );
+    expect(restarted.runtime.getRun(runId)?.operationalQuarantine)
+      .toBe('evidence-write-uncertain');
+    await expect(restarted.runtime.step(runId)).rejects.toBeInstanceOf(
+      EvidenceWriteUncertainError,
+    );
+    expect(restarted.runtime.turnRecords(runId)).toHaveLength(0);
+  });
+
   it('reconstructs the run at the last committed turn and continues', async () => {
     harness = await createHarness({
       learnerOptions: { shared: { learningRate: 1, temperature: 0.5 } },

@@ -482,10 +482,15 @@ describe('run creation guard rails', () => {
       evaluationTurns: 1,
       turnResponseBudgetMs: 1_000,
     })));
-    vi.useFakeTimers();
-    const step = harness.runtime.step(runId);
-    await vi.runAllTimersAsync();
-    await expect(step).resolves.toBeDefined();
+    const timer = vi.spyOn(globalThis, 'setTimeout');
+    try {
+      await expect(harness.runtime.step(runId)).resolves.toBeDefined();
+      // Sender and receiver each own one normalized release; the Controller
+      // must not add a second 1,000 ms timer around either call.
+      expect(timer.mock.calls.filter(([, delay]) => delay === 1_000)).toHaveLength(2);
+    } finally {
+      timer.mockRestore();
+    }
     const channelEvents = harness.runtime.writerFor(runId).readEvents(runId, 'channel')
       .map((event) => JSON.parse(event.canonicalJson) as { reasonCode?: string });
     expect(channelEvents.some((event) => event.reasonCode === 'timeout')).toBe(false);

@@ -6,13 +6,13 @@
   "decision": "needs-revision",
   "manuscript": {
     "path": "RESEARCH.md",
-    "sha256": "92c36c7a3c4fd9a2e3c2ed369a846d7c7cb3941c0c7fb6016dd56b2533b0df10",
-    "version": "0.1.215",
+    "sha256": "600e9c2f86101481808d6098a3835175c9a1d77c2caca89e28078de0c69f0475",
+    "version": "0.1.216",
     "majorSections": 25,
     "referencesDefined": 50,
     "referencesCited": 50,
     "renderedPages": 52,
-    "renderedSourceSha256": "92c36c7a3c4fd9a2e3c2ed369a846d7c7cb3941c0c7fb6016dd56b2533b0df10",
+    "renderedSourceSha256": "600e9c2f86101481808d6098a3835175c9a1d77c2caca89e28078de0c69f0475",
     "backlogCriteria": 261,
     "checkedBacklogCriteria": 257
   },

@@ -43,8 +43,8 @@
  *   which is also what makes `seal` itself idempotent on re-entry.
  * - An uncertain Gateway evidence write is not retried in place. The Gateway
  *   quarantines its port, and recovery refuses a signed channel or affect
- *   event with no completed turn record. Attempt-level accounting still owns
- *   failures whose write never committed.
+ *   event with no completed turn record. The durable write-intent journal also
+ *   refuses restart after a possibly sent request with no confirmed response.
  */
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -171,6 +171,7 @@ import {
 } from '@ald/learners';
 import {
   EvidenceWriteUncertainError,
+  GatewayWriteIntentJournal,
   InterpretationRejectedError,
   SymbolGatewayImpl,
   TurnDeadlineExceededError,
@@ -439,6 +440,7 @@ interface RunRuntime {
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
   gateway: SymbolGatewayImpl;
+  writeJournal: GatewayWriteIntentJournal;
   engine: ScenarioEngine;
   adapters: Record<BabyRole, LearnerAdapter>;
   checkpoints: CheckpointService;
@@ -720,6 +722,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       carrierForms.length > 0
         ? carrierForms
         : fixedTokenInventory(runConfig.symbolInventorySize ?? 32);
+    const writeJournal = new GatewayWriteIntentJournal(
+      join(this.#bundleDirFor(runId), 'gateway-write-intents'),
+      runId,
+    );
     const gateway = new SymbolGatewayImpl(
       {
         runId,
@@ -727,7 +733,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         symbolInventory,
         seed: runConfig.seedBindings?.gateway ?? runConfig.randomSeed,
       },
-      writer,
+      await writeJournal.openPort(writer),
     );
 
     const run: RunRuntime = {
@@ -739,6 +745,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       signers,
       lifecycle,
       gateway,
+      writeJournal,
       engine,
       adapters,
       checkpoints: this.#options.checkpointFactory(writer, signers),
@@ -801,7 +808,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async step(runId: string): Promise<TurnResult> {
     const run = this.#requireRun(runId);
-    if (run.gateway.isEvidenceWriteQuarantined()) {
+    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -1592,7 +1599,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
 
   async resume(runId: string, intervention: Intervention): Promise<RunSummary> {
     const run = this.#requireRun(runId);
-    if (run.gateway.isEvidenceWriteQuarantined()) {
+    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -2084,8 +2091,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    */
   async recover(runId: string): Promise<RunSummary> {
     const existing = this.#runs.get(runId);
-    const run = existing ?? this.#reconstruct(runId);
-    if (run.gateway.isEvidenceWriteQuarantined()) {
+    const run = existing ?? await this.#reconstruct(runId);
+    if (run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()) {
       throw new EvidenceWriteUncertainError();
     }
     if (run.incompleteEvidenceTurns !== null) {
@@ -3554,7 +3561,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     }
   }
 
-  #reconstruct(runId: string): RunRuntime {
+  async #reconstruct(runId: string): Promise<RunRuntime> {
     const signers = this.#signerProvider()(runId);
     const writer = new SqliteEvidenceWriter({
       database: this.#options.database,
@@ -3711,6 +3718,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       }
       deadlineQuarantine = { role, method, turn, quarantineFailed };
     }
+    const writeJournal = new GatewayWriteIntentJournal(
+      join(this.#bundleDirFor(runId), 'gateway-write-intents'),
+      runId,
+    );
     const run: RunRuntime = {
       runId,
       config,
@@ -3726,8 +3737,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           symbolInventory,
           seed: config.seedBindings?.gateway ?? config.randomSeed,
         },
-        writer,
+        await writeJournal.openPort(writer),
       ),
+      writeJournal,
       engine,
       adapters,
       checkpoints: this.#options.checkpointFactory(writer, signers),
@@ -4281,7 +4293,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       configurationHash: run.configurationHash,
       preRegistrationHash: run.config.preRegistrationHash,
       registrationClass: run.config.registrationClass ?? 'qualification',
-      ...(run.gateway.isEvidenceWriteQuarantined()
+      ...(run.writeJournal.isQuarantined() || run.gateway.isEvidenceWriteQuarantined()
         ? { operationalQuarantine: 'evidence-write-uncertain' as const }
         : run.incompleteEvidenceTurns === null
           ? {}
