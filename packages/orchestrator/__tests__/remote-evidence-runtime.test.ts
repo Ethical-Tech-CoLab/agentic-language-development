@@ -19,6 +19,7 @@ import { connectDomainSignerRpc } from '@ald/hashing';
 import type { SignerRegistry } from '@ald/types';
 
 import {
+  AuditLedgerInterpreter,
   createNurseryRuntime,
   type EvidenceWriterCapabilitySockets,
 } from '../src/index.js';
@@ -153,7 +154,7 @@ describe('Nursery remote evidence provisioning', () => {
         privateLedger: {
           appendLedgerEvent: gatewayWriter.port.appendLedgerEvent,
         },
-        audit: audit.port,
+        audit: new AuditLedgerInterpreter(audit.port),
         checkpoints,
       }),
       gatewayFactory: async (input) => {

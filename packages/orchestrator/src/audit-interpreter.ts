@@ -24,6 +24,14 @@ export interface AuditInterpreterEvidencePort {
   appendAuditLedgerEntry: EvidenceWriter['appendAuditLedgerEntry'];
 }
 
+/** The only operation the Controller may request from the delayed service. */
+export interface AuditInterpreterService {
+  appendBatch(
+    request: AuditInterpretationBatchRequest,
+    nextTurn: number,
+  ): Promise<AuditLedgerEntry[]>;
+}
+
 /** A source must have one fully completed later turn before interpretation. */
 export const AUDIT_INTERPRETATION_DELAY_TURNS = 1;
 
@@ -43,7 +51,7 @@ export class AuditInterpreterError extends Error {
   }
 }
 
-export class AuditLedgerInterpreter {
+export class AuditLedgerInterpreter implements AuditInterpreterService {
   constructor(
     private readonly evidence: AuditInterpreterEvidencePort,
     private readonly delayTurns = AUDIT_INTERPRETATION_DELAY_TURNS,

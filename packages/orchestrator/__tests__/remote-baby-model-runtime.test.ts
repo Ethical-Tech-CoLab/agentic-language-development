@@ -8,10 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { connectAnchorServiceRpc } from '@ald/anchor';
 import { connectCheckpointServiceRpc } from '@ald/checkpoint';
-import {
-  connectAuditEvidenceRpc,
-  connectControllerEvidenceRpc,
-} from '@ald/evidence';
+import { connectControllerEvidenceRpc } from '@ald/evidence';
 import {
   connectGatewayEvidenceRpc,
   connectSymbolGatewayRpc,
@@ -21,6 +18,7 @@ import {
 import type { BabyRole, SignerRegistry } from '@ald/types';
 
 import {
+  connectAuditInterpreterRpc,
   createNurseryRuntime,
   type EvidenceWriterCapabilitySockets,
 } from '../src/index.js';
@@ -39,6 +37,8 @@ const checkpointFixture = fileURLToPath(new URL(
   '../../checkpoint/__tests__/fixtures/checkpoint-service-child.mjs', import.meta.url));
 const anchorFixture = fileURLToPath(new URL(
   '../../anchor/__tests__/fixtures/anchor-service-child.mjs', import.meta.url));
+const auditInterpreterFixture = fileURLToPath(new URL(
+  './fixtures/audit-interpreter-child.mjs', import.meta.url));
 const babyHost = fileURLToPath(new URL(
   '../../isolation/bin/ald-baby-host.js', import.meta.url));
 const modelHost = fileURLToPath(new URL(
@@ -97,7 +97,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
     directory = undefined;
   });
 
-  it('commits and exports one turn through Gateway relays, Babies, and model boundaries', async () => {
+  it('commits, audits, and exports through separate application boundaries', async () => {
     if (process.platform !== 'linux') return;
     directory = mkdtempSync(join(tmpdir(), 'ald-remote-baby-model-runtime-'));
     const runId = 'remote-baby-model-runtime';
@@ -107,7 +107,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
       experimentId: 'E02',
       randomSeed: 'remote-baby-model-runtime-seed',
       deploymentMode: 'research-grade',
-      maxTurnsPerRun: 1,
+      maxTurnsPerRun: 2,
       evaluationTurns: 1,
     }));
     const witnessSocket = join(directory, 'witness.sock');
@@ -121,6 +121,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
     const gatewaySocket = join(directory, 'gateway-controller.sock');
     const checkpointServiceSocket = join(directory, 'checkpoint-service.sock');
     const anchorServiceSocket = join(directory, 'anchor-service.sock');
+    const auditInterpreterSocket = join(directory, 'audit-interpreter.sock');
     const roles: BabyRole[] = ['baby-a', 'baby-b'];
     const adapterFactories = new Map<BabyRole, GatewayRelayAdapterFactory>();
     const babyProcesses = new Map<BabyRole, ChildProcess>();
@@ -217,11 +218,21 @@ describe('remote runtime with distinct Baby and model processes', () => {
     children.push(anchorProcess);
     expect(await readyLine(anchorProcess, 'Anchor Service')).toBe('ready\n');
 
-    const [controller, gatewayWriter, audit, checkpointService, anchorService] =
+    const auditInterpreterProcess = spawn(process.execPath, [
+      auditInterpreterFixture,
+      auditInterpreterSocket,
+      sockets.audit,
+      runId,
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    children.push(auditInterpreterProcess);
+    expect(await readyLine(auditInterpreterProcess, 'Audit Interpreter'))
+      .toBe('ready\n');
+
+    const [controller, gatewayWriter, auditInterpreter, checkpointService, anchorService] =
       await Promise.all([
         connectControllerEvidenceRpc(sockets.controller, runId),
         connectGatewayEvidenceRpc(sockets.gateway, runId),
-        connectAuditEvidenceRpc(sockets.audit, runId),
+        connectAuditInterpreterRpc(auditInterpreterSocket, runId),
         connectCheckpointServiceRpc(checkpointServiceSocket, runId),
         connectAnchorServiceRpc(anchorServiceSocket, runId, {
           anchorClass: 'simulated',
@@ -247,7 +258,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
         privateLedger: {
           appendLedgerEvent: gatewayWriter.port.appendLedgerEvent,
         },
-        audit: audit.port,
+        audit: auditInterpreter.interpreter,
         checkpoints: checkpointService.service,
       }),
       gatewayFactory: async (input) => {
@@ -289,27 +300,52 @@ describe('remote runtime with distinct Baby and model processes', () => {
       gatewayProcessId,
       checkpointProcess.pid,
       anchorProcess.pid,
+      auditInterpreterProcess.pid,
       ...babyProcessIds,
       ...modelProcessIds,
-    ]).size).toBe(10);
+    ]).size).toBe(11);
     expect(checkpointService.processId).toBe(checkpointProcess.pid);
     expect(anchorService.processId).toBe(anchorProcess.pid);
+    expect(auditInterpreter.processId).toBe(auditInterpreterProcess.pid);
     expect(() => runtime.writerFor(runId)).toThrow(
       'local Evidence Writer inspection is unavailable',
     );
 
-    const turn = await runtime.step(runId);
-    expect(turn.turn).toBe(0);
-    expect(turn.channelEvent).not.toBeNull();
-    expect(await controller.port.readEvents(runId, 'turns')).toHaveLength(1);
-    expect(await controller.port.readEvents(runId, 'channel')).toHaveLength(1);
-    expect(await controller.port.readEvents(runId, 'baby-a-ledger')).not.toHaveLength(0);
+    const firstTurn = await runtime.step(runId);
+    const secondTurn = await runtime.step(runId);
+    expect(firstTurn.turn).toBe(0);
+    expect(secondTurn.turn).toBe(1);
+    expect(firstTurn.channelEvent).not.toBeNull();
+    expect(secondTurn.channelEvent).not.toBeNull();
+    expect(await controller.port.readEvents(runId, 'turns')).toHaveLength(2);
+    expect(await controller.port.readEvents(runId, 'channel')).toHaveLength(2);
+    const babyALedger = await controller.port.readEvents(runId, 'baby-a-ledger');
+    expect(babyALedger).not.toHaveLength(0);
     expect(await controller.port.readEvents(runId, 'baby-b-ledger')).not.toHaveLength(0);
     expect([...adapterFactories.values()].flatMap((factory) => factory.adapters)
       .reduce((sum, adapter) => sum + adapter.diagnostics.ledgerAppends, 0))
       .toBe(0);
     expect(await controller.port.readCheckpoints(runId)).not.toHaveLength(0);
+    const auditSource = babyALedger.find((event) => {
+      const content = JSON.parse(event.canonicalJson) as { turn?: unknown };
+      return content.turn === 0;
+    });
+    expect(auditSource).toBeDefined();
+    await expect(runtime.interpretAuditBatch({
+      runId,
+      interpreterVersion: 'remote-audit-interpreter-v1',
+      entries: [{
+        babyId: 'A',
+        sourceEntryHash: auditSource!.entryHash,
+        content: {
+          term: 'development-observation',
+          hypothesis: 'the source can be interpreted after the fixed delay',
+          evidence: 'component-fixture-only',
+        },
+      }],
+    })).resolves.toHaveLength(1);
+    expect(await controller.port.readEvents(runId, 'audit')).toHaveLength(1);
     const manifest = await runtime.exportBundle(runId, join(directory, 'export'));
     expect(manifest.runId).toBe(runId);
-  }, 30_000);
+  }, 45_000);
 });

@@ -44,6 +44,7 @@ import {
   NurseryRuntimeImpl,
   type NurseryRuntimeOptions,
 } from './nursery-runtime.js';
+import { AuditLedgerInterpreter } from './audit-interpreter.js';
 
 export interface ProductionRuntimeOptions {
   /** Path to the SQLite evidence store; created if it does not exist. */
@@ -138,7 +139,7 @@ export function createProductionRuntime(
       controller: controllerEvidencePortForWriter(runId, localWriter),
       gateway: localWriter,
       privateLedger: localWriter,
-      audit: localWriter,
+      audit: new AuditLedgerInterpreter(localWriter),
       checkpoints: service,
     };
   };

@@ -57,7 +57,12 @@ export {
   AuditLedgerInterpreter,
   type AuditInterpreterEvidencePort,
   type AuditInterpreterErrorCode,
+  type AuditInterpreterService,
 } from './audit-interpreter.js';
+export {
+  connectAuditInterpreterRpc,
+  createAuditInterpreterRpcServer,
+} from './audit-interpreter-rpc.js';
 export {
   replayDigest,
   replayTuples,

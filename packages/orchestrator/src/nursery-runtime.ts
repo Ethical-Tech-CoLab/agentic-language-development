@@ -204,7 +204,7 @@ import {
 } from './private-ledger.js';
 import {
   AuditLedgerInterpreter,
-  type AuditInterpreterEvidencePort,
+  type AuditInterpreterService,
 } from './audit-interpreter.js';
 import {
   replayDigest,
@@ -412,7 +412,7 @@ export interface NurseryRunEvidenceContext {
   controller: ControllerEvidencePort;
   gateway: GatewayEvidencePort;
   privateLedger: PrivateLedgerEvidencePort;
-  audit: AuditInterpreterEvidencePort;
+  audit: AuditInterpreterService;
   checkpoints: CheckpointService;
 }
 
@@ -484,7 +484,7 @@ interface RunRuntime {
   /** Append-only capability used by role-bound private-ledger clients. */
   privateLedgerEvidence: PrivateLedgerEvidencePort;
   /** Delayed interpreter's exact ledger-read/audit-append capability. */
-  auditEvidence: AuditInterpreterEvidencePort;
+  auditInterpreter: AuditInterpreterService;
   signers: SignerRegistry;
   lifecycle: RunLifecycle;
   gateway: SymbolGateway;
@@ -784,7 +784,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       writer,
       controllerEvidence,
       privateLedgerEvidence: evidence.privateLedger,
-      auditEvidence: evidence.audit,
+      auditInterpreter: evidence.audit,
       signers,
       lifecycle,
       gateway: gatewayProvision.gateway,
@@ -2393,7 +2393,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     if (!['running', 'paused', 'evaluating'].includes(run.lifecycle.state)) {
       throw new RunStateError(request.runId, run.lifecycle.state, 'running');
     }
-    const entries = await new AuditLedgerInterpreter(run.auditEvidence).appendBatch(
+    const entries = await run.auditInterpreter.appendBatch(
       request,
       run.turn,
     );
@@ -3519,7 +3519,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       controller: controllerEvidencePortForWriter(runId, localWriter),
       gateway: localWriter,
       privateLedger: localWriter,
-      audit: localWriter,
+      audit: new AuditLedgerInterpreter(localWriter),
       checkpoints: checkpointFactory(localWriter, signers),
     };
   }
@@ -3913,7 +3913,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       writer,
       controllerEvidence,
       privateLedgerEvidence: evidence.privateLedger,
-      auditEvidence: evidence.audit,
+      auditInterpreter: evidence.audit,
       signers,
       lifecycle: new RunLifecycle(runId, state),
       gateway: gatewayProvision.gateway,

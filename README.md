@@ -95,7 +95,7 @@ channel constraints, and reward conditions were used.
 
 ## Project Status
 
-**Engineering snapshot:** v0.1.267 · 257/261 backlog acceptance criteria verified.
+**Engineering snapshot:** v0.1.268 · 257/261 backlog acceptance criteria verified.
 
 Research status: 4 qualified (software), 2 failed qualification attempts, 0 in progress, 15 not started; 8 open campaign blockers.
 The prospective [nine-member selection clarification](protocols/confirmatory-family-selection-amendment.v1.json)
@@ -348,7 +348,11 @@ prospective amendment and allocation.
   The [prospective authority graph](protocols/mode-r-authority-graph.v1.json)
   and its [v2 writer-capability amendment](protocols/mode-r-authority-graph.v2.json)
   fix the intended process, network, key, and caller-specific writer boundaries
-  for the next qualification; neither is an implemented-topology receipt.
+  for the next qualification. Later amendments freeze the remote Gateway,
+  recovery, and Gateway-to-Baby relay contracts. Component integration now
+  exercises separate Gateway, Evidence Writer, Checkpoint, simulated Anchor,
+  delayed Audit Interpreter, Baby, and model-adapter processes, but no authority
+  graph amendment is an implemented-topology receipt and B12 remains open.
 - `@ald/crypto-research`: an E40 research-only, three-role instrumentation harness
   that records hash-chained ephemeral scheme changes and Eve recovery attempts over
   synthetic messages. A repository lint boundary prevents it from entering the

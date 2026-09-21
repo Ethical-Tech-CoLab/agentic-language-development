@@ -18,6 +18,7 @@ import {
 import { InMemorySignerRegistry } from '@ald/hashing';
 
 import {
+  AuditLedgerInterpreter,
   createNurseryRuntime,
   simpleCheckpointFactory,
 } from '../src/index.js';
@@ -103,7 +104,7 @@ describe('Nursery remote Gateway provisioning', () => {
           controller: controllerEvidencePortForWriter(runId, localWriter),
           gateway: localWriter,
           privateLedger: localWriter,
-          audit: localWriter,
+          audit: new AuditLedgerInterpreter(localWriter),
           checkpoints: checkpointFactory(localWriter, signers),
         };
       },
@@ -187,7 +188,7 @@ describe('Nursery remote Gateway provisioning', () => {
           controller: controllerEvidencePortForWriter(runId, writer),
           gateway: writer,
           privateLedger: writer,
-          audit: writer,
+          audit: new AuditLedgerInterpreter(writer),
           checkpoints: checkpointFactory(writer, signers),
         };
       },
