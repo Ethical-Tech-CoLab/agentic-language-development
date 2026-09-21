@@ -11,8 +11,8 @@ import {
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { createBabyProcessAdapterFactory } from '@ald/isolation';
-import { runLearnerAdapterConformance } from '@ald/learners';
+import { createBabyProcessAdapterFactory } from '../packages/isolation/dist/index.js';
+import { runLearnerAdapterConformance } from '../packages/learners/dist/index.js';
 
 const protocolPath = 'protocols/mode-r-baby-model-boundary-qualification.v1.json';
 const evidenceRoot = 'evidence/mode-r-baby-model-process-development-v1';
