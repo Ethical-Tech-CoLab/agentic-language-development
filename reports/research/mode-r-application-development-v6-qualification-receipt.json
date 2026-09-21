@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "6fb30cd9f9c424f170b57be127fb05b9a7df97c4",
+  "executionTree": "7f5bfb0203934998d7df45f38a81c0c51f06fc88",
+  "executionVersion": "0.1.276",
+  "runId": "mode-r-application-v6",
+  "protocol": {
+    "path": "protocols/mode-r-application-development.v6.json",
+    "bytes": 3993,
+    "sha256": "sha256:1f6af60da8dddad2447f69cf3f7ed6346f969913b5ca4afbdfa5229f3b805f31"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-development-v6/receipt.json",
+    "bytes": 22898,
+    "sha256": "sha256:58188b7213a7f982757dabf058a41fc644efc8c784c40d37ce0212259da186ba",
+    "retention": "local-ignored-original"
+  },
+  "application": {
+    "serviceCount": 17,
+    "networkCount": 3,
+    "distinctContainerIdCount": 17,
+    "distinctHostPidCountAtPostRunSnapshot": 13,
+    "expectedSuccessfulExitedServiceCount": 4,
+    "networkMismatchCount": 0,
+    "mountMismatchCount": 0,
+    "serviceStateMismatchCount": 0,
+    "unexpectedRunningAfterTeardown": 0,
+    "resourceObservationCount": 13
+  },
+  "execution": {
+    "turns": [0, 1],
+    "auditEntryCount": 1,
+    "controllerExitCode": 0,
+    "offlineVerifierExitCode": 0,
+    "bundleManifestHash": "sha256:a8f69e1779e33571efe9fa06bdd0c6c811b8e072f8fdf04d9413bb3deb319a62",
+    "bundleManifestFileSha256": "sha256:5e27291a7dc97b1fb4c6401364bd161fdc5185b944264ac47c41997f2860d9c5"
+  },
+  "independentRustAudit": {
+    "implementation": "ald-integrity-auditor-rust-v1",
+    "integrityPass": true,
+    "anchored": false,
+    "streamCount": 6,
+    "eventCount": 16,
+    "checkpointCount": 4,
+    "attachmentCount": 0,
+    "issueCount": 0
+  },
+  "externalSpendingUsd": 0,
+  "publicChainTransaction": false,
+  "passed": true,
+  "claimBoundary": "This receipt establishes a bounded selected-shape application development qualification. It does not close B12, establish lifecycle/fault/detector/resource qualification, provide a behavioral result, or establish independent review."
+}

@@ -93,6 +93,13 @@ labeled containers directly, and normalizes the `none` key only when the inspect
 host network mode is also `none`. This changes the post-run live-PID threshold from
 fifteen to thirteen with a prospective rationale; all container, route, mount, turn,
 audit, verifier, and teardown thresholds remain unchanged.
+The fresh v6 execution passed that bounded gate on its exact clean commit. A
+separate live receipt replay passed, and the Rust integrity auditor accepted all
+six disclosed streams, sixteen signed events, and four checkpoints with no issue.
+The portable supplemental receipt binds the ignored original by hash. This is
+application-development qualification only: complete lifecycle/fault/detector and
+resource qualification, B12 closure, behavioral findings, and independent review
+remain open.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
