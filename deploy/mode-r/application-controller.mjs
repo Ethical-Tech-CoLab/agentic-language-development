@@ -148,10 +148,10 @@ try {
       details: { stage: 'recover' },
     });
     const second = await runtime.step(config.runId);
+    const auditEntryCount = await appendDelayedAudit();
     const evaluation = await runtime.step(config.runId);
     const final = runtime.getRun(config.runId);
     assert.ok(final !== undefined);
-    const auditEntryCount = await appendDelayedAudit();
     const checkpoints = await controller.port.readCheckpoints(config.runId);
     const interventions = await controller.port.readEvents(config.runId, 'intervention');
     const bundle = await runtime.exportBundle(config.runId, join(outputRoot, 'bundle'));

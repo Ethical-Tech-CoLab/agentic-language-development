@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-application-lifecycle-audit-ordering-failure",
+  "researchFinding": false,
+  "b12Closed": false,
+  "executionCommit": "db3d83f3bc52406fadaabfc73849bc5124dc3ce0",
+  "attemptedRunId": "mode-r-application-lifecycle-v4",
+  "stage": "post-evaluation-delayed-audit",
+  "firstStageContainersObserved": 16,
+  "firstControllerExitCode": 0,
+  "recoveryControllerExitCode": 1,
+  "turnsRecorded": 3,
+  "channelEventsRecorded": 3,
+  "ledgerEventsRecorded": 15,
+  "auditEntriesRecorded": 0,
+  "interventionEventsRecorded": 4,
+  "checkpointsRecorded": 7,
+  "pauseCompleted": true,
+  "recoveryCompleted": true,
+  "resumeCompleted": true,
+  "trainingTurnsCompleted": 2,
+  "evaluationTurnsCompleted": 1,
+  "staleOwnedSocketsRemoved": 3,
+  "offlineVerifierAttempted": false,
+  "gatePassed": false,
+  "cause": "The recovered run completed its second training turn and final held-out evaluation turn, which transitioned it to sealing. The Controller then requested the delayed audit batch, and the runtime correctly refused audit interpretation outside running, paused, or evaluating.",
+  "measurementCorrection": "The v4 packet listed five candidate stopped-owner sockets, but both model-host sockets were removed during graceful model shutdown. Exactly the three Gateway-owned socket inodes remained and were safely removed before the replacement Gateway emitted ready.",
+  "correctionPolicy": "Retain every v4 artifact; use a fresh v5 identity; append the delayed audit after the second training turn while the run is evaluating but before the final evaluation turn; require the analysis checkpoint; and prospectively require exactly the three measured Gateway-owned stale sockets without changing any turn, lifecycle, route, mount, verifier, or teardown threshold.",
+  "rawReceipt": {
+    "path": "evidence/mode-r-application-lifecycle-development-v4/receipt.json",
+    "bytes": 15740,
+    "sha256": "sha256:bb8211c098d753755c28ff9823b19001f43a1a87d2da43c52ef05c7685cf1cb6",
+    "retention": "local-ignored-original"
+  },
+  "rawLogs": {
+    "path": "evidence/mode-r-application-lifecycle-development-v4/compose-logs.txt",
+    "bytes": 1331,
+    "sha256": "sha256:2c8fb1b4180e5ab879930486126df0bb3e81e7c7c64fe9d254e619a83f4f2f71"
+  },
+  "retainedDatabase": {
+    "path": "evidence/mode-r-application-lifecycle-development-v4/evidence/evidence.sqlite",
+    "bytes": 266240,
+    "sha256": "sha256:1266d014293581b421f6bdbb29f404abf6d00445d97a2106455863978bbd2d9b"
+  },
+  "prepareResult": {
+    "path": "evidence/mode-r-application-lifecycle-development-v4/output/controller-prepare-result.json",
+    "bytes": 576,
+    "sha256": "sha256:1a9042c7a75f2fc33114cb92f71e65edfc92a06c55cc8b50a0b3313402b5cdf1"
+  },
+  "claimBoundary": "This post-evaluation audit-ordering failure is not a passing qualification, behavioral result, B12 closure, or publication result."
+}

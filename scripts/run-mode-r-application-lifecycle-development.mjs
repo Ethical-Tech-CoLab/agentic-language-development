@@ -20,12 +20,12 @@ import { fixedTokenInventory } from '@ald/types';
 const mode = process.argv[2];
 assert.ok(mode === '--run' || mode === '--audit', 'expected --run or --audit');
 const runMode = mode === '--run';
-const protocolPath = 'protocols/mode-r-application-lifecycle-development.v4.json';
-const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v4';
+const protocolPath = 'protocols/mode-r-application-lifecycle-development.v5.json';
+const evidenceRoot = 'evidence/mode-r-application-lifecycle-development-v5';
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-lifecycle.v1.yml';
-const project = 'ald-mode-r-application-lifecycle-development-v4';
+const project = 'ald-mode-r-application-lifecycle-development-v5';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
 const baseEnvironment = {
@@ -234,7 +234,7 @@ assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha25
 const unresolvedConfig = buildRunConfig({
   runId: protocol.runId,
   experimentId: 'E02',
-  randomSeed: 'selected-application-lifecycle-development-v4',
+  randomSeed: 'selected-application-lifecycle-development-v5',
   deploymentMode: 'research-grade',
   babyA: {
     track: 'no-learning',

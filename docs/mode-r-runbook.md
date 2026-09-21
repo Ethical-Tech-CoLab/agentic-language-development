@@ -121,12 +121,18 @@ to remain running and emit its existing `ready` marker before starting the
 replacement Controller. That gate stopped after sixty seconds: the removed single-
 admission processes had left their Unix socket inodes in bind-mounted runtime
 directories, so the replacement Gateway could not bind its relay sockets. No
-recovery Controller started. The v4 collector first confirms removal of all six
-old containers, then validates and unlinks only the five exact socket inodes owned
-by the stopped model-adapter and Gateway processes. It refuses a non-socket or
-symlink and still requires Gateway readiness. It also counts an identity change
-only when both snapshots contain that service. Every lifecycle turn and acceptance
-threshold remains unchanged. A pass would qualify only this bounded lifecycle path;
+recovery Controller started. The v4 collector confirmed removal of all six old
+containers, validated and removed the three Gateway socket inodes that actually
+remained, observed Gateway readiness, recovered and resumed the paused prefix, and
+completed the second training and held-out evaluation turns. It then correctly
+failed because the delayed audit was requested after evaluation had moved the run
+to sealing. Both model sockets had already disappeared during graceful model-host
+shutdown, so the earlier five-socket expectation was also too high. The v5 packet
+prospectively narrows cleanup to the measured three Gateway sockets and requests
+the delayed audit after the second training turn, while the run is evaluating but
+before its final evaluation turn. It requires the resulting analysis checkpoint.
+Every other lifecycle and acceptance threshold remains unchanged. A pass would
+qualify only this bounded lifecycle path;
 the injected-fault matrix, detector bounds, peak resource envelope, Rust audit,
 B12 closure, and behavioral findings remain separate gates.
 The Gateway now accepts a six-method write-only evidence port at its type boundary;

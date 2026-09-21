@@ -3,11 +3,11 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
-const reports = [1, 2, 3].map((version) => JSON.parse(readFileSync(
+const reports = [1, 2, 3, 4].map((version) => JSON.parse(readFileSync(
   `reports/research/mode-r-application-lifecycle-development-v${version}-failure.json`,
   'utf8',
 )));
-const [v1, v2, v3] = reports;
+const [v1, v2, v3, v4] = reports;
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const command = (program, args) => execFileSync(program, args, { encoding: 'utf8' }).trim();
 
@@ -15,7 +15,7 @@ for (const report of reports) {
   assert.equal(report.schemaVersion, 1);
   assert.equal(report.researchFinding, false);
   assert.equal(report.b12Closed, false);
-  assert.equal(report.turnsRecorded, 1);
+  assert.equal(Number.isInteger(report.turnsRecorded) && report.turnsRecorded > 0, true);
   assert.equal(report.offlineVerifierAttempted, false);
   assert.equal(report.gatePassed, false);
   assert.equal(command('git', ['cat-file', '-t', report.executionCommit]), 'commit');
@@ -42,9 +42,17 @@ assert.equal(v3.firstControllerExitCode, 0);
 assert.equal(v3.pauseCompleted, true);
 assert.equal(v3.replacementGatewayReady, false);
 assert.equal(v3.recoveryControllerStarted, false);
+assert.equal(v4.classification,
+  'selected-mode-r-application-lifecycle-audit-ordering-failure');
+assert.equal(v4.attemptedRunId, 'mode-r-application-lifecycle-v4');
+assert.equal(v4.stage, 'post-evaluation-delayed-audit');
+assert.equal(v4.turnsRecorded, 3);
+assert.equal(v4.recoveryCompleted, true);
+assert.equal(v4.resumeCompleted, true);
+assert.equal(v4.evaluationTurnsCompleted, 1);
 
 for (const [report, expectedVersion] of [
-  [v1, '0.1.278'], [v2, '0.1.279'], [v3, '0.1.280'],
+  [v1, '0.1.278'], [v2, '0.1.279'], [v3, '0.1.280'], [v4, '0.1.281'],
 ]) {
   const sourcePackage = JSON.parse(command('git', [
     'show', `${report.executionCommit}:package.json`,
@@ -80,6 +88,10 @@ if (process.argv.includes('--live-evidence')) {
   assert.equal(rawV3.failure, 'gateway did not report ready within 60000 ms');
   assert.equal(rawV3.prepare.pausedState, 'paused');
   assert.equal(rawV3.summary.recreatedServiceIdentityChanges, 0);
+  const rawV4 = JSON.parse(readFileSync(v4.rawReceipt.path, 'utf8'));
+  assert.equal(rawV4.failure.startsWith('recovery controller failed'), true);
+  assert.equal(rawV4.prepare.pausedState, 'paused');
+  assert.equal(rawV4.summary.staleOwnedSocketsRemoved, 3);
 }
 
-console.log('selected application lifecycle v1-v3 failures reconcile; B12 remains open');
+console.log('selected application lifecycle v1-v4 failures reconcile; B12 remains open');

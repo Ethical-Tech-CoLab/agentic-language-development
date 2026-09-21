@@ -59,7 +59,7 @@ const protocolV6 = JSON.parse(readFileSync(
   };
 };
 const lifecycleProtocol = JSON.parse(readFileSync(
-  'protocols/mode-r-application-lifecycle-development.v4.json',
+  'protocols/mode-r-application-lifecycle-development.v5.json',
   'utf8',
 )) as {
   schemaVersion: number;
@@ -76,6 +76,7 @@ const lifecycleProtocol = JSON.parse(readFileSync(
     trainingTurns: number;
     evaluationTurns: number;
     replacementGatewayReadyLog: string;
+    delayedAuditStage: string;
     staleOwnedSocketPaths: string[];
     recreatedServices: string[];
     persistentServices: string[];
@@ -193,29 +194,30 @@ describe('selected Mode R application Compose', () => {
       .digest('hex')).toBe(protocolV6.compose.sha256);
   });
 
-  it('uses v4 to reclaim only stopped owners sockets before Gateway readiness', () => {
+  it('uses v5 to audit while active and reclaim measured Gateway sockets', () => {
     expect(lifecycleProtocol).toMatchObject({
-      schemaVersion: 4,
+      schemaVersion: 5,
       status: 'design-locked-not-executed',
-      runId: 'mode-r-application-lifecycle-v4',
+      runId: 'mode-r-application-lifecycle-v5',
       predecessorFailure: {
-        path: 'reports/research/mode-r-application-lifecycle-development-v3-failure.json',
-        stage: 'replacement-gateway-readiness',
-        turnsRecorded: 1,
+        path: 'reports/research/mode-r-application-lifecycle-development-v4-failure.json',
+        stage: 'post-evaluation-delayed-audit',
+        turnsRecorded: 3,
       },
     });
     expect(lifecycleProtocol.execution).toMatchObject({
       trainingTurns: 2,
       evaluationTurns: 1,
       replacementGatewayReadyLog: 'ready',
+      delayedAuditStage: 'after-second-training-before-evaluation',
     });
     expect(lifecycleProtocol.execution.recreatedServices).toHaveLength(6);
     expect(lifecycleProtocol.execution.persistentServices).toHaveLength(10);
-    expect(lifecycleProtocol.execution.staleOwnedSocketPaths).toHaveLength(5);
+    expect(lifecycleProtocol.execution.staleOwnedSocketPaths).toHaveLength(3);
     expect(lifecycleProtocol.acceptance).toMatchObject({
       recreatedServiceIdentityChanges: 6,
       persistentServiceIdentityChanges: 0,
-      staleOwnedSocketsRemoved: 5,
+      staleOwnedSocketsRemoved: 3,
       resumedState: 'running',
       secondPhase: 'running',
       evaluationPhase: 'evaluating',
