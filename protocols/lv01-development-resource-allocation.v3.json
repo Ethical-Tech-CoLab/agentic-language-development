@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "studyId": "LV01",
+  "classification": "prospective-development-only-allocation",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "sourceFreeze": {
+    "commit": "5ae4f744ead9656b5c70560b68cff9eb9b3fd24e",
+    "tree": "8a1ad75f2c7487404a6c562b1c95b11c9c8a07ed",
+    "version": "0.1.326",
+    "artifacts": [
+      { "path": "package.json", "sha256": "sha256:ded52e9f313a9992081d4404c4a65315d58957f82c978338e15cc3dba50b5178" },
+      { "path": "protocols/lv01-study-design.v1.json", "sha256": "sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66" },
+      { "path": "protocols/lv01-analysis-plan.v1.json", "sha256": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b" },
+      { "path": "protocols/lv01-seed-resource-policy.v1.json", "sha256": "sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec" },
+      { "path": "deploy/mode-r/docker-compose.application.v1.yml", "sha256": "sha256:fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f" },
+      { "path": "deploy/mode-r/docker-compose.lv01.v1.yml", "sha256": "sha256:339d6679c1b878ce7a64b625c45910057fa770c7f0a14602436eaba554a56fa3" },
+      { "path": "deploy/mode-r/application-controller.mjs", "sha256": "sha256:33bd0e136ba86e0b5f0994938d001070a892e1f97365151a2952f24ce565ed60" },
+      { "path": "deploy/mode-r/run-lv01-slot.mjs", "sha256": "sha256:3dc06a468ba0b7f77bbf6aca9d3b0124b4fa1ff23afdf51df3afd6cd1f694488" },
+      { "path": "packages/orchestrator/src/experiments/ledger-value.ts", "sha256": "sha256:d7495f64b62f8ea0918f1a8eda377e35cafe6482b576adacc9f0b73ed8a51240" },
+      { "path": "packages/orchestrator/src/experiments/ledger-value-journal.ts", "sha256": "sha256:779f759b0d0c768570a038dbda90d13da877a66b542059b0f572b1de4356cb01" },
+      { "path": "scripts/lv01.mjs", "sha256": "sha256:00cfd7e8727d53fd6a4abcd59043195f31131b2085800209ca6c2d0cc6a3fa0b" }
+    ]
+  },
+  "allocation": {
+    "maximumParallelDyads": 1,
+    "smallFixture": { "runId": "lv01-development-v3-p0001", "iteration": 1, "trainingCases": 64, "validationFitCases": 24, "validationSelectionCases": 24, "withinSupportTestCases": 24, "cpuHoursCap": 0.25, "additionalStorageGiBCap": 1, "maximumResidentGiB": 6 },
+    "fullCalibration": { "iteration": 2, "runIds": ["lv01-development-v3-p0002", "lv01-development-v3-p0003", "lv01-development-v3-p0004", "lv01-development-v3-p0005", "lv01-development-v3-p0006"], "dyads": 5, "requiredWorkload": "frozen full LV01 v1 workload after the small-fixture projection passes" }
+  },
+  "seedDerivation": {
+    "root": "ald-ledger-value-v1", "parts": ["LV01", "development", "v3", "primary", "four-digit slot index", "purpose"], "purposes": ["scenario", "learner/baby-a", "learner/baby-b", "gateway", "analysis"],
+    "slots": [
+      { "index": "0001", "scenario": "cba886d4f05f8b767b46ee80a0c7576225e24172e2fd6f4eb6feb7c31a305ae7", "babyA": "1dea849e7843447a5fb9dca63d96db65093998d94bc28fc15e0a01a4c7b8a187", "babyB": "b04ab546bad11f441244a93392dc722d23a3e07aa9b755e99667cbd32aa8e203", "gateway": "6bf50e30db4ae7f2d5544ced08de2b1fa3a9abe1c405d826b3140dad3c15751e", "analysis": "3e2720bd3074e8907d5fda19a7b00f399c1144e64dff98c240757cdcf291422c" },
+      { "index": "0002", "scenario": "e90a3db2892a44563cbe5274cd826af20c8d32d597117dad34bd925ff380dc29", "babyA": "cb8734e46a98df073006ef56a3ad88f1fe474188c985858b03ca002c3ed3b3c9", "babyB": "28d7d92d05ed6cde9b10ff247122ae8c0b3ce03079169972603e27fcc94e3cbc", "gateway": "a0ac030b2462b031dedaee87cf68df34ad654096bd2cc2b560c24da8b6c23eb1", "analysis": "533303f0bdb28021b3c7db5f20ab15c6bb6e10ed0f3003fe6ef929460825ce2b" },
+      { "index": "0003", "scenario": "6cf2c8eec177216cee1a718090ba09b1093b5eff63a7913a5949054ea3fec1c3", "babyA": "45dc824a497784ffa2fcf8cc5e7d1d1db683f65b66a28e34a6dc5fa542e08816", "babyB": "055b36936931aeca652a572b28053395d8effd418675c33a76387eefd56d7483", "gateway": "7b959fce735ce429995a5955378982057c34f465236885e054f40d08b2fe3dfc", "analysis": "214f4909ab06a6b546f00e85c76fa810c30c31def7c44ef719bf1087ada9bc69" },
+      { "index": "0004", "scenario": "710c1cc0b5585f08df213ecf0a555d74a1ff04a18ddf1b56d695e52188c20313", "babyA": "891c793e36623e12ea38a8ff406ec3dcd353ae800bef0c8e87ff80414d63bab1", "babyB": "009d531cf354ffef89236c1d856254783c498a2eba5f07dd71db04ed4d3c96aa", "gateway": "89586ab76b2497da93b56d5f8e39f7eaf43f5986e99e741e3ad737403656486a", "analysis": "8395cc61514630d397530ce7a7dcae2f396da0eca901cd7ffd5c193f2bed402c" },
+      { "index": "0005", "scenario": "005b922848567848cde3eb7cdfaaffccea845ced664c13d4f674b4b0a27bf879", "babyA": "10608778b20cc46d96afdbd739a9a1d756dd873e1dd0d7b901ec4047cf84bec2", "babyB": "094bb11a820701aebe21ef8482b7efec5f767ad520893a285ce547314b346a8c", "gateway": "6b64f7e55fa6679588c8ed736e190c0a72ab353b26dc7705ad8cb868924deee1", "analysis": "0e796042dcdd208f153605421bd06edf0b9bf67305b0d2e33c62a04382b1d54b" },
+      { "index": "0006", "scenario": "6a7302536d9494014f0f4c60be0545cc4a562f1b001d4106d7ed825b0dee6a5c", "babyA": "7d9cb520de835543fbf7c5ab869898e8b97fa4dc6af75638a53aeb624650c480", "babyB": "fedae1cbdd554a9cdab3558363568e034cbc663ae940ea2d9dee749cb2b53ece", "gateway": "aed99eefae445014bce59dc225480fe8e0f66b93ce1d3a834d12ef13a7e70d69", "analysis": "3ad1d26025b2a6d55ec02f9dba0ccbf0e506b0add2eefb68b31810ac3d675233" }
+    ]
+  },
+  "requiredBeforeExecution": ["clean execution source at the bound commit", "all-service resource accounting", "no registered pilot or confirmatory identifier"],
+  "claimBoundary": "This uses fresh v3 development identifiers after the retained v2 setup failure. It allocates no pilot data and establishes no scientific finding."
+}
