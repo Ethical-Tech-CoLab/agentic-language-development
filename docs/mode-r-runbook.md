@@ -125,6 +125,16 @@ every append; a capture-only capability test checks those values and exposes
 no other method. Local assembly currently backs this port with the same writer
 used by the in-process Gateway. Moving Gateway and learners into the selected
 process graph, with caller-exclusive mounts, remains required for B12.
+The first `symbol-gateway-v1` service component now exposes the v3 method set
+over the same bounded private-socket transport used by the writer capabilities.
+A distinct Gateway child connects to a distinct writer child through the
+durable no-retry journal; the Controller client checks run/configuration
+identity, validates replies, tracks only confirmed rejection state, and enters
+local quarantine after Gateway loss. Component coverage exercises wrong-run and
+wrong-configuration refusal, rejection/reset/accepted paths, distinct process
+IDs, socket mode, retained signed events, and post-crash refusal. Nursery does
+not yet provision this client, and the test is not selected-topology lifecycle,
+mount/network, comprehensive fault, resource, or independent-audit evidence.
 The simulated Anchor writer-port component exposes only `listRuns`, checkpoint
 and receipt reads, and terminal receipt insertion. Its run-bound `listRuns`
 returns only the bound run, even when the writer database contains others.

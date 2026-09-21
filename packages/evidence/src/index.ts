@@ -64,6 +64,11 @@ export {
   type SqliteEvidenceWriterOptions,
 } from './writer.js';
 export {
+  connectEvidenceRpc,
+  createEvidenceRpcServer,
+  record as isRpcRecord,
+} from './rpc-wire.js';
+export {
   buildRunManifest,
   exportRunBundle,
   type BundleReader,

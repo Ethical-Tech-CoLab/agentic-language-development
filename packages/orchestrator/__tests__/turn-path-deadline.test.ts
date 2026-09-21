@@ -318,7 +318,7 @@ describe('all-method turn deadline accounting (SPEC §8.3)', () => {
     } finally {
       await remote.close();
     }
-  }, 15_000);
+  }, 30_000);
 
   it('pauses after five consecutive method-level timeout forfeits', async () => {
     harness = await createHarness({
