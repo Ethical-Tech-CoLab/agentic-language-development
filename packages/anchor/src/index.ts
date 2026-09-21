@@ -93,3 +93,7 @@ export {
   type AnchorVerificationChecks,
   type AnchorVerificationResult,
 } from './verify-anchor.js';
+export {
+  connectAnchorServiceRpc,
+  createAnchorServiceRpcServer,
+} from './service-rpc.js';

@@ -65,6 +65,8 @@ const EXPECTED_EXPORTS = [
   'ViemChainTransport',
   'addPendingSubmission',
   'anchorInputData',
+  'connectAnchorServiceRpc',
+  'createAnchorServiceRpcServer',
   'expectedChainId',
   'findPendingSubmission',
   'generateAnchorKey',

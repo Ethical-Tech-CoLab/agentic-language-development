@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { connectAnchorServiceRpc } from '@ald/anchor';
 import { connectCheckpointServiceRpc } from '@ald/checkpoint';
 import {
   connectAuditEvidenceRpc,
@@ -24,7 +25,6 @@ import {
   type EvidenceWriterCapabilitySockets,
 } from '../src/index.js';
 import {
-  anchorPublisherFor,
   noLearningOverrides,
   testConfig,
 } from './helpers.js';
@@ -37,6 +37,8 @@ const signerFixture = fileURLToPath(new URL(
   '../../hashing/__tests__/fixtures/domain-signer-child.mjs', import.meta.url));
 const checkpointFixture = fileURLToPath(new URL(
   '../../checkpoint/__tests__/fixtures/checkpoint-service-child.mjs', import.meta.url));
+const anchorFixture = fileURLToPath(new URL(
+  '../../anchor/__tests__/fixtures/anchor-service-child.mjs', import.meta.url));
 const babyHost = fileURLToPath(new URL(
   '../../isolation/bin/ald-baby-host.js', import.meta.url));
 const modelHost = fileURLToPath(new URL(
@@ -118,6 +120,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
     };
     const gatewaySocket = join(directory, 'gateway-controller.sock');
     const checkpointServiceSocket = join(directory, 'checkpoint-service.sock');
+    const anchorServiceSocket = join(directory, 'anchor-service.sock');
     const roles: BabyRole[] = ['baby-a', 'baby-b'];
     const adapterFactories = new Map<BabyRole, GatewayRelayAdapterFactory>();
     const babyProcesses = new Map<BabyRole, ChildProcess>();
@@ -205,12 +208,25 @@ describe('remote runtime with distinct Baby and model processes', () => {
     children.push(checkpointProcess);
     expect(await readyLine(checkpointProcess, 'checkpoint service')).toBe('ready\n');
 
-    const [controller, gatewayWriter, audit, checkpointService] =
+    const anchorProcess = spawn(process.execPath, [
+      anchorFixture,
+      anchorServiceSocket,
+      sockets.anchor,
+      runId,
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    children.push(anchorProcess);
+    expect(await readyLine(anchorProcess, 'Anchor Service')).toBe('ready\n');
+
+    const [controller, gatewayWriter, audit, checkpointService, anchorService] =
       await Promise.all([
         connectControllerEvidenceRpc(sockets.controller, runId),
         connectGatewayEvidenceRpc(sockets.gateway, runId),
         connectAuditEvidenceRpc(sockets.audit, runId),
         connectCheckpointServiceRpc(checkpointServiceSocket, runId),
+        connectAnchorServiceRpc(anchorServiceSocket, runId, {
+          anchorClass: 'simulated',
+          network: 'base-sepolia',
+        }),
       ]);
     const signers: SignerRegistry = {
       runId,
@@ -222,7 +238,7 @@ describe('remote runtime with distinct Baby and model processes', () => {
       bundleRoot: join(directory, 'bundles'),
       softwareCommit,
       anchorPolicy: 'required',
-      anchorPublisher: anchorPublisherFor(runId),
+      anchorPublisher: anchorService.publisher,
       signerProvider: () => signers,
       adapterFactoryFor: (_runConfig, role) => adapterFactories.get(role)!,
       evidenceContextFactory: () => ({
@@ -272,10 +288,12 @@ describe('remote runtime with distinct Baby and model processes', () => {
       writerProcess.pid,
       gatewayProcessId,
       checkpointProcess.pid,
+      anchorProcess.pid,
       ...babyProcessIds,
       ...modelProcessIds,
-    ]).size).toBe(9);
+    ]).size).toBe(10);
     expect(checkpointService.processId).toBe(checkpointProcess.pid);
+    expect(anchorService.processId).toBe(anchorProcess.pid);
     expect(() => runtime.writerFor(runId)).toThrow(
       'local Evidence Writer inspection is unavailable',
     );
