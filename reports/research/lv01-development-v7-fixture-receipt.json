@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-fixture-receipt",
+  "status": "completed-limited-development-fixture",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v7-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v7.json",
+    "executionCommit": "a8f40d4",
+    "evidenceRoot": "evidence/lv01/development-v7/lv01-development-v7-p0001",
+    "bundleManifestHash": "sha256:abb07107dd6ff82174919b480496de5730118d2870685ef23220b22e3aae369a"
+  },
+  "observed": {
+    "state": "sealed",
+    "trainingTurns": 64,
+    "evaluationTurns": 24,
+    "checkpointCount": 11,
+    "offlineVerifierExitCode": 0,
+    "verifiedChecks": [
+      "canonical JSON",
+      "strict stream sequences",
+      "entry hashes and chain links",
+      "writer and witness signatures",
+      "Merkle and checkpoint reconstruction",
+      "simulated anchor receipt"
+    ]
+  },
+  "limitations": [
+    "The verifier reports no separate inclusion or consistency proof files.",
+    "The verifier did not use an independent anchor RPC endpoint.",
+    "This is one local 64-training-turn and 24-evaluation-turn topology fixture, not seven-branch LV01 qualification, a pilot, a calibration set, or a behavioral study."
+  ],
+  "claimBoundary": "This receipt supports only the listed local software and evidence-path observations. It establishes no semantic-ledger fidelity, utility, cost, language-emergence, or scientific result."
+}
