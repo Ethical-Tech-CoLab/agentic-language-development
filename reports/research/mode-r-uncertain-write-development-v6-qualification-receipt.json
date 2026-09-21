@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "classification": "selected-mode-r-uncertain-write-development-qualification",
+  "researchFinding": false,
+  "b12Closed": false,
+  "passed": true,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "mode-r-uncertain-write-development-v6",
+  "executionCommit": "6c818f1432a16df618f03f5366440ccf93d6e30e",
+  "executionTree": "385be672f55224da9daa16ab42caaf9f45c8afbf",
+  "executionVersion": "0.1.294",
+  "startedAt": "2026-09-21T15:25:15.761Z",
+  "finishedAt": "2026-09-21T15:29:32.505Z",
+  "protocol": {
+    "path": "protocols/mode-r-uncertain-write-development.v6.json",
+    "bytes": 4382,
+    "sha256": "sha256:f5c7c5462affc0eedc73ce09f7405ad4b0a504c834c6d4e8e7cefaae1c58ee24"
+  },
+  "rawReceipt": {
+    "path": "evidence/mode-r-uncertain-write-development-v6/receipt.json",
+    "bytes": 19561,
+    "sha256": "sha256:e619b222798ec7fba9ad87efeac5d30052bf4098ccf4e088be92276aacad0d23",
+    "retention": "local-ignored-original"
+  },
+  "terminal": {
+    "injectControllerExitCode": 0,
+    "recoveryControllerExitCode": 0,
+    "injectControllerOomKilled": false,
+    "recoveryControllerOomKilled": false,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "injection": {
+    "remoteUnconfirmedErrorName": "Error",
+    "quarantineErrorName": "EvidenceWriteUncertainError",
+    "operationalQuarantine": "evidence-write-uncertain",
+    "initialCounts": {
+      "turns": 0,
+      "channel": 0,
+      "babyALedger": 0,
+      "babyBLedger": 0
+    },
+    "postCommitCounts": {
+      "turns": 0,
+      "channel": 1,
+      "babyALedger": 2,
+      "babyBLedger": 0
+    },
+    "secondAttemptAddedEvidence": false,
+    "journalIntentCount": 1,
+    "journalConfirmationCount": 0
+  },
+  "recovery": {
+    "recoveryErrorName": "IncompleteTurnEvidenceError",
+    "stepErrorName": "IncompleteTurnEvidenceError",
+    "operationalQuarantine": "incomplete-turn-evidence",
+    "countsBeforeRecovery": {
+      "turns": 0,
+      "channel": 1,
+      "babyALedger": 2,
+      "babyBLedger": 0
+    },
+    "recoveryAddedEvidence": false,
+    "stepAddedEvidence": false
+  },
+  "verification": {
+    "inject": {
+      "typescriptExitCode": 0,
+      "rustIntegrityPass": true,
+      "rustEventCount": 4,
+      "rustCheckpointCount": 1,
+      "rustIssueCount": 0
+    },
+    "recovery": {
+      "typescriptExitCode": 0,
+      "rustIntegrityPass": true,
+      "rustEventCount": 4,
+      "rustCheckpointCount": 1,
+      "rustIssueCount": 0
+    },
+    "resourceSnapshotCount": 2
+  },
+  "limitations": [
+    "The execution uses no-learning learners, fixed-token carriers, simulated anchoring, and zero external spending.",
+    "The qualification covers one selected-topology commit-before-delayed-confirmation case, not a generic network-partition model.",
+    "Cryptographic prefix validity does not make the semantically incomplete turn recoverable.",
+    "Late learner callbacks, malformed envelopes, detector bounds, and a cgroup peak resource envelope remain unqualified.",
+    "Two periodic resource observations are not a peak or campaign resource-envelope qualification.",
+    "Selected E10+ learner and carrier bindings remain unresolved, so B12 remains open.",
+    "This is software qualification evidence, not a behavioral result, independent review, or publication evidence."
+  ],
+  "claimBoundary": "V6 qualifies one bounded selected-topology commit-without-confirmation case. The live Gateway recorded one unresolved intent, entered terminal evidence-write uncertainty, and did not retry; a reconstructed Gateway classified the retained signed prefix as an incomplete turn and refused recovery without adding evidence. Both prefixes passed the TypeScript and Rust cryptographic verifiers. B12 and all behavioral claims remain open."
+}
