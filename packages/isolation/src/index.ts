@@ -29,7 +29,10 @@
  */
 export {
   defaultBabyHostEntry,
+  createBabyContainerAdapterFactory,
   createBabyProcessAdapterFactory,
+  type BabyContainerAdapterFactory,
+  type BabyContainerAdapterFactoryOptions,
   type BabyProcessAdapterFactory,
   type BabyProcessAdapterFactoryOptions,
 } from './baby-factory.js';

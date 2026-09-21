@@ -404,6 +404,9 @@ importers:
       '@ald/interventions':
         specifier: '*'
         version: link:../interventions
+      '@ald/isolation':
+        specifier: '*'
+        version: link:../isolation
       '@ald/leakage':
         specifier: '*'
         version: link:../leakage

@@ -11,6 +11,8 @@ import { IsolationError } from './errors.js';
 import { canonicalPayload } from './frames.js';
 import { isolationPackageRoot, type ProcessTransportOptions } from './process-transport.js';
 import { ProcessHostTransport } from './factory.js';
+import { ContainerHostTransport } from './factory.js';
+import type { TcpConnectOptions } from './tcp-transport.js';
 import {
   RemoteLearnerAdapter,
   type RemoteLearnerAdapterOptions,
@@ -35,6 +37,22 @@ export interface BabyProcessAdapterFactoryOptions
 
 export interface BabyProcessAdapterFactory extends LearnerAdapterFactory {
   readonly isolation: 'separate-process';
+  create(): RemoteLearnerAdapter;
+  readonly adapters: readonly RemoteLearnerAdapter[];
+  dispose(): Promise<void>;
+}
+
+export interface BabyContainerAdapterFactoryOptions
+  extends Omit<
+    RemoteLearnerAdapterOptions,
+    'transport' | 'track' | 'turnDeadlineAuthority'
+  > {
+  track: LearnerTrackId;
+  endpoint: TcpConnectOptions & { hostLabel?: string };
+}
+
+export interface BabyContainerAdapterFactory extends LearnerAdapterFactory {
+  readonly isolation: 'separate-container';
   create(): RemoteLearnerAdapter;
   readonly adapters: readonly RemoteLearnerAdapter[];
   dispose(): Promise<void>;
@@ -107,6 +125,49 @@ export function createBabyProcessAdapterFactory(
           }
         }),
       );
+      adapters.length = 0;
+    },
+  };
+}
+
+/** Connect the Controller-side learner contract to one Baby container. */
+export function createBabyContainerAdapterFactory(
+  options: BabyContainerAdapterFactoryOptions,
+): BabyContainerAdapterFactory {
+  if (options.learnerOptions !== undefined) {
+    canonicalPayload(options.learnerOptions, 'learnerOptions');
+  }
+  const adapters: RemoteLearnerAdapter[] = [];
+  return {
+    track: options.track,
+    isolation: 'separate-container',
+    adapters,
+    create(): RemoteLearnerAdapter {
+      const adapter = new RemoteLearnerAdapter({
+        track: options.track,
+        transport: new ContainerHostTransport(options.endpoint),
+        ...(options.learnerOptions === undefined
+          ? {}
+          : { learnerOptions: options.learnerOptions }),
+        ...(options.frameSize === undefined ? {} : { frameSize: options.frameSize }),
+        ...(options.maxPayloadBytes === undefined
+          ? {}
+          : { maxPayloadBytes: options.maxPayloadBytes }),
+        ...(options.timing === undefined ? {} : { timing: options.timing }),
+        ...(options.deadlineMs === undefined ? {} : { deadlineMs: options.deadlineMs }),
+        ...(options.timer === undefined ? {} : { timer: options.timer }),
+      });
+      adapters.push(adapter);
+      return adapter;
+    },
+    async dispose(): Promise<void> {
+      await Promise.all(adapters.map(async (adapter) => {
+        try {
+          await adapter.dispose();
+        } catch {
+          // A stopped Baby container has already disposed its model endpoint.
+        }
+      }));
       adapters.length = 0;
     },
   };

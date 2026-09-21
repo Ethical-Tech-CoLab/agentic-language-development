@@ -23,6 +23,7 @@
     "@ald/gateway": "*",
     "@ald/hashing": "*",
     "@ald/interventions": "*",
+    "@ald/isolation": "*",
     "@ald/learners": "*",
     "@ald/leakage": "*",
     "@ald/lifecycle": "*",
