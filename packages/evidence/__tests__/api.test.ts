@@ -1,8 +1,7 @@
 /**
- * ALD-010 criterion 3 regression guard: the package must not expose any
- * function that writes an event table other than `SqliteEvidenceWriter`.
- * Every SQL statement against the event tables lives in `src/writer.ts` and
- * is private to it; this test fails if a new raw-SQL helper is exported.
+ * ALD-010 criterion 3 regression guard: every SQL statement against event
+ * tables remains private to `SqliteEvidenceWriter`. The Controller RPC only
+ * dispatches an allowlisted method to that writer; no raw-SQL helper is public.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -24,6 +23,8 @@ const EXPECTED_EXPORTS = [
   'applyMigrations',
   'buildRunManifest',
   'canonicalizeJson',
+  'connectControllerEvidenceRpc',
+  'createControllerEvidenceRpcServer',
   'deserializeUnsignedLedgerEvent',
   'exportRunBundle',
   'isLedgerEventType',

@@ -10,6 +10,11 @@
  * and `fork_artifacts` is private to `writer.ts`.
  */
 export { openEvidenceDatabase, type EvidenceDatabase } from './database.js';
+export {
+  connectControllerEvidenceRpc,
+  createControllerEvidenceRpcServer,
+  type ControllerEvidencePort,
+} from './controller-rpc.js';
 export { applyMigrations, migrations } from './migrations.js';
 export {
   canonicalizeJson,

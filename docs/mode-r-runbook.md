@@ -21,6 +21,13 @@ The Gateway now accepts a six-method write-only evidence port at its type bounda
 a test exercises accepted and rejected turns through a port without registration,
 read, checkpoint, or anchor methods. The current Nursery still passes an in-process
 writer, so this is not yet a process or runtime capability boundary.
+An isolated Controller writer-port component now has the v2 fifteen-method
+allowlist, a run-bound handshake, private Unix socket checks, bounded frames,
+and no client retry. Its child-process test registers a run, appends a signed
+turn and an intervention, rejects Gateway/audit methods and a wrong run, and
+checks the retained SQLite rows after writer death. The live Nursery does not
+yet use this port: its synchronous reads and checkpoint dependencies still
+require migration, and socket-mount exclusivity has not been measured.
 The Gateway now quarantines itself when that port reports a possibly committed
 write with no confirmed response. A running Controller refuses another turn
 before adapter work, and restart recovery refuses channel or affect events that
