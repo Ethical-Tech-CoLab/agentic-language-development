@@ -18,6 +18,12 @@ describe('LV01 selected-topology fixture runner', () => {
     });
     expect(historicalMismatch.status).not.toBe(0);
     expect(historicalMismatch.stderr).toContain('scenario seed derivation');
+
+    const prospective = spawnSync(process.execPath, [audit, '--version', '10'], {
+      cwd: root, encoding: 'utf8',
+    });
+    expect(prospective.status).toBe(0);
+    expect(prospective.stdout).toContain('allocation v10 valid');
   });
 
   it('requires a prospective allocation before it configures a fixture', () => {
