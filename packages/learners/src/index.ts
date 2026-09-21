@@ -187,6 +187,15 @@ export {
   type SenderSymbolPrediction,
 } from './ledger-prediction.js';
 export {
+  LV01_CANDIDATE_COUNT,
+  LV01_PARAMETER_COUNT,
+  LV01_PREDICTION_FUNCTION_VERSION,
+  LV01_SYMBOL_COUNT,
+  LV01_TYPE_COUNT,
+  replayLv01RecurrentReceiver,
+  type Lv01RecurrentReplayPrediction,
+} from './ledger-value-prediction.js';
+export {
   learnerContractPath,
   learnerContractsDirectory,
   loadLearnerContract,
