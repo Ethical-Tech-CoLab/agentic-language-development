@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-selected-late-callback-development-protocol",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "b12Closed": false,
+  "publicChainTransaction": false,
+  "externalSpendingUsd": 0,
+  "qualificationId": "lv01-late-callback-v1",
+  "runId": "lv01-late-callback-v1-p0001",
+  "predecessorFailure": {"path": "reports/research/lv01-recurrent-lifecycle-v3-failure-receipt.json", "sha256": "737fdd858563221e9db2039cab885479c2e1cc4ef3e6772c4d706d3a212f247f"},
+  "prerequisite": {"path": "reports/research/lv01-recurrent-lifecycle-v4-receipt.json", "sha256": "10c3962d93206609e70040d2324a9ca1f70f398b0377dec3038533638c4b2f61"},
+  "sourceFreeze": {"commit": "098548fc2e8d5ccd0fd1ce3a0681028e01f751fc", "tree": "4af36155796421deebdfb93159c250aa68ed992c", "version": "0.1.377"},
+  "sources": [
+    {"path":"scripts/run-mode-r-late-callback-development.mjs","sha256":"51f11ef764242c7637328f8a6f86f4bf4a822bebe5160e98af9ab8e9b14c9260"},
+    {"path":"deploy/mode-r/application-late-callback-controller.mjs","sha256":"88e45efe949fbd0dad3b0b701ff9de8ac6f71f6514a42106c93ee2b32f34edb3"},
+    {"path":"deploy/mode-r/domain-signer-host.mjs","sha256":"f60519bbc591f0ea4312d12b236509ce10999626a7f5c3cc57fe8ed362653f60"},
+    {"path":"deploy/mode-r/docker-compose.application.v1.yml","sha256":"fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"},
+    {"path":"deploy/mode-r/docker-compose.lv01.v1.yml","sha256":"af93fe1c75762e7b3ea339a015e524cb5ac11ea593735e5560bd3c90b0b741a6"},
+    {"path":"deploy/mode-r/docker-compose.application-late-callback.v1.yml","sha256":"ab150801c4aa1399a20b61d8fca2232bf868c4a5db32f40b5e5c35ebcb49c0f4"},
+    {"path":"deploy/mode-r/application-delayed-model-adapter.mjs","sha256":"076e061b1d53ee174925d0146e9d4e294db288434a72537bfda3f20be8d9ea89"}
+  ],
+  "injection": {"role":"baby-a","modelMethod":"act","delayMs":1500,"outerDeadlineMs":1000,"postDeadlineObservationMs":2500,"semantics":"A recurrent sender action starts but exceeds the outer normalized deadline. The adapter must quarantine the relay and admit no late evidence."},
+  "execution": {"learnerTrack":"scratch-rl","recurrentArchitecture":"gru-actor-critic-v1","trainingTurns":3,"evaluationTurns":1,"freshEvidenceIdentityRequired":true,"cleanCommittedSourceRequired":true},
+  "acceptance": {"serviceCount":17,"createdState":"running","turn":0,"phase":"running","terminalState":"paused","channelValidation":"rejected","channelReasonCode":"timeout","logicalSender":"baby-a","outcomeReasonCode":"timeout","turnDelta":1,"channelDelta":1,"deadlineEventCount":1,"deadlineEvent":{"role":"baby-a","method":"act","budgetMs":1000,"adapterQuarantined":true,"quarantineFailed":false},"resumeErrorName":"RunConfigurationError","stepErrorName":"RunNotAcceptingTurnsError","typescriptVerifierExitCode":0,"rustIntegrityPass":true,"minimumResourceSnapshots":1},
+  "claimBoundary":"A pass establishes only one LV01 recurrent sender late-action case: a single timeout forfeit, terminal quarantine, no late evidence, and refusal of resume or another turn. It is not full H07 closure, a pilot, or a behavioral result."
+}
