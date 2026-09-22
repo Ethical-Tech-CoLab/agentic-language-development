@@ -89,6 +89,10 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
         overrides: {
           communicationCondition: treatment.communicationCondition,
           evaluationOnly: true,
+          // A paired case is one held-out episode per immutable branch. More
+          // episodes would be a separate paired-case allocation, not a
+          // silent expansion of this branch-reset primitive.
+          evaluationTurns: 1,
         },
       },
     );
