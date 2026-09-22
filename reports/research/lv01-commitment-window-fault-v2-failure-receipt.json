@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-commitment-window-fault-development-failure",
+  "packetPath": "protocols/lv01-commitment-window-fault-development.v2.json",
+  "attemptStatus": "failed-before-fault-boundary",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "failureStage": "signer-identity-validation",
+  "failure": "The signer allowlist did not admit the new commitment-window child identity, so no public keys were written and controller startup timed out.",
+  "dockerStarted": true,
+  "faultMarkerObserved": false,
+  "remainingContainers": 0,
+  "retriable": false,
+  "successorRequirement": "Expand the signer identity allowlist, then use a fresh packet version, child run identity, project name, and isolated subnet allocation.",
+  "claimBoundary": "A topology startup failure only; no intended crash boundary, recovery observation, pilot, or behavioral evidence was collected."
+}
