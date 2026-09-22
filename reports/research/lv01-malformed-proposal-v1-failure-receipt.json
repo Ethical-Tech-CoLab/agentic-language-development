@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-malformed-proposal-development-failure",
+  "status": "failed-before-container-start",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "packetPath": "protocols/lv01-malformed-proposal-development.v1.json",
+  "executionCommit": "ce807d5dc056138cb69332042c5b80a38993ecab",
+  "rawEvidenceRoot": "evidence/lv01/malformed-proposal-v1/lv01-malformed-proposal-v1-p0001-normal",
+  "observed": {
+    "generatedConfigurationSha256": "sha256:ba05a0433b7cbe166db459b52d1e21589bb7f0b44612fd3b65b45ba9fedb6454",
+    "containersCreated": 0,
+    "terminalReceiptWritten": false
+  },
+  "failure": "The supervising execution session ended during the prerequisite TypeScript build before the collector could invoke Docker. No selected-topology service, turn, channel event, ledger event, bundle, or runtime receipt was created.",
+  "successorRequirement": "Do not retry v1. Freeze a fresh packet with a new child identity, project, and isolated subnet allocation before another execution.",
+  "claimBoundary": "This is terminal accounting for an interrupted local development attempt, not a software qualification, pilot, or behavioral result."
+}
