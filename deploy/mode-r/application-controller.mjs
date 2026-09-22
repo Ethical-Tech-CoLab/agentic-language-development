@@ -22,7 +22,8 @@ const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
 assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch',
   'lv01-commitment-window-fault', 'lv01-commitment-window-recover',
-  'lv01-malformed-proposal', 'lv01-five-rejection-safety'].includes(stage),
+  'lv01-malformed-proposal', 'lv01-five-rejection-safety',
+  'lv01-detector-observation'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -409,6 +410,60 @@ async function runLv01FiveRejectionSafety() {
   });
 }
 
+/**
+ * Retain the real selected-application observations for the outer detector
+ * collector. This intentionally makes no detector decision: labels, splits,
+ * positive controls, restoration orchestration, and probe evaluation remain
+ * outside the Controller so they can be independently bound and audited.
+ */
+async function runLv01DetectorObservation() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.equal(config.babyA.track, 'scratch-rl');
+  assert.equal(config.babyB.track, 'scratch-rl');
+  assert.equal(config.babyA.modelRef, RECURRENT_ARCHITECTURE);
+  assert.equal(config.babyB.modelRef, RECURRENT_ARCHITECTURE);
+  await runtime.createRun(config);
+  const captured = [];
+  for (const [role, adapter] of Object.entries(runtime.adaptersFor(config.runId))) {
+    const observe = adapter.observe.bind(adapter);
+    adapter.observe = async (observation) => {
+      const record = { role, observation: structuredClone(observation), delivered: false };
+      captured.push(record);
+      await observe(observation);
+      record.delivered = true;
+    };
+  }
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'sealed');
+  const [turns, bundle] = await Promise.all([
+    controller.port.readEvents(config.runId, 'turns'),
+    runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
+  ]);
+  assert.equal(captured.length, turns.length * 2);
+  assert.ok(captured.every((record) => record.delivered));
+  await writeResult('lv01-detector-observations.json', {
+    schemaVersion: 1,
+    classification: 'lv01-selected-detector-observation-stage',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    learnerArchitecture: RECURRENT_ARCHITECTURE,
+    state: summary.state,
+    turnCount: turns.length,
+    captured,
+    processIds: {
+      controller: process.pid,
+      evidenceWriter: controller.processId,
+      gateway: gatewayProcessId,
+      checkpoint: checkpoint.processId,
+      anchor: anchor.processId,
+      auditInterpreter: audit.processId,
+    },
+    bundleRunId: bundle.runId,
+    claimBoundary: 'Selected-topology recurrent observation capture only. Labels, detector probes, restoration comparison, and any qualification decision are owned by the outer collector.',
+  });
+}
+
 try {
   if (stage === 'lv01-commitment-window-fault') {
     await runLv01CommitmentWindowFault();
@@ -418,6 +473,8 @@ try {
     await runLv01MalformedProposal();
   } else if (stage === 'lv01-five-rejection-safety') {
     await runLv01FiveRejectionSafety();
+  } else if (stage === 'lv01-detector-observation') {
+    await runLv01DetectorObservation();
   } else if (stage === 'lv01-fixture') {
     await runLv01Fixture();
   } else if (stage === 'lv01-paired-branch') {
