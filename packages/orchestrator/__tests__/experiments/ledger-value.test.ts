@@ -44,6 +44,10 @@ describe('LV01 paired collector gates', () => {
     expect(plan.branches.map((entry) => entry.config.evaluationTurns)).toEqual(
       LV01_BRANCHES.map(() => 1),
     );
+    expect(plan.branches.map((entry) => entry.config.lv01PairedCase?.preStateCommitment)).toEqual(
+      LV01_BRANCHES.map(() => plan.preStateCommitment),
+    );
+    expect(plan.branches.map((entry) => entry.config.lv01PairedCase?.branch)).toEqual(LV01_BRANCHES);
     expect(plan.branches.map((entry) => entry.config.randomSeed)).toEqual(
       LV01_BRANCHES.map(() => parent.randomSeed),
     );

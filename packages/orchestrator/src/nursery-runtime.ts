@@ -1294,6 +1294,35 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
             submission.deliveredArtifactHash,
           );
         }
+        if (phase === 'evaluating' && run.config.lv01PairedCase !== undefined) {
+          const [babyALedger, babyBLedger] = await Promise.all([
+            run.controllerEvidence.readEvents(run.runId, 'baby-a-ledger'),
+            run.controllerEvidence.readEvents(run.runId, 'baby-b-ledger'),
+          ]);
+          const receiverPolicyHash = run.policyRefs[receiver]?.policyHash
+            ?? hashCanonical(HASH_DOMAINS.policyCheckpoint, run.adapters[receiver].exportPolicy());
+          const commitment = hashCanonical('lv01-paired-pre-action-prediction/v1', {
+            ...run.config.lv01PairedCase,
+            turn,
+            receiver,
+            scenarioStateHash: instance.stateHash,
+            candidateRefs: instance.candidateRefs,
+            deliveredArtifactHash: submission.deliveredArtifactHash,
+            receiverPolicyHash,
+            trainingLedgerHeads: {
+              babyA: babyALedger.map((event) => event.entryHash),
+              babyB: babyBLedger.map((event) => event.entryHash),
+            },
+          });
+          await run.controllerEvidence.appendInterventionEvent({
+            runId: run.runId,
+            eventType: 'prediction-commitment',
+            actorId: this.#actorId,
+            reasonCode: 'lv01-paired-pre-receiver-action-prediction-committed',
+            details: { turn, receiver, commitment, ...run.config.lv01PairedCase },
+          });
+          await this.#checkpoint(run, 'intervention');
+        }
         const receiverTurn = await this.#runReceiver(
           run,
           turnContext,
