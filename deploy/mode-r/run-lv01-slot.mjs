@@ -37,6 +37,16 @@ const APPLICATION_SERVICES = [
   'controller-scenario', 'offline-verifier',
 ];
 
+function networkAllocation(runOrdinal = 0) {
+  const thirdOctet = 1 + (Number(version) * 8) + runOrdinal;
+  assert.ok(thirdOctet <= 255, 'LV01 isolated-network allocation requires a new version range');
+  return {
+    babyA: `10.250.${thirdOctet}.0/28`,
+    babyB: `10.250.${thirdOctet}.16/28`,
+    controlPlane: `10.250.${thirdOctet}.32/28`,
+  };
+}
+
 function inspectServiceAccess(containerId, service, target) {
   const probe = spawnSync('docker', [
     'exec', containerId, '/usr/local/bin/node', '-e',
@@ -131,6 +141,7 @@ function verifyAllocation() {
   assert.equal(allocation.allocation.smallFixture.validationFitCases, 24);
   assert.equal(allocation.allocation.smallFixture.validationSelectionCases, 24);
   assert.equal(allocation.allocation.smallFixture.withinSupportTestCases, 24);
+  assert.deepEqual(allocation.networkAllocation, networkAllocation());
   assert.equal(allocation.seedDerivation.slots.length, 6);
   for (const slot of allocation.seedDerivation.slots) {
     const derive = (purpose) => deriveSeedHex(allocation.seedDerivation.root,
@@ -283,6 +294,10 @@ async function runComposeWithMeasurements(compose, environment) {
     return output;
   } finally {
     clearInterval(timer);
+    const teardown = spawnSync('docker', [...compose, 'down', '--remove-orphans'], {
+      env: environment, encoding: 'utf8',
+    });
+    output += `\n-- teardown --\n${teardown.stdout ?? ''}${teardown.stderr ?? ''}`;
     writeFileSync(composeLogPath, output, { flag: 'wx', mode: 0o600 });
     if (authority === null) {
       writeFileSync(authorityFailurePath, `${JSON.stringify({
@@ -294,6 +309,7 @@ async function runComposeWithMeasurements(compose, environment) {
         failure: authorityFailure ?? 'no live selected-application authority observation was available',
       }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
     }
+    assert.equal(teardown.status, 0, `LV01 fixture teardown failed: ${(teardown.stderr ?? teardown.stdout ?? '').split('\n')[0]}`);
   }
 }
 
@@ -325,10 +341,14 @@ const environment = {
   ALD_MODE_R_RUN_ID: runId,
   ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
   ALD_MODE_R_CONTROLLER_STAGE: 'lv01-fixture',
+  ALD_MODE_R_BABY_A_SUBNET: allocation.networkAllocation.babyA,
+  ALD_MODE_R_BABY_B_SUBNET: allocation.networkAllocation.babyB,
+  ALD_MODE_R_CONTROL_PLANE_SUBNET: allocation.networkAllocation.controlPlane,
 };
 const compose = ['compose', '--project-name', `ald-lv01-development-v${version}`,
   '--file', 'deploy/mode-r/docker-compose.application.v1.yml',
-  '--file', 'deploy/mode-r/docker-compose.lv01.v1.yml'];
+  '--file', 'deploy/mode-r/docker-compose.lv01.v1.yml',
+  '--file', 'deploy/mode-r/docker-compose.lv01-isolated-networks.v1.yml'];
 let result;
 let fixture;
 try {

@@ -1,0 +1,13 @@
+networks:
+  baby-a-gateway:
+    ipam:
+      config:
+        - subnet: ${ALD_MODE_R_BABY_A_SUBNET:?ALD_MODE_R_BABY_A_SUBNET is required}
+  baby-b-gateway:
+    ipam:
+      config:
+        - subnet: ${ALD_MODE_R_BABY_B_SUBNET:?ALD_MODE_R_BABY_B_SUBNET is required}
+  control-plane:
+    ipam:
+      config:
+        - subnet: ${ALD_MODE_R_CONTROL_PLANE_SUBNET:?ALD_MODE_R_CONTROL_PLANE_SUBNET is required}
