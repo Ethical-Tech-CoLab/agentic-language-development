@@ -6,8 +6,9 @@ import { describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 
 describe('LV01 development signer identity', () => {
-  it('admits only the versioned development run-id form alongside existing modes', () => {
+  it('admits only versioned LV01 qualification run identifiers alongside existing modes', () => {
     const signer = readFileSync(`${root}deploy/mode-r/domain-signer-host.mjs`, 'utf8');
     expect(signer).toContain('lv01-paired-development-v\\d+-p\\d{4}-(?:normal|disabled|constant|random|shuffled|ledger-consistent|ledger-shuffled)');
+    expect(signer).toContain('lv01-commitment-window-fault-v\\d+-p\\d{4}-normal');
   });
 });
