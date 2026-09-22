@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-malformed-proposal-development",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "project": "ald-lv01-malformed-proposal-v4",
+  "evidenceRoot": "evidence/lv01/malformed-proposal-v4/lv01-malformed-proposal-v4-p0001-normal",
+  "childRunIdPrefix": "lv01-malformed-proposal-v4-p0001",
+  "childRunId": "lv01-malformed-proposal-v4-p0001-normal",
+  "networkAllocation": { "babyA": "10.250.183.0/28", "babyB": "10.250.183.16/28", "controlPlane": "10.250.183.32/28" },
+  "parent": { "runId": "lv01-development-v21-p0001", "configPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/config/run-config.json", "configSha256": "sha256:c1ab5d4b21dd66f41b52136a51191313cc19e7dc59cfbdbba0422ff262b46405", "bundlePath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle", "bundleManifestPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle/run-manifest.json", "bundleManifestSha256": "sha256:ea52cf3d832f9249b33545eedee6831d93288db5ca63e4ea0930bbf0da024217", "checkpointHash": "sha256:46284ba18a3fd42b6ed78de7ad2e58ac8ce4a41a8d60d79657fd8b32e13b0048", "babyAInitialPolicyRef": "policies/baby-a-latest.json", "babyBInitialPolicyRef": "policies/baby-b-latest.json" },
+  "sourceFreeze": { "commit": "2446262702fc31bef8ae62c5c9d742f45d53e6d8", "tree": "31a8683637767981ca3c26c8df436e78ef6a7789", "version": "0.1.421", "artifacts": [
+    { "path": "scripts/run-lv01-malformed-proposal-development.mjs", "sha256": "sha256:f1ab63695670cc8096a706f0a861ef0ea69b56757e5333e6b2152e40f7f7c98c" },
+    { "path": "deploy/mode-r/application-controller.mjs", "sha256": "sha256:e746e735a03d6b4acbd85abdb276b3e14a7d5d0ed3e7fba06c5ff9c039f999ec" },
+    { "path": "deploy/mode-r/domain-signer-host.mjs", "sha256": "sha256:ad42ee717a54717abf5f87ba6acbe2ebe79a7dabaddfa9fa007b56864c75a36b" },
+    { "path": "packages/hashing/src/domain-signer-rpc.ts", "sha256": "sha256:f7482c41516c2cfe29a7cc7a7428bdc33612f2cab15c7bd416798810a82b1334" },
+    { "path": "deploy/mode-r/docker-compose.application.v1.yml", "sha256": "sha256:5c068b25e57842b9aca9e9629925783714544912358782d550d1f9c891457d10" },
+    { "path": "deploy/mode-r/docker-compose.lv01.v1.yml", "sha256": "sha256:b880a008d935b28fbdd647f91d4ce97a20c1be3030c0078de7a240b219d58ba0" },
+    { "path": "deploy/mode-r/docker-compose.lv01-isolated-networks.v1.yml", "sha256": "sha256:e932dc32e1d17b0d0f12fa4e85e800a956d7eeafdcf8dc0c372f697d499fa434" }
+  ] },
+  "acceptance": { "terminalState": "sealed", "turnRecords": 1, "channelEvents": 1, "senderLedgerEventsAdded": 0, "receiverLedgerEventsAdded": 0, "gatewayValidationResult": "rejected", "rejectionReasonCode": "trusted-metadata-present", "remainingContainers": 0 },
+  "claimBoundary": "Fresh v4 local selected-topology malformed-proposal qualification after prior retained attempts. The parent is read-only input; no pilot, behavioral result, or full H07 closure is claimed."
+}
