@@ -14,6 +14,8 @@ describe('LV01 detector observation stage', () => {
     expect(controller).toContain("assert.equal(config.babyB.modelRef, RECURRENT_ARCHITECTURE)");
     expect(controller).toContain('runtime.adaptersFor(config.runId)');
     expect(controller).toContain('assert.equal(captured.length, turns.length * 2)');
+    expect(controller).toContain("if (stage === 'lv01-detector-observation')");
+    expect(controller).toContain('Selected-topology detector observation attempt failed before a detector decision.');
     expect(controller).toContain("runtime.exportBundle(config.runId, join(outputRoot, 'bundle'))");
     expect(controller).toContain("researchFinding: false");
     expect(controller).toContain('Labels, detector probes, restoration comparison, and any qualification decision are owned by the outer collector.');
