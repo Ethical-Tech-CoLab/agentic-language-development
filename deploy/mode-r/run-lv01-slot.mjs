@@ -28,6 +28,9 @@ const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path
 const allocation = existsSync(allocationPath)
   ? JSON.parse(readFileSync(allocationPath, 'utf8'))
   : null;
+const controllerStage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'lv01-fixture';
+assert.ok(['lv01-fixture', 'lv01-detector-observation'].includes(controllerStage),
+  'LV01 slot runner accepts only the fixture or detector-observation controller stage');
 
 const APPLICATION_SERVICES = [
   'model-adapter-a', 'model-adapter-b', 'baby-a', 'baby-b',
@@ -340,7 +343,7 @@ const environment = {
   ALD_MODE_R_APPLICATION_ROOT: resolve(slotRoot), ALD_SOFTWARE_COMMIT: commit,
   ALD_MODE_R_RUN_ID: runId,
   ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
-  ALD_MODE_R_CONTROLLER_STAGE: 'lv01-fixture',
+  ALD_MODE_R_CONTROLLER_STAGE: controllerStage,
   ALD_MODE_R_BABY_A_SUBNET: allocation.networkAllocation.babyA,
   ALD_MODE_R_BABY_B_SUBNET: allocation.networkAllocation.babyB,
   ALD_MODE_R_CONTROL_PLANE_SUBNET: allocation.networkAllocation.controlPlane,

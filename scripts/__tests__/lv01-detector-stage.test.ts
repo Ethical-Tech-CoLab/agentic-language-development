@@ -16,6 +16,9 @@ describe('LV01 detector observation stage', () => {
     expect(controller).toContain('assert.equal(captured.length, turns.length * 2)');
     expect(controller).toContain("if (stage === 'lv01-detector-observation')");
     expect(controller).toContain('Selected-topology detector observation attempt failed before a detector decision.');
+    const runner = readFileSync(`${root}deploy/mode-r/run-lv01-slot.mjs`, 'utf8');
+    expect(runner).toContain("process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'lv01-fixture'");
+    expect(runner).toContain("ALD_MODE_R_CONTROLLER_STAGE: controllerStage");
     expect(controller).toContain("runtime.exportBundle(config.runId, join(outputRoot, 'bundle'))");
     expect(controller).toContain("researchFinding: false");
     expect(controller).toContain('Labels, detector probes, restoration comparison, and any qualification decision are owned by the outer collector.');
