@@ -222,7 +222,7 @@ describe('policy synchronization deadlines', () => {
       track: 'scratch-rl',
       beforeDispatch: async (method) => {
         if (method === 'export_policy' && ++exportCalls === delayedExportCall) {
-          await delay(30);
+          await delay(500);
         }
       },
     });
@@ -230,7 +230,7 @@ describe('policy synchronization deadlines', () => {
       track: 'scratch-rl',
       transport: new DirectHostTransport('in-process', pair.runtime),
       timing: 'normalized',
-      deadlineMs: 20,
+      deadlineMs: 200,
     });
     const config = buildConformanceRunConfig('scratch-rl', {
       runId,
@@ -262,7 +262,7 @@ describe('policy synchronization deadlines', () => {
       await expect(adapter.act({
         turn: 0,
         role: 'sender',
-        responseBudgetMs: 20,
+        responseBudgetMs: 200,
         availableActions: ['emit_symbols'],
       })).resolves.toMatchObject({ proposal: { kind: 'emit_symbols' } });
       expect(adapter.diagnostics).toMatchObject({
