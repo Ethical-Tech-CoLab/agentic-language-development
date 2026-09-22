@@ -83,6 +83,7 @@ function compose(rootPath, runId, networks) {
   const environment = {
     ...process.env, ALD_MODE_R_APPLICATION_ROOT: resolve(rootPath), ALD_SOFTWARE_COMMIT: commit,
     ALD_MODE_R_RUN_ID: runId, ALD_MODE_R_CONTROLLER_STAGE: 'lv01-paired-branch',
+    ALD_MODE_R_PARENT_BUNDLE: `/output/bundles/runs/${parentRunId}`,
     ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
     ALD_MODE_R_BABY_A_SUBNET: networks.babyA,
     ALD_MODE_R_BABY_B_SUBNET: networks.babyB,

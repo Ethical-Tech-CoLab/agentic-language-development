@@ -364,6 +364,7 @@ services:
     command: ["/app/deploy/mode-r/application-offline-verifier.mjs"]
     environment:
       ALD_MODE_R_OUTPUT_ROOT: /output
+      ALD_MODE_R_PARENT_BUNDLE: ${ALD_MODE_R_PARENT_BUNDLE:-}
     depends_on:
       controller-scenario:
         condition: service_completed_successfully

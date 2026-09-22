@@ -55,6 +55,9 @@ describe('LV01 selected-topology fixture runner', () => {
     expect(source).toContain("'down', '--remove-orphans'");
     expect(source).toContain('docker-compose.lv01-isolated-networks.v1.yml');
     expect(source).toContain("'paired-case-failure.json'");
+    expect(source).toContain('ALD_MODE_R_PARENT_BUNDLE: `/output/bundles/runs/${parentRunId}`');
+    expect(readFileSync(`${root}deploy/mode-r/application-offline-verifier.mjs`, 'utf8'))
+      .toContain('parentBundleDir');
   });
 
   it('does not treat a missing paired receipt as qualified evidence', () => {
