@@ -218,6 +218,8 @@ class AdapterTurnDeadlineExceededError extends TurnDeadlineExceededError {
     budgetMs: number,
     readonly role: BabyRole,
     readonly method: Exclude<AdapterMethod, 'updatePolicy'>,
+    /** The remote boundary operation that exhausted this turn-path call, if known. */
+    readonly boundaryMethod?: string,
   ) {
     super(budgetMs);
   }
@@ -1004,6 +1006,9 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           phase,
           role: deadline.role,
           method: deadline.method,
+          ...(deadline.boundaryMethod === undefined
+            ? {}
+            : { boundaryMethod: deadline.boundaryMethod }),
           budgetMs: deadline.budgetMs,
           adapterQuarantined: deadlineQuarantined,
           quarantineFailed: run.deadlineQuarantine?.quarantineFailed ?? false,
@@ -1626,6 +1631,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
             run.config.turnResponseBudgetMs,
             role,
             method,
+            error !== null && typeof error === 'object' && 'method' in error &&
+              typeof error.method === 'string'
+              ? error.method
+              : undefined,
           );
         }
         lastError = error;
