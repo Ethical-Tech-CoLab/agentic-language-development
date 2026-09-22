@@ -582,6 +582,20 @@ try {
       bundleRunId: bundle.runId,
     });
   }
+} catch (error) {
+  if (stage === 'lv01-detector-observation') {
+    await writeResult('lv01-detector-observations.json', {
+      schemaVersion: 1,
+      classification: 'lv01-selected-detector-observation-stage',
+      researchFinding: false,
+      scientificDisposition: 'not-tested',
+      runId: config.runId,
+      learnerArchitecture: RECURRENT_ARCHITECTURE,
+      failure: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+      claimBoundary: 'Selected-topology detector observation attempt failed before a detector decision. The outer collector must retain and account for this attempt.',
+    });
+  }
+  throw error;
 } finally {
   await Promise.all([...factories.values()].map((factory) => factory.dispose()));
 }
