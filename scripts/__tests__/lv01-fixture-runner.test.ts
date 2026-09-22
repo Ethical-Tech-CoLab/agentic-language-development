@@ -52,5 +52,13 @@ describe('LV01 selected-topology fixture runner', () => {
     expect(source).toContain("'lv01-paired-branch'");
     expect(source).toContain('lv01-paired-pre-receiver-action-prediction-committed');
     expect(source).toContain('verifyLv01PairedCase(branches)');
+    expect(source).toContain("'down', '--remove-orphans'");
+  });
+
+  it('does not treat a missing paired receipt as qualified evidence', () => {
+    const audit = fileURLToPath(new URL('../check-lv01-paired-case-receipt.mjs', import.meta.url));
+    const result = spawnSync(process.execPath, [audit, '--version', '999'], { cwd: root, encoding: 'utf8' });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('missing retained paired-case receipt');
   });
 });

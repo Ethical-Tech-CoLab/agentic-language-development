@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 
@@ -53,25 +53,40 @@ function prepare(rootPath) {
 function json(path) { return JSON.parse(readFileSync(path, 'utf8')); }
 
 function lastCheckpoint(bundle) {
-  const files = execFileSync('find', [join(bundle, 'checkpoints'), '-name', '*.json', '-print'], { encoding: 'utf8' })
-    .trim().split('\n').filter(Boolean).sort();
+  const checkpointRoot = join(bundle, 'checkpoints');
+  const files = readdirSync(checkpointRoot)
+    .filter((name) => /^\d{6}\.json$/u.test(name)).sort()
+    .map((name) => join(checkpointRoot, name));
   assert.ok(files.length > 0, 'parent bundle has no checkpoint');
   return json(files.at(-1));
 }
 
 function compose(rootPath, runId) {
-  const result = spawnSync('docker', ['compose', '--project-name', `ald-lv01-paired-v${version}-${runId.slice(-12)}`,
+  const project = `ald-lv01-paired-v${version}-${runId.slice(-12)}`;
+  const command = ['compose', '--project-name', project,
     '--file', 'deploy/mode-r/docker-compose.application.v1.yml',
-    '--file', 'deploy/mode-r/docker-compose.lv01.v1.yml',
-    'up', '--build', '--abort-on-container-exit', '--exit-code-from', 'offline-verifier'], {
-    cwd: resolve('.'), encoding: 'utf8', env: {
-      ...process.env, ALD_MODE_R_APPLICATION_ROOT: resolve(rootPath), ALD_SOFTWARE_COMMIT: commit,
-      ALD_MODE_R_RUN_ID: runId, ALD_MODE_R_CONTROLLER_STAGE: 'lv01-paired-branch',
-      ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
-    },
-  });
-  writeFileSync(join(rootPath, 'output', 'compose-output.log'), `${result.stdout ?? ''}${result.stderr ?? ''}`, { flag: 'wx', mode: 0o600 });
+    '--file', 'deploy/mode-r/docker-compose.lv01.v1.yml'];
+  const environment = {
+    ...process.env, ALD_MODE_R_APPLICATION_ROOT: resolve(rootPath), ALD_SOFTWARE_COMMIT: commit,
+    ALD_MODE_R_RUN_ID: runId, ALD_MODE_R_CONTROLLER_STAGE: 'lv01-paired-branch',
+    ALD_MODE_R_UID: String(process.getuid?.() ?? 1000), ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
+  };
+  let result;
+  let teardown;
+  try {
+    result = spawnSync('docker', [...command, 'up', '--build', '--abort-on-container-exit', '--exit-code-from', 'offline-verifier'], {
+      cwd: resolve('.'), encoding: 'utf8', env: environment,
+    });
+  } finally {
+    teardown = spawnSync('docker', [...command, 'down', '--remove-orphans'], {
+      cwd: resolve('.'), encoding: 'utf8', env: environment,
+    });
+  }
+  writeFileSync(join(rootPath, 'output', 'compose-output.log'), [
+    result?.stdout ?? '', result?.stderr ?? '', '\n-- teardown --\n', teardown?.stdout ?? '', teardown?.stderr ?? '',
+  ].join(''), { flag: 'wx', mode: 0o600 });
   assert.equal(result.status, 0, `branch Compose failed: ${(result.stderr ?? result.stdout ?? '').split('\n')[0]}`);
+  assert.equal(teardown.status, 0, `branch Compose teardown failed: ${(teardown.stderr ?? teardown.stdout ?? '').split('\n')[0]}`);
 }
 
 function runBranch(branchPlan, parentBundle) {

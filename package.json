@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.392",
+  "version": "0.1.393",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -42,6 +42,7 @@
     "audit:lv01-late-callback-v1-failure": "node scripts/check-lv01-late-callback-v1-failure.mjs",
     "audit:lv01-late-callback-v2": "node scripts/check-lv01-late-callback-v2-receipt.mjs",
     "audit:lv01-paired-branch-lineage": "node scripts/check-lv01-paired-branch-lineage.mjs",
+    "audit:lv01-paired-case": "node scripts/check-lv01-paired-case-receipt.mjs",
     "audit:mode-r-application-lifecycle-failure": "node scripts/check-mode-r-application-lifecycle-failure.mjs",
     "audit:mode-r-application-lifecycle-failure:live": "node scripts/check-mode-r-application-lifecycle-failure.mjs --live-evidence",
     "audit:mode-r-application-lifecycle-receipt": "node scripts/check-mode-r-application-lifecycle-receipt.mjs && node scripts/check-mode-r-application-fault-failure.mjs && node scripts/check-mode-r-application-fault-receipt.mjs && node scripts/check-mode-r-uncertain-write-failure.mjs && node scripts/check-mode-r-uncertain-write-receipt.mjs && node scripts/check-mode-r-late-callback-failure.mjs && node scripts/check-mode-r-late-callback-receipt.mjs",
