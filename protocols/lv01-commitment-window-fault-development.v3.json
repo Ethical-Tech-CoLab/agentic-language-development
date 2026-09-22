@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-commitment-window-fault-development",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "project": "ald-lv01-commitment-window-fault-v3",
+  "evidenceRoot": "evidence/lv01/commitment-window-fault-v3/lv01-commitment-window-fault-v3-p0001-normal",
+  "childRunIdPrefix": "lv01-commitment-window-fault-v3-p0001",
+  "childRunId": "lv01-commitment-window-fault-v3-p0001-normal",
+  "networkAllocation": { "babyA": "10.250.179.0/28", "babyB": "10.250.179.16/28", "controlPlane": "10.250.179.32/28" },
+  "parent": { "runId": "lv01-development-v21-p0001", "configPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/config/run-config.json", "configSha256": "sha256:c1ab5d4b21dd66f41b52136a51191313cc19e7dc59cfbdbba0422ff262b46405", "bundlePath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle", "bundleManifestPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle/run-manifest.json", "bundleManifestSha256": "sha256:ea52cf3d832f9249b33545eedee6831d93288db5ca63e4ea0930bbf0da024217", "checkpointHash": "sha256:46284ba18a3fd42b6ed78de7ad2e58ac8ce4a41a8d60d79657fd8b32e13b0048", "babyAInitialPolicyRef": "policies/baby-a-latest.json", "babyBInitialPolicyRef": "policies/baby-b-latest.json" },
+  "sourceFreeze": { "commit": "e9b3033262232f708029152965221a6d0e8a4fc5", "tree": "3b9694be108ec8e0908b118190b05ab1b1628a14", "version": "0.1.411", "artifacts": [
+    { "path": "scripts/run-lv01-commitment-window-fault-development.mjs", "sha256": "sha256:6fb91da8fc2e597d06572a049a2a7558cb579015fe331e5e536c0fdea40fd4dd" },
+    { "path": "deploy/mode-r/domain-signer-host.mjs", "sha256": "sha256:d3d5966c6384e4517c19409ef6964cbc20d7a60c163eb33bb45b02aa8914ce49" },
+    { "path": "deploy/mode-r/application-controller.mjs", "sha256": "sha256:0d1c7187e6930a4c9f1bcbb83e3e867ba493ac7d604f0bc3ebcd31cb9006a268" },
+    { "path": "packages/orchestrator/src/nursery-runtime.ts", "sha256": "sha256:d5be8cdb68ab0e82f2e8b627cca88223130fe1f47779b3e42eaa8f4ea5f53187" }
+  ] },
+  "acceptance": { "markerBeforeControllerKill": true, "faultControllerExitNonzero": true, "replacementRecoveryError": "IncompleteTurnEvidenceError", "turnRecords": 0, "minimumChannelEvents": 1, "minimumInterventionEvents": 1, "remainingContainers": 0 },
+  "claimBoundary": "Fresh v3 local selected-topology controller-loss qualification after v1 and v2 failures. The parent is read-only input; no pilot, behavioral result, or B12 closure is claimed."
+}
