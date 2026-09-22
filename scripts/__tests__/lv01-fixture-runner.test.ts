@@ -53,6 +53,8 @@ describe('LV01 selected-topology fixture runner', () => {
     expect(source).toContain('lv01-paired-pre-receiver-action-prediction-committed');
     expect(source).toContain('verifyLv01PairedCase(branches)');
     expect(source).toContain("'down', '--remove-orphans'");
+    expect(source).toContain('docker-compose.lv01-isolated-networks.v1.yml');
+    expect(source).toContain("'paired-case-failure.json'");
   });
 
   it('does not treat a missing paired receipt as qualified evidence', () => {
