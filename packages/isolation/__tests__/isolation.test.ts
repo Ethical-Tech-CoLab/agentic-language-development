@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { access, readFile } from 'node:fs/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import {
   RecordingLedgerClient,
   buildConformanceRunConfig,
@@ -202,6 +203,74 @@ describe('read-only shuffled previews', () => {
 
       expect(hashCanonical(HASH_DOMAINS.policyCheckpoint, adapter.exportPolicy())).toBe(before);
       expect(ledger.drafts).toHaveLength(0);
+    } finally {
+      await adapter.dispose();
+      await host.close();
+    }
+  });
+});
+
+describe('policy synchronization deadlines', () => {
+  it('does not perform policy synchronization after a read-only normalized action', async () => {
+    const runId = 'remote-policy-sync-deadline';
+    const pair = createLoopbackChannelPair();
+    let exportCalls = 0;
+    let delayedExportCall = Number.POSITIVE_INFINITY;
+    const host = new LearnerHost({
+      channel: pair.host,
+      boundary: 'in-process',
+      track: 'scratch-rl',
+      beforeDispatch: async (method) => {
+        if (method === 'export_policy' && ++exportCalls === delayedExportCall) {
+          await delay(30);
+        }
+      },
+    });
+    const adapter = new RemoteLearnerAdapter({
+      track: 'scratch-rl',
+      transport: new DirectHostTransport('in-process', pair.runtime),
+      timing: 'normalized',
+      deadlineMs: 20,
+    });
+    const config = buildConformanceRunConfig('scratch-rl', {
+      runId,
+      episodes: 1,
+      symbolInventorySize: 8,
+    });
+    const ledger = new RecordingLedgerClient(runId, 'baby-a');
+
+    try {
+      await adapter.init({
+        runId,
+        role: 'baby-a',
+        babyId: 'A',
+        config,
+        learnerContract: loadLearnerContract('scratch-rl'),
+        seed: 'remote-policy-sync-deadline-seed',
+        symbolInventory: fixedTokenInventory(8),
+        ledger,
+      });
+      await adapter.observe({
+        runId,
+        turn: 0,
+        recipient: 'baby-a',
+        encoding: 'opaque-numeric',
+        payload: [[0, 0, 1], [1, 1, 0]],
+        scenarioRef: 'scenario:remote-policy-sync-deadline',
+      });
+      delayedExportCall = exportCalls + 1;
+      await expect(adapter.act({
+        turn: 0,
+        role: 'sender',
+        responseBudgetMs: 20,
+        availableActions: ['emit_symbols'],
+      })).resolves.toMatchObject({ proposal: { kind: 'emit_symbols' } });
+      expect(adapter.diagnostics).toMatchObject({
+        deadlineExceeded: 0,
+        lastDeadlineMethod: null,
+        policyRefreshes: 1,
+      });
+      expect(exportCalls).toBe(1);
     } finally {
       await adapter.dispose();
       await host.close();
