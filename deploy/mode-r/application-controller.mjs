@@ -172,6 +172,10 @@ async function runLv01PairedBranch() {
     'paired branch requires baby-a parent policy');
   assert.ok(config.babyB.initialPolicyRef !== undefined,
     'paired branch requires baby-b parent policy');
+  assert.equal(config.evaluationOnly, true,
+    'paired branch must be an immutable evaluation-only derived run');
+  assert.equal(config.evaluationTurns, 1,
+    'paired branch must execute exactly one frozen paired case');
   await runtime.createRun(config);
   const summary = await runtime.runToCompletion(config.runId);
   assert.equal(summary.state, 'sealed');
@@ -181,6 +185,7 @@ async function runLv01PairedBranch() {
     controller.port.readCheckpoints(config.runId),
     runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
   ]);
+  assert.equal(turns.length, 1, 'paired branch produced more than one case turn');
   await writeResult('lv01-paired-branch-result.json', {
     schemaVersion: 1,
     classification: 'lv01-selected-paired-branch-development',
