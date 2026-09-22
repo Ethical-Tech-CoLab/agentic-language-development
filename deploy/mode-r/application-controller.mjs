@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { connectAnchorServiceRpc } from '@ald/anchor';
@@ -20,7 +20,8 @@ import { readJson, required, retry } from './application-common.mjs';
 
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
-assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch'].includes(stage),
+assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch',
+  'lv01-commitment-window-fault', 'lv01-commitment-window-recover'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -78,6 +79,27 @@ const signers = {
 };
 let gatewayProcessId;
 const outputRoot = required('ALD_MODE_R_OUTPUT_ROOT');
+
+async function writeJsonAtomic(name, value) {
+  await mkdir(outputRoot, { recursive: true });
+  const target = join(outputRoot, name);
+  const temporary = `${target}.tmp`;
+  await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`);
+  await rename(temporary, target);
+}
+
+async function stopAfterLv01PairedPredictionCommitment(input) {
+  if (stage !== 'lv01-commitment-window-fault') return;
+  await writeJsonAtomic('lv01-commitment-window-ready.json', {
+    schemaVersion: 1,
+    runId: input.runId,
+    turn: input.turn,
+    receiver: input.receiver,
+    commitment: input.commitment,
+  });
+  await new Promise(() => {});
+}
+
 const runtime = createNurseryRuntime({
   bundleRoot: join(outputRoot, 'bundles'),
   softwareCommit: required('ALD_SOFTWARE_COMMIT'),
@@ -96,6 +118,7 @@ const runtime = createNurseryRuntime({
     gatewayProcessId = connected.processId;
     return connected.gateway;
   },
+  afterLv01PairedPredictionCommitment: stopAfterLv01PairedPredictionCommitment,
 });
 
 async function appendDelayedAudit() {
@@ -204,8 +227,50 @@ async function runLv01PairedBranch() {
   });
 }
 
+async function runLv01CommitmentWindowFault() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.ok(config.lv01PairedCase !== undefined,
+    'commitment-window fault requires an LV01 paired child');
+  await runtime.createRun(config);
+  await runtime.step(config.runId);
+  throw new Error('commitment-window fault controller resumed after its stop marker');
+}
+
+async function runLv01CommitmentWindowRecovery() {
+  const before = await Promise.all(['turns', 'channel', 'intervention'].map(async (stream) =>
+    [stream, (await controller.port.readEvents(config.runId, stream)).length]));
+  let recoveryError = null;
+  try {
+    await runtime.recover(config.runId);
+  } catch (error) {
+    recoveryError = {
+      name: error instanceof Error ? error.name : 'NonErrorThrow',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+  const after = await Promise.all(['turns', 'channel', 'intervention'].map(async (stream) =>
+    [stream, (await controller.port.readEvents(config.runId, stream)).length]));
+  assert.equal(recoveryError?.name, 'IncompleteTurnEvidenceError',
+    'replacement controller must refuse the incomplete commitment window');
+  assert.deepEqual(after, before, 'recovery refusal must not mutate evidence');
+  await writeResult('lv01-commitment-window-recovery.json', {
+    schemaVersion: 1,
+    classification: 'lv01-commitment-window-fault-recovery',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    recoveryError,
+    evidenceCounts: Object.fromEntries(before),
+    claimBoundary: 'A replacement selected-topology controller refused an incomplete LV01 paired prefix; this is software qualification only.',
+  });
+}
+
 try {
-  if (stage === 'lv01-fixture') {
+  if (stage === 'lv01-commitment-window-fault') {
+    await runLv01CommitmentWindowFault();
+  } else if (stage === 'lv01-commitment-window-recover') {
+    await runLv01CommitmentWindowRecovery();
+  } else if (stage === 'lv01-fixture') {
     await runLv01Fixture();
   } else if (stage === 'lv01-paired-branch') {
     await runLv01PairedBranch();
