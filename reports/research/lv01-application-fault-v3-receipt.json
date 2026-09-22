@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-application-fault-development-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "b12Closed": false,
+  "packetPath": "protocols/lv01-application-fault-development.v3.json",
+  "executionCommit": "3abb73403a9f5fb72f317513c2766f74e02080dc",
+  "rawReceiptPath": "evidence/lv01/application-fault-v3/receipt.json",
+  "rawReceiptSha256": "sha256:26385ade519ec3a78c4b1e3dba8b6d3ee4d0c227967eaa53f42c9ce2b36dc810",
+  "observed": {
+    "caseCount": 2,
+    "passedCaseCount": 2,
+    "failedCaseCount": 0,
+    "resourceSnapshotCount": 4,
+    "remainingContainers": 0,
+    "cases": [
+      {
+        "id": "baby-peer-death",
+        "runId": "lv01-application-fault-v3-p0001-baby-peer-death",
+        "targetService": "baby-a",
+        "targetExitCode": 137,
+        "postFaultDisposition": "committed-adapter-failure",
+        "stateAfterFault": "paused",
+        "turnAfterFault": 2,
+        "resourceSnapshots": 2
+      },
+      {
+        "id": "anchor-service-death",
+        "runId": "lv01-application-fault-v3-p0001-anchor-service-death",
+        "targetService": "simulated-anchor",
+        "targetExitCode": 137,
+        "postFaultDisposition": "sealing-blocked",
+        "stateAfterFault": "sealing-blocked",
+        "turnAfterFault": 1,
+        "resourceSnapshots": 2
+      }
+    ]
+  },
+  "verificationBoundary": "Both prefix and post-fault bundles passed the local TypeScript verifier and independent Rust integrity auditor. The raw receipt reports unanchored local tails and no independently checked public-chain anchor.",
+  "claimBoundary": "Two local recurrent selected-topology service-death software-qualification cases. This does not establish behavioral findings, a pilot, detector validity, public anchoring, full service recovery coverage, or B12 closure."
+}
