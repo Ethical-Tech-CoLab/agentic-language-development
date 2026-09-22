@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+const report = JSON.parse(readFileSync('reports/research/lv01-malformed-proposal-v5-receipt.json', 'utf8'));
+const hash = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+const raw = JSON.parse(readFileSync(report.rawReceiptPath, 'utf8'));
+const result = JSON.parse(readFileSync(report.rawResultPath, 'utf8'));
+assert.equal(report.status, 'completed-bounded-development-observation');
+assert.equal(report.researchFinding, false);
+assert.equal(hash(report.rawReceiptPath), report.rawReceiptSha256);
+assert.equal(hash(report.rawResultPath), report.rawResultSha256);
+assert.equal(raw.passed, true);
+assert.equal(raw.failure, null);
+assert.equal(raw.remainingContainers, 0);
+assert.equal(result.state, 'sealed');
+assert.equal(result.turnCount, 1);
+assert.equal(result.channelCount, 1);
+assert.equal(result.senderChannelBoundIntentions, 0);
+assert.equal(result.receiverChannelBoundIntentions, 0);
+assert.equal(result.gatewayValidationResult, 'rejected');
+assert.equal(result.rejectionReasonCode, 'trusted-metadata-present');
+console.log('LV01 malformed-proposal v5 receipt verified against retained local evidence');
