@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-commitment-window-fault-development",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "project": "ald-lv01-commitment-window-fault-v1",
+  "evidenceRoot": "evidence/lv01/commitment-window-fault-v1/lv01-commitment-window-fault-v1-p0001-normal",
+  "childRunIdPrefix": "lv01-commitment-window-fault-v1-p0001",
+  "childRunId": "lv01-commitment-window-fault-v1-p0001-normal",
+  "networkAllocation": { "babyA": "10.250.177.0/28", "babyB": "10.250.177.16/28", "controlPlane": "10.250.177.32/28" },
+  "parent": {
+    "runId": "lv01-development-v21-p0001",
+    "configPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/config/run-config.json",
+    "configSha256": "sha256:c1ab5d4b21dd66f41b52136a51191313cc19e7dc59cfbdbba0422ff262b46405",
+    "bundlePath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle",
+    "bundleManifestPath": "evidence/lv01/development-v21/lv01-development-v21-p0001/output/bundle/run-manifest.json",
+    "bundleManifestSha256": "sha256:ea52cf3d832f9249b33545eedee6831d93288db5ca63e4ea0930bbf0da024217",
+    "checkpointHash": "sha256:46284ba18a3fd42b6ed78de7ad2e58ac8ce4a41a8d60d79657fd8b32e13b0048",
+    "babyAInitialPolicyRef": "policies/baby-a-latest.json",
+    "babyBInitialPolicyRef": "policies/baby-b-latest.json"
+  },
+  "sourceFreeze": {
+    "commit": "74b0fa3d87ec033e8d2c1b8afda2491b20fee3fd",
+    "tree": "de9756a0e30e071ff27757d15ece98f4b3a0ea93",
+    "version": "0.1.407",
+    "artifacts": [
+      { "path": "scripts/run-lv01-commitment-window-fault-development.mjs", "sha256": "sha256:a3475e1996f836763ca1d4ac755df0073ee9b50729aa9da97d72b2e65b36531d" },
+      { "path": "deploy/mode-r/application-controller.mjs", "sha256": "sha256:0d1c7187e6930a4c9f1bcbb83e3e867ba493ac7d604f0bc3ebcd31cb9006a268" },
+      { "path": "deploy/mode-r/docker-compose.application.v1.yml", "sha256": "sha256:5c068b25e57842b9aca9e9629925783714544912358782d550d1f9c891457d10" },
+      { "path": "deploy/mode-r/docker-compose.lv01.v1.yml", "sha256": "sha256:b880a008d935b28fbdd647f91d4ce97a20c1be3030c0078de7a240b219d58ba0" },
+      { "path": "deploy/mode-r/docker-compose.lv01-isolated-networks.v1.yml", "sha256": "sha256:e932dc32e1d17b0d0f12fa4e85e800a956d7eeafdcf8dc0c372f697d499fa434" },
+      { "path": "packages/orchestrator/src/nursery-runtime.ts", "sha256": "sha256:d5be8cdb68ab0e82f2e8b627cca88223130fe1f47779b3e42eaa8f4ea5f53187" },
+      { "path": "packages/orchestrator/src/experiments/ledger-value.ts", "sha256": "sha256:f887bde6261e799cdd0ebd5b8b80ba218d894aae3f34ed0b1123ddfcb8125c23" }
+    ]
+  },
+  "acceptance": { "markerBeforeControllerKill": true, "faultControllerExitNonzero": true, "replacementRecoveryError": "IncompleteTurnEvidenceError", "turnRecords": 0, "minimumChannelEvents": 1, "minimumInterventionEvents": 1, "remainingContainers": 0 },
+  "claimBoundary": "This packet reserves one local selected-topology controller-loss qualification. The v21 parent is a read-only input; it is not rerun. No pilot, behavioral result, or B12 closure is claimed."
+}
