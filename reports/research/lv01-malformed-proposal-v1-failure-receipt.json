@@ -1,18 +1,21 @@
 {
   "schemaVersion": 1,
   "classification": "lv01-malformed-proposal-development-failure",
-  "status": "failed-before-container-start",
+  "status": "failed-controller-assertion",
   "researchFinding": false,
   "scientificDisposition": "not-tested",
   "packetPath": "protocols/lv01-malformed-proposal-development.v1.json",
   "executionCommit": "ce807d5dc056138cb69332042c5b80a38993ecab",
-  "rawEvidenceRoot": "evidence/lv01/malformed-proposal-v1/lv01-malformed-proposal-v1-p0001-normal",
+  "rawReceiptPath": "evidence/lv01/malformed-proposal-v1/lv01-malformed-proposal-v1-p0001-normal/receipt.json",
+  "rawReceiptSha256": "sha256:389442f942f3f959adb08e7cd4dc16f4e2f3a8234346b3273127e34f6d532cf1",
   "observed": {
-    "generatedConfigurationSha256": "sha256:ba05a0433b7cbe166db459b52d1e21589bb7f0b44612fd3b65b45ba9fedb6454",
-    "containersCreated": 0,
-    "terminalReceiptWritten": false
+    "turnRecords": 1,
+    "channelEvents": 1,
+    "senderLedgerEventsIncludingParentPrefix": 5,
+    "receiverLedgerEventsIncludingParentPrefix": 3,
+    "remainingContainers": 0
   },
-  "failure": "The supervising execution session ended during the prerequisite TypeScript build before the collector could invoke Docker. No selected-topology service, turn, channel event, ledger event, bundle, or runtime receipt was created.",
-  "successorRequirement": "Do not retry v1. Freeze a fresh packet with a new child identity, project, and isolated subnet allocation before another execution.",
+  "failure": "The selected topology ran and sealed its evidence, but the controller incorrectly asserted that inherited parent-prefix ledger totals must be zero. The actual boundary invariant is that the malformed child adds zero new sender or receiver ledger events; the controller exited before it wrote its result file.",
+  "successorRequirement": "Do not retry v1. Correct the invariant, then freeze a fresh packet with a new child identity, project, and isolated subnet allocation before another execution.",
   "claimBoundary": "This is terminal accounting for an interrupted local development attempt, not a software qualification, pilot, or behavioral result."
 }

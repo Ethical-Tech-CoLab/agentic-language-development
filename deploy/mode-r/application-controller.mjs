@@ -303,6 +303,10 @@ async function runLv01MalformedProposal() {
   assert.ok(config.lv01PairedCase !== undefined,
     'malformed-proposal fixture requires an LV01 paired child');
   await runtime.createRun(config);
+  const [senderLedgerBefore, receiverLedgerBefore] = await Promise.all([
+    controller.port.readEvents(config.runId, 'baby-a-ledger'),
+    controller.port.readEvents(config.runId, 'baby-b-ledger'),
+  ]);
   const summary = await runtime.runToCompletion(config.runId);
   assert.equal(summary.state, 'sealed');
   const [turns, channels, babyALedger, babyBLedger, bundle] = await Promise.all([
@@ -317,8 +321,10 @@ async function runLv01MalformedProposal() {
   const channel = JSON.parse(channels[0].canonicalJson);
   assert.equal(channel.gatewayValidationResult, 'rejected');
   assert.equal(channel.reasonCode, 'trusted-metadata-present');
-  assert.equal(babyALedger.length, 0, 'rejected proposal must not create a sender ledger event');
-  assert.equal(babyBLedger.length, 0, 'rejected proposal must not reach the receiver');
+  assert.equal(babyALedger.length, senderLedgerBefore.length,
+    'rejected proposal must not add a sender ledger event');
+  assert.equal(babyBLedger.length, receiverLedgerBefore.length,
+    'rejected proposal must not reach the receiver');
   await writeResult('lv01-malformed-proposal-result.json', {
     schemaVersion: 1,
     classification: 'lv01-malformed-proposal-development',
@@ -328,8 +334,8 @@ async function runLv01MalformedProposal() {
     state: summary.state,
     turnCount: turns.length,
     channelCount: channels.length,
-    senderLedgerCount: babyALedger.length,
-    receiverLedgerCount: babyBLedger.length,
+    senderLedgerEventsAdded: babyALedger.length - senderLedgerBefore.length,
+    receiverLedgerEventsAdded: babyBLedger.length - receiverLedgerBefore.length,
     gatewayValidationResult: channel.gatewayValidationResult,
     rejectionReasonCode: channel.reasonCode,
     bundleRunId: bundle.runId,
