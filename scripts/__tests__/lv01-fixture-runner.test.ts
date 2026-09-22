@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const runner = fileURLToPath(new URL('../../deploy/mode-r/run-lv01-slot.mjs', import.meta.url));
+const pairedRunner = fileURLToPath(new URL('../../deploy/mode-r/run-lv01-paired-case.mjs', import.meta.url));
 
 describe('LV01 selected-topology fixture runner', () => {
   it('audits the version requested by a development allocation', () => {
@@ -39,5 +40,17 @@ describe('LV01 selected-topology fixture runner', () => {
     expect(source).not.toContain("[...compose, 'ps'");
     expect(source).toContain("'compose-output.log'");
     expect(source).toContain("'lv01-authority-failure.json'");
+  });
+
+  it('requires a prospective single-use packet before starting paired branches', () => {
+    const result = spawnSync(process.execPath, [pairedRunner, '--check', '999'], {
+      cwd: root, encoding: 'utf8',
+    });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('missing protocols/lv01-paired-development-allocation.v999.json');
+    const source = readFileSync(pairedRunner, 'utf8');
+    expect(source).toContain("'lv01-paired-branch'");
+    expect(source).toContain('lv01-paired-pre-receiver-action-prediction-committed');
+    expect(source).toContain('verifyLv01PairedCase(branches)');
   });
 });
