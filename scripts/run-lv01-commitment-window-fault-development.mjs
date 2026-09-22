@@ -8,8 +8,10 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { createLv01PairedCasePlan } from '@ald/orchestrator';
 
 const mode = process.argv[2];
+const version = process.argv[3] ?? '1';
 assert.ok(mode === '--run' || mode === '--check', 'usage: run-lv01-commitment-window-fault-development.mjs --run|--check');
-const packetPath = 'protocols/lv01-commitment-window-fault-development.v1.json';
+assert.match(version, /^[1-9]\d*$/u, 'packet version must be positive');
+const packetPath = `protocols/lv01-commitment-window-fault-development.v${version}.json`;
 const packet = existsSync(packetPath) ? JSON.parse(readFileSync(packetPath, 'utf8')) : null;
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const command = (program, args, options = {}) => execFileSync(program, args, { encoding: 'utf8', ...options }).trim();
