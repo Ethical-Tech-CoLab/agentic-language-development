@@ -93,6 +93,12 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
           // episodes would be a separate paired-case allocation, not a
           // silent expansion of this branch-reset primitive.
           evaluationTurns: 1,
+          lv01PairedCase: {
+            version: 1,
+            branch,
+            predictionTreatment: treatment.predictionTreatment,
+            preStateCommitment,
+          },
         },
       },
     );

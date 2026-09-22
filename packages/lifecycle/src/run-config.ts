@@ -520,6 +520,9 @@ export function buildRunConfig(overrides: RunConfigOverrides): RunConfig {
     ...(overrides.ledgerValuePlan === undefined
       ? {}
       : { ledgerValuePlan: overrides.ledgerValuePlan }),
+    ...(overrides.lv01PairedCase === undefined
+      ? {}
+      : { lv01PairedCase: overrides.lv01PairedCase }),
     ...(overrides.interventionPlan === undefined
       ? {}
       : { interventionPlan: overrides.interventionPlan }),

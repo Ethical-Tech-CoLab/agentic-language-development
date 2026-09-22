@@ -187,6 +187,14 @@ export const LedgerValuePlanSchema = z
   })
   .strict();
 
+/** Immutable branch identity for one LV01 paired evaluation case. */
+export const Lv01PairedCaseSchema = z.object({
+  version: z.literal(1),
+  branch: z.enum(['normal', 'disabled', 'constant', 'random', 'shuffled', 'ledger-consistent', 'ledger-shuffled']),
+  predictionTreatment: z.enum(['ordinary-records', 'ledger-consistent', 'ledger-shuffled']),
+  preStateCommitment: hashString,
+}).strict();
+
 /** LV01 stage artifacts distinguish execution accounting from research results. */
 export const Lv01StageSchema = z.enum([
   'development',
@@ -285,6 +293,8 @@ export const RunConfigSchema = z
     causalPredictionPlan: causalPredictionPlanSchema.optional(),
     /** LV01's separate design, analysis, resource, and predictor binding. */
     ledgerValuePlan: LedgerValuePlanSchema.optional(),
+    /** Immutable treatment identity for one derived LV01 paired case. */
+    lv01PairedCase: Lv01PairedCaseSchema.optional(),
     /** SPEC §15.1: absent means `qualification` (non-confirmatory). */
     registrationClass: RegistrationClassSchema.optional(),
     /** SPEC §15.2 / §18: pre-registered interventions (ALD-072). */
@@ -369,6 +379,16 @@ export const RunConfigSchema = z
         code: 'custom',
         path: ['ledgerValuePlan'],
         message: 'ledgerValuePlan is restricted to LV01',
+      });
+    }
+
+    if (config.lv01PairedCase !== undefined && (
+      config.experimentId !== 'LV01' || config.evaluationOnly !== true ||
+      config.evaluationTurns !== 1 || config.parentRunId === undefined
+    )) {
+      context.addIssue({
+        code: 'custom', path: ['lv01PairedCase'],
+        message: 'LV01 paired cases require a derived immutable one-turn evaluation run',
       });
     }
 
