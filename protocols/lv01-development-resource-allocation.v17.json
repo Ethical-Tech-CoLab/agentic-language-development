@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "studyId": "LV01",
+  "classification": "prospective-development-only-allocation",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "sourceFreeze": {
+    "commit": "179feaf9091754e40ce51b38a2e7abb2aa503f71",
+    "tree": "8e88c4296ca39094448b7675d2be1b4aba45d312",
+    "version": "0.1.393",
+    "artifacts": [
+      {"path":"package.json","sha256":"sha256:1e27bb7e56a40b721f592a29a3a5c10692ddd6c60a6ba36823b1403faa69f596"},
+      {"path":"protocols/lv01-study-design.v1.json","sha256":"sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
+      {"path":"protocols/lv01-analysis-plan.v1.json","sha256":"sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
+      {"path":"protocols/lv01-seed-resource-policy.v1.json","sha256":"sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec"},
+      {"path":"deploy/mode-r/docker-compose.application.v1.yml","sha256":"sha256:fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"},
+      {"path":"deploy/mode-r/docker-compose.lv01.v1.yml","sha256":"sha256:b880a008d935b28fbdd647f91d4ce97a20c1be3030c0078de7a240b219d58ba0"},
+      {"path":"deploy/mode-r/application-controller.mjs","sha256":"sha256:07f80091b76259902a3c113800ad44b77e6e67b7f7bbf4c23a1e881a709b72d1"},
+      {"path":"deploy/mode-r/domain-signer-host.mjs","sha256":"sha256:f60519bbc591f0ea4312d12b236509ce10999626a7f5c3cc57fe8ed362653f60"},
+      {"path":"deploy/mode-r/run-lv01-slot.mjs","sha256":"sha256:0769a272f43853de82d24b8af17d6f7fa44df7eae58dcb7fa4cce21b99235019"},
+      {"path":"packages/orchestrator/src/experiments/ledger-value.ts","sha256":"sha256:f887bde6261e799cdd0ebd5b8b80ba218d894aae3f34ed0b1123ddfcb8125c23"},
+      {"path":"packages/orchestrator/src/nursery-runtime.ts","sha256":"sha256:a6ce51cb2510708fae819ba13c9502c8af5aeb6a12f29f52a4f2d4d518dc181a"},
+      {"path":"packages/lifecycle/src/run-config.ts","sha256":"sha256:b6f43ddc14e1565cc0a0ad4925eb9ff8c784c1680b31751291d0074e160d6470"},
+      {"path":"packages/types/src/schemas.ts","sha256":"sha256:8aef41fff57798028177709e078b39ebed0c2d2f76edb8792d98d9ebd2aab6d0"},
+      {"path":"scripts/check-lv01-development-allocation.mjs","sha256":"sha256:7a3c7bc7ae51f2b3b79ad8b87f33f9067fe1c6df656f99901c598f167f664baf"}
+    ]
+  },
+  "allocation": {
+    "maximumParallelDyads": 1,
+    "smallFixture": {"runId":"lv01-development-v17-p0001","iteration":1,"trainingCases":64,"validationFitCases":24,"validationSelectionCases":24,"withinSupportTestCases":24,"cpuHoursCap":0.25,"additionalStorageGiBCap":1,"maximumResidentGiB":6},
+    "fullCalibration": {"iteration":2,"runIds":["lv01-development-v17-p0002","lv01-development-v17-p0003","lv01-development-v17-p0004","lv01-development-v17-p0005","lv01-development-v17-p0006"],"dyads":5,"requiredWorkload":"Frozen full LV01 v1 workload after all H07 subfixture gates pass."}
+  },
+  "seedDerivation": {
+    "root":"ald-ledger-value-v1",
+    "parts":["LV01","development","v17","primary","four-digit slot index","purpose"],
+    "purposes":["scenario","learner/baby-a","learner/baby-b","gateway","analysis"],
+    "slots":[
+      {"index":"0001","scenario":"c8a36c6c1bded48269fcd97b9a57a638fdb87045db5b038339d340cc95802aa8","babyA":"daf19059fe466eb2033f0c3aabc56ae704f3fadce840dee906f3771369d0fffc","babyB":"f2b2073f6b21fd7bd65a61251c0823ff741812f5f6df4ed76331934bd54152db","gateway":"489e0ed64fefdafc4318a8c089f11215d362c1b4184de5a48e89bf3588201fdc","analysis":"3635e43748722e512b975efb6a49f32839db8c7fa2c22b709f4a8d89641ddd03"},
+      {"index":"0002","scenario":"529a635bb2578477afa704e5e94ef00c98a32746d9c3aadd65bad923a8453c12","babyA":"64c3db11dd806190c94657266720089158b3ca49393d667309966b8af86c5128","babyB":"3d5c21f989abd70a40c6a1bcf5c340217cd3775f80616d537d55f32c3bff9456","gateway":"4d52cc7c870438dc4eb40b1124f98613a7f49d29fec3a4c2a07ef0f648ae482d","analysis":"7b5fc969d1b8013eb233d97f3f824a4b2f9cb03f1902d054480ad6098641926c"},
+      {"index":"0003","scenario":"adc6d5cadb6191f87bccd42aa06a90a8b8e76fabf73c184ebad24b2a263c70b2","babyA":"e7c13222bee5053433575df9134b8af336ce8b1c556125e0ad3b92e712a151f4","babyB":"58a5b4e9dc5cd075ba05ef333e4fa8449f467f814bc9e6da96e3738a6bd9f359","gateway":"35c191519b16ac9ad0e9f876ac3575ce017a87fade09061d97bf162780ecebdb","analysis":"26e13d9179a9027c97f9c5de976bdb73820a3f722e1d64d4dfa1a3e19691ddd4"},
+      {"index":"0004","scenario":"90165f188488319ca9ddef0465c6dd0b99bb36050b25c1e53c96365f44118dfb","babyA":"39d1a9fd53e2cc8690cbd07bb072e7b87ae33b3a005a63f12c1bc0b1e3f62746","babyB":"7a597978ee5021c62511a2be34df31cb44a2d616412204930540544804c62cd0","gateway":"7dfbd6edea45f7f1038ad244cd38324704efb68582dffbefe53a1ae202774282","analysis":"29033f191179c6114e4819479da8ab37d60e9ea40c7d61fe4f67bb5c17543717"},
+      {"index":"0005","scenario":"86b924eee56797e938dd3700e7ceaf1b6c69299e6ad79270c03de680ba316a93","babyA":"a0bc10c91ef2bbf738b39fe7177e0b5b386999690537636f27aff62c71af6417","babyB":"f6caa215c4f32090661ddba5b2673df2951927ec9a496a6166c10ed2ec048c0e","gateway":"6628550a4aebd3eee3169e825644b014bedfdd8b090d3801f17aebcda8ef3503","analysis":"d5137a828c6bb90e67b71391f06774bd7a1bd4ea2f9722dc9d2b3d8aa20e9d68"},
+      {"index":"0006","scenario":"2e5fd9706b2aec884c392371a522ce151edae644c45e2e5993298657345f1335","babyA":"9dabffed17206c88716540de8b4d6dbd170cb2bfd982231197641eb442d19db2","babyB":"9a73c680123e7d44df71c160de95b2ade08bd2553c5952f10c5331a4572547b8","gateway":"8fa0d581f64d63c3cc36f5e41e901a5c9c71ed36a461229a36ccdf3b49d9e9b3","analysis":"bba9501c945e34463651606d6ec117e6187d3f5f5bc6698282603217be4e6499"}
+    ]
+  },
+  "requiredBeforeExecution":["clean committed source","verified seed derivation","isolated Docker capacity","persisted resource and authority diagnostics","fresh paired-case packet"],
+  "claimBoundary":"Fresh v17 identifiers reserve one bounded local parent fixture for the seven-branch development case. They create no pilot data or scientific finding."
+}
