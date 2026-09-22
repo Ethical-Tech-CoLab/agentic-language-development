@@ -24,7 +24,7 @@
   },
   "compose": {
     "basePath": "deploy/mode-r/docker-compose.application.v1.yml",
-    "baseSha256": "fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f",
+    "baseSha256": "5c068b25e57842b9aca9e9629925783714544912358782d550d1f9c891457d10",
     "overlayPath": "deploy/mode-r/docker-compose.application-lifecycle.v1.yml",
     "overlaySha256": "05b306936ca32e8d7f42f9b1dd89494839b4a8e45f4db1a59a876586326fb8ab"
   },
