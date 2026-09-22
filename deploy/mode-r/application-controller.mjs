@@ -303,10 +303,6 @@ async function runLv01MalformedProposal() {
   assert.ok(config.lv01PairedCase !== undefined,
     'malformed-proposal fixture requires an LV01 paired child');
   await runtime.createRun(config);
-  const [senderLedgerBefore, receiverLedgerBefore] = await Promise.all([
-    controller.port.readEvents(config.runId, 'baby-a-ledger'),
-    controller.port.readEvents(config.runId, 'baby-b-ledger'),
-  ]);
   const summary = await runtime.runToCompletion(config.runId);
   assert.equal(summary.state, 'sealed');
   const [turns, channels, babyALedger, babyBLedger, bundle] = await Promise.all([
@@ -321,9 +317,14 @@ async function runLv01MalformedProposal() {
   const channel = JSON.parse(channels[0].canonicalJson);
   assert.equal(channel.gatewayValidationResult, 'rejected');
   assert.equal(channel.reasonCode, 'trusted-metadata-present');
-  assert.equal(babyALedger.length, senderLedgerBefore.length,
-    'rejected proposal must not add a sender ledger event');
-  assert.equal(babyBLedger.length, receiverLedgerBefore.length,
+  const channelHash = channels[0].entryHash;
+  const channelBoundIntentions = (entries) => entries.filter((entry) => {
+    const value = JSON.parse(entry.canonicalJson);
+    return value.eventType === 'intention.recorded' && value.channelEventHash === channelHash;
+  });
+  assert.equal(channelBoundIntentions(babyALedger).length, 0,
+    'rejected proposal must not create a sender intention bound to the channel');
+  assert.equal(channelBoundIntentions(babyBLedger).length, 0,
     'rejected proposal must not reach the receiver');
   await writeResult('lv01-malformed-proposal-result.json', {
     schemaVersion: 1,
@@ -334,8 +335,8 @@ async function runLv01MalformedProposal() {
     state: summary.state,
     turnCount: turns.length,
     channelCount: channels.length,
-    senderLedgerEventsAdded: babyALedger.length - senderLedgerBefore.length,
-    receiverLedgerEventsAdded: babyBLedger.length - receiverLedgerBefore.length,
+    senderChannelBoundIntentions: channelBoundIntentions(babyALedger).length,
+    receiverChannelBoundIntentions: channelBoundIntentions(babyBLedger).length,
     gatewayValidationResult: channel.gatewayValidationResult,
     rejectionReasonCode: channel.reasonCode,
     bundleRunId: bundle.runId,

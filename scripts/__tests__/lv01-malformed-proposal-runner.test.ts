@@ -25,7 +25,7 @@ describe('LV01 malformed-proposal fixture runner', () => {
     expect(runnerSource).toContain('single-use malformed-proposal evidence');
     expect(controllerSource).toContain("'lv01-malformed-proposal'");
     expect(controllerSource).toContain('trusted-metadata-present');
-    expect(controllerSource).toContain('senderLedgerEventsAdded');
+    expect(controllerSource).toContain('senderChannelBoundIntentions');
     expect(controllerSource).toContain('injectLv01MalformedProposal');
   });
 });
