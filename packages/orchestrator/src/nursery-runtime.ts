@@ -397,6 +397,18 @@ export interface NurseryRuntimeOptions {
   causalPredictionFor?: (
     config: RunConfig,
   ) => CausalPredictionRuntimeProvider | undefined;
+  /**
+   * Qualification-only seam invoked after an LV01 paired prediction commitment
+   * and its checkpoint, but before the receiver action. It receives hashes
+   * only, so a selected-process fault harness can stop the Controller without
+   * acquiring learner state or mutating the committed turn path.
+   */
+  afterLv01PairedPredictionCommitment?: (input: {
+    runId: string;
+    turn: number;
+    receiver: BabyRole;
+    commitment: Sha256Hash;
+  }) => Promise<void>;
 }
 
 export interface NurseryGatewayFactoryInput {
@@ -1322,6 +1334,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
             details: { turn, receiver, commitment, ...run.config.lv01PairedCase },
           });
           await this.#checkpoint(run, 'intervention');
+          await this.#options.afterLv01PairedPredictionCommitment?.({
+            runId: run.runId,
+            turn,
+            receiver,
+            commitment,
+          });
         }
         const receiverTurn = await this.#runReceiver(
           run,

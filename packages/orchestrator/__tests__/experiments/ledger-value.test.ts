@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildRunConfig } from '@ald/lifecycle';
 import { LV01_BRANCHES, assessLv01Admission, captureLv01SlotTerminal, createLv01PairedCasePlan, createLv01StageJournal, finalizeLv01Stage, transitionLv01Slot, verifyLv01PairedCase } from '../../src/experiments/ledger-value.js';
+import { createHarness, testConfig } from '../helpers.js';
 describe('LV01 paired collector gates', () => {
   it('keeps slots immutable and terminal accounting explicit', () => { let journal = createLv01StageJournal('pilot', 1, 2); journal = transitionLv01Slot(journal, 1, 'running'); journal = transitionLv01Slot(journal, 1, 'valid'); expect(() => transitionLv01Slot(journal, 1, 'running')).toThrow(/twice/u); expect(finalizeLv01Stage(journal).terminal).toBe('failed'); });
   it('blocks pilot admission until every prerequisite is evidenced', () => { expect(assessLv01Admission({ designVerified: true, numericalQualificationVerified: true, topologyQualificationVerified: false, sourceClean: true, registrationBound: false, resourcesSufficient: false, stage: 'pilot' })).toMatchObject({ status: 'blocked', reasons: ['topology-qualification-missing', 'registration-binding-missing', 'resource-allocation-missing'] }); });
@@ -60,5 +61,51 @@ describe('LV01 paired collector gates', () => {
       babyAInitialPolicyRef: 'bad-ref', babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-case',
     } })).toThrow(/policy reference/u);
+  });
+  it('leaves an LV01 commitment-to-action crash unrecoverable without a blind retry', async () => {
+    let reached = false;
+    const harness = await createHarness({
+      afterLv01PairedPredictionCommitment: async () => {
+        reached = true;
+        throw new Error('qualification-stop-after-lv01-prediction');
+      },
+    });
+    try {
+      const parent = testConfig({
+        runId: 'lv01-fault-parent', experimentId: 'LV01', randomSeed: 'fault-parent-seed',
+        babyA: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
+        babyB: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
+        learningSignal: 'extrinsic-task', maxTurnsPerRun: 1, evaluationTurns: 1,
+        ledgerValuePlan: {
+          version: 1, designCommitmentHash: `sha256:${'a'.repeat(64)}`,
+          analysisCommitmentHash: `sha256:${'b'.repeat(64)}`,
+          seedResourceCommitmentHash: `sha256:${'c'.repeat(64)}`,
+          predictionFunctionVersion: 'lv01-ledger-value-prediction/v1',
+          partitionContractVersion: 'lv01-within-support/v1',
+        },
+      });
+      await harness.runtime.createRun(parent);
+      const checkpoint = harness.runtime.checkpoints(parent.runId).at(-1);
+      const child = createLv01PairedCasePlan({
+        parent, parentCheckpointHash: checkpoint?.checkpointHash ?? '',
+        babyAInitialPolicyRef: 'policies/baby-a-policy-initial.json',
+        babyBInitialPolicyRef: 'policies/baby-b-policy-initial.json',
+        childRunIdPrefix: 'lv01-fault-child',
+      }).branches[0]!.config;
+      await harness.runtime.createRun(child);
+      await expect(harness.runtime.step(child.runId)).rejects.toThrow(
+        'qualification-stop-after-lv01-prediction',
+      );
+      expect(reached).toBe(true);
+      expect(harness.runtime.turnRecords(child.runId)).toHaveLength(0);
+      expect(harness.runtime.auditLog(child.runId)
+        .some((event) => event.reasonCode === 'lv01-paired-pre-receiver-action-prediction-committed'))
+        .toBe(true);
+      const restarted = harness.restart();
+      await expect(restarted.runtime.recover(child.runId)).rejects.toThrow(/cannot resume/u);
+      restarted.close();
+    } finally {
+      await harness.cleanup();
+    }
   });
 });
