@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { access, readFile } from 'node:fs/promises';
-import { runLearnerAdapterConformance } from '@ald/learners';
+import {
+  RecordingLedgerClient,
+  buildConformanceRunConfig,
+  loadLearnerContract,
+  runLearnerAdapterConformance,
+} from '@ald/learners';
+import { HASH_DOMAINS, fixedTokenInventory } from '@ald/types';
+import { hashCanonical } from '@ald/hashing';
 
 import {
   FrameAssembler,
@@ -138,6 +145,68 @@ describe('separate-process learner host', () => {
       await factory.dispose();
     }
   }, 20_000);
+});
+
+describe('read-only shuffled previews', () => {
+  it('preserves a scratch policy and ledger across the remote host boundary', async () => {
+    const runId = 'remote-preview';
+    const pair = createLoopbackChannelPair();
+    const host = new LearnerHost({
+      channel: pair.host,
+      boundary: 'in-process',
+      track: 'scratch-rl',
+    });
+    const adapter = new RemoteLearnerAdapter({
+      track: 'scratch-rl',
+      transport: new DirectHostTransport('in-process', pair.runtime),
+      timing: 'immediate',
+    });
+    const config = buildConformanceRunConfig('scratch-rl', {
+      runId,
+      episodes: 1,
+      symbolInventorySize: 8,
+    });
+    const ledger = new RecordingLedgerClient(runId, 'baby-a');
+
+    try {
+      await adapter.init({
+        runId,
+        role: 'baby-a',
+        babyId: 'A',
+        config,
+        learnerContract: loadLearnerContract('scratch-rl'),
+        seed: 'remote-preview-seed',
+        symbolInventory: fixedTokenInventory(8),
+        ledger,
+      });
+      const preview = adapter.previewAct;
+      expect(preview).toBeDefined();
+      const before = hashCanonical(HASH_DOMAINS.policyCheckpoint, adapter.exportPolicy());
+
+      await preview?.({
+        observation: {
+          runId,
+          turn: 0,
+          recipient: 'baby-a',
+          encoding: 'opaque-numeric',
+          payload: [[0, 0, 1], [1, 1, 0]],
+          scenarioRef: 'scenario:remote-preview',
+        },
+        budget: {
+          turn: 0,
+          role: 'sender',
+          responseBudgetMs: 1_000,
+          availableActions: ['emit_symbols'],
+        },
+      });
+
+      expect(hashCanonical(HASH_DOMAINS.policyCheckpoint, adapter.exportPolicy())).toBe(before);
+      expect(ledger.drafts).toHaveLength(0);
+    } finally {
+      await adapter.dispose();
+      await host.close();
+    }
+  });
 });
 
 describe('distinct Baby and model-adapter processes', () => {
