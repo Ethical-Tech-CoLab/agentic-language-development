@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-selected-application-fault-development",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "b12Closed": false,
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "qualificationId": "lv01-application-fault-v2",
+  "supersedes": "protocols/lv01-application-fault-development.v1.json",
+  "predecessorFailure": {
+    "path": "reports/research/mode-r-application-fault-development-v3-qualification-receipt.json",
+    "sha256": "7d6d5f23dc1c26d5564b384e888268f3ce5aad046bc0fcff5168f08e8d510100"
+  },
+  "prerequisite": {
+    "path": "reports/research/lv01-recurrent-lifecycle-v4-receipt.json",
+    "sha256": "10c3962d93206609e70040d2324a9ca1f70f398b0377dec3038533638c4b2f61"
+  },
+  "compose": {
+    "basePath": "deploy/mode-r/docker-compose.application.v1.yml",
+    "baseSha256": "sha256:5c068b25e57842b9aca9e9629925783714544912358782d550d1f9c891457d10",
+    "overlayPath": "deploy/mode-r/docker-compose.application-fault.v1.yml",
+    "overlaySha256": "sha256:4aea1081c96f45c5763117b9ae799127ac9bdfdc4180a1da0ba2e43ec18085bf"
+  },
+  "controller": {
+    "path": "deploy/mode-r/application-fault-controller.mjs",
+    "sha256": "sha256:ce0ebb022f9d5893b735dba691b366d51e854eccf12ab2e404e6dfca541c6d09"
+  },
+  "sourceFreeze": {
+    "commit": "1c1df13caf9134dbf51388580f51f9c01d42daaa",
+    "tree": "6529a12e89f14f0b352fef1f2c0b5a67270eff1f",
+    "version": "0.1.439",
+    "artifacts": [
+      { "path": "scripts/run-mode-r-application-fault-development.mjs", "sha256": "sha256:ae66de6f9f0747b4ed825fc0944c934b0d6a19f9509148c46ddfa78518558270" },
+      { "path": "deploy/mode-r/application-fault-controller.mjs", "sha256": "sha256:ce0ebb022f9d5893b735dba691b366d51e854eccf12ab2e404e6dfca541c6d09" },
+      { "path": "deploy/mode-r/domain-signer-host.mjs", "sha256": "sha256:a8db5c6528a8431f0f8198963317ee48aa337623e1505cd3f5341a226272a1c2" },
+      { "path": "deploy/mode-r/docker-compose.application.v1.yml", "sha256": "sha256:5c068b25e57842b9aca9e9629925783714544912358782d550d1f9c891457d10" },
+      { "path": "deploy/mode-r/docker-compose.application-fault.v1.yml", "sha256": "sha256:4aea1081c96f45c5763117b9ae799127ac9bdfdc4180a1da0ba2e43ec18085bf" },
+      { "path": "deploy/mode-r/docker-compose.lv01.v1.yml", "sha256": "sha256:b880a008d935b28fbdd647f91d4ce97a20c1be3030c0078de7a240b219d58ba0" },
+      { "path": "deploy/mode-r/docker-compose.lv01-isolated-networks.v1.yml", "sha256": "sha256:e932dc32e1d17b0d0f12fa4e85e800a956d7eeafdcf8dc0c372f697d499fa434" }
+    ]
+  },
+  "networkAllocation": {
+    "baby-peer-death": { "babyA": "10.250.188.0/28", "babyB": "10.250.188.16/28", "controlPlane": "10.250.188.32/28" },
+    "anchor-service-death": { "babyA": "10.250.189.0/28", "babyB": "10.250.189.16/28", "controlPlane": "10.250.189.32/28" }
+  },
+  "ledgerValuePlan": {
+    "version": 1,
+    "designCommitmentHash": "sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66",
+    "analysisCommitmentHash": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b",
+    "seedResourceCommitmentHash": "sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec",
+    "predictionFunctionVersion": "lv01-ledger-value-prediction/v1",
+    "partitionContractVersion": "lv01-within-support/v1"
+  },
+  "execution": {
+    "learnerTrack": "scratch-rl",
+    "trainingTurns": 3,
+    "evaluationTurns": 1,
+    "checkpointEventInterval": 1,
+    "anchorClass": "simulated",
+    "network": "base-sepolia",
+    "attemptsPerCase": 1,
+    "freshEvidenceIdentityRequired": true,
+    "cleanCommittedSourceRequired": true,
+    "resourceSampling": "docker-stats-periodic-observations-not-cgroup-peak"
+  },
+  "cases": [
+    { "id": "baby-peer-death", "targetService": "baby-a", "postFaultAction": "step", "expectedDisposition": "committed-adapter-failure", "expectedState": "paused", "expectedTurnAfterFault": 2 },
+    { "id": "anchor-service-death", "targetService": "simulated-anchor", "postFaultAction": "abort", "expectedDisposition": "sealing-blocked", "expectedState": "sealing-blocked", "expectedTurnAfterFault": 1 }
+  ],
+  "acceptance": {
+    "caseCount": 2,
+    "serviceCount": 17,
+    "prefixTurn": 0,
+    "prefixTypeScriptVerifierExitCode": 0,
+    "prefixRustIntegrityPass": true,
+    "postFaultTypeScriptVerifierExitCode": 0,
+    "postFaultRustIntegrityPass": true,
+    "targetExitCode": 137,
+    "minimumResourceSnapshotsPerCase": 1,
+    "unexpectedRunningAfterTeardown": 0
+  },
+  "claimBoundary": "Two fresh recurrent selected-topology service-death cases. This is software qualification only, not a behavioral result, pilot, detector result, or full H07 closure."
+}
