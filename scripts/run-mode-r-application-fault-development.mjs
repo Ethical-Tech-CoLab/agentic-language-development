@@ -10,22 +10,32 @@ import {
 import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
-import { loadLearnerContract, promptBundleHash } from '@ald/learners';
+import { loadLearnerContract, promptBundleHash, RECURRENT_ARCHITECTURE } from '@ald/learners';
 import { buildRunConfig } from '@ald/lifecycle';
 import { ReferentialScenarioEngine } from '@ald/scenario';
 import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-assert.match(mode ?? '', /^--(?:run|audit)-v3$/u, 'expected --run-v3 or --audit-v3');
-const runMode = mode === '--run-v3';
-const version = 3;
-const protocolPath = `protocols/mode-r-application-fault-development.v${String(version)}.json`;
-const evidenceRoot = `evidence/mode-r-application-fault-development-v${String(version)}`;
+const lv01 = mode === '--run-lv01-v1' || mode === '--audit-lv01-v1';
+assert.ok(lv01 || /^--(?:run|audit)-v3$/u.test(mode ?? ''),
+  'expected --run-v3, --audit-v3, --run-lv01-v1, or --audit-lv01-v1');
+const runMode = mode === '--run-v3' || mode === '--run-lv01-v1';
+const version = lv01 ? 1 : 3;
+const protocolPath = lv01
+  ? `protocols/lv01-application-fault-development.v${String(version)}.json`
+  : `protocols/mode-r-application-fault-development.v${String(version)}.json`;
+const evidenceRoot = lv01
+  ? `evidence/lv01/application-fault-v${String(version)}`
+  : `evidence/mode-r-application-fault-development-v${String(version)}`;
 const receiptPath = join(evidenceRoot, 'receipt.json');
 const baseComposePath = 'deploy/mode-r/docker-compose.application.v1.yml';
+const lv01ComposePath = 'deploy/mode-r/docker-compose.lv01.v1.yml';
+const lv01NetworkComposePath = 'deploy/mode-r/docker-compose.lv01-isolated-networks.v1.yml';
 const overlayComposePath = 'deploy/mode-r/docker-compose.application-fault.v1.yml';
-const project = `ald-mode-r-application-fault-development-v${String(version)}`;
+const project = lv01
+  ? `ald-lv01-application-fault-v${String(version)}`
+  : `ald-mode-r-application-fault-development-v${String(version)}`;
 const rustAuditor = '.artifacts/cargo-target/release/ald-integrity-auditor';
 const protocol = readJson(protocolPath);
 const commit = command('git', ['rev-parse', 'HEAD']);
@@ -46,7 +56,7 @@ function sha256(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
-function caseEnvironment(caseRoot, runId, faultCase) {
+function caseEnvironment(caseRoot, runId, faultCase, networks) {
   return {
     ...process.env,
     ALD_MODE_R_APPLICATION_ROOT: resolve(caseRoot),
@@ -55,6 +65,11 @@ function caseEnvironment(caseRoot, runId, faultCase) {
     ALD_MODE_R_FAULT_CASE: faultCase,
     ALD_MODE_R_UID: String(process.getuid?.() ?? 1000),
     ALD_MODE_R_GID: String(process.getgid?.() ?? 1000),
+    ...(networks === undefined ? {} : {
+      ALD_MODE_R_BABY_A_SUBNET: networks.babyA,
+      ALD_MODE_R_BABY_B_SUBNET: networks.babyB,
+      ALD_MODE_R_CONTROL_PLANE_SUBNET: networks.controlPlane,
+    }),
   };
 }
 
@@ -62,6 +77,7 @@ function compose(environment, ...args) {
   return command('docker', [
     'compose', '-p', project,
     '-f', baseComposePath,
+    ...(lv01 ? ['-f', lv01ComposePath, '-f', lv01NetworkComposePath] : []),
     '-f', overlayComposePath,
     ...args,
   ], { env: environment, timeout: 600_000 });
@@ -121,8 +137,9 @@ function resourceSnapshot() {
 function audit(receipt) {
   const acceptance = protocol.acceptance;
   assert.equal(receipt.schemaVersion, 1);
-  assert.equal(receipt.classification,
-    'selected-mode-r-application-fault-development');
+  assert.equal(receipt.classification, lv01
+    ? 'lv01-selected-application-fault-development'
+    : 'selected-mode-r-application-fault-development');
   assert.equal(receipt.researchFinding, false);
   assert.equal(receipt.b12Closed, false);
   assert.equal(receipt.protocolSha256, sha256(protocolPath));
@@ -161,7 +178,7 @@ function audit(receipt) {
 if (!runMode) {
   assert.ok(existsSync(receiptPath), `missing ${receiptPath}`);
   audit(readJson(receiptPath));
-  console.log('selected application fault development receipt valid; B12 remains open');
+  console.log(`${lv01 ? 'LV01 selected' : 'selected application'} fault development receipt valid; B12 remains open`);
   process.exit(0);
 }
 
@@ -178,14 +195,30 @@ assert.equal(sha256(protocol.prerequisite.path), protocol.prerequisite.sha256);
 assert.equal(sha256(protocol.compose.basePath), protocol.compose.baseSha256);
 assert.equal(sha256(protocol.compose.overlayPath), protocol.compose.overlaySha256);
 assert.equal(sha256(protocol.controller.path), protocol.controller.sha256);
+if (lv01) {
+  assert.equal(command('git', ['rev-parse', `${protocol.sourceFreeze.commit}^{tree}`]),
+    protocol.sourceFreeze.tree);
+  for (const artifact of protocol.sourceFreeze.artifacts) {
+    assert.equal(
+      `sha256:${createHash('sha256').update(execFileSync('git', ['show',
+        `${protocol.sourceFreeze.commit}:${artifact.path}`])).digest('hex')}`,
+      artifact.sha256,
+    );
+    assert.equal(`sha256:${createHash('sha256').update(readFileSync(artifact.path)).digest('hex')}`,
+      artifact.sha256, `working source differs from frozen ${artifact.path}`);
+  }
+}
 
 mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
 const startedAt = new Date().toISOString();
 const cases = [];
 for (const fault of protocol.cases) {
   const caseRoot = join(evidenceRoot, fault.id);
-  const runId = `${protocol.qualificationId}-${fault.id}`;
-  const environment = caseEnvironment(caseRoot, runId, fault.id);
+  const runId = lv01
+    ? `${protocol.qualificationId}-p0001-${fault.id}`
+    : `${protocol.qualificationId}-${fault.id}`;
+  const environment = caseEnvironment(caseRoot, runId, fault.id,
+    lv01 ? protocol.networkAllocation[fault.id] : undefined);
   const directories = [
     'config', 'evidence', 'gateway-state', 'output',
     'runtime/model-a', 'runtime/model-b', 'runtime/public-keys',
@@ -202,25 +235,29 @@ for (const fault of protocol.cases) {
   }
   const unresolvedConfig = buildRunConfig({
     runId,
-    experimentId: 'E02',
+    experimentId: lv01 ? 'LV01' : 'E02',
     randomSeed: runId,
     deploymentMode: 'research-grade',
     babyA: {
-      track: protocol.execution.learnerTrack,
-      modelRef: 'selected-application-no-learning',
+      track: lv01 ? 'scratch-rl' : protocol.execution.learnerTrack,
+      modelRef: lv01 ? RECURRENT_ARCHITECTURE : 'selected-application-no-learning',
       trainingIsolation: 'independent',
     },
     babyB: {
-      track: protocol.execution.learnerTrack,
-      modelRef: 'selected-application-no-learning',
+      track: lv01 ? 'scratch-rl' : protocol.execution.learnerTrack,
+      modelRef: lv01 ? RECURRENT_ARCHITECTURE : 'selected-application-no-learning',
       trainingIsolation: 'independent',
     },
-    learningSignal: 'none',
+    learningSignal: lv01 ? 'extrinsic-task' : 'none',
     communicationCondition: 'normal',
     maxTurnsPerRun: protocol.execution.trainingTurns,
     evaluationTurns: protocol.execution.evaluationTurns,
     checkpointEventInterval: protocol.execution.checkpointEventInterval,
     protocolGitCommit: commit,
+    ...(lv01 ? {
+      interventionPlan: { version: 1, heldOutTypeCodes: [0, 5, 10, 15] },
+      ledgerValuePlan: protocol.ledgerValuePlan,
+    } : {}),
   });
   const tracks = [...new Set([
     unresolvedConfig.babyA.track,
@@ -342,7 +379,9 @@ const summary = {
 };
 const receipt = {
   schemaVersion: 1,
-  classification: 'selected-mode-r-application-fault-development',
+  classification: lv01
+    ? 'lv01-selected-application-fault-development'
+    : 'selected-mode-r-application-fault-development',
   researchFinding: false,
   b12Closed: false,
   publicChainTransaction: false,
@@ -360,4 +399,4 @@ const receipt = {
 };
 writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600 });
 audit(receipt);
-console.log('selected application fault development execution passed; B12 remains open');
+console.log(`${lv01 ? 'LV01 selected' : 'selected application'} fault development execution passed; B12 remains open`);

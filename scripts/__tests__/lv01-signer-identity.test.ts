@@ -11,5 +11,6 @@ describe('LV01 development signer identity', () => {
     expect(signer).toContain('lv01-paired-development-v\\d+-p\\d{4}-(?:normal|disabled|constant|random|shuffled|ledger-consistent|ledger-shuffled)');
     expect(signer).toContain('(?:commitment-window-fault|malformed-proposal)-v\\d+-p\\d{4}-normal');
     expect(signer).toContain('five-rejection-safety');
+    expect(signer).toContain('lv01-application-fault-v\\d+-p\\d{4}-(?:baby-peer-death|anchor-service-death)');
   });
 });
