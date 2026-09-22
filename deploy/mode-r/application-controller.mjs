@@ -22,7 +22,7 @@ const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
 assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch',
   'lv01-commitment-window-fault', 'lv01-commitment-window-recover',
-  'lv01-malformed-proposal'].includes(stage),
+  'lv01-malformed-proposal', 'lv01-five-rejection-safety'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -131,6 +131,27 @@ function injectLv01MalformedProposal(gateway) {
   });
 }
 
+/** Development-only: exercise the Gateway's five-rejection safety boundary. */
+function injectLv01RepeatedMalformedProposal(gateway) {
+  return new Proxy(gateway, {
+    get(target, property) {
+      if (property === 'submitProposal') {
+        return async (turn, envelope) => {
+          assert.ok(envelope !== null && typeof envelope === 'object');
+          const proposal = envelope.proposal;
+          assert.ok(proposal !== null && typeof proposal === 'object');
+          return target.submitProposal(turn, {
+            ...envelope,
+            proposal: { ...proposal, runId: 'untrusted-rejection-safety-fixture' },
+          });
+        };
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
 const runtime = createNurseryRuntime({
   bundleRoot: join(outputRoot, 'bundles'),
   softwareCommit: required('ALD_SOFTWARE_COMMIT'),
@@ -147,9 +168,13 @@ const runtime = createNurseryRuntime({
     const connected = await retry('Symbol Gateway', () =>
       connectSymbolGatewayRpc(required('ALD_MODE_R_GATEWAY_SOCKET'), input.context));
     gatewayProcessId = connected.processId;
-    return stage === 'lv01-malformed-proposal'
-      ? injectLv01MalformedProposal(connected.gateway)
-      : connected.gateway;
+    if (stage === 'lv01-malformed-proposal') {
+      return injectLv01MalformedProposal(connected.gateway);
+    }
+    if (stage === 'lv01-five-rejection-safety') {
+      return injectLv01RepeatedMalformedProposal(connected.gateway);
+    }
+    return connected.gateway;
   },
   afterLv01PairedPredictionCommitment: stopAfterLv01PairedPredictionCommitment,
 });
@@ -344,6 +369,46 @@ async function runLv01MalformedProposal() {
   });
 }
 
+async function runLv01FiveRejectionSafety() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.equal(config.maxConsecutiveRejections, 5);
+  await runtime.createRun(config);
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'paused');
+  const [turns, channels, interventions, checkpoints, bundle] = await Promise.all([
+    controller.port.readEvents(config.runId, 'turns'),
+    controller.port.readEvents(config.runId, 'channel'),
+    controller.port.readEvents(config.runId, 'intervention'),
+    controller.port.readCheckpoints(config.runId),
+    runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
+  ]);
+  assert.equal(turns.length, 5);
+  assert.equal(channels.length, 5);
+  const parsedChannels = channels.map((event) => JSON.parse(event.canonicalJson));
+  assert.ok(parsedChannels.every((event) =>
+    event.gatewayValidationResult === 'rejected' && event.reasonCode === 'trusted-metadata-present'));
+  const safety = interventions.map((event) => JSON.parse(event.canonicalJson))
+    .filter((event) => event.reasonCode === 'max-consecutive-rejections');
+  assert.equal(safety.length, 1);
+  assert.equal(safety[0].details.consecutiveRejections, 5);
+  await writeResult('lv01-five-rejection-safety-result.json', {
+    schemaVersion: 1,
+    classification: 'lv01-five-rejection-safety-development',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    state: summary.state,
+    turnCount: turns.length,
+    channelCount: channels.length,
+    rejectionReasonCodes: parsedChannels.map((event) => event.reasonCode),
+    safetyTriggerCount: safety.length,
+    safetyTrigger: safety[0].details,
+    checkpointCount: checkpoints.length,
+    bundleRunId: bundle.runId,
+    claimBoundary: 'One selected-topology five-rejection safety pause. It does not qualify deadlines, detectors, or behavioral outcomes.',
+  });
+}
+
 try {
   if (stage === 'lv01-commitment-window-fault') {
     await runLv01CommitmentWindowFault();
@@ -351,6 +416,8 @@ try {
     await runLv01CommitmentWindowRecovery();
   } else if (stage === 'lv01-malformed-proposal') {
     await runLv01MalformedProposal();
+  } else if (stage === 'lv01-five-rejection-safety') {
+    await runLv01FiveRejectionSafety();
   } else if (stage === 'lv01-fixture') {
     await runLv01Fixture();
   } else if (stage === 'lv01-paired-branch') {
