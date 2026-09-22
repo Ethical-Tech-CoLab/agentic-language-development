@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "studyId": "LV01",
+  "classification": "prospective-development-only-paired-case",
+  "status": "design-locked-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "parentRunId":"lv01-development-v17-p0001",
+  "branchOrder":["normal","disabled","constant","random","shuffled","ledger-consistent","ledger-shuffled"],
+  "sourceFreeze": {
+    "commit":"179feaf9091754e40ce51b38a2e7abb2aa503f71",
+    "tree":"8e88c4296ca39094448b7675d2be1b4aba45d312",
+    "version":"0.1.393",
+    "artifacts":[
+      {"path":"deploy/mode-r/run-lv01-paired-case.mjs","sha256":"sha256:4ada24d43c099de8ac3594b810aa20b10a3341c33eec06c44b86c87d1d3dfb7b"},
+      {"path":"deploy/mode-r/run-lv01-slot.mjs","sha256":"sha256:0769a272f43853de82d24b8af17d6f7fa44df7eae58dcb7fa4cce21b99235019"},
+      {"path":"deploy/mode-r/docker-compose.application.v1.yml","sha256":"sha256:fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"},
+      {"path":"deploy/mode-r/docker-compose.lv01.v1.yml","sha256":"sha256:b880a008d935b28fbdd647f91d4ce97a20c1be3030c0078de7a240b219d58ba0"},
+      {"path":"deploy/mode-r/application-controller.mjs","sha256":"sha256:07f80091b76259902a3c113800ad44b77e6e67b7f7bbf4c23a1e881a709b72d1"},
+      {"path":"deploy/mode-r/domain-signer-host.mjs","sha256":"sha256:f60519bbc591f0ea4312d12b236509ce10999626a7f5c3cc57fe8ed362653f60"},
+      {"path":"packages/orchestrator/src/experiments/ledger-value.ts","sha256":"sha256:f887bde6261e799cdd0ebd5b8b80ba218d894aae3f34ed0b1123ddfcb8125c23"},
+      {"path":"packages/orchestrator/src/nursery-runtime.ts","sha256":"sha256:a6ce51cb2510708fae819ba13c9502c8af5aeb6a12f29f52a4f2d4d518dc181a"},
+      {"path":"packages/lifecycle/src/run-config.ts","sha256":"sha256:b6f43ddc14e1565cc0a0ad4925eb9ff8c784c1680b31751291d0074e160d6470"},
+      {"path":"packages/types/src/schemas.ts","sha256":"sha256:8aef41fff57798028177709e078b39ebed0c2d2f76edb8792d98d9ebd2aab6d0"}
+    ]
+  },
+  "execution":{"maximumParallelDyads":1,"parentTrainingCases":64,"parentEvaluationCases":24,"pairedChildren":7,"childEvaluationTurns":1,"cpuHoursCap":2,"additionalStorageGiBCap":8,"maximumResidentGiB":6},
+  "requiredBeforeExecution":["clean committed source","v17 parent allocation validation","separate isolated project per branch","seven ordered one-turn branches","retained raw bundle and receipt audit"],
+  "claimBoundary":"This packet reserves a single local seven-branch development fixture bound to the v17 parent. It is not a pilot, behavioral study, or scientific finding."
+}
