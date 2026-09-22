@@ -21,7 +21,8 @@ import { readJson, required, retry } from './application-common.mjs';
 const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
 assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch',
-  'lv01-commitment-window-fault', 'lv01-commitment-window-recover'].includes(stage),
+  'lv01-commitment-window-fault', 'lv01-commitment-window-recover',
+  'lv01-malformed-proposal'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
 const publicKeys = await Promise.all(SIGNER_DOMAINS.map((domain) =>
@@ -100,6 +101,36 @@ async function stopAfterLv01PairedPredictionCommitment(input) {
   await new Promise(() => {});
 }
 
+/**
+ * Development-only boundary fixture. It alters one controller-to-Gateway
+ * proposal in transit, so the selected Gateway process—not a unit-test
+ * substitute—must reject untrusted metadata without receiving a retry.
+ */
+function injectLv01MalformedProposal(gateway) {
+  let injected = false;
+  return new Proxy(gateway, {
+    get(target, property) {
+      if (property === 'submitProposal') {
+        return async (turn, envelope) => {
+          assert.equal(injected, false, 'malformed-proposal fixture submits exactly once');
+          injected = true;
+          assert.ok(envelope !== null && typeof envelope === 'object',
+            'adapter must produce an envelope before the boundary fixture mutates it');
+          const proposal = envelope.proposal;
+          assert.ok(proposal !== null && typeof proposal === 'object',
+            'adapter envelope must contain a proposal');
+          return target.submitProposal(turn, {
+            ...envelope,
+            proposal: { ...proposal, runId: 'untrusted-metadata-fixture' },
+          });
+        };
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
 const runtime = createNurseryRuntime({
   bundleRoot: join(outputRoot, 'bundles'),
   softwareCommit: required('ALD_SOFTWARE_COMMIT'),
@@ -116,7 +147,9 @@ const runtime = createNurseryRuntime({
     const connected = await retry('Symbol Gateway', () =>
       connectSymbolGatewayRpc(required('ALD_MODE_R_GATEWAY_SOCKET'), input.context));
     gatewayProcessId = connected.processId;
-    return connected.gateway;
+    return stage === 'lv01-malformed-proposal'
+      ? injectLv01MalformedProposal(connected.gateway)
+      : connected.gateway;
   },
   afterLv01PairedPredictionCommitment: stopAfterLv01PairedPredictionCommitment,
 });
@@ -265,11 +298,52 @@ async function runLv01CommitmentWindowRecovery() {
   });
 }
 
+async function runLv01MalformedProposal() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.ok(config.lv01PairedCase !== undefined,
+    'malformed-proposal fixture requires an LV01 paired child');
+  await runtime.createRun(config);
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'sealed');
+  const [turns, channels, babyALedger, babyBLedger, bundle] = await Promise.all([
+    controller.port.readEvents(config.runId, 'turns'),
+    controller.port.readEvents(config.runId, 'channel'),
+    controller.port.readEvents(config.runId, 'baby-a-ledger'),
+    controller.port.readEvents(config.runId, 'baby-b-ledger'),
+    runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
+  ]);
+  assert.equal(turns.length, 1, 'malformed proposal must forfeit exactly one turn');
+  assert.equal(channels.length, 1, 'malformed proposal must create one channel rejection');
+  const channel = JSON.parse(channels[0].canonicalJson);
+  assert.equal(channel.gatewayValidationResult, 'rejected');
+  assert.equal(channel.reasonCode, 'trusted-metadata-present');
+  assert.equal(babyALedger.length, 0, 'rejected proposal must not create a sender ledger event');
+  assert.equal(babyBLedger.length, 0, 'rejected proposal must not reach the receiver');
+  await writeResult('lv01-malformed-proposal-result.json', {
+    schemaVersion: 1,
+    classification: 'lv01-malformed-proposal-development',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    state: summary.state,
+    turnCount: turns.length,
+    channelCount: channels.length,
+    senderLedgerCount: babyALedger.length,
+    receiverLedgerCount: babyBLedger.length,
+    gatewayValidationResult: channel.gatewayValidationResult,
+    rejectionReasonCode: channel.reasonCode,
+    bundleRunId: bundle.runId,
+    claimBoundary: 'One selected-topology malformed-proposal rejection. It qualifies a Gateway boundary path only; it is not a pilot or behavioral result.',
+  });
+}
+
 try {
   if (stage === 'lv01-commitment-window-fault') {
     await runLv01CommitmentWindowFault();
   } else if (stage === 'lv01-commitment-window-recover') {
     await runLv01CommitmentWindowRecovery();
+  } else if (stage === 'lv01-malformed-proposal') {
+    await runLv01MalformedProposal();
   } else if (stage === 'lv01-fixture') {
     await runLv01Fixture();
   } else if (stage === 'lv01-paired-branch') {
