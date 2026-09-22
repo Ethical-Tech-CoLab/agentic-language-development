@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-seven-branch-development-fixture-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "parentRunId": "lv01-development-v21-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v21.json",
+    "pairedAllocation": "protocols/lv01-paired-development-allocation.v21.json",
+    "executionCommit": "3d654fd",
+    "rawReceiptSha256": "sha256:b2ecb3f0b42636e1b09c2d91bbfcc281cb30d82209f16dded34b3a08b0d54a07"
+  },
+  "observed": {
+    "parentCheckpointHash": "sha256:46284ba18a3fd42b6ed78de7ad2e58ac8ce4a41a8d60d79657fd8b32e13b0048",
+    "preStateCommitment": "sha256:be3f00da884d2560d9e9188343cfd8728e30492148178a15b5292c56d7e0aa39",
+    "caseCommitment": "sha256:9cdce76102646170a5c28e21dabab1885a09902875515e4807a29cc7dc476d55",
+    "branchOrder": ["normal", "disabled", "constant", "random", "shuffled", "ledger-consistent", "ledger-shuffled"],
+    "sealedBranchCount": 7,
+    "turnsPerBranch": 1,
+    "sharedScenarioHash": "sha256:ba3e2c1638bf56e7b0304fdad2444f324b6cd5aea4a6a046ed1570e481e654ee",
+    "sharedReceiverDrawCommitment": "sha256:0a7e5aac53f20a291cae85ca8f0db74341a75601bad51034d828f90e99f7e60a"
+  },
+  "limitations": [
+    "This local one-parent/seven-child fixture covers ordinary paired-branch chronology only; it does not inject a crash between prediction commitment and action.",
+    "It does not qualify malformed envelopes, the broader deadline and five-rejection safety matrix, detector bounds, fault/uncertain-write handling, or five-dyad full-workload calibration.",
+    "Simulated commitments and local verification do not provide an independent public timestamp or independent review."
+  ],
+  "claimBoundary": "This receipt records a completed local software-development fixture. It establishes no pilot, behavioral outcome, semantic-ledger utility, language-emergence result, B12 closure, or publication readiness."
+}
