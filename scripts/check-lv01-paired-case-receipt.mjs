@@ -7,14 +7,18 @@ assert.match(values.version, /^[1-9]\d*$/u, 'version must be a positive integer'
 const version = values.version;
 const root = `evidence/lv01/paired-development-v${version}`;
 const receiptPath = `${root}/paired-case-receipt.json`;
+const packetPath = `protocols/lv01-paired-development-allocation.v${version}.json`;
 assert.ok(existsSync(receiptPath), `missing retained paired-case receipt: ${receiptPath}`);
+assert.ok(existsSync(packetPath), `missing paired-case allocation packet: ${packetPath}`);
 const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-const branchOrder = ['normal', 'blocked', 'dropped', 'shuffled', 'delayed', 'substituted', 'counterfactual'];
+const packet = JSON.parse(readFileSync(packetPath, 'utf8'));
+const branchOrder = packet.branchOrder;
 
 assert.equal(receipt.schemaVersion, 1);
 assert.equal(receipt.classification, 'lv01-seven-branch-development-fixture');
 assert.equal(receipt.researchFinding, false);
 assert.equal(receipt.scientificDisposition, 'not-tested');
+assert.deepEqual(branchOrder, ['normal', 'disabled', 'constant', 'random', 'shuffled', 'ledger-consistent', 'ledger-shuffled']);
 assert.equal(receipt.branches.length, branchOrder.length);
 assert.deepEqual(receipt.branches.map((entry) => entry.branch), branchOrder);
 assert.equal(new Set(receipt.branches.map((entry) => entry.runId)).size, branchOrder.length,

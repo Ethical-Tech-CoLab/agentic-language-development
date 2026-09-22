@@ -65,5 +65,6 @@ describe('LV01 selected-topology fixture runner', () => {
     const result = spawnSync(process.execPath, [audit, '--version', '999'], { cwd: root, encoding: 'utf8' });
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('missing retained paired-case receipt');
+    expect(readFileSync(audit, 'utf8')).toContain('packet.branchOrder');
   });
 });
