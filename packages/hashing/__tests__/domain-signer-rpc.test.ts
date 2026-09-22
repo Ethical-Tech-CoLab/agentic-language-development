@@ -32,6 +32,18 @@ function rawRequest(socketPath: string, message: string): Promise<string> {
   });
 }
 
+function sendAndDisconnect(socketPath: string, message: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const socket = createConnection(socketPath);
+    socket.on('connect', () => {
+      socket.write(`${message}\n`);
+      socket.destroy();
+      resolve();
+    });
+    socket.on('error', reject);
+  });
+}
+
 describe('one-domain Unix-socket signer process', () => {
   it('keeps the key in a distinct process and rejects wrong identity and frames', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'ald-signer-rpc-'));
@@ -147,6 +159,24 @@ describe('one-domain Unix-socket signer process', () => {
     } finally {
       await Promise.all(servers.map((server) => new Promise<void>((resolve) =>
         server.close(() => resolve()))));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps serving after a caller disconnects during a request', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ald-signer-disconnect-'));
+    const socketPath = join(directory, 'signer.sock');
+    const local = InMemorySignerRegistry.generate(runId, [domain]);
+    const server = await createDomainSignerRpcServer(socketPath, runId, local.signer(domain));
+    try {
+      await sendAndDisconnect(socketPath, JSON.stringify({
+        op: 'sign', runId, hash: domainHash('dtsf-test-v1', 'disconnect'),
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      const { signer } = await connectDomainSignerRpc(socketPath, runId, domain);
+      await expect(signer.sign(domainHash('dtsf-test-v1', 'after-disconnect'))).resolves.toMatch(/^ed25519:/u);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
       rmSync(directory, { recursive: true, force: true });
     }
   });

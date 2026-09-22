@@ -55,6 +55,10 @@ export async function createDomainSignerRpcServer(
   const server = createServer((socket) => {
     let frame = '';
     socket.setEncoding('utf8');
+    // A caller may time out or tear down its container after sending a valid
+    // request. That disconnect is local to this connection and must not take
+    // down the one-domain signer process or unrelated evidence writers.
+    socket.on('error', () => socket.destroy());
     socket.setTimeout(RPC_TIMEOUT_MS, () => socket.destroy());
     socket.on('data', (chunk: string) => {
       frame += chunk;

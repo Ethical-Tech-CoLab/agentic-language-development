@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-malformed-proposal-development-failure",
+  "status": "failed-signer-disconnect",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "packetPath": "protocols/lv01-malformed-proposal-development.v3.json",
+  "rawReceiptPath": "evidence/lv01/malformed-proposal-v3/lv01-malformed-proposal-v3-p0001-normal/receipt.json",
+  "rawReceiptSha256": "sha256:98c0a4cd8f69ae4144788ccc94f282034389c53d0d2958e03ee90e66dd04856b",
+  "observed": { "controllerExitCode": 137, "remainingContainers": 0, "completedTurns": 0 },
+  "failure": "The audit-domain signer terminated on an unhandled EPIPE after a peer disconnect. Compose aborted the selected controller before it wrote any run result. The signer RPC server must contain per-connection write errors before a fresh attempt.",
+  "successorRequirement": "Do not retry v3. Qualify the signer disconnect fix, then freeze a fresh packet with a new child identity, project, and isolated subnet allocation.",
+  "claimBoundary": "This is terminal accounting for a failed local development attempt, not a software qualification, pilot, or behavioral result."
+}
