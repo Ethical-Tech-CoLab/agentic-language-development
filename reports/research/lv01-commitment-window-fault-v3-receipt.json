@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-commitment-window-fault-development-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "packetPath": "protocols/lv01-commitment-window-fault-development.v3.json",
+  "rawReceiptPath": "evidence/lv01/commitment-window-fault-v3/lv01-commitment-window-fault-v3-p0001-normal/receipt.json",
+  "rawReceiptSha256": "sha256:6014ca36287a0122b12d1874d345a74efddea85d3c52e6ea8a6186288514d727",
+  "observed": { "childRunId": "lv01-commitment-window-fault-v3-p0001-normal", "parentRunId": "lv01-development-v21-p0001", "faultControllerExitCode": 137, "faultControllerOomKilled": false, "recoveryError": "IncompleteTurnEvidenceError", "turnRecords": 0, "channelEvents": 1, "interventionEvents": 2, "remainingContainers": 0 },
+  "claimBoundary": "One local selected-topology controller-loss software qualification. It does not establish a pilot outcome, behavioral finding, B12 closure, or public-chain timestamp."
+}
