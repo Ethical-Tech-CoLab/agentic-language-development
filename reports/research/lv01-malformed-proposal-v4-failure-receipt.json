@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-malformed-proposal-development-failure",
+  "status": "failed-controller-assertion",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "packetPath": "protocols/lv01-malformed-proposal-development.v4.json",
+  "rawReceiptPath": "evidence/lv01/malformed-proposal-v4/lv01-malformed-proposal-v4-p0001-normal/receipt.json",
+  "failure": "The selected topology rejected the injected proposal as trusted metadata, but the fixture incorrectly treated legitimate policy-checkpoint and run-sealed ledger events as message leakage. The successor must check only channel-bound intention events.",
+  "successorRequirement": "Do not retry v4. Freeze a fresh packet with a new child identity, project, and isolated subnet allocation after the corrected assertion is committed.",
+  "claimBoundary": "This is terminal accounting for a failed local development attempt, not a software qualification, pilot, or behavioral result."
+}
