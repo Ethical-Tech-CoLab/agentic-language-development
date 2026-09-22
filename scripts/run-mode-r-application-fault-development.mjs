@@ -17,11 +17,12 @@ import { fixedTokenInventory } from '@ald/types';
 import { verifyBundle, VERIFIER_VERSION } from '@ald/verifier';
 
 const mode = process.argv[2];
-const lv01 = mode === '--run-lv01-v1' || mode === '--audit-lv01-v1';
+const lv01Match = /^--(?<operation>run|audit)-lv01-v(?<version>[1-9]\d*)$/u.exec(mode ?? '');
+const lv01 = lv01Match !== null;
 assert.ok(lv01 || /^--(?:run|audit)-v3$/u.test(mode ?? ''),
-  'expected --run-v3, --audit-v3, --run-lv01-v1, or --audit-lv01-v1');
-const runMode = mode === '--run-v3' || mode === '--run-lv01-v1';
-const version = lv01 ? 1 : 3;
+  'expected --run-v3, --audit-v3, --run-lv01-vN, or --audit-lv01-vN');
+const runMode = mode === '--run-v3' || lv01Match?.groups.operation === 'run';
+const version = lv01 ? Number(lv01Match.groups.version) : 3;
 const protocolPath = lv01
   ? `protocols/lv01-application-fault-development.v${String(version)}.json`
   : `protocols/mode-r-application-fault-development.v${String(version)}.json`;

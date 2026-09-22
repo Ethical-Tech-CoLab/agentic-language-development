@@ -8,7 +8,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 describe('LV01 selected application fault runner', () => {
   it('keeps recurrent faults in a fresh explicitly-networked namespace', () => {
     const runner = readFileSync(`${root}scripts/run-mode-r-application-fault-development.mjs`, 'utf8');
-    expect(runner).toContain("mode === '--run-lv01-v1'");
+    expect(runner).toContain('^--(?<operation>run|audit)-lv01-v(?<version>[1-9]\\d*)$');
     expect(runner).toContain('protocols/lv01-application-fault-development');
     expect(runner).toContain('docker-compose.lv01-isolated-networks.v1.yml');
     expect(runner).toContain('RECURRENT_ARCHITECTURE');
