@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-commitment-window-fault-development-failure",
+  "packetPath": "protocols/lv01-commitment-window-fault-development.v1.json",
+  "attemptStatus": "failed-before-collection",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "executionCommit": "b59cb03",
+  "failureStage": "evidence-root-initialization",
+  "failure": "ENOENT: parent evidence directory did not exist when the single-use root was created.",
+  "dockerStarted": false,
+  "evidenceRootCreated": false,
+  "retriable": false,
+  "successorRequirement": "Use a new packet version, child run identity, project name, and isolated subnet allocation after a source correction.",
+  "claimBoundary": "No runtime, topology, safety, or behavioral evidence was collected."
+}

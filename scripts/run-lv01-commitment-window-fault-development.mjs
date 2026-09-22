@@ -78,7 +78,7 @@ if (mode === '--check') {
 
 assert.equal(command('git', ['status', '--porcelain']), '', 'fault collection requires a clean committed source tree');
 assert.equal(existsSync(root), false, 'fault evidence is single-use');
-mkdirSync(root, { recursive: false, mode: 0o700 });
+mkdirSync(root, { recursive: true, mode: 0o700 });
 const parent = JSON.parse(readFileSync(packet.parent.configPath, 'utf8'));
 const plan = createLv01PairedCasePlan({
   parent,
