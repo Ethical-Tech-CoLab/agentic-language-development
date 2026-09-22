@@ -120,8 +120,8 @@ try {
   assert.equal(result.state, 'sealed');
   assert.equal(result.turnCount, 1);
   assert.equal(result.channelCount, 1);
-  assert.equal(result.senderLedgerCount, 0);
-  assert.equal(result.receiverLedgerCount, 0);
+  assert.equal(result.senderLedgerEventsAdded, 0);
+  assert.equal(result.receiverLedgerEventsAdded, 0);
   assert.equal(result.gatewayValidationResult, 'rejected');
   assert.equal(result.rejectionReasonCode, 'trusted-metadata-present');
 } catch (error) {

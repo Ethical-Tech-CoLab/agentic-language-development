@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-malformed-proposal-development-failure",
+  "status": "aborted-before-container-start",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "packetPath": "protocols/lv01-malformed-proposal-development.v2.json",
+  "executionCommit": "70104570724dbe42598dd1c75a52a8d080198e95",
+  "rawEvidenceRoot": "evidence/lv01/malformed-proposal-v2/lv01-malformed-proposal-v2-p0001-normal",
+  "observed": {
+    "generatedConfigurationSha256": "sha256:7d0ef35e0f2ebc2756ed41b2ffc94579c031f573b8347c4b7ec66de6370e3555",
+    "containersCreated": 0,
+    "terminalReceiptWritten": false
+  },
+  "failure": "V2 was deliberately stopped before container start when the previously launched v1 collector was discovered still active. This preserved the one-dyad execution constraint; the v2 identity is not reusable.",
+  "successorRequirement": "Freeze a fresh packet with a new child identity, project, and isolated subnet allocation after the corrected boundary invariant is committed.",
+  "claimBoundary": "This is terminal accounting for an intentionally aborted local development attempt, not a software qualification, pilot, or behavioral result."
+}
