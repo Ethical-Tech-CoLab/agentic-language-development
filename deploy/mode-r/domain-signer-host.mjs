@@ -4,7 +4,7 @@ import { mkdir, rename, writeFile } from 'node:fs/promises';
 
 const [domain, runId] = process.argv.slice(2);
 if (!SIGNER_DOMAINS.includes(domain) ||
-    !/^(?:mode-r-(?:study|application)-[a-z0-9-]+|lv01-(?:development|recurrent-lifecycle|late-callback)-v\d+-p\d{4})$/u.test(runId ?? '')) {
+    !/^(?:mode-r-(?:study|application)-[a-z0-9-]+|lv01-(?:development|paired-development|recurrent-lifecycle|late-callback)-v\d+-p\d{4})$/u.test(runId ?? '')) {
   throw new Error('invalid qualification signer identity');
 }
 
