@@ -308,6 +308,7 @@ describe('all-method turn deadline accounting (SPEC §8.3)', () => {
       expect(deadlineEvent?.details).toMatchObject({
         role,
         method,
+        boundaryMethod: expectedHostMethod,
         adapterQuarantined: true,
         quarantineFailed: false,
       });
