@@ -29,8 +29,8 @@ const allocation = existsSync(allocationPath)
   ? JSON.parse(readFileSync(allocationPath, 'utf8'))
   : null;
 const controllerStage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'lv01-fixture';
-assert.ok(['lv01-fixture', 'lv01-detector-observation'].includes(controllerStage),
-  'LV01 slot runner accepts only the fixture or detector-observation controller stage');
+assert.equal(controllerStage, 'lv01-fixture',
+  'LV01 slot runner accepts only the fixture controller stage; detector observation is owned by the outer collector');
 
 const APPLICATION_SERVICES = [
   'model-adapter-a', 'model-adapter-b', 'baby-a', 'baby-b',
