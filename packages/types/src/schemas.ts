@@ -263,7 +263,7 @@ export const RunConfigSchema = z
     roleReversalPeriod: positiveInteger,
     turnResponseBudgetMs: z.number().int().min(1_000),
     maxTurnsPerRun: positiveInteger,
-    evaluationTurns: positiveInteger.optional(), // evaluation-phase budget; runtime default 200
+    evaluationTurns: z.number().int().min(0).optional(), // evaluation-phase budget; 0 selects a capture-only run with no evaluation phase; runtime default 200
     /** A derived frozen-policy run may begin directly in held-out evaluation. */
     evaluationOnly: z.boolean().optional(),
     maxConsecutiveRejections: positiveInteger,
