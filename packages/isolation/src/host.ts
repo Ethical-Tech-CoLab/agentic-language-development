@@ -10,9 +10,11 @@
  * whole point of ALD-056 — a training update can only read what this process
  * itself accumulated, because nothing else is reachable from here.
  *
- * Nothing in this file writes to stdout except frames, and nothing writes a
- * message to the wire: a failure becomes one {@link HostErrorCode} and the
- * adapter's own text stays inside this process (SPEC §10.3).
+ * Nothing in this file writes to stdout except frames, and almost nothing
+ * writes a message to the wire: a failure becomes one {@link HostErrorCode}
+ * plus, for an unexpected adapter throw only, a bounded `detail` summary
+ * (`Name: first-line`, truncated). The adapter's full text stays inside this
+ * process (SPEC §10.3).
  */
 import { readFileSync } from 'node:fs';
 import { hostname } from 'node:os';
@@ -39,6 +41,7 @@ import { createLearnerAdapterFactory } from '@ald/learners';
 import { FrameConnection, type FrameChannel } from './channel.js';
 import {
   HostProtocolError,
+  hostErrorDetail,
   isHostProtocolError,
   type HostErrorCode,
 } from './errors.js';
@@ -139,6 +142,7 @@ export class LearnerHost {
         : { maxPayloadBytes: options.maxPayloadBytes }),
       handler: (method, params) => this.dispatch(method, params),
       errorCodeFor: (error) => wireCodeFor(error),
+      errorDetailFor: (error) => hostErrorDetail(error),
     });
   }
 

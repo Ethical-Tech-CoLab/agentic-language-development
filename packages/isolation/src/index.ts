@@ -50,10 +50,12 @@ export {
 } from './channel.js';
 export {
   HOST_ERROR_CODES,
+  HOST_ERROR_DETAIL_LIMIT,
   HostProtocolError,
   ISOLATION_ERROR_CODES,
   ISOLATION_FAILURE_CLASSES,
   IsolationError,
+  hostErrorDetail,
   isHostErrorCode,
   isHostProtocolError,
   isIsolationError,

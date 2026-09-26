@@ -5,12 +5,12 @@
  *
  * - {@link HOST_ERROR_CODES} is the *wire* enum. It is the only thing a
  *   learner host process ever says about a failure: an error response frame
- *   carries exactly `{ error: { code } }` — no message, no stack, no payload,
- *   no adapter text (SPEC §10.3 "normalized message envelope size and error
- *   behavior"). Adapter error text is withheld on purpose: it is
- *   model-influenced content on a path the runtime records, and a
- *   distinguishable error body is the error-message side channel §10.3
- *   enumerates.
+ *   carries `{ error: { code } }` plus, for an unexpected adapter throw only,
+ *   a bounded free-form `detail` summary (`Name: first-line`, truncated to
+ *   {@link HOST_ERROR_DETAIL_LIMIT}). Full adapter text — stacks, payloads —
+ *   is still withheld on purpose: it is model-influenced content on a path
+ *   the runtime records, and an unbounded error body is the error-message
+ *   side channel §10.3 enumerates.
  * - {@link ISOLATION_ERROR_CODES} is the *runtime-side* enum carried by
  *   {@link IsolationError}. It never crosses the boundary and never reaches a
  *   Baby context; it exists so the Nursery runtime can classify a failure
@@ -129,11 +129,40 @@ export const ISOLATION_FAILURE_CLASSES: Readonly<
   disposed: 'operator-error',
 });
 
+/**
+ * Maximum wire length of a `host-error` detail summary. Bounded so an
+ * adapter cannot write arbitrary content into the audit stream through a
+ * thrown message, and small enough to stay inside one padded frame.
+ */
+export const HOST_ERROR_DETAIL_LIMIT = 500;
+
+/**
+ * Bounded `Name: first-line` summary of an unexpected host-side throw, for
+ * the `detail` field of a `host-error` wire response.
+ *
+ * Returns `undefined` for typed {@link HostProtocolError}s: a wire code
+ * already says everything there is to say about those.
+ */
+export function hostErrorDetail(error: unknown): string | undefined {
+  if (isHostProtocolError(error)) {
+    return undefined;
+  }
+  const name = error instanceof Error ? error.name || 'Error' : 'Thrown';
+  const raw = error instanceof Error ? error.message : String(error);
+  const firstLine = raw.split('\n', 1)[0] ?? '';
+  const summary = firstLine === '' ? name : `${name}: ${firstLine}`;
+  return summary.length > HOST_ERROR_DETAIL_LIMIT
+    ? `${summary.slice(0, HOST_ERROR_DETAIL_LIMIT)}…`
+    : summary;
+}
+
 export interface IsolationErrorContext {
   /** Protocol method the failure happened in, when there was one. */
   method?: string;
   /** The host's own wire code, when the failure was a `host-error`. */
   hostCode?: HostErrorCode;
+  /** The host's bounded `detail` summary, when the wire response carried one. */
+  hostDetail?: string;
   /** Underlying cause, kept for the operator's own logging. Never reported. */
   cause?: unknown;
 }
@@ -144,12 +173,15 @@ export interface IsolationErrorContext {
  * The message is assembled from the code, the method name, and the host's
  * wire code only. It never interpolates the peer's error text, a payload, a
  * path, or any model-influenced string, so recording it verbatim in the audit
- * stream cannot become a content channel (SPEC §10.3, §14.2).
+ * stream cannot become a content channel (SPEC §10.3, §14.2). A bounded
+ * `hostDetail` summary rides along as a structured field for the operator's
+ * own logging — never in the message.
  */
 export class IsolationError extends Error {
   readonly code: IsolationErrorCode;
   readonly method?: string;
   readonly hostCode?: HostErrorCode;
+  readonly hostDetail?: string;
   readonly failureClass: 'adapter-crash' | 'adapter-timeout' | 'operator-error';
 
   constructor(code: IsolationErrorCode, context: IsolationErrorContext = {}) {
@@ -165,6 +197,9 @@ export class IsolationError extends Error {
     }
     if (context.hostCode !== undefined) {
       this.hostCode = context.hostCode;
+    }
+    if (context.hostDetail !== undefined) {
+      this.hostDetail = context.hostDetail;
     }
     if (context.cause !== undefined) {
       this.cause = context.cause;

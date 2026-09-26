@@ -7,14 +7,16 @@ import {
   loadLearnerContract,
   runLearnerAdapterConformance,
 } from '@ald/learners';
-import { HASH_DOMAINS, fixedTokenInventory } from '@ald/types';
+import { HASH_DOMAINS, fixedTokenInventory, type LearnerAdapter } from '@ald/types';
 import { hashCanonical } from '@ald/hashing';
 
 import {
   FrameAssembler,
   FrameConnection,
+  HOST_ERROR_DETAIL_LIMIT,
   MIN_FRAME_SIZE,
   DirectHostTransport,
+  IsolationError,
   LearnerHost,
   RemoteLearnerAdapter,
   createBabyProcessAdapterFactory,
@@ -334,6 +336,152 @@ describe('distinct Baby and model-adapter processes', () => {
       }),
     ).toThrow();
     pair.runtime.close();
+  });
+});
+
+describe('host-error detail propagation', () => {
+  const runId = 'host-error-detail';
+
+  function initParams(): Record<string, unknown> {
+    const fullConfig = buildConformanceRunConfig('scratch-rl', {
+      runId,
+      episodes: 1,
+      symbolInventorySize: 8,
+    }) as unknown as Record<string, unknown>;
+    // Researcher-only seed material must never cross the boundary.
+    const { randomSeed: _randomSeed, seedBindings: _seedBindings, ...visibleConfig } =
+      fullConfig;
+    expect(visibleConfig).not.toHaveProperty('randomSeed');
+    expect(visibleConfig).not.toHaveProperty('seedBindings');
+    return {
+      track: 'scratch-rl',
+      runId,
+      role: 'baby-a',
+      babyId: 'A',
+      config: visibleConfig,
+      learnerContract: loadLearnerContract('scratch-rl'),
+      seed: 'host-error-detail-seed',
+      symbolInventory: fixedTokenInventory(8),
+    };
+  }
+
+  function stubAdapter(overrides: Partial<LearnerAdapter> = {}): LearnerAdapter {
+    return {
+      track: 'scratch-rl',
+      init: async () => {},
+      observe: async () => {},
+      act: async () => {
+        throw new Error('act not stubbed');
+      },
+      receive: async () => {
+        throw new Error('receive not stubbed');
+      },
+      onOutcome: async () => {},
+      exportPolicy: () => ({ marker: 'stub-policy' }),
+      ...overrides,
+    };
+  }
+
+  async function initHosted(adapter: LearnerAdapter): Promise<{
+    host: LearnerHost;
+    runtime: FrameConnection;
+    wire: () => string;
+  }> {
+    const pair = createLoopbackChannelPair();
+    const host = new LearnerHost({
+      channel: pair.host,
+      boundary: 'in-process',
+      createFactory: () => ({ track: 'scratch-rl', create: () => adapter }),
+    });
+    const runtime = new FrameConnection({
+      channel: pair.runtime,
+      originator: 'r',
+    });
+    await runtime.request('init', initParams());
+    return { host, runtime, wire: () => pair.host.written.join('') };
+  }
+
+  async function updatePolicyFailure(
+    runtime: FrameConnection,
+  ): Promise<IsolationError> {
+    const failure = await runtime
+      .request('update_policy', {
+        runId,
+        turns: [0],
+        learningSignal: 'extrinsic-task',
+      })
+      .then(
+        () => {
+          throw new Error('update_policy should have failed');
+        },
+        (error: unknown) => error,
+      );
+    expect(failure).toBeInstanceOf(IsolationError);
+    return failure as IsolationError;
+  }
+
+  it('carries the inner error name and message for a throwing update_policy', async () => {
+    const { host, runtime } = await initHosted(
+      stubAdapter({
+        updatePolicy: async () => {
+          throw new TypeError('policy store exploded');
+        },
+      }),
+    );
+    try {
+      const failure = await updatePolicyFailure(runtime);
+      expect(failure).toMatchObject({
+        code: 'host-error',
+        hostCode: 'adapter-error',
+      });
+      expect(failure.hostDetail).toContain('TypeError');
+      expect(failure.hostDetail).toContain('policy store exploded');
+    } finally {
+      runtime.close();
+      await host.close();
+    }
+  });
+
+  it('truncates a long adapter message instead of putting it on the wire', async () => {
+    const longMessage = `${'y'.repeat(600)}\nsecond line\n${'x'.repeat(5_000)}`;
+    const { host, runtime, wire } = await initHosted(
+      stubAdapter({
+        updatePolicy: async () => {
+          throw new Error(longMessage);
+        },
+      }),
+    );
+    try {
+      const failure = await updatePolicyFailure(runtime);
+      expect(failure).toMatchObject({
+        code: 'host-error',
+        hostCode: 'adapter-error',
+      });
+      expect(failure.hostDetail).toContain('Error');
+      expect(failure.hostDetail).not.toContain('second line');
+      expect(failure.hostDetail?.length).toBeLessThanOrEqual(
+        HOST_ERROR_DETAIL_LIMIT + 1,
+      );
+      expect(wire()).not.toContain('y'.repeat(600));
+    } finally {
+      runtime.close();
+      await host.close();
+    }
+  });
+
+  it('leaves typed host refusals detail-free', async () => {
+    const { host, runtime } = await initHosted(stubAdapter());
+    try {
+      const failure = await updatePolicyFailure(runtime);
+      expect(failure).toMatchObject({
+        code: 'host-error',
+        hostCode: 'unsupported-method',
+      });
+      expect(failure.hostDetail).toBeUndefined();
+    } finally {
+      runtime.close();
+      await host.close();
+    }
   });
 });
 

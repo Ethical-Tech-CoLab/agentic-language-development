@@ -65,7 +65,12 @@ const RequestPayloadSchema = z.strictObject({
 const ResponsePayloadSchema = z.union([
   z.strictObject({ ok: z.literal(1), r: z.unknown().optional() }),
   z.strictObject({
-    error: z.strictObject({ code: z.enum(HOST_ERROR_CODES) }),
+    // `detail` is free-form and optional: hosts that predate it send bare
+    // `{ code }`, and both shapes parse here.
+    error: z.strictObject({
+      code: z.enum(HOST_ERROR_CODES),
+      detail: z.string().optional(),
+    }),
   }),
 ]);
 
@@ -85,6 +90,12 @@ export interface FrameConnectionOptions {
   timer?: IsolationTimer;
   /** Maps a thrown handler error to the wire code. Default: `internal`. */
   errorCodeFor?: (error: unknown) => HostErrorCode;
+  /**
+   * Maps a thrown handler error to the free-form wire `detail`. Default:
+   * none, which keeps the constant-shape `{ code }` error. A host that wants
+   * diagnosable adapter errors supplies one (bounded, truncated).
+   */
+  errorDetailFor?: (error: unknown) => string | undefined;
   /** Called once when this connection becomes unusable. */
   onClosed?: (error: IsolationError) => void;
 }
@@ -134,6 +145,7 @@ export class FrameConnection {
   private readonly handler: FrameRequestHandler | undefined;
   private readonly timer: IsolationTimer;
   private readonly errorCodeFor: (error: unknown) => HostErrorCode;
+  private readonly errorDetailFor: (error: unknown) => string | undefined;
   private readonly onClosed: ((error: IsolationError) => void) | undefined;
   private readonly pending = new Map<string, PendingRequest>();
   private readonly assembler: FrameAssembler;
@@ -150,6 +162,7 @@ export class FrameConnection {
     this.handler = options.handler;
     this.timer = options.timer ?? systemTimer;
     this.errorCodeFor = options.errorCodeFor ?? ((): HostErrorCode => 'internal');
+    this.errorDetailFor = options.errorDetailFor ?? ((): string | undefined => undefined);
     this.onClosed = options.onClosed;
     this.assembler = new FrameAssembler(this.maxPayloadBytes);
     this.reader = new LineReader(
@@ -325,6 +338,9 @@ export class FrameConnection {
         error: new IsolationError('host-error', {
           method: entry.method,
           hostCode: parsed.data.error.code,
+          ...(parsed.data.error.detail === undefined
+            ? {}
+            : { hostDetail: parsed.data.error.detail }),
         }),
       });
       return;
@@ -345,7 +361,11 @@ export class FrameConnection {
         const value = await this.handler(parsed.data.m, parsed.data.p);
         response = value === undefined ? { ok: 1 } : { ok: 1, r: value };
       } catch (error) {
-        response = { error: { code: this.errorCodeFor(error) } };
+        const detail = this.errorDetailFor(error);
+        response =
+          detail === undefined
+            ? { error: { code: this.errorCodeFor(error) } }
+            : { error: { code: this.errorCodeFor(error), detail } };
       }
     }
 
