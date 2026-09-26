@@ -158,3 +158,60 @@ export function verifyLv01PairedCase(evidence: readonly Lv01PairedBranchEvidence
   }
   return { caseCommitment: hashCanonical('lv01-paired-case/v1', evidence) };
 }
+
+/**
+ * H07 calibration reserves (handoff §5.2): after five full-workload
+ * calibration dyads, each per-slot CPU/storage/wall reserve is twice the
+ * largest complete measured slot cost and the peak-memory bound is 1.5 times
+ * the conservative measured maximum. The same function covers the post-pilot
+ * update by taking maxima over calibration and pilot measurements together.
+ * Pure arithmetic over supplied measurements; it invents none.
+ */
+export const LV01_CALIBRATION_DYADS = 5;
+export const LV01_SLOT_RESERVE_MULTIPLIER = 2;
+export const LV01_PEAK_MEMORY_MULTIPLIER = 1.5;
+export const LV01_PILOT_PRIMARY_SLOTS = 20;
+
+export interface Lv01CalibrationReserve {
+  readonly measuredDyads: number;
+  readonly perSlotCpuMicroseconds: number;
+  readonly perSlotEvidenceBytes: number;
+  readonly perSlotWallMilliseconds: number;
+  readonly peakBytesBound: number;
+}
+
+export interface Lv01ScaledReserve {
+  readonly slots: number;
+  readonly cpuMicroseconds: number;
+  readonly evidenceBytes: number;
+  readonly wallMilliseconds: number;
+}
+
+export function computeLv01CalibrationReserves(measurements: readonly Lv01SlotResources[]): Lv01CalibrationReserve {
+  if (measurements.length < LV01_CALIBRATION_DYADS) fail(`at least ${LV01_CALIBRATION_DYADS} complete full-workload dyads are required`);
+  for (const entry of measurements) {
+    if (![entry.cpuMicroseconds, entry.wallMilliseconds, entry.peakBytes, entry.evidenceBytes]
+      .every((value) => Number.isFinite(value) && value > 0)) fail('calibration requires complete measured slot costs');
+    if (!Number.isFinite(entry.verificationMilliseconds) || entry.verificationMilliseconds < 0) fail('calibration verification cost must be a finite non-negative number');
+  }
+  const max = (pick: (entry: Lv01SlotResources) => number): number =>
+    Math.max(...measurements.map(pick));
+  return {
+    measuredDyads: measurements.length,
+    perSlotCpuMicroseconds: max((entry) => entry.cpuMicroseconds) * LV01_SLOT_RESERVE_MULTIPLIER,
+    perSlotEvidenceBytes: max((entry) => entry.evidenceBytes) * LV01_SLOT_RESERVE_MULTIPLIER,
+    perSlotWallMilliseconds: max((entry) => entry.wallMilliseconds) * LV01_SLOT_RESERVE_MULTIPLIER,
+    peakBytesBound: max((entry) => entry.peakBytes) * LV01_PEAK_MEMORY_MULTIPLIER,
+  };
+}
+
+/** Scale a per-slot reserve over a slot count (e.g. the twenty-slot pilot). */
+export function scaleLv01ReserveForSlots(reserve: Lv01CalibrationReserve, slots: number): Lv01ScaledReserve {
+  if (!Number.isInteger(slots) || slots < 1) fail('slot count must be a positive integer');
+  return {
+    slots,
+    cpuMicroseconds: reserve.perSlotCpuMicroseconds * slots,
+    evidenceBytes: reserve.perSlotEvidenceBytes * slots,
+    wallMilliseconds: reserve.perSlotWallMilliseconds * slots,
+  };
+}
