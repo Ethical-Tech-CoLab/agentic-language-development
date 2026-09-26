@@ -61,6 +61,13 @@ describe('LV01 detector outer collector', () => {
     expect(controllerSource).toContain("'lv01-detector-observation'");
   });
 
+  it('judges Compose failure by exit status, never by a progress status line', () => {
+    expect(runnerSource).toContain('composeFailureDetail(execution)');
+    expect(runnerSource).toContain('composeFailureDetail(teardown)');
+    expect(runnerSource).not.toContain("(execution.stderr ?? execution.stdout ?? '')");
+    expect(runnerSource).not.toContain("(teardown.stderr ?? teardown.stdout ?? '')");
+  });
+
   it('binds the source-bound 2016-turn zero-evaluation workload', () => {
     expect(LV01_DETECTOR_ROWS_PER_ROLE_PER_STAGE).toBe(2_016);
     expect(runnerSource).toContain('LV01_DETECTOR_ROWS_PER_ROLE_PER_STAGE');

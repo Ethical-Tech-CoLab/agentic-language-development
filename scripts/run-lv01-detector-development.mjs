@@ -15,6 +15,7 @@ import {
   validateLv01DetectorConfig,
   validateLv01DetectorObservation,
 } from '../deploy/mode-r/lv01-detector-contract.mjs';
+import { composeFailureDetail } from './lv01-detector-compose-status.mjs';
 
 const [mode, version = '1'] = process.argv.slice(2);
 assert.ok(mode === '--run' || mode === '--check',
@@ -196,7 +197,7 @@ try {
   execution = spawnSync('docker', [...composeArgs(), 'up', '--build', '--abort-on-container-exit',
     '--exit-code-from', 'offline-verifier'], { cwd: resolve('.'), encoding: 'utf8', env: environment });
   assert.equal(execution.status, 0,
-    `detector Compose failed: ${(execution.stderr ?? execution.stdout ?? '').split('\n')[0]}`);
+    `detector Compose failed: ${composeFailureDetail(execution)}`);
   stage = 'replacement-evidence';
   replacement = replacementEvidence();
   assert.ok(replacement.length === REPLACEMENT_SERVICES.length,
@@ -220,7 +221,7 @@ try {
     teardown.stdout ?? '', teardown.stderr ?? '',
   ].join(''), { flag: 'wx', mode: 0o600 });
   if (teardown.status !== 0 && failure === null) {
-    failure = `Compose teardown failed: ${(teardown.stderr ?? teardown.stdout ?? '').split('\n')[0]}`;
+    failure = `Compose teardown failed: ${composeFailureDetail(teardown)}`;
     stage = 'teardown';
   }
 }
