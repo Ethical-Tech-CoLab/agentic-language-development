@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.451",
+  "version": "0.1.452",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -46,6 +46,7 @@
     "audit:lv01-paired-development-v21": "node scripts/check-lv01-paired-development-v21-receipt.mjs",
     "audit:lv01-commitment-window-fault-v3": "node scripts/check-lv01-commitment-window-fault-v3-receipt.mjs",
     "audit:lv01-malformed-proposal-v5": "node scripts/check-lv01-malformed-proposal-v5-receipt.mjs",
+    "audit:lv01-malformed-envelope-v1": "node scripts/check-lv01-malformed-envelope-v1-receipt.mjs",
     "audit:lv01-five-rejection-safety-v1": "node scripts/check-lv01-five-rejection-safety-v1-receipt.mjs",
     "audit:lv01-application-fault-v3": "node scripts/check-lv01-application-fault-v3-receipt.mjs",
     "qualify:lv01-commitment-window-fault-development": "pnpm run build && node scripts/run-lv01-commitment-window-fault-development.mjs --run",

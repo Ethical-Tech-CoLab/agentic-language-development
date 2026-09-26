@@ -22,7 +22,7 @@ const config = await readJson(required('ALD_MODE_R_CONFIG'));
 const stage = process.env.ALD_MODE_R_CONTROLLER_STAGE ?? 'complete';
 assert.ok(['complete', 'prepare-recovery', 'recover', 'lv01-fixture', 'lv01-paired-branch',
   'lv01-commitment-window-fault', 'lv01-commitment-window-recover',
-  'lv01-malformed-proposal', 'lv01-five-rejection-safety',
+  'lv01-malformed-proposal', 'lv01-malformed-envelope', 'lv01-five-rejection-safety',
   'lv01-detector-observation'].includes(stage),
   `unsupported ALD_MODE_R_CONTROLLER_STAGE ${stage}`);
 const publicKeyRoot = required('ALD_MODE_R_PUBLIC_KEYS_ROOT');
@@ -132,6 +132,35 @@ function injectLv01MalformedProposal(gateway) {
   });
 }
 
+/**
+ * Development-only boundary fixture. It drops the required
+ * `privateLedgerDraft` from one controller-to-Gateway proposal in transit,
+ * so the selected Gateway process—not a unit-test substitute—must reject
+ * the malformed envelope frame as `invalid-envelope` without retry.
+ */
+function injectLv01MalformedEnvelopeProposal(gateway) {
+  let injected = false;
+  return new Proxy(gateway, {
+    get(target, property) {
+      if (property === 'submitProposal') {
+        return async (turn, envelope) => {
+          assert.equal(injected, false, 'malformed-envelope fixture submits exactly once');
+          injected = true;
+          assert.ok(envelope !== null && typeof envelope === 'object',
+            'adapter must produce an envelope before the boundary fixture mutates it');
+          assert.ok(envelope.proposal !== null && typeof envelope.proposal === 'object',
+            'adapter envelope must contain a proposal');
+          const frame = { ...envelope };
+          delete frame.privateLedgerDraft;
+          return target.submitProposal(turn, frame);
+        };
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
 /** Development-only: exercise the Gateway's five-rejection safety boundary. */
 function injectLv01RepeatedMalformedProposal(gateway) {
   return new Proxy(gateway, {
@@ -171,6 +200,9 @@ const runtime = createNurseryRuntime({
     gatewayProcessId = connected.processId;
     if (stage === 'lv01-malformed-proposal') {
       return injectLv01MalformedProposal(connected.gateway);
+    }
+    if (stage === 'lv01-malformed-envelope') {
+      return injectLv01MalformedEnvelopeProposal(connected.gateway);
     }
     if (stage === 'lv01-five-rejection-safety') {
       return injectLv01RepeatedMalformedProposal(connected.gateway);
@@ -370,6 +402,52 @@ async function runLv01MalformedProposal() {
   });
 }
 
+async function runLv01MalformedEnvelope() {
+  assert.equal(config.experimentId, 'LV01');
+  assert.ok(config.lv01PairedCase !== undefined,
+    'malformed-envelope fixture requires an LV01 paired child');
+  await runtime.createRun(config);
+  const summary = await runtime.runToCompletion(config.runId);
+  assert.equal(summary.state, 'sealed');
+  const [turns, channels, babyALedger, babyBLedger, bundle] = await Promise.all([
+    controller.port.readEvents(config.runId, 'turns'),
+    controller.port.readEvents(config.runId, 'channel'),
+    controller.port.readEvents(config.runId, 'baby-a-ledger'),
+    controller.port.readEvents(config.runId, 'baby-b-ledger'),
+    runtime.exportBundle(config.runId, join(outputRoot, 'bundle')),
+  ]);
+  assert.equal(turns.length, 1, 'malformed envelope must forfeit exactly one turn');
+  assert.equal(channels.length, 1, 'malformed envelope must create one channel rejection');
+  const channel = JSON.parse(channels[0].canonicalJson);
+  assert.equal(channel.gatewayValidationResult, 'rejected');
+  assert.equal(channel.reasonCode, 'invalid-envelope');
+  const channelHash = channels[0].entryHash;
+  const channelBoundIntentions = (entries) => entries.filter((entry) => {
+    const value = JSON.parse(entry.canonicalJson);
+    return value.eventType === 'intention.recorded' && value.channelEventHash === channelHash;
+  });
+  assert.equal(channelBoundIntentions(babyALedger).length, 0,
+    'rejected envelope must not create a sender intention bound to the channel');
+  assert.equal(channelBoundIntentions(babyBLedger).length, 0,
+    'rejected envelope must not reach the receiver');
+  await writeResult('lv01-malformed-envelope-result.json', {
+    schemaVersion: 1,
+    classification: 'lv01-malformed-envelope-development',
+    researchFinding: false,
+    scientificDisposition: 'not-tested',
+    runId: config.runId,
+    state: summary.state,
+    turnCount: turns.length,
+    channelCount: channels.length,
+    senderChannelBoundIntentions: channelBoundIntentions(babyALedger).length,
+    receiverChannelBoundIntentions: channelBoundIntentions(babyBLedger).length,
+    gatewayValidationResult: channel.gatewayValidationResult,
+    rejectionReasonCode: channel.reasonCode,
+    bundleRunId: bundle.runId,
+    claimBoundary: 'One selected-topology malformed-envelope rejection. It qualifies a Gateway boundary path only; it is not a pilot or behavioral result.',
+  });
+}
+
 async function runLv01FiveRejectionSafety() {
   assert.equal(config.experimentId, 'LV01');
   assert.equal(config.maxConsecutiveRejections, 5);
@@ -471,6 +549,8 @@ try {
     await runLv01CommitmentWindowRecovery();
   } else if (stage === 'lv01-malformed-proposal') {
     await runLv01MalformedProposal();
+  } else if (stage === 'lv01-malformed-envelope') {
+    await runLv01MalformedEnvelope();
   } else if (stage === 'lv01-five-rejection-safety') {
     await runLv01FiveRejectionSafety();
   } else if (stage === 'lv01-detector-observation') {
