@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "classification": "lv01-development-topology-authority-receipt",
+  "status": "completed-bounded-development-observation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "attempt": {
+    "runId": "lv01-development-v23-p0001",
+    "allocation": "protocols/lv01-development-resource-allocation.v23.json",
+    "executionCommit": "b9943ce",
+    "evidenceRoot": "evidence/lv01/development-v23/lv01-development-v23-p0001",
+    "bundleManifestHash": "sha256:75bc55e625d1ae4a882d54a2e9ad9223f308136eb245a3f0889f5ec8ef46a28a",
+    "retainedFiles": [
+      {"path": "output/lv01-fixture-result.json", "sha256": "sha256:3ea04d8e13f705b5d2d1f45c536f4d4cf182d79ae2aaef716e84a6dd40431385"},
+      {"path": "output/offline-verification.json", "sha256": "sha256:9dfa61809acd2c49ee1f1be0b934c486d5042f2e9c9f702913be7c58870666dd"},
+      {"path": "output/lv01-authority-observation.json", "sha256": "sha256:ea257975e205b188072492d106f520e463b54d3d0add9acd89f57959d4dc7cd3"},
+      {"path": "output/lv01-fixture-resources.json", "sha256": "sha256:9e486a625cbd07ecd03ff802e75eac7ef63c65086d544aa80bc4c6a9d002b178"}
+    ]
+  },
+  "observed": {
+    "state": "sealed",
+    "trainingTurns": 64,
+    "evaluationTurns": 24,
+    "checkpointCount": 12,
+    "offlineVerifierExitCode": 0,
+    "resourceSamples": 488,
+    "nonEmptyResourceSamples": 326,
+    "serviceCount": 17,
+    "deniedPrivateModelAccessProbes": 4,
+    "verifiedChecks": [
+      "canonical JSON",
+      "strict stream sequences",
+      "entry hashes and chain links",
+      "writer and witness signatures",
+      "Merkle and checkpoint reconstruction",
+      "simulated anchor receipt",
+      "live read-only service, mount, network, and capability inspection",
+      "denied cross-private-model filesystem probes"
+    ],
+    "finalVerifiedSizes": {
+      "baby-a-ledger": 239,
+      "baby-b-ledger": 224,
+      "channel": 88,
+      "turns": 88,
+      "intervention": 1
+    }
+  },
+  "limitations": [
+    "The verifier rebuilt disclosed roots but reports no separate inclusion or consistency proof files.",
+    "The simulated anchor was not checked against an independent RPC endpoint.",
+    "This is one local selected-topology fixture; it does not exercise recurrent-state restoration, seven-branch chronology, fault recovery, deadline or safety behavior, calibration, a pilot, or a behavioral study."
+  ],
+  "claimBoundary": "This receipt supports only the listed local software, evidence-path, and topology-authority observations. It establishes no semantic-ledger fidelity, utility, cost, language-emergence, or scientific result."
+}
