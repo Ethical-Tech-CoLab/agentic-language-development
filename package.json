@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.457",
+  "version": "0.1.458",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",
@@ -51,6 +51,7 @@
     "audit:lv01-application-fault-v3": "node scripts/check-lv01-application-fault-v3-receipt.mjs",
     "qualify:lv01-commitment-window-fault-development": "pnpm run build && node scripts/run-lv01-commitment-window-fault-development.mjs --run",
     "qualify:lv01-malformed-proposal-development": "pnpm run build && node scripts/run-lv01-malformed-proposal-development.mjs --run",
+    "qualify:lv01-detector-development": "pnpm run build && node scripts/run-lv01-detector-development.mjs --run",
     "audit:mode-r-application-lifecycle-failure": "node scripts/check-mode-r-application-lifecycle-failure.mjs",
     "audit:mode-r-application-lifecycle-failure:live": "node scripts/check-mode-r-application-lifecycle-failure.mjs --live-evidence",
     "audit:mode-r-application-lifecycle-receipt": "node scripts/check-mode-r-application-lifecycle-receipt.mjs && node scripts/check-mode-r-application-fault-failure.mjs && node scripts/check-mode-r-application-fault-receipt.mjs && node scripts/check-mode-r-uncertain-write-failure.mjs && node scripts/check-mode-r-uncertain-write-receipt.mjs && node scripts/check-mode-r-late-callback-failure.mjs && node scripts/check-mode-r-late-callback-receipt.mjs",
