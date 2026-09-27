@@ -69,6 +69,7 @@ describe('LV01 stage packets', () => {
     const packet = compileLv01StagePacket(packetInput());
     const binding = bindLv01StagePacket(packet, '1'.repeat(40), hash('e'));
     expect(verifyLv01StageBinding(binding, packet)).toEqual(binding);
+    expect(() => bindLv01StagePacket(packet, '1'.repeat(40), hash('9'))).toThrow(/differs from the registered packet allocation/u);
     expect(() => verifyLv01StageBinding({ ...binding, allocationSha256: hash('9') }, packet)).toThrow(/pre-run commitment/u);
     const other = compileLv01StagePacket(packetInput({ version: 3 }));
     expect(() => verifyLv01StageBinding(binding, other)).toThrow(/match the registered packet/u);
@@ -83,6 +84,8 @@ describe('LV01 stage packets', () => {
       topologyQualificationVerified: true,
       sourceClean: true,
       resourcesSufficient: true,
+      designHashesLive: true,
+      hostReady: true,
       stage: 'pilot' as const,
     };
     const ready = admitLv01Stage({ packet, binding, checks });
@@ -92,6 +95,9 @@ describe('LV01 stage packets', () => {
     const blocked = admitLv01Stage({ packet, binding, checks: { ...checks, sourceClean: false } });
     expect(blocked.status).toBe('blocked');
     expect(blocked.reasons.length).toBeGreaterThan(0);
+    const stale = admitLv01Stage({ packet, binding, checks: { ...checks, designHashesLive: false, hostReady: false } });
+    expect(stale.status).toBe('blocked');
+    expect(stale.reasons).toEqual(['design-hashes-changed', 'host-not-ready']);
     expect(() => admitLv01Stage({
       packet: { ...packet, version: 3 },
       binding,

@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const stages = new Set(['development', 'qualification', 'pilot', 'confirmatory', 'replication']);
+const partitions = new Set(['dev', 'within-support', 'novel-composition']);
 const root = resolve('.');
 
 function fail(message) {
@@ -42,7 +43,7 @@ function parse(command, specification) {
 }
 
 function stageArguments(command) {
-  const flags = command === 'qualify-topology' || command === 'collect'
+  const flags = command === 'qualify-topology'
     ? new Map([['--stage', true], ['--version', true], ['--run', false]])
     : new Map([['--stage', true], ['--version', true], ['--write', false]]);
   const options = parse(command, flags);
@@ -83,7 +84,7 @@ function status() {
 
 function requireDesign(chainVersion) {
   run('scripts/check-lv01-design.mjs', '--version', String(designVersion(chainVersion)));
-  run('scripts/check-lv01-power-qualification.mjs');
+  run('scripts/check-lv01-power-qualification.mjs', '--design-version', String(designVersion(chainVersion)));
 }
 
 function requireTopology(stage, version) {
@@ -119,6 +120,17 @@ function requireBinding(stage, version) {
   requirePacket(stage, version);
   const binding = `protocols/lv01-${stage}-registration-binding.v${version}.json`;
   if (!existsSync(resolve(root, binding))) fail(`${stage} v${version} is blocked: missing prospective binding ${binding}`);
+}
+
+function requireAdmission(stage, version) {
+  requireBinding(stage, version);
+  const gate = `reports/research/lv01-${stage}-gate-receipt.v${version}.json`;
+  if (receipt(gate)?.status !== 'ready') fail(`${stage} v${version} is blocked: missing admitted ready receipt ${gate}`);
+}
+
+function requireCollection(stage, version, evidenceDir) {
+  const journal = `${evidenceDir}/lv01/${stage}-v${version}/journal.jsonl`;
+  if (!existsSync(resolve(root, journal))) fail(`${stage} v${version} is blocked: missing collection journal ${journal}`);
 }
 
 const command = process.argv[2];
@@ -194,18 +206,23 @@ switch (command) {
     break;
   }
   case 'audit': {
-    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--live-evidence', false]]));
+    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--live-evidence', false], ['--parent-bundle', true], ['--evidence-dir', true]]));
     const stage = options.get('--stage');
     const version = Number(options.get('--version'));
     if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
     requireBinding(stage, version);
-    fail(`${command} is intentionally unavailable until the audit evidence loader is implemented`);
+    requireCollection(stage, version, options.get('--evidence-dir'));
+    run('scripts/audit-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--live-evidence', '--parent-bundle', options.get('--parent-bundle'), '--evidence-dir', options.get('--evidence-dir'));
     break;
   }
   case 'collect': {
-    const { stage, version } = stageArguments(command);
-    requireBinding(stage, version);
-    fail(`collection is unavailable: ${stage} v${version} has no admitted immutable receipt`);
+    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--run', false], ['--parent-bundle', true], ['--evidence-dir', true], ['--partition', true], ['--ordinary-id', true], ['--store-root', true], ['--database-path', true], ['--owner', true]]));
+    const stage = options.get('--stage');
+    const version = Number(options.get('--version'));
+    if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
+    if (!partitions.has(options.get('--partition'))) fail(`unsupported partition ${options.get('--partition')}`);
+    requireAdmission(stage, version);
+    run('scripts/collect-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--run', '--parent-bundle', options.get('--parent-bundle'), '--evidence-dir', options.get('--evidence-dir'), '--partition', options.get('--partition'), '--ordinary-id', options.get('--ordinary-id'), '--store-root', options.get('--store-root'), '--database-path', options.get('--database-path'), '--owner', options.get('--owner'));
     break;
   }
   case 'reduce-pilot': {

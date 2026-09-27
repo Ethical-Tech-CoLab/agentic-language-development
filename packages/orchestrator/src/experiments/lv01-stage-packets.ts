@@ -95,6 +95,7 @@ export function verifyLv01StagePacket(packet: unknown): Lv01StagePacket {
 
 export function bindLv01StagePacket(packet: Lv01StagePacket, sourceCommit: string, allocationSha256: string): Lv01StageBinding {
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit)) fail('binding source commit is invalid');
+  if (allocationSha256 !== packet.allocation.sha256) fail('binding allocation differs from the registered packet allocation');
   const preRunCommitment = hashCanonical(LV01_STAGE_PRERUN_DOMAIN, {
     packetCommitment: packet.packetCommitment,
     sourceCommit,

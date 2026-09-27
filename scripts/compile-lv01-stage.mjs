@@ -22,6 +22,12 @@ const registration = `protocols/lv01-${stage}-registration.v${version}.json`;
 assert.equal(existsSync(registration), false, `registration is immutable; ${registration} already exists`);
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 assert.equal(git('status', '--porcelain', '--untracked-files=no'), '', 'compile requires a clean tracked tree');
+const untrackedRuntime = git('status', '--porcelain')
+  .split('\n')
+  .filter((line) => line.startsWith('??'))
+  .map((line) => line.slice(3).trim())
+  .filter((path) => path.startsWith('packages/') || path.startsWith('scripts/') || path.startsWith('deploy/'));
+assert.deepEqual(untrackedRuntime, [], `compile forbids untracked runtime source: ${untrackedRuntime.join(', ')}`);
 const head = git('rev-parse', 'HEAD');
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 
@@ -32,17 +38,22 @@ if (stage === 'confirmatory' || stage === 'replication') {
   assert.equal(existsSync(lock), true, `main stages require a locked design receipt ${lock}`);
 }
 execFileSync(process.execPath, ['scripts/check-lv01-design.mjs', '--version', String(designVersion)], { stdio: 'inherit' });
-execFileSync(process.execPath, ['scripts/check-lv01-power-qualification.mjs'], { stdio: 'inherit' });
+execFileSync(process.execPath, ['scripts/check-lv01-power-qualification.mjs', '--design-version', String(designVersion)], { stdio: 'inherit' });
 
 const designPath = `protocols/lv01-study-design.v${designVersion}.json`;
 const analysisPath = `protocols/lv01-analysis-plan.v${designVersion}.json`;
 const policyPath = `protocols/lv01-seed-resource-policy.v${designVersion}.json`;
+for (const path of [designPath, analysisPath, policyPath]) {
+  git('ls-files', '--error-unmatch', path);
+}
 const design = JSON.parse(readFileSync(designPath, 'utf8'));
 const policy = JSON.parse(readFileSync(policyPath, 'utf8'));
 const topologyPath = `reports/research/lv01-topology-qualification.v${version}.json`;
 assert.equal(existsSync(topologyPath), true, `missing topology qualification ${topologyPath}`);
 const topology = JSON.parse(readFileSync(topologyPath, 'utf8'));
 assert.equal(topology.passed, true, `topology qualification ${topologyPath} did not pass`);
+assert.match(topology.sourceCommit ?? '', /^[0-9a-f]{40}$/u, `topology qualification ${topologyPath} carries no bound source commit`);
+assert.equal(topology.designVersion, designVersion, `topology qualification ${topologyPath} is not bound to design v${designVersion}`);
 
 const packet = compileLv01StagePacket({
   stage,

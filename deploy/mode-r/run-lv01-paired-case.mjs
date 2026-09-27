@@ -52,6 +52,45 @@ function requirePacket() {
   assert.ok(packet.sourceFreeze.artifacts.some((entry) => entry.path === 'deploy/mode-r/run-lv01-paired-case.mjs'));
 }
 
+function requirePairedCaseIdentities() {
+  const scope = packet.actionDrawScope;
+  assert.ok(scope !== undefined && scope !== null,
+    `packet ${packetPath} carries no actionDrawScope for the shared LV01 action draw`);
+  assert.ok(['development', 'qualification', 'shadow', 'generalization', 'pilot'].includes(scope.stage),
+    'paired packet actionDrawScope.stage is invalid');
+  assert.ok(scope.slotKind === 'primary' || scope.slotKind === 'reserve',
+    'paired packet actionDrawScope.slotKind is invalid');
+  assert.match(scope.slotIndex ?? '', /^\d{4}$/u,
+    'paired packet actionDrawScope.slotIndex must be a zero-padded slot number');
+  assert.ok(['dev', 'within-support', 'novel-composition'].includes(scope.partition),
+    'paired packet actionDrawScope.partition is invalid');
+  const treatments = packet.ledgerTreatments;
+  assert.ok(treatments !== undefined && treatments !== null,
+    `packet ${packetPath} carries no ledgerTreatments for the ledger branches`);
+  assert.deepEqual(Object.keys(treatments).sort(), ['ledger-consistent', 'ledger-shuffled'],
+    'paired packet ledgerTreatments must cover exactly the two ledger branches');
+  const slices = {};
+  for (const branch of ['ledger-consistent', 'ledger-shuffled']) {
+    const slice = treatments[branch];
+    assert.ok(slice !== undefined && slice !== null, `paired packet ledgerTreatments.${branch} is missing`);
+    assert.equal(typeof slice.selectedToken, 'string', `paired packet ledgerTreatments.${branch}.selectedToken is invalid`);
+    assert.ok(slice.selectedToken.length > 0, `paired packet ledgerTreatments.${branch}.selectedToken is empty`);
+    assert.equal(typeof slice.deliveredToken, 'string', `paired packet ledgerTreatments.${branch}.deliveredToken is invalid`);
+    assert.ok(slice.deliveredToken.length > 0, `paired packet ledgerTreatments.${branch}.deliveredToken is empty`);
+    assert.match(slice.batchCommitment ?? '', /^sha256:[0-9a-f]{64}$/u,
+      `paired packet ledgerTreatments.${branch}.batchCommitment is invalid`);
+    assert.equal(typeof slice.sourceCaseId, 'string', `paired packet ledgerTreatments.${branch}.sourceCaseId is invalid`);
+    assert.ok(slice.sourceCaseId.length > 0, `paired packet ledgerTreatments.${branch}.sourceCaseId is empty`);
+    slices[branch] = { selectedToken: slice.selectedToken, deliveredToken: slice.deliveredToken,
+      batchCommitment: slice.batchCommitment, sourceCaseId: slice.sourceCaseId };
+  }
+  return {
+    actionDrawScope: { stage: scope.stage, slotKind: scope.slotKind,
+      slotIndex: scope.slotIndex, partition: scope.partition },
+    ledgerTreatments: slices,
+  };
+}
+
 function prepare(rootPath) {
   for (const directory of [
     'config', 'evidence', 'gateway-state', 'output', 'runtime/model-a', 'runtime/model-b', 'runtime/public-keys',
@@ -150,6 +189,7 @@ if (mode === '--check') {
 
 assert.equal(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(), '', 'paired collector requires a clean committed source tree');
 assert.equal(existsSync(root), false, 'paired-case evidence is single-use');
+const pairedCaseIdentities = requirePairedCaseIdentities();
 mkdirSync(root, { recursive: false, mode: 0o700 });
 let stage = 'parent-launch';
 try {
@@ -160,7 +200,7 @@ try {
   const checkpoint = lastCheckpoint(parentBundle);
   const plan = createLv01PairedCasePlan({ parent: parentConfig, parentCheckpointHash: checkpoint.checkpointHash,
     babyAInitialPolicyRef: 'policies/baby-a-latest.json', babyBInitialPolicyRef: 'policies/baby-b-latest.json',
-    childRunIdPrefix: `lv01-paired-development-v${version}-p0001` });
+    childRunIdPrefix: `lv01-paired-development-v${version}-p0001`, ...pairedCaseIdentities });
   const branches = plan.branches.map((branch, index) => {
     stage = `branch:${branch.branch}`;
     return runBranch(branch, parentBundle, packet.networkAllocation.children[branch.branch]);

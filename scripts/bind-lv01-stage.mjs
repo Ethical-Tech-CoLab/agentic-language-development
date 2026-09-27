@@ -25,9 +25,19 @@ const packet = verifyLv01StagePacket(JSON.parse(readFileSync(registration, 'utf8
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 assert.equal(git('status', '--porcelain', '--untracked-files=no'), '', 'bind requires a clean tracked tree');
+const untrackedRuntime = git('status', '--porcelain')
+  .split('\n')
+  .filter((line) => line.startsWith('??'))
+  .map((line) => line.slice(3).trim())
+  .filter((path) => path.startsWith('packages/') || path.startsWith('scripts/') || path.startsWith('deploy/'));
+assert.deepEqual(untrackedRuntime, [], `bind forbids untracked runtime source: ${untrackedRuntime.join(', ')}`);
 const head = git('rev-parse', 'HEAD');
 const ancestor = spawnSync('git', ['merge-base', '--is-ancestor', packet.sourceCommit, head]).status === 0;
 assert.equal(ancestor, true, 'binding source must descend from the registration source commit');
+const closureClean =
+  head === packet.sourceCommit ||
+  spawnSync('git', ['diff', '--quiet', packet.sourceCommit, head, '--', 'packages', 'scripts', 'deploy', 'pnpm-lock.yaml']).status === 0;
+assert.equal(closureClean, true, 'binding source changed the execution closure since registration');
 
 const allocationSha256 = `sha256:${createHash('sha256').update(readFileSync(packet.allocation.path)).digest('hex')}`;
 assert.equal(allocationSha256, packet.allocation.sha256, 'allocation changed since registration');

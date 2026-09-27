@@ -65,6 +65,8 @@ describe('LV01 stage-collection audit', () => {
         sourceClean: true,
         registrationBound: false,
         resourcesSufficient: true,
+        designHashesLive: true,
+        hostReady: true,
         stage,
       });
       expect(verdict).toMatchObject({ status: 'blocked', reasons: ['registration-binding-missing'] });

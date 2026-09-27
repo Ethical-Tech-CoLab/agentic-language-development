@@ -1347,7 +1347,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           const unscoped = this.#localWriter(run);
           const babyALedger = unscoped.readEvents(run.config.parentRunId, 'baby-a-ledger');
           const babyBLedger = unscoped.readEvents(run.config.parentRunId, 'baby-b-ledger');
+          // A derived branch restores the frozen parent policy, so the
+          // receiver binding is the source-policy hash read at init —
+          // identical across branches by construction. A live export would
+          // embed the branch runId (registry snapshot) and could never
+          // match across the case.
           const receiverPolicyHash = run.policyRefs[receiver]?.policyHash
+            ?? run.sourcePolicyHashes[receiver]
             ?? hashCanonical(HASH_DOMAINS.policyCheckpoint, run.adapters[receiver].exportPolicy());
           const commitment = hashCanonical('lv01-paired-pre-action-prediction/v1', {
             ...run.config.lv01PairedCase,
@@ -1599,11 +1605,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     let deliveredToken: string | null = null;
     if (delivery !== null) {
       const symbols = (delivery.publicArtifact as Record<string, unknown>)['symbols'];
-      if (!Array.isArray(symbols) || symbols.length !== 1 || typeof symbols[0] !== 'string') {
+      if (!Array.isArray(symbols) || symbols.length < 1 || typeof symbols[0] !== 'string') {
         throw new RunConfigurationError([
-          { path: 'delivery.publicArtifact', message: 'LV01 delivery must carry exactly one token' },
+          { path: 'delivery.publicArtifact', message: 'LV01 delivery must carry at least one token' },
         ]);
       }
+      // Multi-symbol control deliveries (the random branch draws length
+      // 1..cap) reduce to their first symbol: the recurrent receiver
+      // truncates to messageLength 1 the same way, and every downstream
+      // consumer (intention record, ordinary record, replay) already reads
+      // symbols[0].
       deliveredToken = symbols[0];
     }
     const truth = readGroundTruth(instance.groundTruth);

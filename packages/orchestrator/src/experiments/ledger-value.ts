@@ -12,9 +12,9 @@ export const LV01_BRANCHES = ['normal', 'disabled', 'constant', 'random', 'shuff
 export type Lv01Branch = (typeof LV01_BRANCHES)[number];
 export type Lv01Stage = 'development' | 'qualification' | 'pilot' | 'confirmatory' | 'replication';
 export type Lv01SlotStatus = 'unattempted' | 'running' | 'valid' | 'invalid' | 'aborted';
-export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; }
+export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; readonly caseCommitment?: string; }
 export interface Lv01StageJournal { readonly stage: Lv01Stage; readonly version: number; readonly attemptId: string; readonly slots: readonly Lv01Slot[]; readonly terminal: 'open' | 'completed' | 'failed' | 'aborted'; }
-export interface Lv01AdmissionInput { readonly designVerified: boolean; readonly numericalQualificationVerified: boolean; readonly topologyQualificationVerified: boolean; readonly sourceClean: boolean; readonly registrationBound: boolean; readonly resourcesSufficient: boolean; readonly stage: Lv01Stage; }
+export interface Lv01AdmissionInput { readonly designVerified: boolean; readonly numericalQualificationVerified: boolean; readonly topologyQualificationVerified: boolean; readonly sourceClean: boolean; readonly registrationBound: boolean; readonly resourcesSufficient: boolean; readonly designHashesLive: boolean; readonly hostReady: boolean; readonly stage: Lv01Stage; }
 export interface Lv01Admission { readonly status: 'ready' | 'blocked' | 'unresolved'; readonly reasons: readonly string[]; }
 export interface Lv01PairedBranchEvidence { readonly branch: Lv01Branch; readonly scenarioHash: string; readonly receiverDrawCommitment: string; readonly preStateCommitment: string; readonly predictionCommitment: string; readonly actionRecordedAfterPrediction: boolean; readonly restoredBeforeAction: boolean; }
 export interface Lv01SlotResources { readonly cpuMicroseconds: number; readonly wallMilliseconds: number; readonly peakBytes: number; readonly evidenceBytes: number; readonly verificationMilliseconds: number; }
@@ -173,6 +173,14 @@ export function captureLv01SlotTerminal(journal: Lv01StageJournal, index: number
   const updated = transitionLv01Slot(transitionLv01Slot(journal, index, 'running'), index, status, reason);
   return { journal: updated, slot: updated.slots.find((slot) => slot.index === index)!, resources, failureStage };
 }
+/** Link a valid slot to its audited case commitment; valid slots only. */
+export function recordLv01SlotCase(journal: Lv01StageJournal, index: number, caseCommitment: string): Lv01StageJournal {
+  if (journal.terminal !== 'open') fail('terminal journal cannot change');
+  const slot = journal.slots.find((entry) => entry.index === index); if (!slot) fail('unknown slot');
+  if (slot.status !== 'valid') fail('only a valid slot can link a case');
+  if (!/^sha256:[0-9a-f]{64}$/u.test(caseCommitment)) fail('case commitment is malformed');
+  return { ...journal, slots: journal.slots.map((entry) => entry.index === index ? { ...entry, caseCommitment } : entry) };
+}
 export function finalizeLv01Stage(journal: Lv01StageJournal): Lv01StageJournal {
   if (journal.terminal !== 'open') fail('stage journal is already terminal');
   if (journal.slots.some((slot) => slot.status === 'running')) fail('running slots prevent terminal accounting');
@@ -188,6 +196,8 @@ export function assessLv01Admission(input: Lv01AdmissionInput): Lv01Admission {
   if (!input.sourceClean) reasons.push('source-not-clean');
   if (!input.registrationBound) reasons.push('registration-binding-missing');
   if (!input.resourcesSufficient) reasons.push('resource-allocation-missing');
+  if (!input.designHashesLive) reasons.push('design-hashes-changed');
+  if (!input.hostReady) reasons.push('host-not-ready');
   return { status: reasons.length === 0 ? 'ready' : 'blocked', reasons };
 }
 /** Verify the complete pre-action paired case before it can enter analysis. */

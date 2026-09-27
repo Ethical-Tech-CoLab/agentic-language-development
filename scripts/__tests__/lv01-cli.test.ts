@@ -1,5 +1,5 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,7 +9,6 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const cli = fileURLToPath(new URL('../lv01.mjs', import.meta.url));
 const run = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' });
 
-const FIXTURE_VERSION = '101';
 const fixturePaths = (stage: string, version: string): string[] => [
   `protocols/lv01-${stage}-resource-allocation.v${version}.json`,
   `protocols/lv01-${stage}-registration.v${version}.json`,
@@ -17,10 +16,28 @@ const fixturePaths = (stage: string, version: string): string[] => [
   `reports/research/lv01-topology-qualification.v${version}.json`,
   `reports/research/lv01-${stage}-gate-receipt.v${version}.json`,
 ];
-const cleanFixtures = (stage: string, version: string): void => {
-  for (const path of fixturePaths(stage, version)) rmSync(join(root, path), { force: true });
+const cleanFixtures = (stage: string, version: string, keepAllocation = false): void => {
+  for (const path of fixturePaths(stage, version)) {
+    // v1 development uses the REAL tracked allocation: never delete it.
+    if (keepAllocation && path.endsWith(`resource-allocation.v${version}.json`)) continue;
+    rmSync(join(root, path), { force: true });
+  }
+  // Blocked-verdict sidecars never take the canonical path; remove them too.
+  const dir = join(root, 'reports/research');
+  const prefix = `lv01-${stage}-gate-receipt.v${version}.blocked.`;
+  for (const name of readdirSync(dir)) {
+    if (name.startsWith(prefix)) rmSync(join(dir, name), { force: true });
+  }
 };
-const writeGateFixtures = (stage: string, version: string): void => {
+const writeTopologyStub = (version: string): void => {
+  writeFileSync(
+    join(root, `reports/research/lv01-topology-qualification.v${version}.json`),
+    '{"schemaVersion": 1, "studyId": "LV01", "passed": true}\n',
+  );
+};
+// NOTE: v1 development uses the REAL tracked allocation packet plus a bound
+// topology stub. Never write allocation fixtures over tracked v1 files.
+const writeGateStubs = (stage: string, version: string): void => {
   writeFileSync(
     join(root, `protocols/lv01-${stage}-resource-allocation.v${version}.json`),
     '{"schemaVersion": 1, "studyId": "LV01", "status": "design-locked-not-executed"}\n',
@@ -30,11 +47,24 @@ const writeGateFixtures = (stage: string, version: string): void => {
     '{"schemaVersion": 1, "studyId": "LV01", "passed": true}\n',
   );
 };
+const writeBoundTopologyV1 = (): void => {
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  writeFileSync(
+    join(root, 'reports/research/lv01-topology-qualification.v1.json'),
+    `${JSON.stringify({ schemaVersion: 1, studyId: 'LV01', passed: true, sourceCommit: head, designVersion: 1 })}\n`,
+  );
+};
+const collectArgs = (stage: string, version: string): string[] => [
+  'collect', '--stage', stage, '--version', version, '--run',
+  '--parent-bundle', 'parent', '--evidence-dir', 'evidence', '--partition', 'dev',
+  '--ordinary-id', 'uniform', '--store-root', 'store', '--database-path', 'db', '--owner', 'test',
+];
 const trackedTreeClean = (): boolean =>
   spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: root, encoding: 'utf8' }).stdout.trim() === '';
 
 afterEach(() => {
-  cleanFixtures('development', FIXTURE_VERSION);
+  cleanFixtures('development', '1', true);
+  cleanFixtures('development', '101');
   cleanFixtures('confirmatory', '102');
 });
 
@@ -47,7 +77,7 @@ describe('LV01 execution CLI', () => {
   });
 
   it('rejects a pilot collection that has no prospective packet', () => {
-    const result = run('collect', '--stage', 'pilot', '--version', '1', '--run');
+    const result = run(...collectArgs('pilot', '1'));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('missing passed topology qualification');
   });
@@ -73,36 +103,72 @@ describe('LV01 execution CLI', () => {
     expect(run('check-design').status).not.toBe(0);
   });
 
-  it('stops main stages without a locked design receipt', () => {
-    writeGateFixtures('confirmatory', '102');
+  it('stops v2-design chains without a v2 numerical receipt', () => {
+    writeGateStubs('confirmatory', '102');
     const result = run('compile', '--stage', 'confirmatory', '--version', '102', '--write');
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('locked design receipt');
+    // The power gate fires before the lock gate: no v1 receipt qualifies v2.
+    expect(result.stderr).toContain('missing numerical qualification receipt');
   });
 
-  it('compiles, binds, and admits a stage, and refuses rewrites and early collection', () => {
-    writeGateFixtures('development', FIXTURE_VERSION);
+  it('refuses v2-design development without a v2 numerical receipt and writes nothing', () => {
+    writeGateStubs('development', '101');
+    const result = run('compile', '--stage', 'development', '--version', '101', '--write');
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('missing numerical qualification receipt');
+    expect(existsSync(join(root, 'protocols/lv01-development-registration.v101.json'))).toBe(false);
+  });
+
+  it('rejects topology evidence with no bound source commit', () => {
+    writeTopologyStub('1');
     if (!trackedTreeClean()) {
-      const result = run('compile', '--stage', 'development', '--version', FIXTURE_VERSION, '--write');
+      const result = run('compile', '--stage', 'development', '--version', '1', '--write');
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('clean tracked tree');
       return;
     }
-    const compiled = run('compile', '--stage', 'development', '--version', FIXTURE_VERSION, '--write');
+    // Gate passes on passed:true; the script contract rejects the unbound stub.
+    // (Uses the real tracked v1 allocation; the topology stub is cleaned after.)
+    const result = run('compile', '--stage', 'development', '--version', '1', '--write');
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('carries no bound source commit');
+  });
+
+  it('compiles, binds, and fail-closed admits a stage with exact reasons', () => {
+    writeBoundTopologyV1();
+    if (!trackedTreeClean()) {
+      const result = run('compile', '--stage', 'development', '--version', '1', '--write');
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('clean tracked tree');
+      return;
+    }
+    const compiled = run('compile', '--stage', 'development', '--version', '1', '--write');
     expect(compiled.status).toBe(0);
     expect(compiled.stdout).toContain('registered: sha256:');
-    expect(run('compile', '--stage', 'development', '--version', FIXTURE_VERSION, '--write').status).not.toBe(0);
-    const bound = run('bind', '--stage', 'development', '--version', FIXTURE_VERSION, '--write');
+    expect(run('compile', '--stage', 'development', '--version', '1', '--write').status).not.toBe(0);
+    const bound = run('bind', '--stage', 'development', '--version', '1', '--write');
     expect(bound.status).toBe(0);
     expect(bound.stdout).toContain('bound: sha256:');
-    const early = run('collect', '--stage', 'development', '--version', FIXTURE_VERSION, '--run');
+    const early = run(...collectArgs('development', '1'));
     expect(early.status).not.toBe(0);
-    expect(early.stderr).toContain('no admitted immutable receipt');
-    const admitted = run('admit', '--stage', 'development', '--version', FIXTURE_VERSION, '--live-evidence');
-    expect(admitted.status).toBe(0);
-    expect(admitted.stdout).toContain('admission: ready');
-    const receiptPath = join(root, `reports/research/lv01-development-gate-receipt.v${FIXTURE_VERSION}.json`);
-    expect(existsSync(receiptPath)).toBe(true);
-    expect(JSON.parse(readFileSync(receiptPath, 'utf8'))).toMatchObject({ status: 'ready', reasons: [] });
+    expect(early.stderr).toContain('missing admitted ready receipt');
+    const admitted = run('admit', '--stage', 'development', '--version', '1', '--live-evidence');
+    expect(admitted.status).not.toBe(0);
+    expect(admitted.stdout).toContain('admission: blocked');
+    // No R01-B clearance and no A0 lease exist: exactly these two reasons.
+    // (Fails if an operator holds a live lease during the test run, which
+    // would itself violate single-lease concurrency.)
+    expect(admitted.stdout).toContain('blocked: resource-allocation-missing');
+    expect(admitted.stdout).toContain('blocked: host-not-ready');
+    // A blocked verdict never takes the canonical immutable path.
+    expect(existsSync(join(root, 'reports/research/lv01-development-gate-receipt.v1.json'))).toBe(false);
+    const sidecars = readdirSync(join(root, 'reports/research')).filter((name) =>
+      name.startsWith('lv01-development-gate-receipt.v1.blocked.'),
+    );
+    expect(sidecars.length).toBe(1);
+    expect(JSON.parse(readFileSync(join(root, 'reports/research', sidecars[0] as string), 'utf8'))).toMatchObject({
+      status: 'blocked',
+      reasons: ['resource-allocation-missing', 'host-not-ready'],
+    });
   });
 });

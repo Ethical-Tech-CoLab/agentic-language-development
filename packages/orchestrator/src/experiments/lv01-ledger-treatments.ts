@@ -204,3 +204,18 @@ export function verifyLedgerTreatmentSlice(
     fail('ledger treatment batch commitment does not match its cases');
   }
 }
+
+/**
+ * Batch targets must equal the served case targets: a treatment batch built
+ * for other targets delivers consistently-selected but wrong-case tokens.
+ */
+export function verifyLv01TreatmentTargets(
+  batch: Lv01LedgerTreatmentBatch,
+  served: readonly { readonly caseId: string; readonly targetTypeCode: number }[],
+): void {
+  for (const entry of batch.cases) {
+    const observed = served.find((item) => item.caseId === entry.caseId)?.targetTypeCode;
+    if (observed === undefined) fail(`treatment batch case ${entry.caseId} was never served`);
+    if (observed !== entry.targetTypeCode) fail(`treatment batch case ${entry.caseId} targets the wrong case`);
+  }
+}
