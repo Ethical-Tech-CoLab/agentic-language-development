@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LV01",
+  "amendmentVersion": "lv01-direction-amendment/v2",
+  "classification": "prospective-study-direction-amendment",
+  "status": "draft-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "amendedPaths": [
+    "protocols/lv01-study-design.v2.json",
+    "protocols/lv01-analysis-plan.v2.json",
+    "protocols/lv01-seed-resource-policy.v2.json",
+    "protocols/lv01-prototype-execution-profile.v2.json",
+    "protocols/lv01-direction-amendment.v2.json"
+  ],
+  "amendmentScope": "Only the five v2 files above are amended or created. No other protocol, receipt, raw record, or source file is changed by this amendment.",
+  "preservedV1": [
+    {"path": "protocols/lv01-study-design.v1.json", "sha256": "sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
+    {"path": "protocols/lv01-analysis-plan.v1.json", "sha256": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
+    {"path": "protocols/lv01-seed-resource-policy.v1.json", "sha256": "sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec"}
+  ],
+  "directionStatements": {
+    "v1DevelopmentRan": "LV01 v1 development ran and is retained, including development-v2 through development-v23 directories, detector development versions, fault and lifecycle fixtures, and resource-allocation records v1 through v23.",
+    "behavioralCohortDidNot": "The v1 behavioral cohort did not run: no retained v1 pilot, full calibration, main, or repeat cohort exists. Development evidence must not be relabeled as pilot, main, or repeat evidence.",
+    "prospectiveRedesign": "LV01 v2 is a deliberate prospective redesign on the Prototype runtime with an incremental-prediction primary family, not permission to run an old v1 packet with fewer checks.",
+    "dataPreviouslySeen": "Data previously seen during development comprises sealed recurrent development records (including v16/v23 and other source-compatible sealed data) used only for the retrospective development diagnosis, which cannot supply pilot variance, confirmatory findings, prior prediction commitments, or design alternatives. The v15 tabular-path records are excluded from any recurrent estimate. No design threshold is tuned from development outcomes.",
+    "iterationHistoryKept": "The five-iteration lifetime history is kept as-is, including the v23 iteration-1 declaration; no retrospective exemption renames inconvenient attempts."
+  },
+  "claimLimits": {
+    "prototype": "Prototype results establish logical separation under a trusted process and operator for cooperative learners only. They cannot inherit hostile-process, timing-channel, or deployment-isolation claims.",
+    "modeRSeparate": "Mode R qualifications, including the retained E00/E01/E02 evidence and the original nineteen-card confirmatory family, remain separate bounded evidence for their actual limited observations. Old receipts keep their old semantics.",
+    "interpretiveCorrections": "Any new interpretive correction is a separate source-linked record that narrows a stronger summary; originals are never edited."
+  },
+  "nineteenCardFamily": {
+    "path": "protocols/research-protocol-cards.v1.json",
+    "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d",
+    "cardCount": 19,
+    "boundary": "LV01 v2 does not rewrite, extend, or claim membership in the original portfolio."
+  },
+  "claimBoundary": "This draft amendment registers intent only. It is not a registration, allocation, qualification, result, review, or publication, and it authorizes no run."
+}

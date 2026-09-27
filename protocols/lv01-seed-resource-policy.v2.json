@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LV01",
+  "policyVersion": "lv01-seed-resource-policy/v2",
+  "classification": "prospective-ledger-value-seed-resource-policy",
+  "status": "draft-outcome-blind-no-stage-allocation",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "supersedes": {
+    "path": "protocols/lv01-seed-resource-policy.v1.json",
+    "sha256": "sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec",
+    "scope": "Future seed derivation and stage allocation only. The v1 file is preserved byte-for-byte; no v1 seed identity is reused.",
+    "reason": "New root and seven-component selector for the v2 Prototype study; v1 identities remain reserved and collision-checked."
+  },
+  "root": "ald-ledger-value-v2",
+  "derivation": {
+    "algorithm": "deriveSeedHex SHA-256 over UTF-8 parts joined by one NUL byte",
+    "parts": ["root", "studyId", "stage", "policyVersion", "slotKind", "slotIndex", "purpose", "role", "partition", "case", "branch"],
+    "partValues": {
+      "root": "ald-ledger-value-v2",
+      "studyId": "LV01",
+      "stages": ["development", "qualification", "pilot", "main", "repeat"],
+      "policyVersion": "v2",
+      "slotKinds": ["primary", "reserve"],
+      "slotIndex": "four-digit zero-padded index",
+      "purposes": ["scenario", "learner/baby-a", "learner/baby-b", "gateway", "action-draw", "intervention-shuffle", "branch-order", "analysis"],
+      "roles": ["baby-a-receiver", "baby-b-receiver", "shared"],
+      "partitions": ["training", "validation-fit", "validation-selection", "within-support-test"]
+    },
+    "rule": "Every materialized seed is the SHA-256 hex of all applicable parts joined by single NUL bytes. Every identity must be unique across LV01 v2 and collision-checked against all retained and registered earlier identities, including every v1 identity.",
+    "sharedPairing": "Scenario and case identities and receiver action draws intentionally omit branch only, so paired branches share scenario, observation, pre-state and draw. Independent intervention shuffles and branch orders append branch. Learner initialization occurs once per dyad.",
+    "prohibited": ["NUL in parts", "signing-key derivation", "reuse of development, qualification, pilot, main or repeat identities", "reuse of any v1 or E00-E50 identity"]
+  },
+  "stages": {
+    "development": {"maxIterations": 5, "iterationBoundary": "The five-iteration lifetime allowance is not renewed; retained development-v2 through development-v23 directories keep their lifetime classifications.", "smallFixture": {"trainingCases": 64, "casesPerEvaluationPartition": 24, "cpuHours": 0.25, "workingStorageGiB": 1}, "fullCalibrationDyads": 5, "claimBoundary": "software measurement only"},
+    "qualification": {"purpose": "Prototype profile qualification: private-state/input separation, scenario/control behavior, replay/pairing, evidence chronology, terminal/recovery accounting, statistics, full workload", "freshQualificationSeeds": 25, "qualificationBoundary": "Twenty-five qualification seeds are separate from the twenty scientific pilot dyads and consume no research seeds.", "scenarioControl": "six no-learning/oracle conditions with 200 evaluation cases each on the v2 generator", "studySeedsAllowed": false},
+    "pilot": {"primaryDyads": 20, "reserves": 0, "allValidRequired": true, "reuseBoundary": "No pilot/main reuse; no pilot/main seed reuse.", "outcomeUse": "Pilot output exposes centered dispersion, validity and costs only; pilot effect means cannot change design alternatives. An invalid or incomplete pilot cohort stops design lock; it does not silently grant another twenty runs or allow complete-case substitution."},
+    "confirmatory": {"candidatePrimaryDyads": [75, 100, 125, 150, 200, 300], "selection": "smallest candidate whose seven-component union-bound lower power is at least 0.90 and whose complete allocation fits the existing resource envelope; if that N cannot be funded, do not select a smaller underpowered N", "replacement": "ordered reserves replace validity failures only"},
+    "replication": {"rule": "fresh stage identities use the same selected N and ordered reserve rule as confirmatory; no outcome-based retuning; fresh-seed repeat executes regardless of main direction"}
+  },
+  "power": {
+    "pilotComponents": 7,
+    "pilotMembers": 4,
+    "pilotValidDyads": 20,
+    "upperDispersion": "sample SD * sqrt(19 / qchisq(0.05/7, 19))",
+    "screeningAlpha": 0.0125,
+    "screeningAlphaRule": "0.05/4 component screening alpha for the four-member family",
+    "monteCarloRepetitions": 30000,
+    "monteCarloRepetitionsPerCandidatePerComponent": 30000,
+    "monteCarloLowerBound": "if k=0 then 0 else qbeta(0.05/42, k, 30000-k+1)",
+    "familyLowerBound": "max(0, 1 - sum over seven components of (1 - component lower bound))",
+    "minimumFamilyLowerPower": 0.9,
+    "zeroDispersionRule": "Zero or nonfinite dispersion blocks this selection procedure.",
+    "reserveInvalidity": "one-sided 95% Wilson upper invalid-run probability; choose smallest R with P[Binomial(N+R,pUpper)<=R] >= 0.95 separately per main/repeat stage"
+  },
+  "resources": {
+    "ceiling": {"cpuHours": 72, "workingStorageGiB": 25, "maximumResidentGiB": 6, "externalSpend": 0},
+    "ceilingBoundary": "Ceilings include prior work and are not unused allowances. They cover failures, retries, verifier and reproduction costs, temporary duplication and final retention.",
+    "measurement": "Reconcile historical charges first. Record every worker CPU, conservative peak memory, raw/exported bytes, verification, fitting, analysis, packaging, teardown and failures. Wall time is tracked separately from CPU. Missing historical CPU is charged by an existing defensible upper allocation; absent any bound leaves capacity unresolved.",
+    "calibration": "After five complete full-workload development dyads, reserve two times the largest complete per-slot CPU/storage/wall cost and 1.5 times the conservative peak-memory bound. Reconcile maxima again after pilot.",
+    "designLock": "Reserve the complete 2*(N+R) allocation plus overhead before main starts, plus a fixed analysis/reproduction/packaging allocation. Missing measurement blocks admission.",
+    "deviationRule": "If reconciliation shows the lifetime allowance exhausted, record the deviation and the exact additional bounded allowance required, and stop new experimental collection until a prospective authorization exists. This policy does not invent that authorization.",
+    "prohibited": ["treating historical remaining balances as current capacity", "deleting originals to fit", "reducing N or reserves after pilot", "automatic budget expansion", "spending external funds"]
+  },
+  "sourcePolicies": [
+    {"path": "protocols/lv01-seed-resource-policy.v1.json", "sha256": "sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec"},
+    {"path": "protocols/seed-and-resource-allocation.v1.json", "sha256": "sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
+  ],
+  "claimBoundary": "This policy does not allocate a stage, select N, authorize execution or create a finding."
+}

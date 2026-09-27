@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LV01",
+  "profileVersion": "lv01-prototype-execution-profile/v2",
+  "classification": "prototype-execution-profile",
+  "status": "draft-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "externalSpend": 0,
+  "consumerCheck": "No live seal run or source file consumed this profile at draft time: the only repository reference to this filename before creation was the planning handoff. This file is safe to create directly; it overwrites nothing.",
+  "runtime": {
+    "deploymentMode": "prototype",
+    "topology": "prototype-disposable-worker",
+    "workerRule": "Execute a dyad in a disposable worker with deterministic step ordering.",
+    "separation": ["separate agent state", "separate weights", "separate optimizers", "separate memories", "separate PRNG domains", "separate ledger handles"],
+    "allowedInputs": ["approved numeric observation tensors", "delivered message tokens", "candidate observations in committed order"],
+    "forbiddenInputs": ["peer references", "peer weights or hidden state", "true scenario target", "scenario seed", "action draw or action PRNG values", "wall clock", "auditor results", "test labels", "test outcomes"],
+    "separationClaim": "Logical separation under a trusted process and operator for cooperative learners, established by code-path and input-boundary checks. Not resistance to a malicious shared-process agent; no side-channel timing-normalization claim."
+  },
+  "records": {
+    "eventLog": "local append-only event records with authenticated prefixes and checkpoint identities",
+    "commitments": "simulated commitments; both existing verifier implementations apply where applicable",
+    "originals": "Keep originals and failure records; never delete originals to retrofit policy",
+    "ordering": "virtual step indices for scientific ordering; separate monotonic measurements for cost",
+    "releaseSchedule": "none; no artificial one-second release schedule in this declared Prototype profile",
+    "guards": "Normal termination and resource guards are retained; existing Mode R deadline and safety code is unchanged"
+  },
+  "retention": {
+    "snapshots": ["initialization", "every 64 training episodes", "final training cutoff", "all required scientific boundaries"],
+    "snapshotContent": "full model, optimizer and hidden-state snapshots",
+    "eventContent": "every event, observation, action, update identity and post-update digest",
+    "blobRule": "Do not duplicate a full model blob at every turn or in every branch directory. A digest-only update record is explicitly a commitment, not a claim that a full snapshot attachment exists.",
+    "replayQualification": "Qualify deterministic replay from each retained checkpoint through its next block, reproducing all update digests. If exact replay fails, the retention format is unqualified.",
+    "costAccounting": "Count the new format's actual raw and exported bytes in R06; compression is not assumed to make it affordable."
+  },
+  "batchEvaluation": {
+    "rule": "Train once. Batch frozen evaluation within the same worker; restore the same final policy and recurrent checkpoint state before each case and branch.",
+    "forbidden": ["copying the full parent evidence per test action", "booting a service topology per test action", "omitting restoration or chronology evidence"],
+    "references": "Record immutable parent digests and child references; export parent blobs once per dyad.",
+    "equivalenceBoundary": "This batching is a necessary execution change whose equivalence must be tested."
+  },
+  "preActionCommitment": {
+    "payload": ["ordered case and candidate identities", "full probability vectors for native, ordinary-record and replay predictors", "predictor versions and fitted digests", "actual delivered-message schedule", "ledger cutoff", "policy and state digests", "action-draw commitments"],
+    "persistence": "Persist the committed canonical payloads. Hashing the inputs alone is insufficient.",
+    "accessBoundary": "Test outcomes and action PRNG values must be inaccessible to predictors at commitment time."
+  },
+  "actionDraw": {
+    "rule": "Each case uses one privately derived uniform draw, shared across branches, disclosed to the auditor after sealing.",
+    "sampling": "Fixed candidate order and inverse CDF.",
+    "exclusion": "The draw never enters the learner observation or any prediction function.",
+    "verification": "Verify both the seed derivation and the actual resulting action. Never substitute a hash of roles."
+  },
+  "conditions": {
+    "branches": ["normal", "disabled", "constant", "random", "shuffled", "ledger-consistent", "ledger-shuffled"],
+    "ledgerConsistent": "Selects the token maximizing the native predictor's target probability, with inventory-order ties.",
+    "ledgerShuffled": "Permutes those selected messages within role using a fixed derangement.",
+    "constant": "Inventory element 0.",
+    "random": "A dedicated uniform stream.",
+    "shuffled": "A role-local derangement.",
+    "interventionBoundary": "The experimenter knows the target for this controlled intervention; the receiver and prediction baselines do not. Its effect is a local intervention contrast, not spontaneous partner understanding. Identical-token coincidences are preserved.",
+    "pairing": "Branch order is seeded and counterbalanced; scenario, receiver observation, pre-state and draw are shared across branches within a case."
+  },
+  "audit": {
+    "rule": "An independent auditor reconstructs case identity, delivered token, prediction-before-action ordering, actual draw, parent state and sample outcome from raw records.",
+    "forbidden": ["reusing collector-created true flags as the auditor's evidence", "collector-supplied pass flags for chronology, restoration or sampling"],
+    "scheduleCommitment": "Commit all schedules before labels."
+  },
+  "sourcePolicies": [
+    {"path": "protocols/lv01-study-design.v1.json", "sha256": "sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"}
+  ],
+  "claimBoundary": "Prototype-only execution claims. A true cross-topology claim would require separate new allocation and is outside LV01 v2. This draft authorizes no run."
+}

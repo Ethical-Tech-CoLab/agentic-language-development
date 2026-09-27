@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LV01",
+  "analysisVersion": "lv01-analysis/v2",
+  "classification": "prospective-ledger-value-analysis-plan",
+  "status": "draft-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "externalSpend": 0,
+  "supersedes": {
+    "path": "protocols/lv01-analysis-plan.v1.json",
+    "sha256": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b",
+    "scope": "Future analysis only. The v1 file is preserved byte-for-byte.",
+    "reason": "Adds the registered LV-U incremental-prediction member against the validation-selected ordinary-record comparator, so fidelity alone cannot carry a useful-ledger claim."
+  },
+  "predictionTarget": "receiver actual selected candidate position",
+  "targetBoundary": "Task target and task success are separate fields. The actual receiver action scores prediction; target-action probability is used only for LV-L.",
+  "nativePredictor": {
+    "source": "authenticated training-only hypothesis.created, hypothesis.revised, or hypothesis.contradicted ledger event",
+    "selection": "Latest verified ledger sequence before cutoff for receiver and token",
+    "value": "associationOverTypeCodes normalized over the current four candidates after adding 1e-12 to each nonnegative weight",
+    "missingToken": "uniform distribution and reported coverage",
+    "forbidden": ["post-cutoff ledger events", "test interpretation records", "policy readout substitution", "test outcomes", "action PRNG"]
+  },
+  "predictors": [
+    {"id": "uniform", "role": "descriptive-reference", "selectionEligible": true},
+    {"id": "validation-majority", "role": "ordinary-record", "selectionEligible": true, "fit": "Laplace-smoothed actual action positions; fit and selection use their declared folds and final refit uses all permitted training plus validation observations"},
+    {"id": "transcript-only", "role": "ordinary-record", "selectionEligible": true, "fit": "Laplace-smoothed actual action positions conditional on delivered token only"},
+    {"id": "task-history", "role": "ordinary-record", "selectionEligible": true, "fit": "Laplace-smoothed token/type counts using ordinary records"},
+    {"id": "ordinary-record-softmax", "role": "ordinary-record", "selectionEligible": true, "features": "bias, token one-hot, candidate type one-hot, position one-hot, token/type interaction", "coefficientCount": 565, "fit": "2000 full-batch gradient steps, learning rate 0.05, L2 penalty 0.01 excluding bias, zero initialization"},
+    {"id": "native-ledger", "role": "primary-under-test", "selectionEligible": false, "fit": "latest authenticated receiver token association strictly before training cutoff, per the nativePredictor block"},
+    {"id": "exact-policy-replay", "role": "mandatory-primary-reference", "selectionEligible": false, "fit": "frozen recurrent receiver forward pass with checkpoint hidden state, delivered token, candidate observation and temperature 1; no state advance"},
+    {"id": "equal-content-unsigned-log", "role": "descriptive-information-match", "selectionEligible": false, "fit": "identical numerical payload and update schedule as the native ledger; predictions must match native exactly, isolating authentication overhead and detection"},
+    {"id": "fixed-cadence-policy-summary", "role": "descriptive-richer-record", "selectionEligible": false, "fit": "same 32-by-16 association representation at fixed training checkpoints every 64 episodes and at the final cutoff, using the same frozen projection function for both roles; report actual bytes and queries"},
+    {"id": "outcome-reading-oracle", "role": "diagnostic-only", "selectionEligible": false, "fit": "one-hot actual action after outcome"}
+  ],
+  "ordinaryRecordWindow": {
+    "trainingCasesPerReceiverRole": 1500,
+    "validationFitCasesPerReceiverRole": 120,
+    "validationSelectionCasesPerReceiverRole": 120,
+    "selection": "lowest realized multiclass Brier on validation-selection; tie tolerance 1e-12 and predictor list order",
+    "refit": "chosen model refits using training, validation-fit and validation-selection records before test prediction",
+    "majorityReconciliation": "The validation-majority baseline follows the same rule: fit and selection on declared folds, final refit on all permitted training plus validation observations.",
+    "forbidden": ["ledger events", "policy bytes", "hidden state", "action PRNG", "future test data", "true test target"]
+  },
+  "score": {
+    "name": "multiclass-brier/v1",
+    "formula": "sum over ordered candidates of (probability - one-hot actual action)^2",
+    "expectedExcessReplayFormula": "sum over ordered candidates of (nativeProbability - exactReplayProbability)^2"
+  },
+  "family": {
+    "members": ["LV-U", "LV-P", "LV-C", "LV-L"],
+    "familywiseAlpha": 0.05,
+    "memberProcedure": "LV-C p-value is its maximum component p-value; Holm adjusts LV-U, LV-P, LV-C and LV-L in that order for exact ties.",
+    "components": [
+      {"id": "incremental", "member": "LV-U", "statistic": "normal-branch ordinary-selected Brier minus native Brier", "nullBoundary": 0.02, "alternative": 0.04, "direction": "greater"},
+      {"id": "fidelity", "member": "LV-P", "statistic": "negative mean normal-case expected excess replay Brier", "nullBoundary": -0.02, "alternative": -0.01, "direction": "greater"},
+      {"id": "disabled", "member": "LV-C", "statistic": "normal success minus disabled success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "constant", "member": "LV-C", "statistic": "normal success minus constant success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "random", "member": "LV-C", "statistic": "normal success minus random success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "shuffled", "member": "LV-C", "statistic": "normal success minus shuffled success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "intervention", "member": "LV-L", "statistic": "exact replay target-action probability under ledger-consistent minus ledger-shuffled message", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"}
+    ],
+    "unit": "independently trained dyad; average within receiver role, then equally across roles, then across dyads",
+    "test": "one-sided seed-level Student t test of mean statistic greater than boundary",
+    "zeroSdRule": "Return p=1 with flagged degenerate interval; do not divide by zero. A degenerate component must not make unrelated members inconclusive.",
+    "intervals": "marginal two-sided 95% seed-level t intervals plus simultaneous one-sided component bounds at alpha 0.05/7",
+    "sensitivity": "10000-resample deterministic dyad bootstrap is descriptive only; never select the more favorable test",
+    "invaliditySensitivity": "Report valid-only inference and descriptive worst-admissible-value bounds across every attempted dyad; do not claim missingness is ignorable."
+  },
+  "invalidity": {
+    "rule": "Frozen technical rules only: wrong source or configuration, partition contamination, missing required evidence, broken chronology or restoration, or execution abort.",
+    "validObservations": "Low success, high loss, slow convergence and inconvenient estimates remain valid.",
+    "replacement": "Replacement consumes only ordered registered reserves; a depleted reserve pool closes the stage incomplete."
+  },
+  "interpretation": {
+    "usefulLedgerPrediction": "A positive claim of useful ledger prediction in learned communication requires both LV-U and LV-C support and a native predictor that beats uniform in reported held-out scoring.",
+    "LV-U": "A rejected null supports practical incremental action prediction over the validation-selected ordinary-record comparator at the 0.02 margin in this registered setting.",
+    "LV-P": "A rejected null supports fidelity within 0.02 expected excess Brier in this registered setting, not additional information beyond complete policy state. LV-P alone cannot license a useful-ledger sentence.",
+    "LV-C": "A rejected null supports all four registered normal-minus-control margins in this setting.",
+    "LV-L": "A rejected null supports the registered local target-action probability contrast: a controlled intervention effect, not introspection, composition, or spontaneous partner understanding.",
+    "nonRejection": "Report not supported at the registered threshold; do not assert equivalence or no effect.",
+    "ordinaryRecords": "Equal-content and compact-summary comparisons are declared descriptive, with intervals; they do not acquire confirmatory status afterward."
+  },
+  "sourcePolicies": [
+    {"path": "protocols/lv01-analysis-plan.v1.json", "sha256": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"}
+  ],
+  "marginLineage": "LV-U inherits the outcome-blind H4 margin 0.02 and planning alternative 0.04 from confirmatory-practical-margins.v1.json and confirmatory-power-model-amendment.v1.json. These are prospective relevance conventions, not measured human-utility thresholds; they are preserved through pilot and main.",
+  "claimBoundary": "This is a fixed draft analysis plan, not a pilot result, selected N, resource authorization or finding."
+}
