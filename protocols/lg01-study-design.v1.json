@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LG01",
+  "designVersion": "lg01-study-design/v1",
+  "classification": "deferred-factored-grounding-generalization-study-design",
+  "status": "draft-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "independentHumanReview": false,
+  "externalSpend": 0,
+  "publicChainTransaction": false,
+  "roadmapItem": "R13",
+  "roadmapStatus": "DEFERRED CORE",
+  "question": "When two separately learning agents acquire a useful symbolic convention over factored object attributes, does their communication generalize to untouched attribute combinations, and do causal part/order interventions distinguish holistic lookup from structured use?",
+  "scopeBoundary": [
+    "One synthetic factored referential task, one recurrent scratch-RL learner family, one fixed 32-token inventory with two token positions.",
+    "Prototype Mode behavioral collection only; no hostile-process, timing-channel, or deployment-isolation claim.",
+    "Generalization to unseen combinations is not, by itself, proof of compositional grammar or a particular structural account.",
+    "The original E00-E50 protocols, their experiment IDs, and all v1 bytes remain unchanged. E15 remains unexecuted until its own bandwidth estimand is actually run."
+  ],
+  "prerequisites": [
+    "R12 chronological ledger-value study completed with valid evidence.",
+    "Selected factored task qualified with its own prospective registration, capacity decision, and allocation.",
+    "This draft allocates no future capacity and selects no sample size."
+  ],
+  "task": {
+    "generator": "factored-referential-game-v1",
+    "attributeCount": 2,
+    "valuesPerAttribute": 4,
+    "typeCodeRule": "4 * firstAttribute + secondAttribute, retained as an index only; agents never observe opaque type IDs",
+    "objectEncoding": "eight one-hot attribute features (two attributes times four values); no flattened type-code input",
+    "candidatesPerEpisode": 4,
+    "chanceSuccess": 0.25,
+    "trainingEpisodes": 3000,
+    "balanceRule": "Balanced factors across training; no preassigned token meanings.",
+    "heldOutRule": {
+      "scheme": "latin-diagonal",
+      "rule": "Omit combinations b = (a + k) mod 4 with k in {0, 1, 2, 3}",
+      "stratumAssignment": "k = (primary_index - 1) mod 4, giving strata differing in size by at most one",
+      "reserveStratum": "Reserves inherit the stratum of the invalid slot they replace.",
+      "accessBan": "No held-out combination is accessed during fitting or selection."
+    },
+    "partitions": {
+      "training": {"episodes": 3000, "combinations": "seen only", "policyUpdates": true},
+      "validationFit": {"cases": 240, "combinations": "seen only", "policyUpdates": false},
+      "validationSelection": {"cases": 240, "combinations": "seen only", "policyUpdates": false},
+      "seenTest": {"cases": 240, "combinations": "seen", "roleBalanced": true, "targetBalanced": true, "policyUpdates": false},
+      "unseenTest": {"cases": 240, "combinations": "unseen only", "roleBalanced": true, "targetBalanced": true, "policyUpdates": false}
+    },
+    "claimBoundary": "Unseen-combination success is systematic-generalization evidence under this registered design; it is not compositionality, syntax, or human-language evidence."
+  },
+  "learner": {
+    "track": "scratch-rl",
+    "architecture": "factored-gru-actor-critic-v1",
+    "agents": 2,
+    "trainingIsolation": "independent",
+    "hiddenSize": 16,
+    "sender": "autoregressive over two token positions from the shared 32-token inventory",
+    "receiverScoring": "shared function: a learned eight-coordinate query from the final message state dotted with each candidate's eight attribute features",
+    "forbiddenReceiverHead": "sixteen independently learned type-output rows, which would leave held-out types with untrained outputs",
+    "parameterContract": "RECOMPUTE BEFORE QUALIFICATION from these specified layers; do not call this the unchanged 4,049-parameter model",
+    "inductiveBiasDisclosure": "The factored eight-feature encoding and shared dot-product receiver head impose a factored inductive bias; this bias is part of the registered design and must be disclosed in any report.",
+    "learningSignal": "extrinsic-task",
+    "optimizer": {"name": "adam-v1", "learningRate": 0.003, "beta1": 0.9, "beta2": 0.999, "epsilon": 1e-8},
+    "reinforcement": {"ppoClip": 0.2, "ppoEpochs": 4, "valueLossCoefficient": 0.5, "maxGradientNorm": 1},
+    "temperature": 1,
+    "evaluationLearning": false,
+    "forbidden": ["cross-agent updates", "auxiliary reward", "architecture search", "curriculum", "policy updates during validation or test", "opaque type-ID inputs", "type-row receiver outputs"]
+  },
+  "holisticControl": {
+    "architecture": "holistic type-code/two-token control",
+    "trainingEpisodes": 3000,
+    "reporting": "report exact parameters and compute alongside the factored arm",
+    "claimBoundary": "Architectural comparison is descriptive, not a causal claim isolating representation alone."
+  },
+  "channel": {
+    "carrier": "fixed-token",
+    "inventorySize": 32,
+    "marksPerMessage": 2,
+    "maximumCapacityBits": 10,
+    "capacityClaimBoundary": "Maximum carrier capacity is not measured information or syntax."
+  },
+  "execution": {
+    "deploymentMode": "prototype",
+    "topology": "prototype-disposable-worker",
+    "profile": "protocols/lv01-prototype-execution-profile.v2.json",
+    "profileNote": "Reuse the frozen Prototype separation and input-boundary rules; LG01-specific qualification still required before any collection.",
+    "anchorClass": "simulated",
+    "releaseSchedule": "none; no artificial one-second release padding in this declared Prototype profile",
+    "maximumParallelDyads": 1
+  },
+  "evaluation": {
+    "freezeRule": "Freeze final policy bytes, optimizer state, checkpoint hidden state and ledger cutoff before validation; no evaluation action updates policy or checkpoint state.",
+    "restoreRule": "Restore final training state before every case and branch; unchanged export hashes do not substitute for a verified live-state reset.",
+    "sharedActionRandomness": "Each case uses one privately derived uniform draw, shared across branches, disclosed to the auditor after sealing. Sampling uses a fixed candidate order and inverse CDF; the draw never enters any learner observation or prediction function.",
+    "branchOrder": "Deterministic seeded permutation per case, counterbalanced across cases.",
+    "branches": ["normal", "disabled", "constant", "random", "shuffled"],
+    "messageForm": "two-token messages in every branch",
+    "interventionRule": "Constant uses a fixed two-token message; random uses a dedicated uniform stream per position; shuffled uses a role-local derangement of delivered two-token messages. Identical-token coincidences are preserved."
+  },
+  "observationSchemas": {
+    "agentAllowed": ["approved factored numeric observation tensors", "delivered two-token messages", "candidate attribute observations in committed order"],
+    "agentForbidden": ["peer references", "peer weights or hidden state", "true scenario target", "scenario seed", "action draw or action PRNG", "wall clock", "auditor results", "test labels", "opaque type IDs"],
+    "predictorForbidden": ["test outcomes", "action PRNG values", "post-cutoff ledger events", "held-out combinations during fitting or selection"],
+    "claimBoundary": "Code-path and input-boundary checks must establish this restriction for these cooperative learners. This is logical separation under a trusted process and operator, not resistance to a malicious shared-process agent."
+  },
+  "runConfig": {
+    "studyId": "LG01",
+    "designVersion": "lg01-study-design/v1",
+    "analysisVersion": "lg01-analysis/v1",
+    "executionProfile": "lv01-prototype-execution-profile/v2",
+    "seedRoot": "ald-factored-generalization-v1",
+    "trainingEpisodes": 3000,
+    "validationFitCases": 240,
+    "validationSelectionCases": 240,
+    "seenTestCases": 240,
+    "unseenTestCases": 240,
+    "branches": ["normal", "disabled", "constant", "random", "shuffled"],
+    "primaryFamily": ["LG-G"],
+    "familywiseAlpha": 0.05,
+    "deploymentMode": "prototype"
+  },
+  "chronology": [
+    "Assign held-out stratum k prospectively from the primary index before training.",
+    "Train once on seen combinations and retain all attempted episodes.",
+    "Freeze policy and authenticated training-ledger cutoff.",
+    "Run validation fitting and selection on seen combinations without updates.",
+    "Prepare normal messages and all final-test branch schedules for seen and unseen cases.",
+    "Commit predictions, messages, identities and schedule before test receiver actions.",
+    "Restore identical pre-case state and execute paired branches.",
+    "Verify evidence before analysis."
+  ],
+  "sourcePolicies": [
+    {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
+    {"path": "protocols/scenario-split-and-model-comparison.v1.json", "sha256": "sha256:cfac41d3307319f60465c7e2ff05c9fb7b389b6347996b6baf99e20e50ba2671"},
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/lv01-study-design.v2.json", "sha256": "sha256:8fa62f2d8b32f2dfadf0db6450e4687dd9bb85e93824afbb4827edb345cb4743"},
+    {"path": "protocols/lv01-prototype-execution-profile.v2.json", "sha256": "sha256:3880e72bc37ddb6cb94094399bf22dcec327777fb387158e4488590292653c86"}
+  ],
+  "claimBoundary": "This outcome-blind deferred draft is not a registration, qualification, resource allocation, pilot, confirmatory result, replication, independent review, submission or publication. No stage packet is claimed before its allocation exists."
+}

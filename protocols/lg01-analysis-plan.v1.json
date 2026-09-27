@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "studyId": "LG01",
+  "analysisVersion": "lg01-analysis/v1",
+  "classification": "deferred-factored-generalization-analysis-plan",
+  "status": "draft-not-registered-not-executed",
+  "researchFinding": false,
+  "scientificDisposition": "not-tested",
+  "pilotDataInspected": false,
+  "externalSpend": 0,
+  "roadmapItem": "R13",
+  "roadmapStatus": "DEFERRED CORE",
+  "predictionTarget": "receiver task success on unseen attribute combinations",
+  "targetBoundary": "The primary estimand is success differences on unseen combinations only. Seen-combination success is a reported secondary diagnostic, not the primary generalization claim.",
+  "family": {
+    "members": ["LG-G"],
+    "memberCount": 1,
+    "componentCount": 4,
+    "familywiseAlpha": 0.05,
+    "memberProcedure": "LG-G p-value is its maximum component p-value: the primary member is supported only if all four normal-minus-control differences clear their registered boundary on unseen combinations.",
+    "components": [
+      {"id": "unseen-disabled", "member": "LG-G", "population": "unseen combinations", "statistic": "normal success minus disabled success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "unseen-constant", "member": "LG-G", "population": "unseen combinations", "statistic": "normal success minus constant success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "unseen-random", "member": "LG-G", "population": "unseen combinations", "statistic": "normal success minus random success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"},
+      {"id": "unseen-shuffled", "member": "LG-G", "population": "unseen combinations", "statistic": "normal success minus role-local-shuffled success", "nullBoundary": 0.05, "alternative": 0.1, "direction": "greater"}
+    ],
+    "unit": "independently trained dyad; average within receiver role, then equally across roles, then across dyads",
+    "test": "one-sided seed-level Student t test of mean statistic greater than boundary",
+    "zeroSdRule": "Return p=1 with flagged degenerate interval; do not divide by zero. A degenerate component must not make unrelated members inconclusive.",
+    "intervals": "marginal two-sided 95% seed-level t intervals plus simultaneous one-sided component bounds at alpha 0.05/4",
+    "sensitivity": "10000-resample deterministic dyad bootstrap is descriptive only; never select the more favorable test",
+    "invaliditySensitivity": "Report valid-only inference and descriptive worst-admissible-value bounds across every attempted dyad; do not claim missingness is ignorable."
+  },
+  "secondaryInterventions": {
+    "fixedSet": ["mask-position-one", "mask-position-two", "reverse-positions", "uniform-token-replacement"],
+    "maskRule": "Replace the masked position with a fixed null token while holding the other position, frozen state, and action draw constant.",
+    "reverseRule": "Swap the two token positions while holding frozen state and action draw constant.",
+    "replacementRule": "Replace each token with an independent uniform inventory draw from a dedicated stream.",
+    "estimation": "Report success and action-distribution changes on the same paired cases; estimate token-position/attribute associations from training records only.",
+    "orderBoundary": "Word-order sensitivity is not required for unordered compositional codes; a null reversal effect does not refute structure."
+  },
+  "pilotAndPower": {
+    "pilotDyads": 20,
+    "pilotReserves": 0,
+    "pilotReuse": "No pilot/main reuse; no confirmatory reuse of LV01 or development outcomes.",
+    "candidateN": [75, 100, 125, 150, 200, 300],
+    "selector": {
+      "generalization": "m=1 family member, k=4 components",
+      "screeningAlpha": "0.05/m",
+      "pilotUpperSdQuantile": "0.05/k",
+      "monteCarloLowerLevel": "0.05/(6*k)",
+      "unionBoundLowerPower": 0.9,
+      "simulationsPerCandidatePerComponent": 30000,
+      "rule": "Select the smallest qualifying N; if that N cannot be funded within the existing resource envelope, do not select a smaller underpowered N. Zero/nonfinite dispersion blocks this selection procedure."
+    },
+    "reserveRule": "One-sided 95% Wilson upper invalidity bound; smallest R giving P(Binomial(N+R,pUpper) <= R) >= 0.95 separately per main/repeat stage. Replacement consumes only ordered registered reserves; a depleted reserve pool closes the stage incomplete.",
+    "registrationRule": "Fresh pilot, numerical qualification of the m=1/k=4 selector, capacity decision, and main/repeat registration are all required before collection. This draft performs none of them."
+  },
+  "invalidity": {
+    "rule": "Frozen technical rules only: wrong source or configuration, partition contamination (including any held-out access during fitting or selection), missing required evidence, broken chronology or restoration, or execution abort.",
+    "validObservations": "Low success, high loss, slow convergence and inconvenient estimates remain valid.",
+    "replacement": "Replacement consumes only ordered registered reserves; a depleted reserve pool closes the stage incomplete."
+  },
+  "interpretation": {
+    "generalizationMember": "A supported LG-G means all four registered normal-minus-control success differences clear 0.05 on unseen combinations: evidence that learned communication transfers to untouched combinations in this registered setting.",
+    "structureBoundary": "Neither the primary generalization test nor a token-position/attribute correlation score alone proves compositional grammar. Secondary part/order observations may suggest structure; the research answer may be that generalization occurs without evidence for a particular structural account.",
+    "holisticControl": "The separately trained holistic type-code/two-token control comparison is descriptive, not a causal claim isolating representation alone.",
+    "nonRejection": "Report not supported at the registered threshold; do not assert equivalence or no effect.",
+    "e15Boundary": "No LG01 result marks original E15 complete; its bandwidth estimand requires its own execution."
+  },
+  "sourcePolicies": [
+    {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path": "protocols/lv01-analysis-plan.v2.json", "sha256": "sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2"}
+  ],
+  "claimBoundary": "This is a fixed deferred draft analysis plan, not a pilot result, selected N, resource authorization or finding."
+}
