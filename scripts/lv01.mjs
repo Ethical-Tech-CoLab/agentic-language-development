@@ -10,8 +10,17 @@ function fail(message) {
   throw new Error(`LV01: ${message}`);
 }
 
-function run(script) {
-  execFileSync(process.execPath, [script], { cwd: root, stdio: 'inherit' });
+function run(script, ...args) {
+  execFileSync(process.execPath, [script, ...args], { cwd: root, stdio: 'inherit' });
+}
+
+/**
+ * Chain versions advance faster than frozen design versions: v1 chains run
+ * the v1 design, v2 and later chains run the frozen v2 design until a v3
+ * design is registered (which extends this mapping explicitly).
+ */
+function designVersion(chainVersion) {
+  return chainVersion >= 2 ? 2 : 1;
 }
 
 function parse(command, specification) {
@@ -51,7 +60,7 @@ function receipt(path) {
 }
 
 function status() {
-  run('scripts/check-lv01-design.mjs');
+  run('scripts/check-lv01-design.mjs', '--version', '1');
   run('scripts/check-lv01-power-qualification.mjs');
   const topology = receipt('reports/research/lv01-topology-qualification.v1.json');
   const report = {
@@ -72,29 +81,55 @@ function status() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-function requirePrerequisites(stage, version) {
-  run('scripts/check-lv01-design.mjs');
+function requireDesign(chainVersion) {
+  run('scripts/check-lv01-design.mjs', '--version', String(designVersion(chainVersion)));
   run('scripts/check-lv01-power-qualification.mjs');
+}
+
+function requireTopology(stage, version) {
   const topologyPath = `reports/research/lv01-topology-qualification.v${version}.json`;
   const topology = receipt(topologyPath);
   if (topology?.passed !== true) fail(`${stage} v${version} is blocked: missing passed topology qualification ${topologyPath}`);
+}
+
+function requireAllocation(stage, version) {
   const allocation = `protocols/lv01-${stage}-resource-allocation.v${version}.json`;
   if (!existsSync(resolve(root, allocation))) fail(`${stage} v${version} is blocked: missing resource allocation ${allocation}`);
-  const registration = `protocols/lv01-${stage}-registration.v${version}.json`;
-  const binding = `protocols/lv01-${stage}-registration-binding.v${version}.json`;
-  if (!existsSync(resolve(root, registration)) || !existsSync(resolve(root, binding))) {
-    fail(`${stage} v${version} is blocked: missing prospective registration or binding`);
+  return allocation;
+}
+
+/** Compile needs design, qualifications, and allocation — never its own outputs. */
+function requireCompileGate(stage, version) {
+  requireDesign(version);
+  requireTopology(stage, version);
+  requireAllocation(stage, version);
+  if (stage === 'confirmatory' || stage === 'replication') {
+    const lock = `reports/research/lv01-design-lock.v${version}.json`;
+    if (!existsSync(resolve(root, lock))) fail(`${stage} v${version} is blocked: main stages require a locked design receipt ${lock}`);
   }
+}
+
+function requirePacket(stage, version) {
+  requireCompileGate(stage, version);
+  const registration = `protocols/lv01-${stage}-registration.v${version}.json`;
+  if (!existsSync(resolve(root, registration))) fail(`${stage} v${version} is blocked: missing prospective registration ${registration}`);
+}
+
+function requireBinding(stage, version) {
+  requirePacket(stage, version);
+  const binding = `protocols/lv01-${stage}-registration-binding.v${version}.json`;
+  if (!existsSync(resolve(root, binding))) fail(`${stage} v${version} is blocked: missing prospective binding ${binding}`);
 }
 
 const command = process.argv[2];
 if (!command) fail('usage: node scripts/lv01.mjs <command> [strict options]');
 
 switch (command) {
-  case 'check-design':
-    parse(command, new Map());
-    run('scripts/check-lv01-design.mjs');
+  case 'check-design': {
+    const options = parse(command, new Map([['--version', true]]));
+    run('scripts/check-lv01-design.mjs', '--version', options.get('--version'));
     break;
+  }
   case 'qualify-numerics':
     parse(command, new Map([['--write', false]]));
     if (existsSync(resolve(root, 'reports/research/lv01-power-qualification.v1.json'))) {
@@ -115,7 +150,7 @@ switch (command) {
     if (stage !== 'development') fail(`${stage} v${version} allocation is blocked until topology qualification and measured resources exist`);
     const allocation = `protocols/lv01-development-resource-allocation.v${version}.json`;
     if (!existsSync(resolve(root, allocation))) fail(`development v${version} allocation requires the bounded allocation packet; no blank packet is created`);
-    run('scripts/check-lv01-development-allocation.mjs', '--version', version);
+    run('scripts/check-lv01-development-allocation.mjs', '--version', String(version));
     fail(`development v${version} allocation is immutable at ${allocation}; no overwrite is permitted`);
     break;
   }
@@ -124,7 +159,7 @@ switch (command) {
     if (stage !== 'development') fail('topology qualification is development-only');
     const allocation = `protocols/lv01-development-resource-allocation.v${version}.json`;
     if (!existsSync(resolve(root, allocation))) fail(`development v${version} topology qualification is blocked: allocation packet is absent`);
-    run('scripts/check-lv01-development-allocation.mjs');
+    run('scripts/check-lv01-development-allocation.mjs', '--version', String(version));
     fail(`development v${version} topology qualification is blocked: the live LV01 runner and matrix receipt are not implemented`);
     break;
   }
@@ -137,26 +172,39 @@ switch (command) {
     console.log(`LV01 topology receipt is present at ${topology}`);
     break;
   }
-  case 'compile':
-  case 'bind': {
+  case 'compile': {
     const { stage, version } = stageArguments(command);
-    requirePrerequisites(stage, version);
-    fail(`${command} is intentionally unavailable until the stage packet schema is implemented`);
+    requireCompileGate(stage, version);
+    run('scripts/compile-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--write');
     break;
   }
-  case 'admit':
+  case 'bind': {
+    const { stage, version } = stageArguments(command);
+    requirePacket(stage, version);
+    run('scripts/bind-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--write');
+    break;
+  }
+  case 'admit': {
+    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--live-evidence', false]]));
+    const stage = options.get('--stage');
+    const version = Number(options.get('--version'));
+    if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
+    requireBinding(stage, version);
+    run('scripts/admit-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--live-evidence');
+    break;
+  }
   case 'audit': {
     const options = parse(command, new Map([['--stage', true], ['--version', true], ['--live-evidence', false]]));
     const stage = options.get('--stage');
     const version = Number(options.get('--version'));
     if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
-    requirePrerequisites(stage, version);
-    fail(`${command} is intentionally unavailable until immutable admission receipts are implemented`);
+    requireBinding(stage, version);
+    fail(`${command} is intentionally unavailable until the audit evidence loader is implemented`);
     break;
   }
   case 'collect': {
     const { stage, version } = stageArguments(command);
-    requirePrerequisites(stage, version);
+    requireBinding(stage, version);
     fail(`collection is unavailable: ${stage} v${version} has no admitted immutable receipt`);
     break;
   }

@@ -79,6 +79,18 @@ export {
   type Lv01ActionDrawScope,
 } from './lv01-action-draw.js';
 export {
+  LV01_STAGE_BINDING_DOMAIN,
+  LV01_STAGE_PACKET_DOMAIN,
+  LV01_STAGE_PRERUN_DOMAIN,
+  admitLv01Stage,
+  bindLv01StagePacket,
+  compileLv01StagePacket,
+  lv01SlotPlanForStage,
+  verifyLv01StageBinding,
+  verifyLv01StagePacket,
+  type Lv01StagePacketInput,
+} from './lv01-stage-packets.js';
+export {
   auditLv01PairedCase,
   LV01_AUDIT_CASE_DOMAIN,
   type Lv01AuditParentBundle,

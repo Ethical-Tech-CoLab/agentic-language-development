@@ -239,6 +239,70 @@ export const Lv01StageStatusReceiptSchema = z.object({
   claimBoundary: nonEmptyString,
 }).strict();
 
+/** Immutable LV01 stage registration: complete identities bound before any run. */
+export const Lv01StagePacketSchema = z.object({
+  schemaVersion: z.literal(1),
+  studyId: z.literal('LV01'),
+  stage: Lv01StageSchema,
+  version: positiveInteger,
+  designVersion: z.union([z.literal(1), z.literal(2)]),
+  designCommitmentHash: hashString,
+  analysisCommitmentHash: hashString,
+  seedResourceCommitmentHash: hashString,
+  sourceCommit: z.string().regex(/^[0-9a-f]{40}$/u),
+  modelIdentity: z.object({
+    architecture: z.literal('gru-actor-critic-v1'),
+    track: z.literal('scratch-rl'),
+    parameterCountPerAgent: z.literal(4049),
+    inputSize: z.literal(50),
+    hiddenSize: z.literal(16),
+  }).strict(),
+  allocation: z.object({ path: nonEmptyString, sha256: hashString }).strict(),
+  qualifications: z.object({
+    designCheck: z.literal('passed'),
+    powerCheck: z.literal('passed'),
+    topology: z.object({ path: nonEmptyString, sha256: hashString, passed: z.literal(true) }).strict(),
+  }).strict(),
+  slotPlan: z.object({ primaries: positiveInteger, reserves: nonNegativeInteger }).strict(),
+  researchFinding: z.literal(false),
+  claimBoundary: nonEmptyString,
+  packetCommitment: hashString,
+}).strict();
+
+/** Pre-run binding: the packet hash re-verified with no outcomes yet. */
+export const Lv01StageBindingSchema = z.object({
+  schemaVersion: z.literal(1),
+  studyId: z.literal('LV01'),
+  stage: Lv01StageSchema,
+  version: positiveInteger,
+  packetCommitment: hashString,
+  sourceCommit: z.string().regex(/^[0-9a-f]{40}$/u),
+  allocationSha256: hashString,
+  preRunCommitment: hashString,
+  researchFinding: z.literal(false),
+  claimBoundary: nonEmptyString,
+  bindingCommitment: hashString,
+}).strict();
+
+/** Immutable admission verdict over verified packet, binding, source, and resources. */
+export const Lv01GateReceiptSchema = z.object({
+  schemaVersion: z.literal(1),
+  studyId: z.literal('LV01'),
+  stage: Lv01StageSchema,
+  version: positiveInteger,
+  packetCommitment: hashString,
+  bindingCommitment: hashString,
+  status: z.enum(['ready', 'blocked']),
+  reasons: z.array(nonEmptyString),
+  researchFinding: z.literal(false),
+  scientificDisposition: Lv01ScientificDispositionSchema,
+  claimBoundary: nonEmptyString,
+}).strict();
+
+export type Lv01StagePacket = z.infer<typeof Lv01StagePacketSchema>;
+export type Lv01StageBinding = z.infer<typeof Lv01StageBindingSchema>;
+export type Lv01GateReceipt = z.infer<typeof Lv01GateReceiptSchema>;
+
 /** Prospectively allocated, role-separated seeds for registered research runs. */
 export const RunSeedBindingsSchema = z
   .object({
