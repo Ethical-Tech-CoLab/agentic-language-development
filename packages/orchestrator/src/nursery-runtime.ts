@@ -80,6 +80,7 @@ import {
   type CheckpointService,
   type Clock,
   type CreateRunOptions,
+  type DeliveredChannelArtifact,
   type EventStream,
   type ExperimentRecord,
   type GatewaySubmitResult,
@@ -109,6 +110,7 @@ import {
   type Sha256Hash,
   type SignerRegistry,
   type StoredAnalysisAttachment,
+  type StoredEvent,
   type SymbolGateway,
   type TurnRecord,
   type VerificationReport,
@@ -123,6 +125,7 @@ import {
   parseCanonicalJson,
   SeededPrng,
   validateChain,
+  verifyHashSignature,
 } from '@ald/hashing';
 import {
   commitProspectivePredictions,
@@ -163,12 +166,14 @@ import {
   HygieneViolationError,
   assertObservationHygiene,
   hashObservation,
+  readGroundTruth,
   registerGeneratorConfig,
 } from '@ald/scenario';
 import {
   RECURRENT_ARCHITECTURE,
   createLearnerAdapterFactory,
   loadLearnerContract,
+  parseExportedRecurrentScratchPolicy,
   promptBundleHash,
   type LearnerAdapterOptions,
   type TrackLearnerContract,
@@ -211,6 +216,14 @@ import {
   scenarioReplayCheck,
   type ScenarioReplayResult,
 } from './replay.js';
+import {
+  LV01_MESSAGE_SCHEDULE_DOMAIN,
+  buildLv01PairedPredictionPayload,
+  deriveLv01LedgerCutoff,
+  mapLv01LedgerAssociations,
+  type Lv01PairedPredictionPayload,
+  type Lv01PairedPredictionProvider,
+} from './experiments/lv01-paired-predictions.js';
 
 /** Internal signal preserving which Baby method exhausted the turn budget. */
 class AdapterTurnDeadlineExceededError extends TurnDeadlineExceededError {
@@ -399,6 +412,13 @@ export interface NurseryRuntimeOptions {
   causalPredictionFor?: (
     config: RunConfig,
   ) => CausalPredictionRuntimeProvider | undefined;
+  /**
+   * LV01 outcome-blind ordinary-record input. Required on runs carrying
+   * `lv01PairedCase`; the runtime commits its fit and vectors pre-action.
+   */
+  lv01PredictionFor?: (
+    config: RunConfig,
+  ) => Lv01PairedPredictionProvider | undefined;
   /**
    * Qualification-only seam invoked after an LV01 paired prediction commitment
    * and its checkpoint, but before the receiver action. It receives hashes
@@ -1331,12 +1351,29 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
               babyB: babyBLedger.map((event) => event.entryHash),
             },
           });
+          const vectors = this.#lv01PairedPredictionVectors(
+            run,
+            turn,
+            receiver,
+            instance,
+            submission.delivery,
+            babyALedger,
+            babyBLedger,
+            receiverPolicyHash,
+          );
           await run.controllerEvidence.appendInterventionEvent({
             runId: run.runId,
             eventType: 'prediction-commitment',
             actorId: this.#actorId,
             reasonCode: 'lv01-paired-pre-receiver-action-prediction-committed',
-            details: { turn, receiver, commitment, ...run.config.lv01PairedCase },
+            details: {
+              turn,
+              receiver,
+              commitment,
+              predictionPayload: vectors.payload,
+              predictionCommitmentV2: vectors.vectorCommitment,
+              ...run.config.lv01PairedCase,
+            },
           });
           await this.#checkpoint(run, 'intervention');
           await this.#options.afterLv01PairedPredictionCommitment?.({
@@ -1418,6 +1455,99 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           }
         : {}),
     };
+  }
+
+  /**
+   * Resolve the LV01 paired-case commit-time inputs and build the durable
+   * vector payload. Fails closed on any missing input: an unbound provider, a
+   * token outside the frozen inventory, unauthenticated ledger records, a
+   * tabular policy export, or a candidate order that disagrees with ground
+   * truth all abort the turn before the receiver acts.
+   */
+  #lv01PairedPredictionVectors(
+    run: RunRuntime,
+    turn: number,
+    receiver: BabyRole,
+    instance: ScenarioInstance,
+    delivery: DeliveredChannelArtifact | null,
+    babyALedger: readonly StoredEvent[],
+    babyBLedger: readonly StoredEvent[],
+    receiverPolicyHash: Sha256Hash,
+  ): { payload: Lv01PairedPredictionPayload; vectorCommitment: string } {
+    const pairedCase = run.config.lv01PairedCase;
+    const provider = this.#lv01PredictionProvider(run.config);
+    if (pairedCase === undefined || provider === undefined) {
+      throw new RunConfigurationError([
+        { path: 'lv01PredictionFor', message: 'LV01 paired prediction inputs are unavailable' },
+      ]);
+    }
+    if (run.config.carrierMode !== 'fixed-token') {
+      throw new RunConfigurationError([
+        { path: 'carrierMode', message: 'LV01 paired prediction requires the fixed-token carrier' },
+      ]);
+    }
+    let deliveredToken: string | null = null;
+    if (delivery !== null) {
+      const symbols = (delivery.publicArtifact as Record<string, unknown>)['symbols'];
+      if (!Array.isArray(symbols) || symbols.length !== 1 || typeof symbols[0] !== 'string') {
+        throw new RunConfigurationError([
+          { path: 'delivery.publicArtifact', message: 'LV01 delivery must carry exactly one token' },
+        ]);
+      }
+      deliveredToken = symbols[0];
+    }
+    const truth = readGroundTruth(instance.groundTruth);
+    if (
+      truth.receiverOrder.length !== instance.candidateRefs.length ||
+      truth.receiverOrder.some((typeCode, index) =>
+        truth.refsByTypeCode[String(typeCode)] !== instance.candidateRefs[index])
+    ) {
+      throw new RunConfigurationError([
+        { path: 'candidateRefs', message: 'LV01 candidate order disagrees with ground truth' },
+      ]);
+    }
+    const receiverLedger = receiver === 'baby-a' ? babyALedger : babyBLedger;
+    const parsed = receiverLedger.map((event) =>
+      LedgerEventSchema.parse(parseCanonicalJson(event.canonicalJson)));
+    const publicKeys = run.signers.publicKeys();
+    const records = mapLv01LedgerAssociations(parsed, receiver, (event) => {
+      const key = publicKeys.find((entry) => entry.keyId === event.writerKeyId);
+      return key !== undefined &&
+        verifyHashSignature(event.entryHash, event.writerSignature, key.publicKey);
+    });
+    const cutoff = deriveLv01LedgerCutoff(records);
+    const frozenModel = parseExportedRecurrentScratchPolicy(
+      run.adapters[receiver].exportPolicy(),
+    ).model;
+    const { payload, commitment } = buildLv01PairedPredictionPayload({
+      branch: pairedCase.branch,
+      predictionTreatment: pairedCase.predictionTreatment,
+      turn,
+      receiver,
+      caseId: `${run.runId}:turn:${String(turn)}`,
+      candidateRefs: instance.candidateRefs,
+      candidateTypeCodes: [...truth.receiverOrder],
+      deliveredToken,
+      symbolInventory: run.symbolInventory,
+      ledgerRecords: records,
+      cutoff,
+      frozenModel,
+      ordinaryId: provider.ordinaryId,
+      ordinaryFit: provider.ordinaryFit,
+      state: {
+        scenarioStateHash: instance.stateHash,
+        receiverPolicyHash,
+        trainingLedgerHeads: {
+          babyA: babyALedger.map((event) => event.entryHash),
+          babyB: babyBLedger.map((event) => event.entryHash),
+        },
+      },
+      scheduleDigest: hashCanonical(
+        LV01_MESSAGE_SCHEDULE_DOMAIN,
+        run.probeSchedule ?? 'no-schedule',
+      ),
+    });
+    return { payload, vectorCommitment: commitment };
   }
 
   async #recordCausalPredictionCommitment(
@@ -4203,6 +4333,28 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       throw new RunConfigurationError([{
         path: 'causalPredictionFor.predictionFunctionVersion',
         message: 'prediction provider does not match the configured function version',
+      }]);
+    }
+    return provider;
+  }
+
+  #lv01PredictionProvider(
+    config: RunConfig,
+  ): Lv01PairedPredictionProvider | undefined {
+    const plan = config.lv01PairedCase;
+    const provider = this.#options.lv01PredictionFor?.(config);
+    if (provider !== undefined && plan === undefined) {
+      throw new RunConfigurationError([
+        {
+          path: 'lv01PredictionFor',
+          message: 'prediction provider requires lv01PairedCase in RunConfig',
+        },
+      ]);
+    }
+    if (plan !== undefined && provider === undefined) {
+      throw new RunConfigurationError([{
+        path: 'lv01PredictionFor',
+        message: 'lv01PairedCase requires the bound ordinary-record prediction provider',
       }]);
     }
     return provider;

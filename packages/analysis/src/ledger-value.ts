@@ -17,9 +17,25 @@ export interface Lv01OrdinaryRecord {
   /** The observed receiver action position; not the researcher-only task target. */
   readonly actualSelectedCandidateIndex: number;
 }
+/** Serializable fitted state so a pre-action commitment can persist the ordinary vector's fit. */
+export interface Lv01CountFit {
+  readonly kind: 'count';
+  readonly marginal: readonly number[];
+  readonly byToken: Readonly<Record<string, readonly number[]>>;
+  readonly byTokenType: Readonly<Record<string, readonly number[]>>;
+}
+export interface Lv01SoftmaxFit {
+  readonly kind: 'softmax';
+  readonly weights: readonly number[];
+}
+export interface Lv01UniformFit {
+  readonly kind: 'uniform';
+}
+export type Lv01OrdinaryFit = Lv01CountFit | Lv01SoftmaxFit | Lv01UniformFit;
 export interface Lv01OrdinaryPredictor {
   readonly id: Lv01OrdinaryPredictorId;
   readonly receiverRole: 'baby-a' | 'baby-b';
+  readonly fit: Lv01OrdinaryFit;
   readonly probabilitiesFor: (record: Omit<Lv01OrdinaryRecord, 'actualSelectedCandidateIndex'>) => number[];
 }
 export interface Lv01OrdinarySelection {
@@ -85,16 +101,29 @@ function countModel(id: Lv01OrdinaryPredictorId, role: 'baby-a' | 'baby-b', rows
     const typeCounts = byTokenType.get(key) ?? Array.from({ length: TYPES }, () => 1);
     typeCounts[selectedType]! += 1; byTokenType.set(key, typeCounts);
   }
+  const fit: Lv01OrdinaryFit = id === 'uniform'
+    ? { kind: 'uniform' }
+    : { kind: 'count', marginal: [...marginal], byToken: Object.fromEntries(byToken), byTokenType: Object.fromEntries(byTokenType) };
+  return { id, receiverRole: role, fit, probabilitiesFor: (record) => scoreLv01OrdinaryFit(id, fit, record, inventory) };
+}
+/** Pure scorer shared by fitted predictors and the pre-action commitment auditor. */
+export function scoreLv01OrdinaryFit(id: Lv01OrdinaryPredictorId, fit: Lv01OrdinaryFit, record: Omit<Lv01OrdinaryRecord, 'actualSelectedCandidateIndex'>, inventory: readonly string[]): number[] {
+  assertRecord({ ...record, actualSelectedCandidateIndex: 0 }, inventory);
   const normalize = (counts: readonly number[]) => { const total = counts.reduce((a, b) => a + b, 0); return counts.map((x) => x / total); };
-  return { id, receiverRole: role, probabilitiesFor: (record) => {
-    assertRecord({ ...record, actualSelectedCandidateIndex: 0 }, inventory);
-    if (id === 'uniform') return Array.from({ length: CANDIDATES }, () => 1 / CANDIDATES);
-    if (id === 'validation-majority') return normalize(marginal);
-    const key = record.deliveredToken ?? '<disabled>';
-    if (id === 'transcript-only') return normalize(byToken.get(key) ?? Array.from({ length: CANDIDATES }, () => 1));
-    const counts = byTokenType.get(key) ?? Array.from({ length: TYPES }, () => 1);
-    return normalize(record.candidateTypeCodes.map((type) => counts[type]!));
-  }};
+  if (id === 'uniform' || fit.kind === 'uniform') {
+    if (fit.kind !== 'uniform') fail('uniform ordinary fit is inconsistent');
+    return Array.from({ length: CANDIDATES }, () => 1 / CANDIDATES);
+  }
+  if (fit.kind === 'softmax') {
+    if (fit.weights.length !== COEFFICIENTS) fail('softmax ordinary fit has invalid weights');
+    return softmax(Array.from({ length: CANDIDATES }, (_, position) => featureIndices(record, position, inventory).reduce((sum, index) => sum + (fit.weights[index] as number), 0)));
+  }
+  if (fit.marginal.length !== CANDIDATES) fail('count ordinary fit is inconsistent');
+  if (id === 'validation-majority') return normalize(fit.marginal);
+  const key = record.deliveredToken ?? '<disabled>';
+  if (id === 'transcript-only') return normalize(fit.byToken[key] ?? Array.from({ length: CANDIDATES }, () => 1));
+  const counts = fit.byTokenType[key] ?? Array.from({ length: TYPES }, () => 1);
+  return normalize(record.candidateTypeCodes.map((type) => counts[type]!));
 }
 function featureIndices(record: Omit<Lv01OrdinaryRecord, 'actualSelectedCandidateIndex'>, position: number, inventory: readonly string[]): number[] {
   const type = record.candidateTypeCodes[position]!; const token = tokenIndex(record.deliveredToken, inventory);
@@ -110,7 +139,8 @@ function softmaxModel(role: 'baby-a' | 'baby-b', rows: readonly Lv01OrdinaryReco
     }
     for (let index = 0; index < weights.length; index += 1) weights[index]! -= 0.05 * (gradient[index]! / rows.length + (index === 0 ? 0 : 0.01 * weights[index]!));
   }
-  return { id: 'ordinary-record-softmax', receiverRole: role, probabilitiesFor: (record) => softmax(Array.from({ length: CANDIDATES }, (_, position) => featureIndices(record, position, inventory).reduce((sum, index) => sum + weights[index]!, 0))) };
+  const fit: Lv01OrdinaryFit = { kind: 'softmax', weights: [...weights] };
+  return { id: 'ordinary-record-softmax', receiverRole: role, fit, probabilitiesFor: (record) => scoreLv01OrdinaryFit('ordinary-record-softmax', fit, record, inventory) };
 }
 
 /** Fit/choose ordinary predictors only on the allowed validation windows. */

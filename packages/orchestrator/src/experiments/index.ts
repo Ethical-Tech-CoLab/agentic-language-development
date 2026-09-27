@@ -51,6 +51,21 @@ export {
   type Lv01StageJournal,
 } from './ledger-value.js';
 export {
+  LV01_MESSAGE_SCHEDULE_DOMAIN,
+  LV01_ORDINARY_FIT_DOMAIN,
+  LV01_PAIRED_PREDICTION_COMMITMENT_DOMAIN,
+  buildLv01PairedPredictionPayload,
+  deriveLv01LedgerCutoff,
+  mapLv01LedgerAssociations,
+  verifyLv01PairedPredictionPayload,
+  type Lv01LedgerAuthenticate,
+  type Lv01PairedPredictionAuditInput,
+  type Lv01PairedPredictionBuildInput,
+  type Lv01PairedPredictionPayload,
+  type Lv01PairedPredictionProvider,
+  type Lv01PairedPredictionState,
+} from './lv01-paired-predictions.js';
+export {
   acquireLv01JournalLock,
   appendLv01Journal,
   initializeLv01Journal,

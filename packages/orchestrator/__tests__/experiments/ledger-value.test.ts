@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildRunConfig } from '@ald/lifecycle';
+import { fixedTokenInventory } from '@ald/types';
 import { LV01_BRANCHES, assessLv01Admission, captureLv01SlotTerminal, createLv01PairedCasePlan, createLv01StageJournal, finalizeLv01Stage, transitionLv01Slot, verifyLv01PairedCase } from '../../src/experiments/ledger-value.js';
 import { createHarness, testConfig } from '../helpers.js';
 describe('LV01 paired collector gates', () => {
@@ -65,6 +66,7 @@ describe('LV01 paired collector gates', () => {
   it('leaves an LV01 commitment-to-action crash unrecoverable without a blind retry', async () => {
     let reached = false;
     const harness = await createHarness({
+      lv01PredictionFor: () => ({ ordinaryId: 'uniform', ordinaryFit: { kind: 'uniform' } }),
       afterLv01PairedPredictionCommitment: async () => {
         reached = true;
         throw new Error('qualification-stop-after-lv01-prediction');
@@ -93,6 +95,23 @@ describe('LV01 paired collector gates', () => {
         childRunIdPrefix: 'lv01-fault-child',
       }).branches[0]!.config;
       await harness.runtime.createRun(child);
+      const seedToken = fixedTokenInventory(32)[2] as string;
+      await harness.runtime.writerFor(child.runId).appendLedgerEvent({
+        runId: child.runId,
+        babyId: 'B',
+        turn: 0,
+        draft: {
+          eventType: 'hypothesis.created',
+          contentSchema: 'agent-native-ledger',
+          subjectId: `symbol:${seedToken}`,
+          content: {
+            hypothesisRef: `hyp:${seedToken}:1`,
+            termRef: `symbol:${seedToken}`,
+            associationOverTypeCodes: Array.from({ length: 16 }, () => 0),
+          },
+          blindingNonce: 'test-nonce',
+        },
+      });
       await expect(harness.runtime.step(child.runId)).rejects.toThrow(
         'qualification-stop-after-lv01-prediction',
       );
