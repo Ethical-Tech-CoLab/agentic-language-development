@@ -138,6 +138,16 @@ export {
   type Lv01TreatmentSlice,
 } from './lv01-ledger-treatments.js';
 export {
+  LV01_SCHEDULE_PARTITIONS,
+  buildLv01Schedule,
+  scheduleCaseId,
+  scheduledCaseFor,
+  verifyLv01ScheduleCoverage,
+  type Lv01Schedule,
+  type Lv01ScheduleCounts,
+  type Lv01ScheduledCase,
+} from './lv01-schedule.js';
+export {
   acquireLv01JournalLock,
   appendLv01Journal,
   initializeLv01Journal,
