@@ -79,6 +79,14 @@ export {
   type Lv01ActionDrawScope,
 } from './lv01-action-draw.js';
 export {
+  checkLv01BranchOrderStability,
+  type Lv01BranchDigest,
+} from './lv01-order-check.js';
+export {
+  extractLv01PolicySnapshots,
+  type Lv01PolicySnapshotRef,
+} from './lv01-snapshots.js';
+export {
   LV01_LEDGER_TREATMENT_BATCH_DOMAIN,
   buildLedgerTreatmentBatch,
   ledgerShuffledDerangement,

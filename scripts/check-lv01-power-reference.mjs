@@ -30,7 +30,7 @@ const reference = new Map(referenceLines.map((line) => {
   const [n, component, critical, power] = line.split(',');
   return [`${n}/${component}`, { critical: Number(critical), power: Number(power) }];
 }));
-const selection = selectLv01Power(pilot, 'lv01-power-reference-fixture/v1');
+const selection = selectLv01Power(pilot, 'lv01-power-reference-fixture/v2');
 assert.deepEqual(selection.rows.map((row) => row.dyads), LV01_CANDIDATE_DYADS);
 let comparisons = 0;
 for (const row of selection.rows) {

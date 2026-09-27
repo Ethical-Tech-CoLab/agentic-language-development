@@ -1,8 +1,9 @@
 /** Outcome-safe ordinary-record predictors and LV01 analysis primitives. */
 import { AnalysisError } from './errors.js';
 import { holmBonferroni, oneSampleTTest } from './hypothesis.js';
+import { studentTQuantile } from './special.js';
 
-export const LV01_ANALYSIS_VERSION = 'lv01-analysis/v1' as const;
+export const LV01_ANALYSIS_VERSION = 'lv01-analysis/v2' as const;
 export const LV01_ORDINARY_PREDICTOR_IDS = [
   'uniform', 'validation-majority', 'transcript-only', 'task-history',
   'ordinary-record-softmax',
@@ -106,6 +107,26 @@ function countModel(id: Lv01OrdinaryPredictorId, role: 'baby-a' | 'baby-b', rows
     : { kind: 'count', marginal: [...marginal], byToken: Object.fromEntries(byToken), byTokenType: Object.fromEntries(byTokenType) };
   return { id, receiverRole: role, fit, probabilitiesFor: (record) => scoreLv01OrdinaryFit(id, fit, record, inventory) };
 }
+/**
+ * Unsigned-log sanity: the committed ordinary vectors must equal a fresh
+ * recomputation from the unsigned transcript records plus the committed fit.
+ * This is a pipeline-integrity check, not the treatment test.
+ */
+export function verifyLv01OrdinaryTranscriptMatch(input: {
+  readonly id: Lv01OrdinaryPredictorId;
+  readonly fit: Lv01OrdinaryFit;
+  readonly inventory: readonly string[];
+  readonly records: readonly (Omit<Lv01OrdinaryRecord, 'actualSelectedCandidateIndex'> & { readonly committedDistribution: readonly number[] })[];
+}): void {
+  if (input.records.length === 0) fail('unsigned-log sanity requires at least one record');
+  for (const record of input.records) {
+    const { committedDistribution, ...unsigned } = record;
+    const recomputed = scoreLv01OrdinaryFit(input.id, input.fit, unsigned, input.inventory);
+    if (recomputed.length !== committedDistribution.length || recomputed.some((value, index) => value !== committedDistribution[index])) {
+      fail(`ordinary transcript mismatch on case ${record.caseId}`);
+    }
+  }
+}
 /** Pure scorer shared by fitted predictors and the pre-action commitment auditor. */
 export function scoreLv01OrdinaryFit(id: Lv01OrdinaryPredictorId, fit: Lv01OrdinaryFit, record: Omit<Lv01OrdinaryRecord, 'actualSelectedCandidateIndex'>, inventory: readonly string[]): number[] {
   assertRecord({ ...record, actualSelectedCandidateIndex: 0 }, inventory);
@@ -159,7 +180,7 @@ export function selectLv01OrdinaryPredictor(input: {
   const scores = Object.fromEntries(candidates.map((model) => [model.id, meanBrier(model, input.validationSelection)])) as Record<Lv01OrdinaryPredictorId, number>;
   const selectedPredictorId = candidates.reduce((best, model) => scores[model.id] < scores[best.id] - EPS ? model : best).id;
   const refitRows = [...combined, ...input.validationSelection];
-  const refit = selectedPredictorId === 'uniform' ? countModel('uniform', role, [], input.inventory) : selectedPredictorId === 'validation-majority' ? countModel(selectedPredictorId, role, [...input.validationFit, ...input.validationSelection], input.inventory) : selectedPredictorId === 'ordinary-record-softmax' ? softmaxModel(role, refitRows, input.inventory) : countModel(selectedPredictorId, role, refitRows, input.inventory);
+  const refit = selectedPredictorId === 'uniform' ? countModel('uniform', role, [], input.inventory) : selectedPredictorId === 'validation-majority' ? countModel(selectedPredictorId, role, refitRows, input.inventory) : selectedPredictorId === 'ordinary-record-softmax' ? softmaxModel(role, refitRows, input.inventory) : countModel(selectedPredictorId, role, refitRows, input.inventory);
   return { selectedPredictorId, validationBrierByPredictor: scores, candidatePredictors: candidates, refitPredictor: refit };
 }
 
@@ -191,11 +212,13 @@ export function scoreLv01Prediction(input: Lv01PredictionComparison): Lv01Predic
   return { nativeBrier: brier(input.nativeDistribution, action), replayBrier: brier(input.replayDistribution, action), expectedExcessReplayBrier: input.nativeDistribution.reduce((sum, value, index) => sum + (value - input.replayDistribution[index]!) ** 2, 0), replayTargetActionProbability: input.replayDistribution[target]! };
 }
 
-export const LV01_COMPONENT_IDS = ['fidelity', 'disabled', 'constant', 'random', 'shuffled', 'intervention'] as const;
+export const LV01_COMPONENT_IDS = ['incremental', 'fidelity', 'disabled', 'constant', 'random', 'shuffled', 'intervention'] as const;
 export type Lv01ComponentId = (typeof LV01_COMPONENT_IDS)[number];
-const BOUNDARY: Record<Lv01ComponentId, number> = { fidelity: -0.02, disabled: 0.05, constant: 0.05, random: 0.05, shuffled: 0.05, intervention: 0.05 };
+export type Lv01FamilyMemberId = 'LV-U' | 'LV-P' | 'LV-C' | 'LV-L';
+const BOUNDARY: Record<Lv01ComponentId, number> = { incremental: 0.02, fidelity: -0.02, disabled: 0.05, constant: 0.05, random: 0.05, shuffled: 0.05, intervention: 0.05 };
 export interface Lv01SeedComponentValues { readonly seedId: string; readonly byRole: Readonly<Record<'baby-a' | 'baby-b', Readonly<Partial<Record<Lv01ComponentId, readonly number[]>>>>>; }
-export interface Lv01FamilyResult { readonly memberPValues: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', number>>; readonly adjustedPValues: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', number>>; readonly dispositions: Readonly<Record<'LV-P' | 'LV-C' | 'LV-L', 'supported' | 'not-supported' | 'inconclusive'>>; readonly seedStatistics: Readonly<Record<string, Readonly<Record<Lv01ComponentId, number>>>>; }
+export interface Lv01ComponentInterval { readonly marginal95: { readonly lower: number; readonly upper: number }; readonly simultaneousLowerBound: number; readonly degenerate: boolean; }
+export interface Lv01FamilyResult { readonly memberPValues: Readonly<Record<Lv01FamilyMemberId, number>>; readonly adjustedPValues: Readonly<Record<Lv01FamilyMemberId, number>>; readonly dispositions: Readonly<Record<Lv01FamilyMemberId, 'supported' | 'not-supported' | 'inconclusive'>>; readonly seedStatistics: Readonly<Record<string, Readonly<Record<Lv01ComponentId, number>>>>; readonly componentIntervals: Readonly<Record<Lv01ComponentId, Lv01ComponentInterval>>; }
 /** Equal-role seed reduction plus LV01's fixed component/member/Holm procedure. */
 export function analyzeLv01Family(rows: readonly Lv01SeedComponentValues[]): Lv01FamilyResult {
   if (rows.length < 2 || new Set(rows.map((row) => row.seedId)).size !== rows.length) fail('LV01 analysis requires at least two unique seeds');
@@ -210,8 +233,26 @@ export function analyzeLv01Family(rows: readonly Lv01SeedComponentValues[]): Lv0
     statistics[row.seedId] = reduced;
   }
   const tests = Object.fromEntries(LV01_COMPONENT_IDS.map((component) => [component, oneSampleTTest(rows.map((row) => statistics[row.seedId]![component]), BOUNDARY[component], 'greater')])) as Record<Lv01ComponentId, ReturnType<typeof oneSampleTTest>>;
-  const raw = [tests.fidelity.p, Math.max(tests.disabled.p, tests.constant.p, tests.random.p, tests.shuffled.p), tests.intervention.p];
-  if (tests.fidelity.degenerate || tests.disabled.degenerate || tests.constant.degenerate || tests.random.degenerate || tests.shuffled.degenerate || tests.intervention.degenerate) return { memberPValues: { 'LV-P': 1, 'LV-C': 1, 'LV-L': 1 }, adjustedPValues: { 'LV-P': 1, 'LV-C': 1, 'LV-L': 1 }, dispositions: { 'LV-P': 'inconclusive', 'LV-C': 'inconclusive', 'LV-L': 'inconclusive' }, seedStatistics: statistics };
-  const holm = holmBonferroni(raw, 0.05); const members = ['LV-P', 'LV-C', 'LV-L'] as const;
-  return { memberPValues: Object.fromEntries(members.map((id, index) => [id, raw[index]!])) as Lv01FamilyResult['memberPValues'], adjustedPValues: Object.fromEntries(members.map((id, index) => [id, holm.adjusted[index]!])) as Lv01FamilyResult['adjustedPValues'], dispositions: Object.fromEntries(members.map((id, index) => [id, holm.adjusted[index]! < 0.05 ? 'supported' : 'not-supported'])) as Lv01FamilyResult['dispositions'], seedStatistics: statistics };
+  // Zero-variance components carry no sampling evidence: p = 1 with a flagged
+  // interval, and only the member they determine turns inconclusive.
+  const componentP = (component: Lv01ComponentId): number => tests[component].degenerate ? 1 : tests[component].p;
+  const controlIds: readonly Lv01ComponentId[] = ['disabled', 'constant', 'random', 'shuffled'];
+  const controlArgmax = controlIds.reduce((best, id) => componentP(id) > componentP(best) ? id : best);
+  const raw: Record<Lv01FamilyMemberId, number> = { 'LV-U': componentP('incremental'), 'LV-P': componentP('fidelity'), 'LV-C': componentP(controlArgmax), 'LV-L': componentP('intervention') };
+  const members: readonly Lv01FamilyMemberId[] = ['LV-U', 'LV-P', 'LV-C', 'LV-L'];
+  const holm = holmBonferroni(members.map((id) => raw[id]), 0.05);
+  const inconclusive: Record<Lv01FamilyMemberId, boolean> = { 'LV-U': tests.incremental.degenerate, 'LV-P': tests.fidelity.degenerate, 'LV-C': tests[controlArgmax].degenerate, 'LV-L': tests.intervention.degenerate };
+  const intervals = Object.fromEntries(LV01_COMPONENT_IDS.map((component) => {
+    const test = tests[component];
+    const marginal = studentTQuantile(0.975, test.df) * test.se;
+    const simultaneous = studentTQuantile(1 - 0.05 / LV01_COMPONENT_IDS.length, test.df) * test.se;
+    return [component, { marginal95: { lower: test.mean - marginal, upper: test.mean + marginal }, simultaneousLowerBound: test.mean - simultaneous, degenerate: test.degenerate }];
+  })) as Record<Lv01ComponentId, Lv01ComponentInterval>;
+  return {
+    memberPValues: Object.fromEntries(members.map((id) => [id, raw[id]])) as Lv01FamilyResult['memberPValues'],
+    adjustedPValues: Object.fromEntries(members.map((id, index) => [id, holm.adjusted[index]!])) as Lv01FamilyResult['adjustedPValues'],
+    dispositions: Object.fromEntries(members.map((id, index) => [id, inconclusive[id] ? 'inconclusive' : holm.adjusted[index]! < 0.05 ? 'supported' : 'not-supported'])) as Lv01FamilyResult['dispositions'],
+    seedStatistics: statistics,
+    componentIntervals: intervals,
+  };
 }
