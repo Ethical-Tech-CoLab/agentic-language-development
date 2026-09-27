@@ -10,7 +10,15 @@ one row. Numbers without a row are removed from the manuscript.
 
 | Claim ID | Manuscript location | Statement | Evidence path | Digest | Verdict |
 |---|---|---|---|---|---|
-| C-`TBD` | `TBD` §/table/cell | `TBD` | `TBD` | TBD | TBD (supported / unsupported / null-as-reported) |
+| M-DESIGN | draft §5.1 | LV01 v2 design/analysis/seed-profile/amendment packets are the frozen R03 design record (commit `9be6e536`); self-declared draft-not-registered, authorizing no run | `protocols/lv01-study-design.v2.json`, `protocols/lv01-analysis-plan.v2.json`, `protocols/lv01-seed-resource-policy.v2.json`, `protocols/lv01-prototype-execution-profile.v2.json`, `protocols/lv01-direction-amendment.v2.json` | `8fa62f2d…`, `87be303e…`, `2c3c483c…`, `3880e72b…`, `8d661ca1…` (full SHA-256 in §5.1) | frozen-design (not empirical) |
+| M-TASK | draft §5.2 | Task/partition, learner-hyperparameter, and channel facts as stated | `protocols/lv01-study-design.v2.json` (§§task/learner/channel) | `sha256:8fa62f2d8b32f2dfadf0db6450e4687dd9bb85e93824afbb4827edb345cb4743` | frozen-design (not empirical) |
+| M-EXEC | draft §5.3 | Prototype execution/separation/retention/commitment/draw/branch/audit rules as stated; logical separation only, no side-channel claim | `protocols/lv01-prototype-execution-profile.v2.json`, `protocols/lv01-study-design.v2.json` (§§execution/evaluation) | `sha256:3880e72bc37ddb6cb94094399bf22dcec327777fb387158e4488590292653c86` | frozen-design (not empirical) |
+| M-PRED | draft §5.4 | Ten-predictor set, ordinary-record window/selection/refit, Brier scoring as stated | `protocols/lv01-analysis-plan.v2.json` (§§nativePredictor/predictors/ordinaryRecordWindow/score) | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` | frozen-design (not empirical) |
+| M-FAMILY | draft §5.5 | Four-member/seven-component family, margins, Holm/t/inference and invalidity rules as stated | `protocols/lv01-analysis-plan.v2.json` (§§family/invalidity/interpretation) + `protocols/confirmatory-practical-margins.v1.json` (H4 margin lineage) | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` | frozen-design (not empirical) |
+| M-SEED | draft §5.6 | Seed derivation, stage rules, six candidate Ns, union-bound selector arithmetic, reserve/repeat rules as stated; locked N and R unselected | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:2c3c483c7b44c3072fa72c2c9f285c14062db75d7ff2d135288ac477edb84d07` | frozen-design (not empirical) |
+| M-OC | draft §5.7 | Operating-characteristic simulation cases and ≤0.055 gate as stated; validation receipt pending R06/R08 | `plans/first-publication-implementation-handoff.md` §8 | committed planning source (no receipt yet) | method-specified (not run) |
+| M-COST | draft §5.8 | Cost/mutation-challenge methods and global ceilings as stated; all measured values pending R06–R10 | `plans/research-validation-plan.md` §4.5, `plans/first-publication-implementation-handoff.md` §7, `protocols/lv01-seed-resource-policy.v2.json` (§resources) | committed sources (no measurements yet) | method-specified (not run) |
+| C-`TBD` | `TBD` §/table/cell | `TBD` (empirical claims populate only from sealed R09/R10 evidence) | `TBD` | TBD | TBD (supported / unsupported / null-as-reported) |
 
 Explicit non-claims (stated in the paper so readers do not infer them):
 
