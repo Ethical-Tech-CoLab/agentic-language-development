@@ -16,8 +16,10 @@ import {
   decodeHash,
   deriveSeedHex,
   domainHash,
+  drawIndexFromUnit,
   encodeHash,
   generateEd25519KeyPair,
+  unitBitsHex,
   hashCarrierMark,
   isSha256Hash,
   parseCanonicalJson,
@@ -195,5 +197,35 @@ describe('signer registry', () => {
     expect(
       InMemorySignerRegistry.generate('run-2').publicKeys()[0]?.publicKey,
     ).not.toBe(keys[0]?.publicKey);
+  });
+});
+
+describe('shared unit draws', () => {
+  it('selects by inverse CDF over the supplied draw', () => {
+    const weights = [0.1, 0.2, 0.3, 0.4];
+    expect(drawIndexFromUnit(weights, 0)).toBe(0);
+    expect(drawIndexFromUnit(weights, 0.05)).toBe(0);
+    expect(drawIndexFromUnit(weights, 0.1)).toBe(1);
+    expect(drawIndexFromUnit(weights, 0.35)).toBe(2);
+    expect(drawIndexFromUnit(weights, 0.99)).toBe(3);
+  });
+
+  it('resolves the all-zero fallback over the same draw', () => {
+    expect(drawIndexFromUnit([0, 0, 0, 0], 0)).toBe(0);
+    expect(drawIndexFromUnit([0, 0, 0, 0], 0.5)).toBe(2);
+    expect(drawIndexFromUnit([0, 0, 0, 0], 0.99)).toBe(3);
+  });
+
+  it('rejects draws outside [0, 1) and negative weights', () => {
+    expect(() => drawIndexFromUnit([1, 1], 1)).toThrow(/\[0, 1\)/u);
+    expect(() => drawIndexFromUnit([1, 1], -0.1)).toThrow(/\[0, 1\)/u);
+    expect(() => drawIndexFromUnit([1, -1], 0.5)).toThrow(/non-negative/u);
+    expect(() => unitBitsHex(1)).toThrow(/\[0, 1\)/u);
+  });
+
+  it('commits exact float64 bits deterministically', () => {
+    expect(unitBitsHex(0)).toBe('0000000000000000');
+    expect(unitBitsHex(0.5)).toBe('3fe0000000000000');
+    expect(unitBitsHex(new SeededPrng('x').nextFloat())).toMatch(/^[0-9a-f]{16}$/u);
   });
 });

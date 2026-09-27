@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { fixedTokenInventory } from '@ald/types';
 
 import { createLv01PairedCasePlan } from '../../src/experiments/ledger-value.js';
+import { verifyLv01ActionDraw } from '../../src/experiments/lv01-action-draw.js';
 import { createHarness, testConfig, type Harness } from '../helpers.js';
 
 const LEDGER_VALUE_PLAN = {
@@ -31,10 +32,19 @@ describe('LV01 paired prediction production evidence', () => {
           : { ordinaryId: 'uniform', ordinaryFit: { kind: 'uniform' } },
     });
 
+    const rootSeed = `sha256:${'7'.repeat(64)}`;
     const parent = testConfig({
       runId: 'lv01-paired-prediction-parent',
       experimentId: 'LV01',
-      randomSeed: 'lv01-paired-prediction-parent-seed',
+      randomSeed: rootSeed,
+      seedBindings: {
+        version: 1,
+        scenario: rootSeed,
+        babyA: `sha256:${'1'.repeat(64)}`,
+        babyB: `sha256:${'2'.repeat(64)}`,
+        gateway: `sha256:${'3'.repeat(64)}`,
+        analysis: `sha256:${'4'.repeat(64)}`,
+      },
       babyA: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
       babyB: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
       learningSignal: 'extrinsic-task',
@@ -63,6 +73,7 @@ describe('LV01 paired prediction production evidence', () => {
       babyAInitialPolicyRef: 'policies/baby-a-latest.json',
       babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-prediction-child',
+      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
       ledgerTreatments: {
         'ledger-consistent': { ...ledgerSlice },
         'ledger-shuffled': { ...ledgerSlice },
@@ -124,5 +135,37 @@ describe('LV01 paired prediction production evidence', () => {
     expect(
       (commitments[0]?.recordedAt ?? '') < (records[0]?.recordedAt ?? ''),
     ).toBe(true);
+
+    const log = harness.runtime.auditLog(child.runId);
+    const drawCommitments = log.filter(
+      (event) => event.reasonCode === 'lv01-shared-action-draw-committed',
+    );
+    expect(drawCommitments).toHaveLength(1);
+    const drawDetails = drawCommitments[0]?.details as Record<string, unknown>;
+    expect(drawDetails['drawCommitment']).toMatch(/^sha256:/u);
+    expect(JSON.stringify(drawDetails)).not.toContain(child.seedBindings?.actionDraw ?? 'none');
+    expect(
+      (drawCommitments[0]?.recordedAt ?? '') < (records[0]?.recordedAt ?? ''),
+    ).toBe(true);
+
+    const disclosures = log.filter(
+      (event) => event.reasonCode === 'lv01-shared-action-draw-disclosed',
+    );
+    expect(disclosures).toHaveLength(1);
+    const disclosure = disclosures[0]?.details as {
+      uBitsHex: string;
+      probs: readonly number[];
+      candidateRefs: readonly string[];
+      selectedCandidateRef: string;
+    };
+    expect(disclosure.probs).toHaveLength(disclosure.candidateRefs.length);
+    expect(
+      (disclosures[0]?.recordedAt ?? '') > (drawCommitments[0]?.recordedAt ?? ''),
+    ).toBe(true);
+    verifyLv01ActionDraw({
+      drawSeed: child.seedBindings?.actionDraw ?? '',
+      turn: 0,
+      disclosure,
+    });
   });
 });

@@ -712,6 +712,13 @@ export interface TurnBudget {
   availableActions: AgentActionProposal['kind'][];
   /** Opaque object references the receiver may select (receiver role only). */
   candidateRefs?: string[];
+  /**
+   * LV01 shared action draw in [0, 1): the receiver selects by inverse CDF
+   * over this draw instead of its private stream. Selection-only: it never
+   * enters observations or the posterior, and the adapter discloses the
+   * sampling vector it selected from.
+   */
+  sharedActionDrawU?: number;
   /** SPEC §9.3: set when this call is an open affect window, not a task turn. */
   window?: AffectWindow;
 }

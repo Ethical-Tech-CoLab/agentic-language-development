@@ -199,6 +199,15 @@ export const Lv01PairedCaseSchema = z.object({
     batchCommitment: hashString,
     sourceCaseId: nonEmptyString,
   }).strict().optional(),
+  actionDraw: z.object({
+    stage: z.enum(['development', 'qualification', 'shadow', 'generalization', 'pilot']),
+    slotKind: z.enum(['primary', 'reserve']),
+    slotIndex: z.string().regex(/^\d{4}$/u),
+    partition: z.enum(['dev', 'within-support', 'novel-composition']),
+    receiverRole: z.enum(['baby-a', 'baby-b']),
+    caseId: nonEmptyString,
+    drawSeedCommitment: hashString,
+  }).strict().optional(),
 }).strict();
 
 /** LV01 stage artifacts distinguish execution accounting from research results. */
@@ -239,6 +248,7 @@ export const RunSeedBindingsSchema = z
     babyB: hashString,
     gateway: hashString,
     analysis: hashString,
+    actionDraw: hashString.optional(),
   })
   .strict();
 
@@ -594,6 +604,7 @@ export const TurnProposalEnvelopeSchema = z
   .object({
     proposal: AgentActionProposalSchema,
     privateLedgerDraft: LedgerEventDraftSchema,
+    selectionProbs: z.array(z.number()).optional(),
   })
   .strict();
 

@@ -17,8 +17,17 @@ describe('LV01 paired collector gates', () => {
     }, 'audit', 'bundle verification failed')).toThrow(/resource/u);
   });
   it('compiles all branches as derived runs from one immutable recurrent state', () => {
+    const rootSeed = `sha256:${'f'.repeat(64)}`;
     const parent = buildRunConfig({
-      runId: 'lv01-parent', experimentId: 'LV01', randomSeed: 'scenario-seed',
+      runId: 'lv01-parent', experimentId: 'LV01', randomSeed: rootSeed,
+      seedBindings: {
+        version: 1,
+        scenario: rootSeed,
+        babyA: `sha256:${'1'.repeat(64)}`,
+        babyB: `sha256:${'2'.repeat(64)}`,
+        gateway: `sha256:${'3'.repeat(64)}`,
+        analysis: `sha256:${'4'.repeat(64)}`,
+      },
       babyA: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
       babyB: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
       ledgerValuePlan: {
@@ -43,6 +52,7 @@ describe('LV01 paired collector gates', () => {
       babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-case',
       ledgerTreatments: { 'ledger-consistent': slice, 'ledger-shuffled': slice },
+      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
     });
     expect(plan.preStateCommitment).toMatch(/^sha256:/u);
     expect(plan.branches.map((entry) => entry.branch)).toEqual(LV01_BRANCHES);
@@ -64,11 +74,34 @@ describe('LV01 paired collector gates', () => {
       .toBe('ledger-consistent');
     expect(plan.branches.find((entry) => entry.branch === 'ledger-shuffled')?.communicationCondition)
       .toBe('normal');
+    const drawSeeds = plan.branches.map((entry) => entry.config.seedBindings?.actionDraw);
+    expect(new Set(drawSeeds).size).toBe(1);
+    expect(drawSeeds[0]).toMatch(/^[0-9a-f]{64}$/u);
+    expect(plan.branches.map((entry) => entry.config.lv01PairedCase?.actionDraw)).toEqual(
+      LV01_BRANCHES.map(() => expect.objectContaining({
+        stage: 'development',
+        slotKind: 'primary',
+        slotIndex: '0001',
+        partition: 'dev',
+        receiverRole: 'baby-b',
+        caseId: 'lv01-paired-case:turn:0',
+      })),
+    );
     expect(() => createLv01PairedCasePlan({ ...{
       parent, parentCheckpointHash: `sha256:${'d'.repeat(64)}`,
       babyAInitialPolicyRef: 'bad-ref', babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-case',
+      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
     } })).toThrow(/policy reference/u);
+    expect(() => createLv01PairedCasePlan({
+      parent: { ...parent, seedBindings: undefined },
+      parentCheckpointHash: `sha256:${'d'.repeat(64)}`,
+      babyAInitialPolicyRef: 'policies/baby-a-latest.json',
+      babyBInitialPolicyRef: 'policies/baby-b-latest.json',
+      childRunIdPrefix: 'lv01-paired-case',
+      ledgerTreatments: { 'ledger-consistent': slice, 'ledger-shuffled': slice },
+      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
+    })).toThrow(/seed bindings/u);
   });
   it('leaves an LV01 commitment-to-action crash unrecoverable without a blind retry', async () => {
     let reached = false;
@@ -80,8 +113,17 @@ describe('LV01 paired collector gates', () => {
       },
     });
     try {
+      const faultRoot = `sha256:${'9'.repeat(64)}`;
       const parent = testConfig({
-        runId: 'lv01-fault-parent', experimentId: 'LV01', randomSeed: 'fault-parent-seed',
+        runId: 'lv01-fault-parent', experimentId: 'LV01', randomSeed: faultRoot,
+        seedBindings: {
+          version: 1,
+          scenario: faultRoot,
+          babyA: `sha256:${'1'.repeat(64)}`,
+          babyB: `sha256:${'2'.repeat(64)}`,
+          gateway: `sha256:${'3'.repeat(64)}`,
+          analysis: `sha256:${'4'.repeat(64)}`,
+        },
         babyA: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
         babyB: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
         learningSignal: 'extrinsic-task', maxTurnsPerRun: 1, evaluationTurns: 1,
@@ -100,6 +142,7 @@ describe('LV01 paired collector gates', () => {
         babyAInitialPolicyRef: 'policies/baby-a-policy-initial.json',
         babyBInitialPolicyRef: 'policies/baby-b-policy-initial.json',
         childRunIdPrefix: 'lv01-fault-child',
+        actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
         ledgerTreatments: {
           'ledger-consistent': {
             selectedToken: 'S0', deliveredToken: 'S0',

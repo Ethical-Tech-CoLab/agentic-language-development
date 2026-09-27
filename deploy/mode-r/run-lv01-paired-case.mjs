@@ -4,7 +4,6 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync
 import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 
-import { hashCanonical } from '@ald/hashing';
 import { createLv01PairedCasePlan, LV01_BRANCHES, verifyLv01PairedCase } from '@ald/orchestrator';
 
 const [mode, version] = process.argv.slice(2);
@@ -128,10 +127,12 @@ function runBranch(branchPlan, parentBundle, networks) {
   const prediction = interventions.find((entry) => entry.reasonCode === 'lv01-paired-pre-receiver-action-prediction-committed');
   assert.ok(prediction, 'branch has no pre-action LV01 prediction commitment');
   assert.deepEqual(prediction.details.preStateCommitment, branchPlan.config.lv01PairedCase.preStateCommitment);
+  const draw = interventions.find((entry) => entry.reasonCode === 'lv01-shared-action-draw-committed');
+  assert.ok(draw, 'branch has no shared action-draw commitment');
   return {
     branch: branchPlan.branch,
     scenarioHash: turn[0].scenarioStateHash,
-    receiverDrawCommitment: hashCanonical('lv01-receiver-draw/v1', turn[0].roles),
+    receiverDrawCommitment: draw.details.drawCommitment,
     preStateCommitment: branchPlan.config.lv01PairedCase.preStateCommitment,
     predictionCommitment: prediction.details.commitment,
     actionRecordedAfterPrediction: true,

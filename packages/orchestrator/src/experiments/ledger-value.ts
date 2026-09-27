@@ -3,6 +3,11 @@ import { hashCanonical } from '@ald/hashing';
 import { createDerivedRunConfig } from '@ald/lifecycle';
 import type { RunConfig } from '@ald/types';
 
+import {
+  assertLv01ActionDrawScope,
+  deriveLv01ActionDrawSeed,
+} from './lv01-action-draw.js';
+
 export const LV01_BRANCHES = ['normal', 'disabled', 'constant', 'random', 'shuffled', 'ledger-consistent', 'ledger-shuffled'] as const;
 export type Lv01Branch = (typeof LV01_BRANCHES)[number];
 export type Lv01Stage = 'development' | 'qualification' | 'pilot' | 'confirmatory' | 'replication';
@@ -40,6 +45,16 @@ export interface Lv01PairedCasePlanInput {
     readonly batchCommitment: string;
     readonly sourceCaseId: string;
   }>>;
+  /**
+   * Shared action-draw scope. One seed per case (no branch part); the
+   * receiver role is always baby-b because paired branches run turn 0.
+   */
+  readonly actionDrawScope: {
+    readonly stage: 'development' | 'qualification' | 'shadow' | 'generalization' | 'pilot';
+    readonly slotKind: 'primary' | 'reserve';
+    readonly slotIndex: string;
+    readonly partition: 'dev' | 'within-support' | 'novel-composition';
+  };
 }
 
 /** Seven independent derived runs that begin from the same exported parent state. */
@@ -80,6 +95,16 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
   if (!/^policies\/baby-a-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyAInitialPolicyRef)) fail('baby-a policy reference is invalid');
   if (!/^policies\/baby-b-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyBInitialPolicyRef)) fail('baby-b policy reference is invalid');
   if (!/^[a-z0-9-]+$/u.test(input.childRunIdPrefix)) fail('child run identifier prefix is invalid');
+  const parentBindings = input.parent.seedBindings;
+  if (parentBindings === undefined) fail('paired cases require parent seed bindings');
+  const drawScope = {
+    ...input.actionDrawScope,
+    receiverRole: 'baby-b' as const,
+    caseId: `${input.childRunIdPrefix}:turn:0`,
+  };
+  assertLv01ActionDrawScope(drawScope);
+  const drawSeed = deriveLv01ActionDrawSeed(input.parent.randomSeed, drawScope);
+  const drawSeedCommitment = hashCanonical('lv01-action-draw-seed/v1', drawSeed);
   const preStateCommitment = hashCanonical('lv01-paired-pre-state/v1', {
     parentRunId: input.parent.runId,
     parentCheckpointHash: input.parentCheckpointHash,
@@ -107,12 +132,14 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
           // episodes would be a separate paired-case allocation, not a
           // silent expansion of this branch-reset primitive.
           evaluationTurns: 1,
+          seedBindings: { ...parentBindings, actionDraw: drawSeed },
           lv01PairedCase: {
             version: 1,
             branch,
             predictionTreatment: treatment.predictionTreatment,
             preStateCommitment,
             ...(ledgerSlice === undefined ? {} : { ledgerTreatment: { ...ledgerSlice } }),
+            actionDraw: { ...drawScope, drawSeedCommitment },
           },
         },
       },

@@ -122,3 +122,44 @@ export function deriveSeedHex(...parts: string[]): string {
   });
   return sha256Bytes(...buffers).toString('hex');
 }
+
+/**
+ * Select an index by inverse CDF on an externally supplied unit draw.
+ * Mirrors {@link SeededPrng.sampleIndex} exactly, except the all-zero
+ * fallback resolves over the same shared draw instead of a private stream.
+ * LV01 paired branches share one draw per case; the auditor reproduces the
+ * same index from the disclosed draw and probability vector.
+ */
+export function drawIndexFromUnit(weights: readonly number[], u: number): number {
+  if (!(u >= 0 && u < 1)) {
+    throw new Error('shared draw must be a unit value in [0, 1)');
+  }
+  let total = 0;
+  for (const weight of weights) {
+    if (!(weight >= 0)) {
+      throw new Error('weights must be non-negative numbers');
+    }
+    total += weight;
+  }
+  if (total <= 0) {
+    return Math.floor(u * weights.length);
+  }
+  let threshold = u * total;
+  for (let index = 0; index < weights.length; index += 1) {
+    threshold -= weights[index] as number;
+    if (threshold < 0) {
+      return index;
+    }
+  }
+  return weights.length - 1;
+}
+
+/** Exact big-endian float64 bits of a unit draw, for commitments and disclosure. */
+export function unitBitsHex(u: number): string {
+  if (!(u >= 0 && u < 1)) {
+    throw new Error('shared draw must be a unit value in [0, 1)');
+  }
+  const buffer = new ArrayBuffer(8);
+  new DataView(buffer).setFloat64(0, u, false);
+  return Buffer.from(buffer).toString('hex');
+}

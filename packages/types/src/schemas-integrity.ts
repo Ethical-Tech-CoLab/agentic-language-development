@@ -326,6 +326,10 @@ export const InterventionEventTypeSchema = z.enum([
   'analysis-attached',
   /** SPEC §14.6 retention job action (bulk payload purge; index rows retained). */
   'retention-purge',
+  /** LV01 shared action draw committed before the receiver acts (hiding digests only). */
+  'action-draw-commitment',
+  /** LV01 shared action draw disclosed after the action (unit value plus sampling vector). */
+  'action-draw-disclosed',
 ]);
 
 /**

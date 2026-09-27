@@ -124,6 +124,7 @@ import {
   hashCarrierMark,
   parseCanonicalJson,
   SeededPrng,
+  unitBitsHex,
   validateChain,
   verifyHashSignature,
 } from '@ald/hashing';
@@ -224,6 +225,7 @@ import {
   type Lv01PairedPredictionPayload,
   type Lv01PairedPredictionProvider,
 } from './experiments/lv01-paired-predictions.js';
+import { commitLv01ActionDraw } from './experiments/lv01-action-draw.js';
 
 /** Internal signal preserving which Baby method exhausted the turn budget. */
 class AdapterTurnDeadlineExceededError extends TurnDeadlineExceededError {
@@ -648,6 +650,7 @@ interface TurnScratch {
   babyProposalHash: Sha256Hash | null;
   deliveredArtifactHash: Sha256Hash | undefined;
   probeHash: Sha256Hash | undefined;
+  actionDrawU: number | undefined;
   predictionCommitment: ProspectivePredictionCommitment | undefined;
   repairAttempt: TurnRecord['repairAttempt'] | undefined;
 }
@@ -930,6 +933,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       babyProposalHash: null,
       deliveredArtifactHash: undefined,
       probeHash: undefined,
+      actionDrawU: undefined,
       predictionCommitment: undefined,
       repairAttempt:
         pendingRepair === null
@@ -1382,6 +1386,12 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
             receiver,
             commitment,
           });
+          scratch.actionDrawU = await this.#commitLv01ActionDraw(
+            run,
+            turn,
+            receiver,
+            instance,
+          );
         }
         const receiverTurn = await this.#runReceiver(
           run,
@@ -1389,10 +1399,26 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           receiver,
           instance,
           submission,
+          scratch.actionDrawU,
         );
         outcome = receiverTurn.outcome;
         action = receiverTurn.action;
         pauseRequested = receiverTurn.pauseRequested;
+        if (
+          scratch.actionDrawU !== undefined &&
+          receiverTurn.selectionProbs !== null &&
+          action !== null
+        ) {
+          await this.#discloseLv01ActionDraw(
+            run,
+            turn,
+            receiver,
+            instance,
+            scratch.actionDrawU,
+            receiverTurn.selectionProbs,
+            receiverTurn.selectedCandidateRef,
+          );
+        }
       }
     }
 
@@ -1455,6 +1481,83 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           }
         : {}),
     };
+  }
+
+  /**
+   * Draw the shared LV01 action variate and commit hiding digests before the
+   * receiver acts. The seed and unit value enter no pre-action evidence.
+   */
+  async #commitLv01ActionDraw(
+    run: RunRuntime,
+    turn: number,
+    receiver: BabyRole,
+    instance: ScenarioInstance,
+  ): Promise<number> {
+    const pairedCase = run.config.lv01PairedCase;
+    const drawSeed = run.config.seedBindings?.actionDraw;
+    const drawScope = pairedCase?.actionDraw;
+    if (pairedCase === undefined || drawSeed === undefined || drawScope === undefined) {
+      throw new RunConfigurationError([
+        { path: 'seedBindings.actionDraw', message: 'LV01 paired runs require a committed action-draw seed' },
+      ]);
+    }
+    const committed = commitLv01ActionDraw({
+      drawSeed,
+      turn,
+      receiver,
+      candidateRefs: instance.candidateRefs,
+      preStateCommitment: pairedCase.preStateCommitment,
+    });
+    if (committed.drawSeedCommitment !== drawScope.drawSeedCommitment) {
+      throw new RunConfigurationError([
+        { path: 'lv01PairedCase.actionDraw', message: 'LV01 action-draw seed does not match its committed scope' },
+      ]);
+    }
+    await run.controllerEvidence.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'action-draw-commitment',
+      actorId: this.#actorId,
+      reasonCode: 'lv01-shared-action-draw-committed',
+      details: {
+        turn,
+        receiver,
+        drawCommitment: committed.drawCommitment,
+        drawSeedCommitment: committed.drawSeedCommitment,
+        uCommitment: committed.uCommitment,
+        candidateRefs: [...instance.candidateRefs],
+      },
+    });
+    return committed.u;
+  }
+
+  /**
+   * Disclose the consumed draw and sampling vector after the action. The
+   * auditor reproduces the selection from these values plus the seed.
+   */
+  async #discloseLv01ActionDraw(
+    run: RunRuntime,
+    turn: number,
+    receiver: BabyRole,
+    instance: ScenarioInstance,
+    u: number,
+    probs: readonly number[],
+    selectedCandidateRef: string | null,
+  ): Promise<void> {
+    if (selectedCandidateRef === null) return;
+    await run.controllerEvidence.appendInterventionEvent({
+      runId: run.runId,
+      eventType: 'action-draw-disclosed',
+      actorId: this.#actorId,
+      reasonCode: 'lv01-shared-action-draw-disclosed',
+      details: {
+        turn,
+        receiver,
+        uBitsHex: unitBitsHex(u),
+        probs: [...probs],
+        candidateRefs: [...instance.candidateRefs],
+        selectedCandidateRef,
+      },
+    });
   }
 
   /**
@@ -2833,10 +2936,13 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     receiver: BabyRole,
     instance: ScenarioInstance,
     submission: Extract<GatewaySubmitResult, { kind: 'accepted' }>,
+    sharedActionDrawU?: number,
   ): Promise<{
     outcome: Outcome;
     action: AgentActionProposal | null;
     pauseRequested: boolean;
+    selectionProbs: readonly number[] | null;
+    selectedCandidateRef: string | null;
   }> {
     const adapter = run.adapters[receiver];
 
@@ -2870,6 +2976,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           outcome: forfeitOutcome('forfeit', error.reasonCode),
           action: null,
           pauseRequested: error.pauseRequested,
+          selectionProbs: null,
+          selectedCandidateRef: null,
         };
       }
     }
@@ -2884,6 +2992,7 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           responseBudgetMs: run.config.turnResponseBudgetMs,
           availableActions: ['select_object'],
           candidateRefs: instance.candidateRefs,
+          ...(sharedActionDrawU === undefined ? {} : { sharedActionDrawU }),
         }),
       ),
     );
@@ -2906,6 +3015,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
         outcome: forfeitOutcome('invalid-task-action', 'invalid-task-action'),
         action: null,
         pauseRequested: false,
+        selectionProbs: envelope.selectionProbs ?? null,
+        selectedCandidateRef: null,
       };
     }
 
@@ -2913,6 +3024,8 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       outcome: run.engine.evaluate(instance, action),
       action,
       pauseRequested: false,
+      selectionProbs: envelope.selectionProbs ?? null,
+      selectedCandidateRef: action.kind === 'select_object' ? action.publicArtifact.objectRef : null,
     };
   }
 

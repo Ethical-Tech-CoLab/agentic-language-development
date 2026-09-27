@@ -66,7 +66,7 @@ import {
   type TurnProposalEnvelope,
   type UpdateBatch,
 } from '@ald/types';
-import { SeededPrng, hashCanonical } from '@ald/hashing';
+import { SeededPrng, drawIndexFromUnit, hashCanonical } from '@ald/hashing';
 
 import {
   carrierProposal,
@@ -532,7 +532,13 @@ export class TabularReinforceAdapter implements LearnerAdapter {
       throw new LearnerStateError('A receiver turn requires candidateRefs');
     }
     const received = this.receivedFor(turnBudget.turn);
-    const memory = this.receiverTurn(state, turnBudget.turn, received, candidateRefs);
+    const memory = this.receiverTurn(
+      state,
+      turnBudget.turn,
+      received,
+      candidateRefs,
+      turnBudget.sharedActionDrawU,
+    );
     const objectRef = at(candidateRefs, memory.actionIndex);
 
     const proposal = {
@@ -562,7 +568,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
         channelRef === undefined ? [artifactRef] : [artifactRef, channelRef],
     });
 
-    return { proposal, privateLedgerDraft: draft };
+    return { proposal, privateLedgerDraft: draft, selectionProbs: [...memory.probs] };
   }
 
   /**
@@ -579,6 +585,7 @@ export class TabularReinforceAdapter implements LearnerAdapter {
     turn: number,
     received: ReceivedMessage,
     candidateRefs: readonly string[],
+    sharedActionDrawU?: number,
   ): ReceiverTurnMemory {
     const cached = this.pending.get(turn);
     if (cached !== undefined && cached.role === 'receiver') {
@@ -603,7 +610,12 @@ export class TabularReinforceAdapter implements LearnerAdapter {
             ).distributions,
             0,
           );
-    const actionIndex = state.actionStream.sampleIndex(probs);
+    if (sharedActionDrawU !== undefined && !(sharedActionDrawU >= 0 && sharedActionDrawU < 1)) {
+      throw new LearnerStateError('A shared action draw must be a unit value in [0, 1)');
+    }
+    const actionIndex = sharedActionDrawU === undefined
+      ? state.actionStream.sampleIndex(probs)
+      : drawIndexFromUnit(probs, sharedActionDrawU);
     recurrent?.recordActions(turn, [actionIndex]);
     // The hypothesis events of this turn are evidenced by the delivered
     // channel event where there was one, and by this Baby's own proposal

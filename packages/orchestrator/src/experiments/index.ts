@@ -66,6 +66,19 @@ export {
   type Lv01PairedPredictionState,
 } from './lv01-paired-predictions.js';
 export {
+  LV01_ACTION_DRAW_COMMITMENT_DOMAIN,
+  LV01_ACTION_DRAW_U_DOMAIN,
+  assertLv01ActionDrawScope,
+  commitLv01ActionDraw,
+  deriveLv01ActionDrawSeed,
+  drawLv01SharedUnit,
+  verifyLv01ActionDraw,
+  type Lv01ActionDrawCommitment,
+  type Lv01ActionDrawCommitmentInput,
+  type Lv01ActionDrawDisclosure,
+  type Lv01ActionDrawScope,
+} from './lv01-action-draw.js';
+export {
   LV01_LEDGER_TREATMENT_BATCH_DOMAIN,
   buildLedgerTreatmentBatch,
   ledgerShuffledDerangement,

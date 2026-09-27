@@ -54,7 +54,7 @@ export {
   type Ed25519KeyPair,
 } from './ed25519.js';
 export { FileKeyStore, SIGNER_SEED_FILE } from './keystore.js';
-export { SeededPrng, deriveSeedHex } from './prng.js';
+export { SeededPrng, deriveSeedHex, drawIndexFromUnit, unitBitsHex } from './prng.js';
 export { InMemorySignerRegistry } from './signers.js';
 export {
   connectDomainSignerRegistryRpc,
