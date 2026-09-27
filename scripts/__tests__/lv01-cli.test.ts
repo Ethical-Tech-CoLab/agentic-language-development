@@ -99,6 +99,7 @@ describe('LV01 execution CLI', () => {
     const v2 = run('check-design', '--version', '2');
     expect(v2.status).toBe(0);
     expect(v2.stdout).toContain('design v2 contracts valid');
+    expect(v2.stdout).toContain('strict five-file');
     expect(run('check-design', '--version', '3').status).not.toBe(0);
     expect(run('check-design').status).not.toBe(0);
   });

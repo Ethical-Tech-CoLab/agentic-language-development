@@ -18,8 +18,12 @@ const analysis = read(`protocols/lv01-analysis-plan.v${version}.json`);
 const policy = read(`protocols/lv01-seed-resource-policy.v${version}.json`);
 const cards = read('protocols/research-protocol-cards.v1.json');
 const scenario = read('protocols/scenario-split-and-model-comparison.v1.json');
+// v1 has no execution profile or direction amendment; v2 requires all five.
+const profile = version === '2' ? read('protocols/lv01-prototype-execution-profile.v2.json') : null;
+const amendment = version === '2' ? read('protocols/lv01-direction-amendment.v2.json') : null;
 
-for (const value of [design, analysis, policy]) {
+const envelope = version === '1' ? [design, analysis, policy] : [design, analysis, policy, profile, amendment];
+for (const value of envelope) {
   assert.equal(value.schemaVersion, Number(version));
   assert.equal(value.studyId, 'LV01');
   assert.equal(value.researchFinding, false);
@@ -35,9 +39,23 @@ if (version === '1') {
   assert.equal(design.status, 'draft-not-registered-not-executed');
   assert.equal(analysis.status, 'draft-not-registered-not-executed');
   assert.equal(policy.status, 'draft-outcome-blind-no-stage-allocation');
+  assert.equal(profile.status, 'draft-not-registered-not-executed');
+  assert.equal(amendment.status, 'draft-not-registered-not-executed');
   assert.equal(design.classification, 'prospective-ledger-value-study-design');
   assert.equal(design.designVersion, 'lv01-study-design/v2');
   assert.equal(analysis.analysisVersion, 'lv01-analysis/v2');
+  assert.equal(profile.classification, 'prototype-execution-profile');
+  assert.equal(profile.profileVersion, 'lv01-prototype-execution-profile/v2');
+  assert.equal(amendment.classification, 'prospective-study-direction-amendment');
+  assert.equal(amendment.amendmentVersion, 'lv01-direction-amendment/v2');
+  // Strict contracts: any added, removed, or renamed top-level field fails.
+  // Protocol corrections must update these lists deliberately in the same
+  // change (plus the manuscript digests that pin the same bytes).
+  assert.deepEqual(Object.keys(design).sort(), ['channel', 'chronology', 'claimBoundary', 'classification', 'designVersion', 'evaluation', 'execution', 'externalSpend', 'independentHumanReview', 'learner', 'observationSchemas', 'pilotDataInspected', 'publicChainTransaction', 'question', 'researchFinding', 'runConfig', 'schemaVersion', 'scientificDisposition', 'scopeBoundary', 'sourcePolicies', 'status', 'studyId', 'supersedes', 'task']);
+  assert.deepEqual(Object.keys(analysis).sort(), ['analysisVersion', 'claimBoundary', 'classification', 'externalSpend', 'family', 'interpretation', 'invalidity', 'marginLineage', 'nativePredictor', 'ordinaryRecordWindow', 'pilotDataInspected', 'predictionTarget', 'predictors', 'researchFinding', 'schemaVersion', 'scientificDisposition', 'score', 'sourcePolicies', 'status', 'studyId', 'supersedes', 'targetBoundary']);
+  assert.deepEqual(Object.keys(policy).sort(), ['claimBoundary', 'classification', 'derivation', 'externalSpend', 'policyVersion', 'power', 'researchFinding', 'resources', 'root', 'schemaVersion', 'scientificDisposition', 'sourcePolicies', 'stages', 'status', 'studyId', 'supersedes']);
+  assert.deepEqual(Object.keys(profile).sort(), ['actionDraw', 'audit', 'batchEvaluation', 'claimBoundary', 'classification', 'conditions', 'consumerCheck', 'externalSpend', 'preActionCommitment', 'profileVersion', 'records', 'researchFinding', 'retention', 'runtime', 'schemaVersion', 'scientificDisposition', 'sourcePolicies', 'status', 'studyId']);
+  assert.deepEqual(Object.keys(amendment).sort(), ['amendedPaths', 'amendmentScope', 'amendmentVersion', 'claimBoundary', 'claimLimits', 'classification', 'directionStatements', 'externalSpend', 'independentHumanReview', 'nineteenCardFamily', 'pilotDataInspected', 'preservedV1', 'researchFinding', 'schemaVersion', 'scientificDisposition', 'status', 'studyId']);
   // v2 supersedes v1 byte-for-byte; any v1 drift breaks the v2 lineage.
   for (const value of [design, analysis, policy]) {
     assert.ok(value.supersedes?.path?.endsWith('.v1.json'), 'v2 file must supersede its v1 file');
@@ -51,6 +69,38 @@ if (version === '1') {
       'v2 design files must not contain placeholders',
     );
   }
+  // The profile has source policies but no v1 predecessor to supersede.
+  for (const source of profile.sourcePolicies) {
+    assert.equal(sha256(source.path), source.sha256, `${source.path}: source policy changed`);
+  }
+  assert.match(
+    raw('protocols/lv01-prototype-execution-profile.v2.json'),
+    /^(?!.*(TBD|TODO|FIXME|placeholder|lorem))/ius,
+    'v2 design files must not contain placeholders',
+  );
+  // The amendment pins v1 bytes and the portfolio instead of superseding.
+  assert.deepEqual(amendment.amendedPaths, [
+    'protocols/lv01-study-design.v2.json',
+    'protocols/lv01-analysis-plan.v2.json',
+    'protocols/lv01-seed-resource-policy.v2.json',
+    'protocols/lv01-prototype-execution-profile.v2.json',
+    'protocols/lv01-direction-amendment.v2.json',
+  ]);
+  assert.match(amendment.amendmentScope, /Only the five v2 files/u);
+  assert.equal(amendment.preservedV1.length, 3);
+  for (const entry of amendment.preservedV1) {
+    assert.equal(sha256(entry.path), entry.sha256, `${entry.path}: v1 bytes changed`);
+  }
+  assert.equal(amendment.nineteenCardFamily.path, 'protocols/research-protocol-cards.v1.json');
+  assert.equal(sha256(amendment.nineteenCardFamily.path), amendment.nineteenCardFamily.sha256, 'portfolio bytes changed');
+  assert.equal(amendment.nineteenCardFamily.cardCount, 19);
+  assert.equal(cards.cards.length, 19);
+  assert.match(amendment.directionStatements.behavioralCohortDidNot, /did not run/u);
+  assert.match(
+    raw('protocols/lv01-direction-amendment.v2.json'),
+    /^(?!.*(TBD|TODO|FIXME|placeholder|lorem))/ius,
+    'v2 design files must not contain placeholders',
+  );
 }
 assert.deepEqual(design.task.eligibleTypeCodes, scenario.scenario.trainAndValidationTargetTypeCodes);
 assert.deepEqual(design.task.untouchedTypeCodes, scenario.scenario.heldOutTestTargetTypeCodes);
@@ -77,6 +127,55 @@ if (version === '1') {
   }
 } else {
   assert.equal(design.execution.deploymentMode, 'prototype');
+  assert.equal(profile.runtime.deploymentMode, 'prototype');
+  assert.equal(profile.runtime.topology, 'prototype-disposable-worker');
+  assert.deepEqual(profile.runtime.separation, [
+    'separate agent state',
+    'separate weights',
+    'separate optimizers',
+    'separate memories',
+    'separate PRNG domains',
+    'separate ledger handles',
+  ]);
+  // KNOWN DEFECT, pinned deliberately: the blanket target prohibition below
+  // wrongly includes the sender's required private referent cue. The planned
+  // role-table correction changes this list, the protocol bytes, and the
+  // manuscript digests together; do not edit one without the others.
+  assert.deepEqual(profile.runtime.forbiddenInputs, [
+    'peer references',
+    'peer weights or hidden state',
+    'true scenario target',
+    'scenario seed',
+    'action draw or action PRNG values',
+    'wall clock',
+    'auditor results',
+    'test labels',
+    'test outcomes',
+  ]);
+  assert.ok(profile.retention.snapshots.includes('every 64 training episodes'));
+  assert.ok(profile.preActionCommitment.payload.includes('full probability vectors for native, ordinary-record and replay predictors'));
+  assert.match(profile.preActionCommitment.persistence, /Hashing the inputs alone is insufficient/u);
+  assert.match(profile.actionDraw.verification, /Never substitute a hash of roles/u);
+  assert.deepEqual(profile.conditions.branches, design.evaluation.branches);
+  assert.match(profile.conditions.interventionBoundary, /Identical-token coincidences are preserved/u);
+  assert.deepEqual(profile.batchEvaluation.forbidden, [
+    'copying the full parent evidence per test action',
+    'booting a service topology per test action',
+    'omitting restoration or chronology evidence',
+  ]);
+  assert.deepEqual(profile.audit.forbidden, [
+    'reusing collector-created true flags as the auditor\'s evidence',
+    'collector-supplied pass flags for chronology, restoration or sampling',
+  ]);
+  assert.match(profile.records.releaseSchedule, /^none/u);
+  assert.deepEqual(Object.keys(policy.stages).sort(), ['confirmatory', 'development', 'pilot', 'qualification', 'replication']);
+  // KNOWN DEFECT, pinned deliberately: seed derivation still labels stages
+  // main/repeat where the stage blocks use confirmatory/replication. The
+  // planned seed-label correction changes this list, the protocol bytes,
+  // and the manuscript digests together.
+  assert.deepEqual(policy.derivation.partValues.stages, ['development', 'qualification', 'pilot', 'main', 'repeat']);
+  assert.ok(policy.derivation.partValues.purposes.includes('intervention-shuffle'));
+  assert.match(policy.derivation.algorithm, /NUL/u);
 }
 assert.equal(cards.cards.some((card) => card.id === 'LV01'), false, 'LV01 cannot rewrite the original portfolio');
 assert.equal(analysis.family.familywiseAlpha, 0.05);
@@ -110,4 +209,4 @@ assert.equal(policy.resources.ceiling.cpuHours, 72);
 assert.equal(policy.resources.ceiling.workingStorageGiB, 25);
 assert.equal(policy.resources.ceiling.maximumResidentGiB, 6);
 assert.equal(policy.resources.ceiling.externalSpend, 0);
-console.log(`LV01 design v${version} contracts valid: frozen design/analysis/resource policy; no registration or execution`);
+console.log(`LV01 design v${version} contracts valid: ${version === '2' ? 'strict five-file design/analysis/policy/profile/amendment' : 'frozen design/analysis/resource policy'}; no registration or execution`);
