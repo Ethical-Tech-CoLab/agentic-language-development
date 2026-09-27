@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildLedgerTreatmentBatch,
+  deriveLv01DerangementSeed,
   ledgerShuffledDerangement,
   sliceLedgerTreatment,
   verifyLedgerTreatmentSlice,
@@ -19,9 +20,9 @@ function weightsFor(type: number, strength: number): number[] {
   return array;
 }
 
-function record(sequence: number, token: string, weights: readonly number[]) {
+function record(sequence: number, token: string, weights: readonly number[], role: 'baby-a' | 'baby-b' = 'baby-a') {
   return {
-    receiverRole: 'baby-a' as const,
+    receiverRole: role,
     eventType: 'hypothesis.created' as const,
     sequence,
     turn: sequence,
@@ -35,11 +36,18 @@ function record(sequence: number, token: string, weights: readonly number[]) {
 
 const tokenA = inventory[3] as string;
 const tokenB = inventory[11] as string;
-const index = indexLv01TrainingLedger(
+const indexA = indexLv01TrainingLedger(
   [record(1, tokenA, weightsFor(1, 9)), record(2, tokenB, weightsFor(4, 9))],
   'baby-a',
   { sequence: 2, turn: 2 },
 );
+// Deliberately swapped strengths: proves each role scores on its own index.
+const indexB = indexLv01TrainingLedger(
+  [record(1, tokenA, weightsFor(4, 9), 'baby-b'), record(2, tokenB, weightsFor(1, 9), 'baby-b')],
+  'baby-b',
+  { sequence: 2, turn: 2 },
+);
+const nativeIndexes = { babyA: indexA, babyB: indexB };
 
 describe('LV01 ledger-treatment batches', () => {
   it('selects target-maximizing tokens and deranges within role', () => {
@@ -50,11 +58,12 @@ describe('LV01 ledger-treatment batches', () => {
         { caseId: 'b1', receiverRole: 'baby-b', targetTypeCode: 1, candidateTypeCodes: candidates },
         { caseId: 'b2', receiverRole: 'baby-b', targetTypeCode: 4, candidateTypeCodes: candidates },
       ],
-      nativeIndex: index,
+      nativeIndexes,
       symbolInventory: [...inventory],
       derangementSeed: 'seed-1',
     });
-    expect(batch.cases.map((entry) => entry.selectedToken)).toEqual([tokenA, tokenB, tokenA, tokenB]);
+    // baby-b selections come from the swapped baby-b index: role separation.
+    expect(batch.cases.map((entry) => entry.selectedToken)).toEqual([tokenA, tokenB, tokenB, tokenA]);
     for (const entry of batch.cases) {
       expect(entry.shuffledSourceCaseId).not.toBe(entry.caseId);
       const source = batch.cases.find((other) => other.caseId === entry.shuffledSourceCaseId);
@@ -69,7 +78,7 @@ describe('LV01 ledger-treatment batches', () => {
         targetTypeCode: entry.targetTypeCode,
         candidateTypeCodes: entry.candidateTypeCodes,
       })),
-      nativeIndex: index,
+      nativeIndexes,
       symbolInventory: [...inventory],
       derangementSeed: 'seed-1',
     });
@@ -82,7 +91,7 @@ describe('LV01 ledger-treatment batches', () => {
         { caseId: 'a1', receiverRole: 'baby-a', targetTypeCode: 1, candidateTypeCodes: candidates },
         { caseId: 'a2', receiverRole: 'baby-a', targetTypeCode: 1, candidateTypeCodes: candidates },
       ],
-      nativeIndex: index,
+      nativeIndexes,
       symbolInventory: [...inventory],
       derangementSeed: 'seed-2',
     });
@@ -98,10 +107,28 @@ describe('LV01 ledger-treatment batches', () => {
       cases: [
         { caseId: 'a1', receiverRole: 'baby-a', targetTypeCode: 1, candidateTypeCodes: candidates },
       ],
-      nativeIndex: index,
+      nativeIndexes,
       symbolInventory: [...inventory],
       derangementSeed: 'seed',
     })).toThrow(/at least two/u);
+  });
+
+  it('derives registered-form batch seeds deterministically', () => {
+    const parts = {
+      root: 'ald-ledger-value-v2',
+      studyId: 'LV01',
+      stage: 'pilot',
+      policyVersion: 'v2',
+      slotKind: 'primary' as const,
+      slotIndex: '0001',
+      partition: 'within-support',
+    };
+    const first = deriveLv01DerangementSeed(parts);
+    expect(first).toMatch(/^[0-9a-f]{64}$/u);
+    expect(deriveLv01DerangementSeed(parts)).toBe(first);
+    expect(deriveLv01DerangementSeed({ ...parts, slotIndex: '0002' })).not.toBe(first);
+    expect(deriveLv01DerangementSeed({ ...parts, partition: 'dev' })).not.toBe(first);
+    expect(() => deriveLv01DerangementSeed({ ...parts, stage: '' })).toThrow(/empty/u);
   });
 
   it('slices per branch and rejects substituted tokens', () => {
@@ -110,7 +137,7 @@ describe('LV01 ledger-treatment batches', () => {
         { caseId: 'a1', receiverRole: 'baby-a', targetTypeCode: 1, candidateTypeCodes: candidates },
         { caseId: 'a2', receiverRole: 'baby-a', targetTypeCode: 4, candidateTypeCodes: candidates },
       ],
-      nativeIndex: index,
+      nativeIndexes,
       symbolInventory: [...inventory],
       derangementSeed: 'seed-3',
     });

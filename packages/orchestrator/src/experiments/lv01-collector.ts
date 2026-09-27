@@ -33,7 +33,6 @@ import {
 import {
   indexLv01TrainingLedger,
   loadLearnerContract,
-  type Lv01NativeLedgerIndex,
 } from '@ald/learners';
 import { ReferentialScenarioEngine, readGroundTruth } from '@ald/scenario';
 import {
@@ -67,6 +66,7 @@ import {
   transitionLv01Slot,
   type Lv01Branch,
   type Lv01PairedCasePlan,
+  type Lv01ResourceCounter,
   type Lv01SlotResources,
   type Lv01Stage,
   type Lv01StageJournal,
@@ -88,9 +88,10 @@ import {
 import { auditLv01PairedCase } from './lv01-auditor.js';
 import {
   buildLedgerTreatmentBatch,
+  deriveLv01DerangementSeed,
   sliceLedgerTreatment,
-  verifyLv01TreatmentTargets,
   type Lv01LedgerTreatmentBatch,
+  type Lv01RoleNativeIndexes,
   type Lv01TreatmentCase,
 } from './lv01-ledger-treatments.js';
 import {
@@ -121,8 +122,9 @@ export interface Lv01CollectionWorkload {
 
 /**
  * Resolve the executable workload from the bound allocation. Only
- * small-fixture blocks execute in-process; full workloads need the
- * production transport and fail closed here.
+ * small-fixture blocks execute in-process; the full 5,160-decision
+ * Prototype-worker path is unimplemented and fails closed here. Full
+ * workloads must never silently switch to production transport.
  */
 export function lv01WorkloadForCollection(stage: string, allocation: unknown): Lv01CollectionWorkload {
   const root = (allocation as Record<string, unknown> | null)?.['allocation'] as Record<string, unknown> | undefined;
@@ -238,7 +240,7 @@ export interface Lv01PairedCaseInputs {
     readonly partition: 'dev' | 'within-support' | 'novel-composition';
   };
   readonly treatmentCases: readonly Lv01TreatmentCase[];
-  readonly nativeIndex: Lv01NativeLedgerIndex;
+  readonly nativeIndexes: Lv01RoleNativeIndexes;
   readonly symbolInventory: readonly string[];
   readonly derangementSeed: string;
 }
@@ -250,7 +252,7 @@ export function prepareLv01PairedCase(input: Lv01PairedCaseInputs): {
 } {
   const batch = buildLedgerTreatmentBatch({
     cases: [...input.treatmentCases],
-    nativeIndex: input.nativeIndex,
+    nativeIndexes: input.nativeIndexes,
     symbolInventory: [...input.symbolInventory],
     derangementSeed: input.derangementSeed,
   });
@@ -586,6 +588,7 @@ export async function collectLv01Slot(input: {
 }): Promise<Lv01CollectedSlot> {
   const wallStart = Date.now();
   const cpuStart = process.cpuUsage();
+  const rssStart = process.memoryUsage.rss();
   const slotLabel = String(input.slot).padStart(4, '0');
   const caseDir = join(input.stageDir, `slot-${slotLabel}`);
   await mkdir(caseDir, { recursive: true });
@@ -600,10 +603,23 @@ export async function collectLv01Slot(input: {
   if (parentDocs.policies[babyBInitialPolicyRef] === undefined) fail('parent bundle is missing policies/baby-b-latest.json');
 
   const authenticate = authenticateFromManifest(parentDocs.runManifest);
-  const receiverEvents = typedLedgerEvents(parentDocs.ledgerB, 'parent baby-b-ledger.jsonl');
-  const records = mapLv01LedgerAssociations(receiverEvents, 'baby-b', authenticate);
-  const cutoff = deriveLv01LedgerCutoff(records);
-  const nativeIndex = indexLv01TrainingLedger(records, 'baby-b', cutoff);
+  // Both role ledgers are indexed from sealed parent data: each treatment
+  // case is scored on its own receiver role's index, never cross-role.
+  const ledgerFor = (role: 'baby-a' | 'baby-b') =>
+    mapLv01LedgerAssociations(
+      typedLedgerEvents(role === 'baby-a' ? parentDocs.ledgerA : parentDocs.ledgerB, `parent ${role}-ledger.jsonl`),
+      role,
+      authenticate,
+    );
+  const recordsA = ledgerFor('baby-a');
+  const recordsB = ledgerFor('baby-b');
+  const nativeIndexes: Lv01RoleNativeIndexes = {
+    babyA: indexLv01TrainingLedger(recordsA, 'baby-a', deriveLv01LedgerCutoff(recordsA)),
+    babyB: indexLv01TrainingLedger(recordsB, 'baby-b', deriveLv01LedgerCutoff(recordsB)),
+  };
+  // All branches share the baby-b receiver in the current single-role
+  // schedule; the served cutoff moves per role with the both-role schedule.
+  const cutoff = deriveLv01LedgerCutoff(recordsB);
 
   const peeked = peekLv01BranchTarget({
     randomSeed: parent.randomSeed,
@@ -628,11 +644,19 @@ export async function collectLv01Slot(input: {
       partition: input.partition,
     },
     treatmentCases: [...treatmentCases],
-    nativeIndex,
+    nativeIndexes,
     symbolInventory: fixedTokenInventory(parent.symbolInventorySize ?? 32),
-    derangementSeed: hashCanonical('lv01-derangement-seed/v1', {
-      packetCommitment: input.packet.packetCommitment,
-      slot: input.slot,
+    // Registered-form batch seed. Partition passes through the draw-scope
+    // vocabulary (dev/within-support/novel-composition); aligning it with
+    // the seed policy's partition vocabulary is deferred design work.
+    derangementSeed: deriveLv01DerangementSeed({
+      root: 'ald-ledger-value-v2',
+      studyId: 'LV01',
+      stage: input.packet.stage,
+      policyVersion: 'v2',
+      slotKind: input.kind,
+      slotIndex: slotLabel,
+      partition: input.partition,
     }),
   });
   await writeFile(join(caseDir, 'treatment-batch.json'), `${JSON.stringify(batch, null, 2)}\n`, 'utf8');
@@ -654,6 +678,7 @@ export async function collectLv01Slot(input: {
   } finally {
     harness.close();
   }
+  const rssPostBranches = process.memoryUsage.rss();
 
   // Served case must equal the peeked case: every branch payload commits
   // the scenario it actually served, and the loader already bound the
@@ -672,10 +697,11 @@ export async function collectLv01Slot(input: {
       fail(`branch ${branch.branch} committed a cutoff outside the parent index`);
     }
   }
-  verifyLv01TreatmentTargets(
-    batch,
-    [...treatmentCases].map((entry) => ({ caseId: entry.caseId, targetTypeCode: peeked.targetTypeCode })),
-  );
+  // Served-vs-batch target verification belongs here but the audited branch
+  // payload carries no served target yet; the previous call compared the
+  // batch against its own peek input (tautological) and is removed rather
+  // than kept as theater. A5 loader work exposes served targets, then this
+  // call returns with independently observed values.
   const first = audited[0];
   if (first === undefined) fail('case has no audited branches');
   const shared = loadLv01AuditShared({
@@ -686,6 +712,10 @@ export async function collectLv01Slot(input: {
   });
   const { caseCommitment } = auditLv01PairedCase({ plan, shared, branches: audited });
   const verificationMilliseconds = Date.now() - verificationStart;
+  // Sampled RSS maximum (start, post-branches, post-audit). Branches run
+  // in-process so RSS covers them; this is a sampled maximum, honestly
+  // labeled, never a final-RSS-as-peak substitution.
+  const peakBytes = Math.max(rssStart, rssPostBranches, process.memoryUsage.rss());
 
   const cpu = process.cpuUsage(cpuStart);
   const outcomes = {} as Record<Lv01Branch, boolean>;
@@ -702,9 +732,10 @@ export async function collectLv01Slot(input: {
     resources: {
       cpuMicroseconds: Math.round(cpu.user + cpu.system),
       wallMilliseconds: Date.now() - wallStart,
-      peakBytes: process.memoryUsage.rss(),
+      peakBytes,
       evidenceBytes: await directoryBytes(caseDir),
       verificationMilliseconds,
+      unresolved: [],
     },
   };
 }
@@ -783,6 +814,8 @@ async function runStageLocked(input: {
   // performs the unattempted→running→terminal transitions itself.
   const runSlot = async (index: number, kind: 'primary' | 'reserve'): Promise<void> => {
     await appendLv01Journal(input.lock, transitionLv01Slot(journal, index, 'running'), stamp());
+    const slotWallStart = Date.now();
+    const slotCpuStart = process.cpuUsage();
     try {
       const collected = await collectLv01Slot({
         packet,
@@ -802,11 +835,33 @@ async function runStageLocked(input: {
     } catch (error) {
       if (kind === 'primary') invalidPrimaries += 1;
       const reason = error instanceof Error ? error.message : String(error);
+      // Partial failure costs: wall and CPU are measured at catch time;
+      // evidence is best-effort over whatever the attempt wrote; peak and
+      // verification never ran, so they are unresolved — never zero-as-data.
+      const cpu = process.cpuUsage(slotCpuStart);
+      const slotLabel = String(index).padStart(4, '0');
+      let evidenceBytes = 0;
+      let evidenceUnresolved = true;
+      try {
+        evidenceBytes = await directoryBytes(join(input.stageDir, `slot-${slotLabel}`));
+        evidenceUnresolved = false;
+      } catch {
+        evidenceBytes = 0;
+      }
+      const unresolved: Lv01ResourceCounter[] = ['peakBytes', 'verificationMilliseconds'];
+      if (evidenceUnresolved) unresolved.push('evidenceBytes');
       const terminal = captureLv01SlotTerminal(
         journal,
         index,
         'invalid',
-        { cpuMicroseconds: 0, wallMilliseconds: 0, peakBytes: 0, evidenceBytes: 0, verificationMilliseconds: 0 },
+        {
+          cpuMicroseconds: Math.round(cpu.user + cpu.system),
+          wallMilliseconds: Date.now() - slotWallStart,
+          peakBytes: 0,
+          evidenceBytes,
+          verificationMilliseconds: 0,
+          unresolved,
+        },
         'collect',
         reason,
       );

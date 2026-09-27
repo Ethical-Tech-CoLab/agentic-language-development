@@ -9,7 +9,7 @@
  * selected tokens delivered through a deranged index are preserved
  * coincidences, never re-drawn.
  */
-import { hashCanonical, SeededPrng } from '@ald/hashing';
+import { deriveSeedHex, hashCanonical, SeededPrng } from '@ald/hashing';
 import {
   selectLedgerConsistentToken,
   type Lv01NativeLedgerIndex,
@@ -87,9 +87,45 @@ export function ledgerShuffledDerangement(
   fail('ledger-shuffled derangement search exhausted its attempt budget');
 }
 
+export interface Lv01RoleNativeIndexes {
+  readonly babyA: Lv01NativeLedgerIndex;
+  readonly babyB: Lv01NativeLedgerIndex;
+}
+
+/**
+ * Registered-form batch seed: NUL-joined root/study/stage/policy/slot/
+ * purpose/partition parts per the seed-resource policy (purpose
+ * intervention-shuffle). The role part is appended per role-batch inside
+ * {@link buildLedgerTreatmentBatch}; the batch never takes an opaque string.
+ */
+export function deriveLv01DerangementSeed(input: {
+  readonly root: string;
+  readonly studyId: string;
+  readonly stage: string;
+  readonly policyVersion: string;
+  readonly slotKind: 'primary' | 'reserve';
+  readonly slotIndex: string;
+  readonly partition: string;
+}): string {
+  for (const [name, value] of Object.entries(input)) {
+    if (value.length === 0) fail(`derangement seed part ${name} is empty`);
+    if (value.includes('\0')) fail(`derangement seed part ${name} contains NUL`);
+  }
+  return deriveSeedHex(
+    input.root,
+    input.studyId,
+    input.stage,
+    input.policyVersion,
+    input.slotKind,
+    input.slotIndex,
+    'intervention-shuffle',
+    input.partition,
+  );
+}
+
 export function buildLedgerTreatmentBatch(input: {
   readonly cases: readonly Lv01TreatmentCase[];
-  readonly nativeIndex: Lv01NativeLedgerIndex;
+  readonly nativeIndexes: Lv01RoleNativeIndexes;
   readonly symbolInventory: readonly string[];
   readonly derangementSeed: string;
 }): Lv01LedgerTreatmentBatch {
@@ -111,7 +147,7 @@ export function buildLedgerTreatmentBatch(input: {
     targetTypeCode: entry.targetTypeCode,
     candidateTypeCodes: [...entry.candidateTypeCodes],
     selectedToken: selectLedgerConsistentToken(
-      input.nativeIndex,
+      entry.receiverRole === 'baby-a' ? input.nativeIndexes.babyA : input.nativeIndexes.babyB,
       entry.targetTypeCode,
       entry.candidateTypeCodes,
       input.symbolInventory,
@@ -123,6 +159,10 @@ export function buildLedgerTreatmentBatch(input: {
   for (const role of ['baby-a', 'baby-b'] as const) {
     const roleCases = treated.filter((entry) => entry.receiverRole === role);
     if (roleCases.length === 0) continue;
+    // Per-role stream separation still concatenates the role onto the base
+    // seed. Replacing this with a NUL-joined role part changes committed
+    // shuffle outcomes pinned by tests, so it waits for an admitted run that
+    // can re-verify the exact pins; the base seed itself is registered-form.
     const permutation = ledgerShuffledDerangement(
       roleCases.length,
       `${input.derangementSeed}${role}`,

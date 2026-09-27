@@ -8,13 +8,25 @@ describe('LV01 paired collector gates', () => {
   it('blocks pilot admission until every prerequisite is evidenced', () => { expect(assessLv01Admission({ designVerified: true, numericalQualificationVerified: true, topologyQualificationVerified: false, sourceClean: true, registrationBound: false, resourcesSufficient: false, designHashesLive: true, hostReady: true, stage: 'pilot' })).toMatchObject({ status: 'blocked', reasons: ['topology-qualification-missing', 'registration-binding-missing', 'resource-allocation-missing'] }); });
   it('requires seven shared-state branches and a pre-action commitment', () => { const evidence = LV01_BRANCHES.map((branch) => ({ branch, scenarioHash: 'scenario', receiverDrawCommitment: 'draw', preStateCommitment: 'state', predictionCommitment: `prediction-${branch}`, actionRecordedAfterPrediction: true, restoredBeforeAction: true })); expect(verifyLv01PairedCase(evidence).caseCommitment).toMatch(/^sha256:/u); expect(() => verifyLv01PairedCase([...evidence.slice(0, 6), { ...evidence[6]!, scenarioHash: 'other' }])).toThrow(/share/u); });
   it('retains resources and failure diagnostics for an invalid slot', () => {
+    const resources = {
+      cpuMicroseconds: 1, wallMilliseconds: 2, peakBytes: 0, evidenceBytes: 4, verificationMilliseconds: 0,
+      unresolved: ['peakBytes', 'verificationMilliseconds'] as const,
+    };
     const receipt = captureLv01SlotTerminal(createLv01StageJournal('development', 1, 1), 1, 'invalid', {
-      cpuMicroseconds: 1, wallMilliseconds: 2, peakBytes: 3, evidenceBytes: 4, verificationMilliseconds: 5,
+      ...resources, unresolved: [...resources.unresolved],
     }, 'audit', 'bundle verification failed');
     expect(receipt).toMatchObject({ slot: { status: 'invalid', reason: 'bundle verification failed' }, failureStage: 'audit' });
+    expect(receipt.slot.resources).toEqual({ ...resources, unresolved: [...resources.unresolved] });
+    expect(receipt.journal.slots.find((slot) => slot.index === 1)?.resources).toEqual(receipt.slot.resources);
     expect(() => captureLv01SlotTerminal(createLv01StageJournal('development', 1, 1), 1, 'invalid', {
-      cpuMicroseconds: -1, wallMilliseconds: 2, peakBytes: 3, evidenceBytes: 4, verificationMilliseconds: 5,
+      cpuMicroseconds: -1, wallMilliseconds: 2, peakBytes: 3, evidenceBytes: 4, verificationMilliseconds: 5, unresolved: [],
     }, 'audit', 'bundle verification failed')).toThrow(/resource/u);
+    expect(() => captureLv01SlotTerminal(createLv01StageJournal('development', 1, 1), 1, 'invalid', {
+      cpuMicroseconds: 1, wallMilliseconds: 2, peakBytes: 99, evidenceBytes: 4, verificationMilliseconds: 5, unresolved: ['peakBytes'],
+    }, 'audit', 'bundle verification failed')).toThrow(/unresolved/u);
+    expect(() => captureLv01SlotTerminal(createLv01StageJournal('development', 1, 1), 1, 'valid', {
+      cpuMicroseconds: 1, wallMilliseconds: 2, peakBytes: 0, evidenceBytes: 4, verificationMilliseconds: 5, unresolved: ['peakBytes'],
+    }, null)).toThrow(/unresolved/u);
   });
   it('compiles all branches as derived runs from one immutable recurrent state', () => {
     const rootSeed = `sha256:${'f'.repeat(64)}`;

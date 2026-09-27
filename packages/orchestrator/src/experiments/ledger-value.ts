@@ -12,12 +12,20 @@ export const LV01_BRANCHES = ['normal', 'disabled', 'constant', 'random', 'shuff
 export type Lv01Branch = (typeof LV01_BRANCHES)[number];
 export type Lv01Stage = 'development' | 'qualification' | 'pilot' | 'confirmatory' | 'replication';
 export type Lv01SlotStatus = 'unattempted' | 'running' | 'valid' | 'invalid' | 'aborted';
-export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; readonly caseCommitment?: string; }
+export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; readonly caseCommitment?: string; readonly resources?: Lv01SlotResources; }
 export interface Lv01StageJournal { readonly stage: Lv01Stage; readonly version: number; readonly attemptId: string; readonly slots: readonly Lv01Slot[]; readonly terminal: 'open' | 'completed' | 'failed' | 'aborted'; }
 export interface Lv01AdmissionInput { readonly designVerified: boolean; readonly numericalQualificationVerified: boolean; readonly topologyQualificationVerified: boolean; readonly sourceClean: boolean; readonly registrationBound: boolean; readonly resourcesSufficient: boolean; readonly designHashesLive: boolean; readonly hostReady: boolean; readonly stage: Lv01Stage; }
 export interface Lv01Admission { readonly status: 'ready' | 'blocked' | 'unresolved'; readonly reasons: readonly string[]; }
 export interface Lv01PairedBranchEvidence { readonly branch: Lv01Branch; readonly scenarioHash: string; readonly receiverDrawCommitment: string; readonly preStateCommitment: string; readonly predictionCommitment: string; readonly actionRecordedAfterPrediction: boolean; readonly restoredBeforeAction: boolean; }
-export interface Lv01SlotResources { readonly cpuMicroseconds: number; readonly wallMilliseconds: number; readonly peakBytes: number; readonly evidenceBytes: number; readonly verificationMilliseconds: number; }
+export type Lv01ResourceCounter = 'cpuMicroseconds' | 'wallMilliseconds' | 'peakBytes' | 'evidenceBytes' | 'verificationMilliseconds';
+export const LV01_RESOURCE_COUNTERS: readonly Lv01ResourceCounter[] = ['cpuMicroseconds', 'wallMilliseconds', 'peakBytes', 'evidenceBytes', 'verificationMilliseconds'];
+/**
+ * Slot resource counters. `unresolved` names counters that were NOT measured
+ * (failed before measurement, unobservable peak); those counters MUST be zero
+ * and no consumer may treat them as measurements. Unknown is unresolved,
+ * never a silent zero and never a final-RSS-as-peak substitution.
+ */
+export interface Lv01SlotResources { readonly cpuMicroseconds: number; readonly wallMilliseconds: number; readonly peakBytes: number; readonly evidenceBytes: number; readonly verificationMilliseconds: number; readonly unresolved: readonly Lv01ResourceCounter[]; }
 export interface Lv01SlotTerminalReceipt { readonly journal: Lv01StageJournal; readonly slot: Lv01Slot; readonly resources: Lv01SlotResources; readonly failureStage: string | null; }
 
 /** The runtime condition and predictor treatment for each paired LV01 branch. */
@@ -167,11 +175,23 @@ export function transitionLv01Slot(journal: Lv01StageJournal, index: number, sta
 }
 /** Terminal slots retain measured resource counters even when execution fails. */
 export function captureLv01SlotTerminal(journal: Lv01StageJournal, index: number, status: Exclude<Lv01SlotStatus, 'unattempted' | 'running'>, resources: Lv01SlotResources, failureStage: string | null, reason?: string): Lv01SlotTerminalReceipt {
-  if (Object.values(resources).some((value) => !Number.isFinite(value) || value < 0)) fail('terminal resource counters must be finite non-negative numbers');
+  for (const counter of LV01_RESOURCE_COUNTERS) {
+    const value = resources[counter];
+    if (!Number.isFinite(value) || value < 0) fail('terminal resource counters must be finite non-negative numbers');
+  }
+  for (const name of resources.unresolved) {
+    if (!LV01_RESOURCE_COUNTERS.includes(name)) fail(`unknown unresolved counter ${name}`);
+    if (resources[name] !== 0) fail(`unresolved counter ${name} must be zero, never a fabricated measurement`);
+  }
+  if (status === 'valid' && resources.unresolved.length !== 0) fail('valid slot cannot carry unresolved counters');
   if (status === 'valid' && (failureStage !== null || reason !== undefined)) fail('valid slot cannot carry a failure diagnostic');
   if (status !== 'valid' && (failureStage === null || failureStage.length === 0 || reason === undefined || reason.length === 0)) fail('failed slot requires stage and reason');
   const updated = transitionLv01Slot(transitionLv01Slot(journal, index, 'running'), index, status, reason);
-  return { journal: updated, slot: updated.slots.find((slot) => slot.index === index)!, resources, failureStage };
+  const journalWithResources: Lv01StageJournal = {
+    ...updated,
+    slots: updated.slots.map((entry) => (entry.index === index ? { ...entry, resources } : entry)),
+  };
+  return { journal: journalWithResources, slot: journalWithResources.slots.find((slot) => slot.index === index)!, resources, failureStage };
 }
 /** Link a valid slot to its audited case commitment; valid slots only. */
 export function recordLv01SlotCase(journal: Lv01StageJournal, index: number, caseCommitment: string): Lv01StageJournal {
@@ -242,6 +262,7 @@ export interface Lv01ScaledReserve {
 export function computeLv01CalibrationReserves(measurements: readonly Lv01SlotResources[]): Lv01CalibrationReserve {
   if (measurements.length < LV01_CALIBRATION_DYADS) fail(`at least ${LV01_CALIBRATION_DYADS} complete full-workload dyads are required`);
   for (const entry of measurements) {
+    if (entry.unresolved.length !== 0) fail(`calibration rejects unresolved counters: ${entry.unresolved.join(', ')}`);
     if (![entry.cpuMicroseconds, entry.wallMilliseconds, entry.peakBytes, entry.evidenceBytes]
       .every((value) => Number.isFinite(value) && value > 0)) fail('calibration requires complete measured slot costs');
     if (!Number.isFinite(entry.verificationMilliseconds) || entry.verificationMilliseconds < 0) fail('calibration verification cost must be a finite non-negative number');

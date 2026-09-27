@@ -21,7 +21,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { createHarness, testConfig, type Harness } from '../helpers.js';
 import { senderForTurn } from '../../src/nursery-runtime.js';
-import { LV01_BRANCHES } from '../../src/experiments/ledger-value.js';
+import { LV01_BRANCHES, LV01_RESOURCE_COUNTERS } from '../../src/experiments/ledger-value.js';
 import {
   deriveLv01LedgerCutoff,
   mapLv01LedgerAssociations,
@@ -111,22 +111,22 @@ function fixtureParent() {
 }
 
 function fixtureIndex() {
-  const records = mapLv01LedgerAssociations(
-    [
-      ledgerEvent('collector-fixture', { sequence: 1, turn: 0 }),
-      ledgerEvent('collector-fixture', {
-        sequence: 2,
-        turn: 1,
-        eventType: 'hypothesis.revised',
-        subjectId: 'symbol:S02',
-        content: { termRef: 'symbol:S02', associationOverTypeCodes: weightsZeroExcept([[9, 2], [14, 2]]) },
-      }),
-    ],
-    'baby-b',
-    () => true,
-  );
-  const cutoff = deriveLv01LedgerCutoff(records);
-  return { records, cutoff, index: indexLv01TrainingLedger(records, 'baby-b', cutoff) };
+  const events = [
+    ledgerEvent('collector-fixture', { sequence: 1, turn: 0 }),
+    ledgerEvent('collector-fixture', {
+      sequence: 2,
+      turn: 1,
+      eventType: 'hypothesis.revised',
+      subjectId: 'symbol:S02',
+      content: { termRef: 'symbol:S02', associationOverTypeCodes: weightsZeroExcept([[9, 2], [14, 2]]) },
+    }),
+  ];
+  const forRole = (role: 'baby-a' | 'baby-b') => {
+    const records = mapLv01LedgerAssociations(events, role, () => true);
+    const cutoff = deriveLv01LedgerCutoff(records);
+    return indexLv01TrainingLedger(records, role, cutoff);
+  };
+  return { indexA: forRole('baby-a'), indexB: forRole('baby-b') };
 }
 
 function packetInput() {
@@ -232,7 +232,7 @@ describe('LV01 collector pure planning', () => {
 
   it('commits the batch before planning slices onto ledger branches only', () => {
     const parent = fixtureParent();
-    const { index } = fixtureIndex();
+    const { indexA, indexB } = fixtureIndex();
     const peeked = peekLv01BranchTarget({
       randomSeed: parent.randomSeed,
       symbolInventorySize: 32,
@@ -249,7 +249,7 @@ describe('LV01 collector pure planning', () => {
       childRunIdPrefix: prefix,
       actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
       treatmentCases: [...buildLv01TreatmentCases(peeked, prefix)],
-      nativeIndex: index,
+      nativeIndexes: { babyA: indexA, babyB: indexB },
       symbolInventory: [...inventory],
       derangementSeed: hash('d'),
     });
@@ -281,7 +281,7 @@ describe('LV01 collector pure planning', () => {
 
   it('rebuilds the registered plan from branch run-configs alone', () => {
     const parent = fixtureParent();
-    const { index } = fixtureIndex();
+    const { indexA, indexB } = fixtureIndex();
     const peeked = peekLv01BranchTarget({
       randomSeed: parent.randomSeed,
       symbolInventorySize: 32,
@@ -298,7 +298,7 @@ describe('LV01 collector pure planning', () => {
       childRunIdPrefix: prefix,
       actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0002', partition: 'dev' },
       treatmentCases: [...buildLv01TreatmentCases(peeked, prefix)],
-      nativeIndex: index,
+      nativeIndexes: { babyA: indexA, babyB: indexB },
       symbolInventory: [...inventory],
       derangementSeed: hash('d'),
     });
@@ -395,10 +395,12 @@ describe('LV01 collector live collection', () => {
     expect(collected.executions).toHaveLength(7);
     expect(collected.executions.map((entry) => entry.branch)).toEqual([...LV01_BRANCHES]);
     expect(Object.keys(collected.outcomes)).toHaveLength(7);
-    for (const value of Object.values(collected.resources)) {
+    for (const counter of LV01_RESOURCE_COUNTERS) {
+      const value = collected.resources[counter];
       expect(Number.isFinite(value)).toBe(true);
       expect(value).toBeGreaterThanOrEqual(0);
     }
+    expect(collected.resources.unresolved).toEqual([]);
     const batch = JSON.parse(await readFile(join(collected.caseDir, 'treatment-batch.json'), 'utf8')) as {
       cases: unknown[];
     };

@@ -15,6 +15,7 @@ const dyad = (overrides: Partial<Lv01SlotResources> = {}): Lv01SlotResources => 
   peakBytes: 2 * 1024 ** 3,
   evidenceBytes: 100 * 1024 ** 2,
   verificationMilliseconds: 1_000,
+  unresolved: [],
   ...overrides,
 });
 
@@ -77,5 +78,10 @@ describe('LV01 H07 calibration reserves', () => {
     expect(reserve.measuredDyads).toBe(25);
     expect(reserve.perSlotCpuMicroseconds).toBe(10_800_000_000 * LV01_SLOT_RESERVE_MULTIPLIER);
     expect(reserve.perSlotEvidenceBytes).toBe(100 * 1024 ** 2 * LV01_SLOT_RESERVE_MULTIPLIER);
+  });
+
+  it('rejects measurements with unresolved counters', () => {
+    const partial = dyad({ peakBytes: 0, unresolved: ['peakBytes'] });
+    expect(() => computeLv01CalibrationReserves([dyad(), dyad(), dyad(), dyad(), partial])).toThrow(/unresolved/u);
   });
 });
