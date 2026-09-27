@@ -24,7 +24,10 @@
   "ordinaryFitRule": "Expanding window: each case is scored by count models (Laplace +1, exact packages/analysis/src/ledger-value.ts count-model semantics) fit on strictly preceding same-receiver cases only. No later data enters any fit.",
   "omittedPredictor": "ordinary-record-softmax omitted: 565-coefficient refit per case is degenerate on <=87 preceding rows and the committed TypeScript implementation was not executed in this docs-only draft. Recorded as a method limitation, not a silent default.",
   "liveInferenceReference": "interpretation.recorded inferredDistribution scored against the taken action as a descriptive reference only. It is the live policy's own output, not frozen exact replay, and supports no fidelity claim.",
-  "implementationNote": "Computed read-only from sealed bundles by a throwaway probe reimplementing the registered v1 predictor semantics; sealed evidence untouched. No parallel analytics framework created. A committed implementation under R04/R05 must call the analysis/learners packages directly."
+  "implementationNote": "Computed read-only from sealed bundles by a throwaway probe reimplementing the registered v1 predictor semantics; sealed evidence untouched. No parallel analytics framework created. A committed implementation under R04/R05 must call the analysis/learners packages directly.",
+  "caseRowRounding": "Per-case Brier values are stored rounded to 6 decimals; overall/running/evaluating means were computed at full precision. Recomputing means from stored rows differs by at most 1.1e-7 (evaluating native, v18); coverage and counts recompute exactly.",
+  "associationAgeConvention": "associationAgeTurnsOrNull is actionTurn minus associationTurn (strictly positive for covered cases). This is one more than indexLv01TrainingLedger's cutoff-relative age with cutoff.turn = actionTurn - 1.",
+  "driftPairRule": "recordedAssociationDriftPairs counts consecutive same-token associations within each receiver's own ledger (never pooled across ledgers). Every first-per-(token,ledger) association is hypothesis.created (verified 0 exceptions across 7 dyads), so pair counts equal revised + contradicted counts; argmax flips use first-max index over the 16 raw weights."
  },
  "eligibilityRule": "Sealed fixture (fixture-result state sealed, offline verifier exit 0) AND genuinely recurrent 4049-parameter gru-actor-critic-v1 exports for both roles AND agent-native-ledger schema with hypothesis associations plus one interpretation per turn AND normal-condition 64-running + 24-evaluating cohort.",
  "selected": [
@@ -1714,7 +1717,41 @@
      0.75,
      0.675864
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:d93ffeeb59e0298d713a622e742392a6027eab659927452664870211d6072f28",
+   "configurationHash": "sha256:d25910783f328823a02beec1c762ec82bee9a2e1f52329890f1e9e9b7bda094a",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 28,
+     "revised": 15,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 28,
+     "revised": 23,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.718880576978774,
+   "associationMaxWeightMean": 0.114268987856207,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   },
   "lv01-development-v17-p0001": {
    "version": 17,
@@ -3280,7 +3317,41 @@
      0.734694,
      0.156808
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:7ceb84f5642cdda42dc7ad58651116c134dc03d8ff489064026f4e8c889c83f0",
+   "configurationHash": "sha256:c0bd63dba9a49b4b0553fbbf37c3e11403222bf36910a3beede673ac579046e4",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 27,
+     "revised": 11,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 27,
+     "revised": 16,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.658191846592409,
+   "associationMaxWeightMean": 0.142905423185192,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   },
   "lv01-development-v18-p0001": {
    "version": 18,
@@ -4846,7 +4917,41 @@
      0.88,
      0.824934
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:e9d588b3ca1f1c908dd13a84f42e234979c63b80ff022475cb85cd33cecbef7e",
+   "configurationHash": "sha256:a0385b75154e4002a9bde8bb81a414402593bdc8abc116e03353b51131853419",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 27,
+     "revised": 17,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 27,
+     "revised": 25,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.665689086334969,
+   "associationMaxWeightMean": 0.134238670710685,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   },
   "lv01-development-v19-p0001": {
    "version": 19,
@@ -6412,6 +6517,50 @@
      0.75,
      0.395726
     ]
+   ],
+   "evidenceSqliteDigest": "sha256:c2c4035d4e749ecae286597bb70485c095b35d71d33815310eae0b44d4eab50c",
+   "configurationHash": "sha256:20b9e414bc0ba59f636a34d09b66d9d47fb04c3b723bc306e70fc4055a66c014",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 30,
+     "revised": 21,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 30,
+     "revised": 19,
+     "contradicted": 1
+    }
+   },
+   "associationEntropyMeanNats": 2.557987879024666,
+   "associationMaxWeightMean": 0.176453086056644,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   },
+   "contradictedEvents": [
+    {
+     "ledger": "baby-b",
+     "turn": 78,
+     "sequence": 212,
+     "subjectId": "symbol:S24",
+     "entryHash": "sha256:6ff7f94bf96aa5372",
+     "note": "entryHash prefix shown; full hash verifiable in the sealed v19 baby-b ledger at sequence 212"
+    }
    ]
   },
   "lv01-development-v20-p0001": {
@@ -7978,7 +8127,41 @@
      0.78125,
      0.795654
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:29c5fe088f481ab1bda21b6778b99f9debfda3137bae9aa45615b4b0e3a2b171",
+   "configurationHash": "sha256:c485907f3c6ceef60fccc92c8a25a71777ff3c34d8cac69789ac6d1779c229d1",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 29,
+     "revised": 27,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 29,
+     "revised": 21,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.696528107871103,
+   "associationMaxWeightMean": 0.118382765137575,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   },
   "lv01-development-v21-p0001": {
    "version": 21,
@@ -9544,7 +9727,41 @@
      0.75,
      0.747084
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:1978d46c34004dba36098e0baf7f4f9cb6753bb04f1002cb194e0d838024a80e",
+   "configurationHash": "sha256:789a502d8083182b16a846ba285029bf42c1889da525484c4b918fa6b1975fbd",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 28,
+     "revised": 32,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 28,
+     "revised": 15,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.740441721162204,
+   "associationMaxWeightMean": 0.09705008995707,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   },
   "lv01-development-v23-p0001": {
    "version": 23,
@@ -11110,7 +11327,41 @@
      0.88,
      0.76557
     ]
-   ]
+   ],
+   "evidenceSqliteDigest": "sha256:b2b8396eda887c80b9e7311f9dd03162e0d53f85a79b54d2097bef7e95a2dc57",
+   "configurationHash": "sha256:d4a17f78d6a8dea48f96f541df2982b8b2f1ab37d8374c12e644176ec57f7cb6",
+   "scenarioBundleHash": "sha256:f6f9a2bfea7c6964d2299a80f7c962da9de88f7a12f98fedb5bf1b1a130ba2f5",
+   "promptBundleHash": "sha256:21972d56a2971b3658192f09f0ca2c5bc43c2a1c4f51428eb2e3c41da0d98a22",
+   "hypothesesByRoleAndType": {
+    "baby-a": {
+     "created": 29,
+     "revised": 29,
+     "contradicted": 0
+    },
+    "baby-b": {
+     "created": 29,
+     "revised": 14,
+     "contradicted": 0
+    }
+   },
+   "associationEntropyMeanNats": 2.465346242500167,
+   "associationMaxWeightMean": 0.206572136647374,
+   "policySnapshots": {
+    "initialUpdateCount": 0,
+    "finalUpdateCount": 64,
+    "policy63EqualsPolicy88EqualsLatest": true,
+    "policyCheckpointTurns": {
+     "baby-a": [
+      63,
+      88
+     ],
+     "baby-b": [
+      63,
+      88
+     ]
+    },
+    "perActionUnrecordedDrift": "unavailable: only initial and final snapshots exist, so no per-action policy-probability drift is measurable"
+   }
   }
  },
  "limitations": [
@@ -11122,7 +11373,10 @@
   "No exact-replay fidelity comparison: the live-inference reference is the live policy's own output, not an independent frozen replay.",
   "Stored live distributions are rounded to 6 decimals (sums deviate from 1 by at most 1e-6); Brier values use stored rounded values.",
   "R01 attempt/lifetime/capacity reconciliation was in progress by a sibling session at draft time; this manifest makes no lifetime-iteration or resource-balance claim. Detector v3 was not inspected.",
-  "Thresholds must not be tuned from this analysis (handoff R02)."
+  "Thresholds must not be tuned from this analysis (handoff R02).",
+  "Case-row Brier values are rounded to 6 decimals while summary means are full precision (see method.caseRowRounding); recomputation deltas are bounded by 1.1e-7.",
+  "One hypothesis.contradicted event exists in the cohort (v19 baby-b, turn 78, symbol:S24); the pair carrying it did not flip argmax. The contradicted path is therefore observed once, not untestable.",
+  "Attempt identities assume the uncommitted R01 draft (see r01IdentityAssumptions); reconcile after the R01 commit before freezing v2 design."
  ],
  "claimBoundary": "This manifest and its companion diagnosis support only bounded retrospective observations about retained development ledger coverage, staleness, and action-prediction scoring. They establish no semantic-ledger utility, fidelity, cost, language-emergence, calibration, pilot, or scientific result.",
  "provenance": {
@@ -11132,6 +11386,55 @@
    "reports/research/lv01-development-v16-recurrent-receipt.json (10/10 digests)",
    "reports/research/lv01-development-v23-receipt.json (4/4 digests)"
   ],
-  "tooling": "CPython 3.12.3 stdlib only, read-only"
+  "tooling": "CPython 3.12.3 stdlib only, read-only",
+  "remainderVerifiedAtUtc": "2026-09-27T16:30:00Z",
+  "remainderTooling": "CPython 3.12.3 stdlib only, read-only probes under evidence/; no evidence writes",
+  "remainderGroundwork": "/tmp/r02-groundwork-notes.md (sealed v16/v23 digests re-verified) + /tmp/r01-attempt-inventory-draft.json (DRAFT identities, flagged)"
+ },
+ "verification": {
+  "remainderVerifiedAtUtc": "2026-09-27T16:30:00Z",
+  "groundworkReused": "/tmp/r02-groundwork-notes.md sealed v16/v23 digests; every value re-verified against sealed originals read-only",
+  "checks": [
+   "evidence.sqlite digests: v16 d93ffeeb.. and v23 b2b8396e.. recompute exactly (groundwork sealed values confirmed)",
+   "receipt retained files: v16 10/10 and v23 4/4 recompute exactly; v23 bundleManifestHash matches offline-verification",
+   "manifest inputDigests: 77/77 (11 per dyad x 7) recompute exactly; 7/7 bundleManifestHash match offline-verification",
+   "eligibility: all 7 state sealed, verifier exit 0, 64 training + 24 evaluating turns, 88 turn records, gru-actor-critic-v1 4049 params both roles, init update 0 / final update 64",
+   "randomSeed and protocolGitCommit: 7/7 match sealed run-config.json; scenario/prompt bundle hashes identical across all 7 dyads",
+   "hypothesis counts: per-role created/revised/contradicted recount matches hypothesesByRole and revised counts exactly (682 total associations)",
+   "ineligible policy shapes: v5/v6/v7/v9/v13/v14/v15 all tabular version-3 thetaSender/thetaReceiver exports without a model block; v2/v3/v4/v8/v10/v11/v12 have no fixture-result; v22 has preflight-failure.json only with no p0001 directory",
+   "case rows: 88 per dyad (24 evaluating), coverage recomputes exactly, means within row-rounding (<=1.1e-7)",
+   "prefix-rule audit: 616/616 case rows agree with the strictly-preceding ledger prefix (covered iff same-receiver association turn < action turn); 0 implausible ages",
+   "end-to-end trace: v16 turn 5 (baby-a, S29, candidates [12,7,8,13], action position 2) native Brier recomputes 0.7290605566 -> row 0.729061; live reference 0.74367 exact",
+   "per-ledger drift/flip recompute matches pairs, flips, and mean L2 to 9 decimals on all 7 dyads",
+   "snapshot identity: policy-63 == policy-88 == latest byte-identical for both roles on all 7 dyads; policy.checkpointed at turns 63 and 88 on every ledger",
+   "source semantics: learner epsilon 1e-12, source union, cutoff rule, and analysis Laplace+1 count models confirmed in packages/learners/src/ledger-value-prediction.ts and packages/analysis/src/ledger-value.ts"
+  ]
+ },
+ "r01IdentityAssumptions": {
+  "status": "assumed-from-draft",
+  "draftSource": "/tmp/r01-attempt-inventory-draft.json (sibling ALDM read-only inventory, DRAFT, uncommitted at remainder time)",
+  "assumedIdentities": [
+   "Selected 7 sealed recurrent dyads lv01-development-v16/v17/v18/v19/v20/v21/v23-p0001 with the draft's terminalState=sealed reading",
+   "Ineligible group dispositions: v2/v3/v4/v8/v10/v11/v12 no sealed bundle; v5/v6/v7/v9/v13/v14 tabular; v15 erratum-excluded; v22 preflight failure",
+   "paired-development-v17..v21, recurrent-lifecycle-v1..v4, detector-v1/v2, and fault-fixture family scopes as grouped in the manifest ineligible list",
+   "detector-v3 sibling-owned and terminally unresolved in the draft (failure observations only, no receipt.json); not inspected here",
+   "v23 iteration-1 conflict recorded by the draft; no lifetime-iteration claim is made in this diagnosis"
+  ],
+  "reconcile": "Re-check every assumed identity against the committed R01 inventory (reports/research/research-attempt-inventory.v1.json, committed as e6d5da0 during remainder work) and record any delta in a manifest addendum; R01 working files appeared mid-task (2026-09-27 16:04 UTC, sibling-owned) and were not inspected."
+ },
+ "r01ReconcileAddendum": {
+  "status": "reconciled-no-delta",
+  "reconciledBy": "HANDYM",
+  "reconciledAgainst": "e6d5da0 reports/research/research-attempt-inventory.v1.json (46 entries)",
+  "method": "terminalState diff of all 46 attemptIds (draft /tmp/r01-attempt-inventory-draft.json vs committed); spot-read of v7/v9/v13/v14/v15 observations, v23Iteration1Conflict, unresolvedItems",
+  "verdicts": [
+   "Selected 7 (v16/v17/v18/v19/v20/v21/v23 p0001): sealed in committed R01 — confirmed",
+   "Ineligible states consistent: v2/v3/v4/v11/v12 failed; v8/v10 missing; v13/v14 failed with sealed-superseded note; v15 sealed with explicit tabular-path/R02-exclusion note; v22 preflight-failure; v5/v6 failed",
+   "Committed R01 does not classify v7/v9 path type; manifest tabular disposition is R02 bundle analysis, uncontradicted",
+   "Scope groupings (paired v17-v21, lifecycle v1-v4, detector v1/v2, fault fixtures) present in committed entries as grouped",
+   "detector-v3: committed FAILED (evidence RPC timeout), receipt still missing per R01 unresolvedItems — matches draft; never inspected here",
+   "v23 iteration-1 conflict: committed R01 carries full v23Iteration1Conflict block; diagnosis makes no lifetime-iteration claim — unaffected"
+  ],
+  "impact": "none — R02 diagnosis and manifest stand as written"
  }
 }

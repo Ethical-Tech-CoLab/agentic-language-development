@@ -1,8 +1,11 @@
-# LV01 retrospective development diagnosis (R02, draft)
+# LV01 retrospective development diagnosis (R02)
 
-Status: draft — 2026-09-27 UTC. Companion machine-readable record:
-`reports/research/ledger-development-analysis-manifest.v1.json`, which carries
-every input digest, the per-case rows, and the full eligibility accounting.
+Status: complete except R01-committed reconcile — 2026-09-27 UTC (draft
+14:13 UTC, remainder re-verification 16:30 UTC). Companion machine-readable
+record: `reports/research/ledger-development-analysis-manifest.v1.json`,
+which carries every input digest, the per-case rows, the full eligibility
+accounting, the verification checklist (`verification.checks`), and the
+flagged R01-draft identity assumptions (`r01IdentityAssumptions`).
 Authority: `plans/research-validation-plan.md` (master plan, R02 row) and
 `plans/first-publication-implementation-handoff.md` (§3 R02).
 
@@ -41,8 +44,14 @@ the same defect class as the v15 erratum — hence not recurrent evidence); v15
 labels unimplemented at those commits); recurrent-lifecycle v1–v4
 (state-persistence probes, no behavioral cohort); detector and fault fixtures
 (different scope); detector-v3 (sibling-owned, not inspected). The manifest
-records each disposition with its reason. R01 lifetime/capacity reconciliation
-was still in progress at draft time; no lifetime claim is made here.
+records each disposition with its reason. Attempt identities assume the
+uncommitted sibling R01 draft (`/tmp/r01-attempt-inventory-draft.json`);
+every such assumption is flagged in the manifest for reconcile after the
+R01 commit, and no lifetime claim is made here. R01 working files appeared
+mid-task (16:04 UTC, sibling-owned) and were not inspected; R01 committed
+as `e6d5da0` during remainder work. Reconcile performed (HANDYM): all 46
+attemptIds agree draft-vs-committed with zero terminal-state deltas; see
+manifest `r01ReconcileAddendum`. No diagnosis change required.
 
 ## 2. Method (how every number traces)
 
@@ -75,6 +84,26 @@ Receipt cross-check: all 10 retained-file digests in the v16 recurrent
 receipt and all 4 in the v23 receipt recompute exactly, and the v23 bundle
 manifest hash matches its offline-verification record.
 
+Remainder re-verification (read-only, sealed originals): all 77 manifest
+input digests (11 per dyad × 7) recompute exactly, as do all 7 bundle
+manifest hashes, both sealed `evidence.sqlite` digests
+(`d93ffeeb…` v16, `b2b8396e…` v23), and all 7 run seeds/commits against
+sealed run configs. All 7 dyads are sealed with verifier exit 0, 64 + 24
+turns, and genuine 4,049-parameter GRU exports (update 0 → 64) on both
+roles; scenario/prompt bundles are identical across all 7. A 616-case
+prefix audit finds 0 coverage-direction mismatches against the
+strictly-preceding ledger prefix and 0 implausible ages; an end-to-end
+trace (v16 turn 5: S29 over candidates [12,7,8,13], action position 2)
+recomputes native Brier 0.7290605566 → row 0.729061 exactly. Learner
+epsilon/source/cutoff semantics and analysis Laplace+1 count models were
+confirmed in the committed TypeScript sources.
+
+Conventions: per-case Brier values are stored rounded to 6 decimals while
+summary means are full precision (recompute deltas ≤1.1e-7); association
+age is action turn minus association turn; drift pairs are consecutive
+same-token associations within each receiver's own ledger (per-ledger
+recompute matches pairs, flips, and mean L2 to 9 decimals on all 7).
+
 ## 3. Coverage, staleness, and ledger dynamics
 
 | Dyad | Tokens assoc. / 32 | Coverage (all / eval) | Assoc. age mean / max (turns) | Revisions | Argmax flips | Recorded drift mean L2 |
@@ -93,10 +122,15 @@ token in any dyad); misses are early-turn warmup, and eval-phase coverage is
 against 2.77 for uniform over 16 types (mean max weight 0.10–0.21, v23 most
 concentrated). Nearly every consecutive same-token update flips the argmax
 type, which is expected for noise-dominated near-uniform vectors rather than
-evidence of meaningful revision. Unrecorded policy probability drift is
-**unavailable** (no frozen replay in this draft); only recorded association
-drift is reported. Policy snapshots are retained and digested for future
-replay.
+evidence of meaningful revision. Per-dyad diffuseness (mean normalized
+entropy / mean max weight, nats): v16 2.719/0.114, v17 2.658/0.143,
+v18 2.666/0.134, v19 2.558/0.176, v20 2.697/0.118, v21 2.740/0.097,
+v23 2.465/0.207 (full precision in the manifest). Unrecorded policy
+probability drift is **unavailable**: policy-63, policy-88, and latest are
+byte-identical per role on all 7 dyads with checkpoints only at turns 63
+and 88, so no per-action policy drift is measurable; only recorded
+association drift is reported. One `hypothesis.contradicted` event exists
+(v19 baby-b, turn 78, S24); its pair did not flip argmax.
 
 ## 4. Action-prediction scoring (descriptive, no inference)
 
@@ -141,10 +175,11 @@ for one.
 ## 5. Exposures and what remains unknown
 
 - Observed: 7 recurrent dyads × 88 normal-condition turns, 616 scored
-  receiver actions, 682 hypothesis associations, full per-case trace in
-  the manifest. Instrumentation is intact (one interpretation per turn on
-  the receiver ledger, valid 16-weight associations, sealed chains,
-  verifier exit 0); stored live distributions are rounded to 6 decimals.
+  receiver actions, 682 hypothesis associations (recount-verified),
+  full per-case trace in the manifest. Instrumentation is intact (one
+  interpretation per turn on the receiver ledger, valid 16-weight
+  associations, sealed chains, verifier exit 0); stored live
+  distributions are rounded to 6 decimals.
 - Unobserved here: any control/intervention contrast (all turns are
   normal condition), exact-replay fidelity, unrecorded drift, pilot or
   main cohorts, and the detector-v3 outcome.
@@ -174,9 +209,12 @@ per dyad, are recorded under `dyads.<runId>.inputDigests` in the manifest.)
 - One dyad per configuration; no pooling; v20/v21 native scores slightly
   worse than uniform on eval cases.
 - Softmax ordinary comparator omitted (see §2); unrecorded drift and
-  exact replay unavailable in this draft.
-- R01 inventory pending; detector-v3 not inspected; lifetime-iteration and
-  resource-balance claims are out of scope here.
+  exact replay unavailable (snapshot identity confirms no per-action
+  drift is measurable from retained data).
+- R01 inventory pending: attempt identities assume the uncommitted R01
+  draft and must be reconciled after its commit (see manifest
+  `r01IdentityAssumptions`); detector-v3 not inspected;
+  lifetime-iteration and resource-balance claims are out of scope here.
 
 Claim boundary: this diagnosis supports only bounded retrospective
 observations about retained development ledger coverage, staleness, and
