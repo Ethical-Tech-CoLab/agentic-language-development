@@ -1,0 +1,24 @@
+[Unit]
+Description=ALD research aggregate boundary (A0)
+Documentation=file:%h/Development/agentic-language-development/deploy/a0/README.md
+Before=slices.target
+
+[Slice]
+# One CPU-equivalent total for all research work, not one per task.
+CPUAccounting=yes
+CPUQuota=100%
+CPUWeight=10
+# Aggregate containment: high watermark is the operating bound, max is the
+# last-resort boundary. Includes all descendants and charged cache.
+MemoryAccounting=yes
+MemoryHigh=1536M
+MemoryMax=2G
+MemorySwapMax=0
+# Task ceiling counts threads, not just top-level processes.
+TasksAccounting=yes
+TasksMax=128
+# NOTE: IOWeight is inert until the io controller is delegated to the user
+# slice (currently: cpu memory pids only). Disk-heavy work stays blocked and
+# the preflight reports io.max as unverifiable. Never raise caps to compensate.
+IOAccounting=yes
+IOWeight=10
