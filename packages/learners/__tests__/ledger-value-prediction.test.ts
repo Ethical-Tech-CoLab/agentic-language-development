@@ -6,6 +6,7 @@ import {
   indexLv01TrainingLedger,
   predictLv01NativeLedger,
   replayLv01RecurrentReceiver,
+  selectLedgerConsistentToken,
 } from '../src/ledger-value-prediction.js';
 import { RecurrentCommunicationModel } from '../src/recurrent-model.js';
 
@@ -159,5 +160,46 @@ describe('LV01 training-ledger native predictions', () => {
       [association(1, 'S01', early), association(1, 'S02', latest)],
       'baby-a', { sequence: 1, turn: 10 },
     )).toThrow(/duplicate sequence/u);
+  });
+});
+
+describe('LV01 ledger-consistent token selection', () => {
+  const low = Array.from({ length: 16 }, () => 0);
+  const weak = [...low];
+  weak[1] = 1;
+  weak[4] = 8;
+  const strong = [...low];
+  strong[1] = 9;
+
+  it('selects the inventory token maximizing the native target probability', () => {
+    const first = inventory[5] as string;
+    const second = inventory[9] as string;
+    const index = indexLv01TrainingLedger(
+      [association(1, first, weak), association(2, second, strong)],
+      'baby-a',
+      { sequence: 2, turn: 20 },
+    );
+    expect(selectLedgerConsistentToken(index, 1, candidates, inventory)).toBe(second);
+  });
+
+  it('breaks ties by lowest inventory index', () => {
+    const first = inventory[5] as string;
+    const second = inventory[9] as string;
+    const index = indexLv01TrainingLedger(
+      [association(1, first, strong), association(2, second, strong)],
+      'baby-a',
+      { sequence: 2, turn: 20 },
+    );
+    expect(selectLedgerConsistentToken(index, 1, candidates, inventory)).toBe(first);
+  });
+
+  it('rejects targets outside the candidates', () => {
+    const index = indexLv01TrainingLedger(
+      [association(1, inventory[0] as string, strong)],
+      'baby-a',
+      { sequence: 1, turn: 10 },
+    );
+    expect(() => selectLedgerConsistentToken(index, 2, candidates, inventory))
+      .toThrow(/among the candidates/u);
   });
 });

@@ -110,6 +110,21 @@ export class OracleRequiresControlArtifactError extends GatewayError {
   }
 }
 
+/**
+ * An LV01 ledger branch (`ledger-consistent` / `ledger-shuffled`) delivers
+ * only its committed treatment token. A ledger label without a committed
+ * slice is a configuration error, never a silent normal delivery.
+ */
+export class Lv01LedgerTreatmentRequiredError extends GatewayError {
+  constructor(readonly branch: string) {
+    super(
+      'INVALID_REQUEST',
+      `The LV01 ${branch} branch requires a committed ledger-treatment slice in lv01PairedCase`,
+      { branch, predictionTreatment: branch },
+    );
+  }
+}
+
 /** Mirror of {@link OracleRequiresControlArtifactError} for the other five conditions. */
 export class ControlArtifactNotPermittedError extends GatewayError {
   constructor(readonly condition: RunConfig['communicationCondition']) {
@@ -130,7 +145,7 @@ export class ControlArtifactNotPermittedError extends GatewayError {
 export class InvalidControlArtifactError extends GatewayError {
   constructor(
     readonly reasonCode: GatewayReasonCode,
-    readonly origin: 'constant' | 'oracle' | 'shuffled-batch',
+    readonly origin: 'constant' | 'oracle' | 'shuffled-batch' | 'ledger-treatment',
     detail: string,
   ) {
     super(

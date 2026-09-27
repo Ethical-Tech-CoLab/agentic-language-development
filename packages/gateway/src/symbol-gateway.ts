@@ -64,6 +64,7 @@ import {
   InterpretationRejectedError,
   InvalidControlArtifactError,
   InvalidSymbolInventoryError,
+  Lv01LedgerTreatmentRequiredError,
   OracleRequiresControlArtifactError,
   ShuffledBatchRequiredError,
   TurnDeadlineExceededError,
@@ -316,9 +317,11 @@ export class SymbolGatewayImpl implements SymbolGateway {
 
     // 6. §9.6: control replacement happens after validation, before the
     //    channel event is constructed.
-    const controlledArtifact = this.applyCommunicationControl(
-      turn,
-      parsed.proposal.publicArtifact,
+    const controlledArtifact = this.applyLv01LedgerTreatment(
+      this.applyCommunicationControl(
+        turn,
+        parsed.proposal.publicArtifact,
+      ),
     );
     const probeApplication =
       turn.probe === undefined
@@ -813,7 +816,7 @@ export class SymbolGatewayImpl implements SymbolGateway {
    */
   private validateArtifact(
     artifact: PublicArtifact,
-    origin: 'constant' | 'oracle' | 'shuffled-batch',
+    origin: 'constant' | 'oracle' | 'shuffled-batch' | 'ledger-treatment',
   ): PublicArtifact {
     const kind = this.module.allowedKinds[0] as AgentActionProposal['kind'];
     const validation = this.module.validate(
@@ -828,6 +831,28 @@ export class SymbolGatewayImpl implements SymbolGateway {
       );
     }
     return validation.artifact;
+  }
+
+  /**
+   * LV01 ledger interventions: a ledger branch delivers only its
+   * collector-committed treatment token, never the sender's artifact. Runs
+   * after condition control; ordinary branches pass through unchanged.
+   */
+  private applyLv01LedgerTreatment(
+    artifact: PublicArtifact | null,
+  ): PublicArtifact | null {
+    const pairedCase = this.runContext.config.lv01PairedCase;
+    if (pairedCase === undefined || pairedCase.predictionTreatment === 'ordinary-records') {
+      return artifact;
+    }
+    const slice = pairedCase.ledgerTreatment;
+    if (slice === undefined || artifact === null) {
+      throw new Lv01LedgerTreatmentRequiredError(pairedCase.branch);
+    }
+    return this.validateArtifact(
+      { symbols: [slice.deliveredToken] } as PublicArtifact,
+      'ledger-treatment',
+    );
   }
 
   /** SPEC §9.6 table, applied after validation and before the channel event. */

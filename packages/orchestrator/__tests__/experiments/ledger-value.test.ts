@@ -30,12 +30,19 @@ describe('LV01 paired collector gates', () => {
         partitionContractVersion: 'lv01-within-support/v1',
       },
     });
+    const slice = {
+      selectedToken: 'S0',
+      deliveredToken: 'S0',
+      batchCommitment: `sha256:${'e'.repeat(64)}`,
+      sourceCaseId: 'case-0',
+    };
     const plan = createLv01PairedCasePlan({
       parent,
       parentCheckpointHash: `sha256:${'d'.repeat(64)}`,
       babyAInitialPolicyRef: 'policies/baby-a-latest.json',
       babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-case',
+      ledgerTreatments: { 'ledger-consistent': slice, 'ledger-shuffled': slice },
     });
     expect(plan.preStateCommitment).toMatch(/^sha256:/u);
     expect(plan.branches.map((entry) => entry.branch)).toEqual(LV01_BRANCHES);
@@ -93,6 +100,16 @@ describe('LV01 paired collector gates', () => {
         babyAInitialPolicyRef: 'policies/baby-a-policy-initial.json',
         babyBInitialPolicyRef: 'policies/baby-b-policy-initial.json',
         childRunIdPrefix: 'lv01-fault-child',
+        ledgerTreatments: {
+          'ledger-consistent': {
+            selectedToken: 'S0', deliveredToken: 'S0',
+            batchCommitment: `sha256:${'e'.repeat(64)}`, sourceCaseId: 'case-0',
+          },
+          'ledger-shuffled': {
+            selectedToken: 'S0', deliveredToken: 'S0',
+            batchCommitment: `sha256:${'e'.repeat(64)}`, sourceCaseId: 'case-0',
+          },
+        },
       }).branches[0]!.config;
       await harness.runtime.createRun(child);
       const seedToken = fixedTokenInventory(32)[2] as string;

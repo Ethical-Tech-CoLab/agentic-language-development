@@ -30,6 +30,16 @@ export interface Lv01PairedCasePlanInput {
   readonly babyAInitialPolicyRef: string;
   readonly babyBInitialPolicyRef: string;
   readonly childRunIdPrefix: string;
+  /**
+   * Committed ledger-treatment slices per branch. Ledger branches deliver
+   * only with a committed slice; ordinary branches must not carry one.
+   */
+  readonly ledgerTreatments?: Partial<Record<Lv01Branch, {
+    readonly selectedToken: string;
+    readonly deliveredToken: string;
+    readonly batchCommitment: string;
+    readonly sourceCaseId: string;
+  }>>;
 }
 
 /** Seven independent derived runs that begin from the same exported parent state. */
@@ -79,6 +89,10 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
   });
   const branches = LV01_BRANCHES.map((branch) => {
     const treatment = branchTreatment(branch);
+    const ledgerSlice = input.ledgerTreatments?.[branch];
+    const isLedgerBranch = treatment.predictionTreatment !== 'ordinary-records';
+    if (isLedgerBranch && ledgerSlice === undefined) fail(`branch ${branch} requires a committed ledger-treatment slice`);
+    if (!isLedgerBranch && ledgerSlice !== undefined) fail(`branch ${branch} must not carry a ledger-treatment slice`);
     const config = createDerivedRunConfig(
       input.parent,
       input.parentCheckpointHash,
@@ -98,6 +112,7 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
             branch,
             predictionTreatment: treatment.predictionTreatment,
             preStateCommitment,
+            ...(ledgerSlice === undefined ? {} : { ledgerTreatment: { ...ledgerSlice } }),
           },
         },
       },

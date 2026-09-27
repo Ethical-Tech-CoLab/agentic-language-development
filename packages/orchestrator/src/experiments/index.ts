@@ -66,6 +66,17 @@ export {
   type Lv01PairedPredictionState,
 } from './lv01-paired-predictions.js';
 export {
+  LV01_LEDGER_TREATMENT_BATCH_DOMAIN,
+  buildLedgerTreatmentBatch,
+  ledgerShuffledDerangement,
+  sliceLedgerTreatment,
+  verifyLedgerTreatmentSlice,
+  type Lv01LedgerTreatmentBatch,
+  type Lv01TreatedCase,
+  type Lv01TreatmentCase,
+  type Lv01TreatmentSlice,
+} from './lv01-ledger-treatments.js';
+export {
   acquireLv01JournalLock,
   appendLv01Journal,
   initializeLv01Journal,

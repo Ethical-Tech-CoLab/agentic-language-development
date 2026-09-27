@@ -193,6 +193,12 @@ export const Lv01PairedCaseSchema = z.object({
   branch: z.enum(['normal', 'disabled', 'constant', 'random', 'shuffled', 'ledger-consistent', 'ledger-shuffled']),
   predictionTreatment: z.enum(['ordinary-records', 'ledger-consistent', 'ledger-shuffled']),
   preStateCommitment: hashString,
+  ledgerTreatment: z.object({
+    selectedToken: nonEmptyString,
+    deliveredToken: nonEmptyString,
+    batchCommitment: hashString,
+    sourceCaseId: nonEmptyString,
+  }).strict().optional(),
 }).strict();
 
 /** LV01 stage artifacts distinguish execution accounting from research results. */

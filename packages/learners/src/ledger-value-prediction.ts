@@ -336,3 +336,43 @@ export function replayLv01RecurrentReceiver(
     parameterCount: LV01_PARAMETER_COUNT,
   };
 }
+
+/**
+ * Ledger-consistent intervention selection: the inventory token maximizing
+ * the native predictor's probability of the target type, with inventory-order
+ * (lowest-index) ties. The target is experimenter-known case ground truth;
+ * it never enters a learner observation or prediction baseline.
+ */
+export function selectLedgerConsistentToken(
+  index: Lv01NativeLedgerIndex,
+  targetTypeCode: number,
+  candidateTypeCodes: readonly number[],
+  symbolInventory: readonly string[],
+): string {
+  assertLv01CandidateTypes(candidateTypeCodes);
+  if (
+    symbolInventory.length !== LV01_SYMBOL_COUNT ||
+    new Set(symbolInventory).size !== symbolInventory.length
+  ) {
+    throw new LearnerConfigurationError(
+      `LV01 requires exactly ${LV01_SYMBOL_COUNT} distinct inventory tokens`,
+    );
+  }
+  const position = candidateTypeCodes.indexOf(targetTypeCode);
+  if (position < 0) {
+    throw new LearnerConfigurationError(
+      'LV01 ledger-consistent target must be among the candidates',
+    );
+  }
+  let best = symbolInventory[0] as string;
+  let bestProbability = -1;
+  for (const token of symbolInventory) {
+    const probability = predictLv01NativeLedger(index, token, candidateTypeCodes)
+      .distribution[position] as number;
+    if (probability > bestProbability) {
+      bestProbability = probability;
+      best = token;
+    }
+  }
+  return best;
+}

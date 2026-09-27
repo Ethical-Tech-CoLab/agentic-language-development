@@ -196,6 +196,7 @@ export {
   indexLv01TrainingLedger,
   predictLv01NativeLedger,
   replayLv01RecurrentReceiver,
+  selectLedgerConsistentToken,
   type Lv01NativeAssociationEventType,
   type Lv01NativeLedgerIndex,
   type Lv01NativeLedgerPrediction,

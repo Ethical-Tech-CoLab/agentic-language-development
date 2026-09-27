@@ -36,6 +36,7 @@ export {
   InvalidControlArtifactError,
   InvalidSymbolInventoryError,
   isGatewayError,
+  Lv01LedgerTreatmentRequiredError,
   OracleRequiresControlArtifactError,
   ShuffledBatchRequiredError,
   toGatewayError,

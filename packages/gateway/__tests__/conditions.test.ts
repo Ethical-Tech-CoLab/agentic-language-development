@@ -6,12 +6,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { ChannelEventSchema, HASH_DOMAINS } from '@ald/types';
-import type { AgentActionProposal, GatewaySubmitResult, SymbolGateway } from '@ald/types';
+import { ChannelEventSchema, HASH_DOMAINS, fixedTokenInventory } from '@ald/types';
+import type { AgentActionProposal, GatewaySubmitResult, RunConfig, SymbolGateway } from '@ald/types';
 import { hashCanonical, hashCarrierMark } from '@ald/hashing';
 
 import {
   ControlArtifactNotPermittedError,
+  Lv01LedgerTreatmentRequiredError,
   OracleRequiresControlArtifactError,
   ShuffledBatchRequiredError,
 } from '../src/errors.js';
@@ -472,5 +473,98 @@ describe('SPEC §9.6 communication-control conditions', () => {
       // under `normal`; comparability is via the carrier-mark hash instead.
       expect(result.babyProposalHash).not.toBe(result.deliveredArtifactHash);
     }
+  });
+});
+
+describe('LV01 ledger interventions', () => {
+  const pairedCase = (
+    branch: 'ledger-consistent' | 'ledger-shuffled' | 'normal',
+    treatment: 'ledger-consistent' | 'ledger-shuffled' | 'ordinary-records',
+    slice:
+      | {
+          selectedToken: string;
+          deliveredToken: string;
+          batchCommitment: string;
+          sourceCaseId: string;
+        }
+      | undefined,
+  ): RunConfig['lv01PairedCase'] => ({
+    version: 1,
+    branch,
+    predictionTreatment: treatment,
+    preStateCommitment: hashCanonical('test-pre-state-v1', branch),
+    ...(slice === undefined ? {} : { ledgerTreatment: slice }),
+  });
+
+  const lv01Run = {
+    experimentId: 'LV01',
+    evaluationOnly: true,
+    evaluationTurns: 1,
+    parentRunId: 'lv01-parent',
+    derivedFromCheckpointHash: hashCanonical('test-checkpoint-v1', 'c'),
+    babyA: {
+      track: 'no-learning',
+      modelRef: 'reference-a',
+      trainingIsolation: 'independent',
+      initialPolicyRef: 'policies/baby-a-latest.json',
+    },
+    babyB: {
+      track: 'no-learning',
+      modelRef: 'reference-b',
+      trainingIsolation: 'independent',
+      initialPolicyRef: 'policies/baby-b-latest.json',
+    },
+    ledgerValuePlan: {
+      version: 1,
+      designCommitmentHash: hashCanonical('test-design-v1', 'd'),
+      analysisCommitmentHash: hashCanonical('test-analysis-v1', 'a'),
+      seedResourceCommitmentHash: hashCanonical('test-seed-v1', 's'),
+      predictionFunctionVersion: 'lv01-ledger-value-prediction/v1',
+      partitionContractVersion: 'lv01-within-support/v1',
+    },
+  } as const;
+
+  it('delivers the committed treatment token instead of the sender artifact', async () => {
+    const token = fixedTokenInventory(32)[7] as string;
+    const { gateway, context } = harness({
+      communicationCondition: 'normal',
+      ...lv01Run,
+      lv01PairedCase: pairedCase('ledger-consistent', 'ledger-consistent', {
+        selectedToken: token,
+        deliveredToken: token,
+        batchCommitment: hashCanonical('test-batch-v1', 'b'),
+        sourceCaseId: 'case-0',
+      }),
+    });
+    const result = accepted(
+      await gateway.submitProposal(turn(), symbolEnvelope(PROPOSED)),
+    );
+    expect(symbolsOf(result.delivery?.publicArtifact)).toEqual([token]);
+    expect(result.deliveredArtifactHash).toBe(
+      hashCarrierMark(context.config.carrierMode, { symbols: [token] }),
+    );
+  });
+
+  it('fails closed when a ledger branch has no committed slice', async () => {
+    const { gateway } = harness({
+      communicationCondition: 'normal',
+      ...lv01Run,
+      lv01PairedCase: pairedCase('ledger-shuffled', 'ledger-shuffled', undefined),
+    });
+    await expect(
+      gateway.submitProposal(turn(), symbolEnvelope(PROPOSED)),
+    ).rejects.toBeInstanceOf(Lv01LedgerTreatmentRequiredError);
+  });
+
+  it('leaves ordinary branches untouched', async () => {
+    const { gateway } = harness({
+      communicationCondition: 'normal',
+      ...lv01Run,
+      lv01PairedCase: pairedCase('normal', 'ordinary-records', undefined),
+    });
+    const result = accepted(
+      await gateway.submitProposal(turn(), symbolEnvelope(PROPOSED)),
+    );
+    expect(symbolsOf(result.delivery?.publicArtifact)).toEqual(PROPOSED);
   });
 });
