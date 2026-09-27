@@ -40,8 +40,15 @@ numbers appear in any figure.
 | Main (N=`TBD`) | `TBD` | `TBD` | TBD | `TBD` |
 | Repeat (N=`TBD`) | `TBD` | `TBD` | TBD | `TBD` |
 
-Learning-control gate: if training curves show no learning, downstream
-contrasts are reported as uninterpretable, not as nulls.
+Learning-control gate: if training curves show no learning, that limits
+interpretation (no learned-communication or useful-ledger sentence), but
+completed contrasts on valid dyads are still reported as valid nulls —
+non-rejection is "not supported at the registered threshold", never
+equivalence, and low success, high loss, slow convergence, and
+inconvenient estimates remain valid observations per the frozen
+invalidity rule. Only empty or incomplete data (no valid dyads; stage
+incomplete) is distinct: it yields no estimand and is reported as
+incomplete, never as a null.
 
 ## T2. Causal controls — shell
 
@@ -49,7 +56,18 @@ contrasts are reported as uninterpretable, not as nulls.
 |---|---|---|---|---|
 | Message ablation | `TBD` | TBD | TBD | TBD |
 | Message substitution | `TBD` | TBD | TBD | TBD |
-| Detector-positive control | `TBD` | TBD | TBD | TBD |
+
+Detector positive controls (oracle/detector fixtures evaluated through
+the same analysis path) are integrity diagnostics, not LV01 behavioral
+arms: they are prohibited from selection and confirmatory inference and
+are reported with the mutation/integrity challenges (T6), never in this
+behavioral-probe table.
+
+Reading rule: LV-C probes test delivered-message dependence under
+controlled intervention. A rejection supports only the four registered
+normal-minus-control margins in this setting; a learned-communication
+sentence additionally requires LV-U support plus a native predictor
+that beats uniform in held-out scoring (frozen interpretation rule).
 
 ## T3. LV-U/P/C/L estimates and intervals — shell
 
@@ -69,12 +87,20 @@ Multiple-comparison policy: `TBD` exactly as registered.
 
 | Comparator | Information set | Metric | Estimate | Interval |
 |---|---|---|---|---|
-| Ordinary records only | `TBD` allowed fields | TBD | TBD | TBD |
-| Stale ledger | previous checkpoint | TBD | TBD | TBD |
-| Equal-content unsigned | byte-identical content, no signature | TBD | TBD | TBD |
-| Full snapshot | 64-episode cadence + cutoffs | TBD | TBD | TBD |
+| `uniform` (descriptive reference; selection-eligible) | candidate count only | TBD | TBD | TBD |
+| `validation-majority` | ordinary records, declared folds + final refit | TBD | TBD | TBD |
+| `transcript-only` | delivered token only | TBD | TBD | TBD |
+| `task-history` | token/type counts from ordinary records | TBD | TBD | TBD |
+| `ordinary-record-softmax` | 565-coefficient token/candidate/position fit | TBD | TBD | TBD |
+| `equal-content-unsigned-log` (descriptive) | byte-identical content, no signature | TBD | TBD | TBD |
+| `fixed-cadence-policy-summary` (descriptive) | 64-episode cadence + cutoffs | TBD | TBD | TBD |
 
-Every registered comparator appears, including any that beat the ledger.
+Every registered comparator appears — all five selection-eligible
+ordinary comparators (not only the selected one), including any that
+beat the ledger. No stale-ledger row: the one-checkpoint-stale
+comparison is LV02's confirmatory contrast
+(`protocols/lv02-analysis-plan.v1.json`, member LV02-T), not an LV01
+comparator.
 
 ## T5. Equal-content predictive equality — shell
 
@@ -82,9 +108,11 @@ Every registered comparator appears, including any that beat the ledger.
 |---|---|---|---|
 | Signed vs unsigned, identical content | `TBD` | TBD | TBD |
 
-Reading rule: a difference implicates the signature channel, not semantic
-content. The paper makes no signing-improves-semantics claim in either
-direction.
+Reading rule: signed and unsigned predictions must match exactly under
+the registered contract; any mismatch is a failed contract
+(implementation or audit defect) requiring diagnosis before any
+empirical reading — never a finding about the signature channel. The
+paper makes no signing-improves-semantics claim in either direction.
 
 ## T6. Mutation detection / false acceptance — shell
 

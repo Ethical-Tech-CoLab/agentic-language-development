@@ -1,7 +1,9 @@
 # LV01 retrospective development diagnosis (R02)
 
-Status: complete except R01-committed reconcile — 2026-09-27 UTC (draft
-14:13 UTC, remainder re-verification 16:30 UTC). Companion machine-readable
+Status: complete; R01-reconciled with zero deltas — 2026-09-27 UTC (draft
+14:13 UTC, remainder re-verification 16:30 UTC, reconcile per §1 and manifest
+`r01ReconcileAddendum`; original pre-reconcile wording retained in §8).
+Companion machine-readable
 record: `reports/research/ledger-development-analysis-manifest.v1.json`,
 which carries every input digest, the per-case rows, the full eligibility
 accounting, the verification checklist (`verification.checks`), and the
@@ -43,7 +45,9 @@ the same defect class as the v15 erratum — hence not recurrent evidence); v15
 (single-turn branch children of one shared parent case each; intervention
 labels unimplemented at those commits); recurrent-lifecycle v1–v4
 (state-persistence probes, no behavioral cohort); detector and fault fixtures
-(different scope); detector-v3 (sibling-owned, not inspected). The manifest
+(different scope); detector-v3 (committed R01 terminal FAILED / not-tested —
+failure observations only, no receipt, no seal; never inspected here).
+The manifest
 records each disposition with its reason. Attempt identities assume the
 uncommitted sibling R01 draft (`/tmp/r01-attempt-inventory-draft.json`);
 every such assumption is flagged in the manifest for reconcile after the
@@ -182,7 +186,9 @@ for one.
   distributions are rounded to 6 decimals.
 - Unobserved here: any control/intervention contrast (all turns are
   normal condition), exact-replay fidelity, unrecorded drift, pilot or
-  main cohorts, and the detector-v3 outcome.
+  main cohorts, and direct detector-v3 inspection (its R01 terminal
+  outcome — FAILED / not-tested, no seal — is recorded via the committed
+  inventory, not observed here).
 - The development ledgers are diffuse near-uniform summaries of poorly
   learned policies — consistent with "failure to learn within budget is
   a valid observation", not with a pilot-ready effect.
@@ -211,13 +217,38 @@ per dyad, are recorded under `dyads.<runId>.inputDigests` in the manifest.)
 - Softmax ordinary comparator omitted (see §2); unrecorded drift and
   exact replay unavailable (snapshot identity confirms no per-action
   drift is measurable from retained data).
-- R01 inventory pending: attempt identities assume the uncommitted R01
-  draft and must be reconciled after its commit (see manifest
-  `r01IdentityAssumptions`); detector-v3 not inspected;
-  lifetime-iteration and resource-balance claims are out of scope here.
+- R01 inventory reconciled: attempt identities assumed the uncommitted R01
+  draft at writing time and were reconciled against committed `e6d5da0`
+  with zero terminal-state deltas (see §1 and manifest
+  `r01ReconcileAddendum`; `r01IdentityAssumptions` is retained as the
+  pre-reconcile record). Detector-v3 was never inspected here — its
+  FAILED / not-tested terminal (no seal) is R01-accounted.
+  Lifetime-iteration and resource-balance claims remain out of scope here.
 
 Claim boundary: this diagnosis supports only bounded retrospective
 observations about retained development ledger coverage, staleness, and
 action-prediction scoring. It establishes no semantic-ledger utility,
 fidelity, cost, language-emergence, calibration, pilot, or scientific
 result.
+
+## 8. Correction addendum (append-only; 2026-09-27, HANDYM h1h2-manuscript)
+
+The §1 reconcile note was recorded while the header and §7 still carried
+pre-reconcile wording. The corrections below supersede those stale lines;
+no scored value, digest, or disposition above is altered.
+
+- C1 (header): "complete except R01-committed reconcile" →
+  "complete; R01-reconciled with zero deltas". Evidence: manifest
+  `r01ReconcileAddendum` (`reconciled-no-delta`, all 46 attemptIds agree
+  draft-vs-committed `e6d5da0`).
+- C2 (§7): "R01 inventory pending … must be reconciled after its commit" →
+  reconciled with zero deltas; `r01IdentityAssumptions` retained as the
+  pre-reconcile record. Evidence: §1 reconcile note,
+  `reports/research/research-attempt-inventory.v1.json` at `e6d5da0`.
+- C3 (§1/§5/§7 detector-v3): "sibling-owned, not inspected" / "outcome
+  unobserved" → committed R01 terminal FAILED / not-tested (evidence RPC
+  timeout, stalled ~turn 1986/2016; failure observations only at
+  `evidence/lv01/detector-v3/lv01-detector-v3-p0001/output/lv01-detector-observations.json`,
+  `sha256:6be25a03…`; no receipt.json, no seal). The attempt was never
+  inspected here; its terminal state is R01-accounted. Evidence:
+  committed R01 entry `lv01-detector-v3-p0001` and `unresolvedItems`.

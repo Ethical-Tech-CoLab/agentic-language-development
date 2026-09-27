@@ -2,9 +2,10 @@
 
 Status: **pre-results skeleton**. Every `TBD` marks a field that must be
 populated only from verified R09/R10 evidence. No result stated here is an
-observation. Venue target (conditional): TMLR; see
-`plans/publication-venue-assessment.md` and `review-package.md` for the
-preparation gate and current author-guide rules.
+observation. Venue target (conditional): TMLR; see `review-package.md` for
+the preparation gate. `plans/publication-venue-assessment.md` is a working
+note only — current official TMLR pages govern the author-guide rules at
+freeze.
 
 ## 1. Exact question
 
@@ -13,13 +14,18 @@ do private policy-derived semantic summaries (ledger records):
 
 1. improve pre-action prediction beyond ordinary interaction records (utility),
 2. approximate the underlying policy faithfully rather than trivially (fidelity),
-3. causally affect task behavior when delivered as messages (causal use), and
+3. causally affect task behavior when delivered as messages (delivered-message
+   dependence under controlled intervention — "causal use"), and
 4. at what measured capture, storage, query, and verification cost (audit cost)?
 
 Positive answers to (1)–(3) are independent claims. A fidelity pass alone is
 insufficient for a useful-ledger claim: summary–policy agreement without
 incremental predictive value, causal effect, or acceptable cost does not
-support the paper's thesis.
+support the paper's thesis. A "learned communication" sentence is narrower
+still: it additionally requires the packet's joint rule (LV-U and LV-C
+support plus a native predictor that beats uniform in held-out scoring,
+§5.5) — LV-C alone supports only the four registered normal-minus-control
+margins in this setting.
 
 ## 2. Study population
 
@@ -46,11 +52,14 @@ out from training, or fields the causal-ledger protocol forbids.
 
 | Comparator | Reads before action | Must not read |
 |---|---|---|
-| Ordinary records only | `TBD` (allowed ordinary-record fields from the R03 packet) | Ledger content, snapshots, future turns |
+| Ordinary records only (`uniform`, `validation-majority`, `transcript-only`, `task-history`, `ordinary-record-softmax`) | `TBD` (allowed ordinary-record fields from the R03 packet; five predictors share this access with distinct fits, §5.4) | Ledger content, snapshots, future turns |
 | Latest permitted sparse ledger | Ordinary records + latest ledger snapshot at/before the decision turn | Future ledger revisions, probe labels |
-| One-checkpoint-stale ledger | Ordinary records + previous-checkpoint ledger | Current-checkpoint ledger, future turns |
 | Equal-content unsigned history | Ordinary records + unsigned record with byte-identical semantic content | Signature/anchor fields (tests content, not signing) |
 | Periodic full association snapshot | Ordinary records + full snapshot at 64-episode cadence plus cutoffs | Off-cadence state |
+
+No stale-ledger row: the one-checkpoint-stale contrast is LV02's
+confirmatory comparison (`protocols/lv02-analysis-plan.v1.json`, member
+LV02-T), not an LV01 information-access comparator.
 
 Mode limitations: this is a trusted-Prototype study, not an adversarial
 process-isolation study. Physical isolation and timing-channel claims do not
@@ -66,7 +75,7 @@ hardware or side-channel guarantee. See §8 (logical isolation) and the
 |---|---|---|
 | Prototype runtime, recurrent learner family, naming game, fixed-token channel | Tracked source at `TBD` commit; qualification receipts `TBD` | No redesign; frozen via R03 packet |
 | Ledger capture, signing, verification machinery | Prior qualification receipts `TBD` | None claimed |
-| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets `TBD` |
+| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets, frozen `9be6e536` (§5.1) |
 | Prediction/intervention/replay integration (delivered messages, pre-action vectors, true draws, state resets) | — | R04, verified by negative/positive cases `TBD` |
 | Study CLI, provenance, admission, terminal accounting | — | R05 command contracts `TBD` |
 | Main + repeat data, fixed analysis, reproduction | — | R09/R10 evidence `TBD` |
@@ -80,9 +89,13 @@ decision, never mere presence or a verifier pass.
 ## 5. Methods
 
 Methods below are design facts transcribed strictly from the frozen LV01 v2
-packets (R03, commit `9be6e536`) and other committed planning sources. No
-value here is a measurement. Every empirical field stays `TBD` until
-R09/R10. Packet governs on any conflict with this prose.
+packets (R03, commit `9be6e536`) and other tracked `protocols/` sources.
+Ignored `plans/` files coordinate work; they are not registrations or
+evidence and fix no method here (see
+`reports/research/authority-binding-proposals.v1.md` for the tracked
+bindings that P1/P2 still require). No value here is a measurement. Every
+empirical field stays `TBD` until R09/R10. Tracked packet governs on any
+conflict with this prose.
 
 ### 5.1 Design, registration, and analysis plan
 
@@ -334,9 +347,11 @@ success/probability contrasts [−1,1].
 
 ### 5.7 Operating-characteristic validation of the selector
 
-Fixed in `plans/first-publication-implementation-handoff.md` §8 (the
-v2 packets cite the family; the handoff fixes the simulation cases).
-At null or design-alternative mean mu, test: a Normal working model at
+The v2 packets cite the family; the simulation cases below are currently
+described only in the ignored handoff (`plans/` work coordination, not
+authority) and are UNBOUND until the tracked P1 binding lands (see
+`reports/research/authority-binding-proposals.v1.md`). Working description:
+at null or design-alternative mean mu, test: a Normal working model at
 SD 0.08 (numerical working model, not a bounded-data claim); endpoint
 Bernoulli on a/b with `P(b) = (mu-a)/(b-a)`; `mu + h*(Z-E[Z])` with
 `h = min(mu-a, b-mu)/2` where Z is `2*Beta(2,2)-1`,
@@ -361,7 +376,9 @@ case blocks registration for a documented methods revision. Receipt:
 ### 5.8 Cost measurement and mutation challenges
 
 - Report whole-cohort actual capture/retention/verification costs on
-  the frozen profile. Benchmark query and verification operations on
+  the frozen profile. Working description (UNBOUND until the tracked P2
+  binding lands — currently only in the ignored master plan §4.5, which
+  fixes nothing): benchmark query and verification operations on
   the first ten registered primary dyads in each main/repeat cohort,
   independently of outcomes: one warmup and five measured invocations
   per record format, deterministic rotated format order; retain
@@ -400,16 +417,25 @@ Result tables live in `estimates-and-intervals.md`; this section states the
 reading order and the claims each table can and cannot support.
 
 1. Training curves and causal controls: learning actually occurred and the
-   intervention machinery moved behavior. Without this, downstream contrasts
-   are uninterpretable.
+   intervention machinery moved behavior. Completed contrasts on valid
+   dyads are reported as valid nulls regardless; a failed learning gate
+   limits interpretation (no learned-communication/useful-ledger
+   sentence), and only empty or incomplete data is reported as
+   incomplete rather than as a null.
 2. LV-U (incremental utility): pre-action Brier contrast of ledger-assisted
    versus ordinary-record prediction, with dyad-level interval, at locked N.
    Nulls and failures reported alongside any positive.
-3. LV-P (predictive equality): equal-content signed-versus-unsigned
-   comparison. A difference here implicates the signature channel, not
-   content; the paper makes no signing-improves-semantics claim either way.
+3. Equal-content predictive equality (descriptive; not LV-P — LV-P
+   fidelity is the native-versus-exact-replay contrast in T3):
+   signed-versus-unsigned predictions must match exactly under the
+   registered contract. Any mismatch is a failed contract requiring
+   diagnosis, not an empirical finding; the paper makes no
+   signing-improves-semantics claim either way.
 4. LV-C (causal use): message-ablation/substitution probe effects on task
-   behavior. Task success alone is never read as causal listening.
+   behavior — delivered-message dependence under controlled
+   intervention. Task success alone is never read as causal listening,
+   and LV-C alone never licenses a learned-communication sentence
+   (joint LV-U + LV-C + native-beats-uniform rule, §5.5).
 5. LV-L (`TBD` definition from the R03 packet): `TBD`.
 6. All baselines: every registered comparator reported, including ones that
    beat the ledger. No outcome selection.
@@ -445,7 +471,8 @@ Each item must be answered with evidence citations at manuscript freeze; the
 working checklist and verdicts live in `review-package.md`.
 
 1. Trivial fidelity: `TBD` — show the ledger is not a restatement of inputs
-   the predictor already had (stale-ledger and equal-content controls).
+   the predictor already had (ordinary-record and equal-content controls;
+   the stale-ledger contrast belongs to LV02, not LV01).
 2. Weak comparators: `TBD` — justify each baseline as the strongest fair
    representative of its information set.
 3. Temporal leakage: `TBD` — cite the chronology checks and negative cases

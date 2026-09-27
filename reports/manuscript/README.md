@@ -1,14 +1,22 @@
 # First-paper manuscript package (R11) — skeleton
 
 Status: **skeleton only, pre-results**. Prepared 2026-09-27 under R11 of the
-master validation plan. R03–R10 are unimplemented; every results-bearing field
-in this package is `TBD` until populated from verified, sealed evidence. No
-numeric result, interval, or cost figure in this package is an observation.
+master validation plan. Corrected 2026-09-27 (HANDYM h1h2-manuscript): the
+earlier "R03–R10 are unimplemented" blanket is withdrawn — R03 design packets
+are frozen (commit `9be6e536`; see `first-paper-draft.md` §5.1), the R01
+attempt inventory is committed (`e6d5da0`), the R02 development diagnosis is
+complete, and R04/R05 implementation commits are in history; R06–R10
+(qualification, pilot, lock, main, repeat) are unrun. Every results-bearing
+field in this package is `TBD` until populated from verified, sealed evidence.
+No numeric result, interval, or cost figure in this package is an observation.
 
-- Research authority: `plans/research-validation-plan.md` (R00–R15 queue) and
-  `plans/first-publication-implementation-handoff.md` §9 (R11 requirements).
-- Scope summary: `plans/first-publication-plan.md`. Venue rules:
-  `plans/publication-venue-assessment.md` (TMLR, conditional target).
+- Research authority: the frozen R03 design packets (commit `9be6e536`),
+  tracked `protocols/` files, and sealed stage evidence — never `plans/`.
+  `plans/` is gitignored work coordination (R00–R15 queue, R11 notes); it is
+  not a registration and not evidence, so nothing here cites it as authority.
+- Scope summary: `first-paper-draft.md` §§1–5. Venue working notes:
+  `plans/publication-venue-assessment.md` (TMLR, conditional target) — a
+  coordination note only; current official TMLR pages govern at freeze.
 - This package is planning/reporting scaffolding. It does not create
   registrations, authorize collection, or assert that any empirical gate passed.
 

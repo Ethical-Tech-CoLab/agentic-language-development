@@ -35,13 +35,15 @@ blocks the affected stage.
 ## A2. Failed-development accounting — shell
 
 All failed development stays visible here with its terminal receipt. Known
-series to reconcile (non-exhaustive pointers; R01 inventory governs):
+series reconciled against committed R01 `e6d5da0`
+(`reports/research/research-attempt-inventory.v1.json`, 46 entries;
+non-exhaustive pointers; R01 inventory governs):
 
 | Series | Disposition | Terminal receipt |
 |---|---|---|
 | `evidence/lv01/development-v*` (calibration/development attempts) | `TBD` per-attempt from R01 | `TBD` |
-| `evidence/lv01/detector-v1`, `detector-v2` (+ runner failure log) | superseded/development | `TBD` |
-| `evidence/lv01/detector-v3` | **sibling-owned, live-observed read-only; do not touch** | — |
+| `evidence/lv01/detector-v1`, `detector-v2` (+ runner failure log) | failed development (R01 terminal `failed`, not-tested) | `receipt.json` / `output/lv01-detector-observations.json` per attempt (see R01 inventory) |
+| `evidence/lv01/detector-v3` (`lv01-detector-v3-p0001`) | **failed development** — R01 terminal `failed`, not-tested; evidence RPC timeout, stalled ~turn 1986/2016; failure observations only, **no receipt, no seal** (corrected 2026-09-27: earlier "sibling-owned, live-observed" wording withdrawn) | `evidence/lv01/detector-v3/lv01-detector-v3-p0001/output/lv01-detector-observations.json` (`sha256:6be25a03c1bd…`) |
 | `evidence/lv01/*-fault-*`, `late-callback-*`, `malformed-*`, `paired-*`, `five-rejection-safety-*` | `TBD` per-attempt from R01 | `TBD` |
 | E02 v1/v2 (failed before analysis) | failed qualification, retained | `reports/research/e02-v1-failure-analysis.md`, `reports/research/e02-v2-failure-analysis.md` |
 

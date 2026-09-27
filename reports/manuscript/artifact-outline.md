@@ -33,8 +33,12 @@ Contract (from R05 happy path plus missing/corrupt/stale/failure/null paths):
   unsealed data.
 - Stale input (superseded manifest): named error directing to the current
   manifest.
-- Null/empty result set: valid empty output with explicit empty-set marker,
+- Empty result set: valid empty output with explicit empty-set marker,
   never a silent zero or a success inferred from file presence.
+- Completed null: reported estimates with intervals showing "not supported
+  at the registered threshold" — never an empty-set marker and never an
+  equivalence claim. Empty/incomplete data and completed nulls are never
+  conflated.
 - No success based on file presence or bare booleans anywhere in the chain.
 
 ## B3. Exact input digests — shell
