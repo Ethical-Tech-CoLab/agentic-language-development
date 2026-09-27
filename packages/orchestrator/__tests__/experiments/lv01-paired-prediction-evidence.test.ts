@@ -1,8 +1,6 @@
 /** LV01 paired-case runtime evidence: pre-action vectors committed before the turn record. */
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { fixedTokenInventory } from '@ald/types';
-
 import { createLv01PairedCasePlan } from '../../src/experiments/ledger-value.js';
 import { verifyLv01ActionDraw } from '../../src/experiments/lv01-action-draw.js';
 import { createHarness, testConfig, type Harness } from '../helpers.js';
@@ -91,23 +89,7 @@ describe('LV01 paired prediction production evidence', () => {
     expect(child.parentRunId).toBe(parent.runId);
 
     await harness.runtime.createRun(child);
-    const seedToken = fixedTokenInventory(32)[2] as string;
-    await harness.runtime.writerFor(child.runId).appendLedgerEvent({
-      runId: child.runId,
-      babyId: 'B',
-      turn: 0,
-      draft: {
-        eventType: 'hypothesis.created',
-        contentSchema: 'agent-native-ledger',
-        subjectId: `symbol:${seedToken}`,
-        content: {
-          hypothesisRef: `hyp:${seedToken}:1`,
-          termRef: `symbol:${seedToken}`,
-          associationOverTypeCodes: Array.from({ length: 16 }, () => 0),
-        },
-        blindingNonce: 'test-nonce',
-      },
-    });
+    // No manual seeding: the branch references the parent's frozen ledger.
     await harness.runtime.step(child.runId);
 
     const commitments = harness.runtime
@@ -123,12 +105,18 @@ describe('LV01 paired prediction production evidence', () => {
       native: { distribution: readonly number[] };
       ordinary: { distribution: readonly number[] };
       replay: { distribution: readonly number[] } | null;
+      state: { trainingLedgerHeads: { babyA: readonly string[]; babyB: readonly string[] } };
     };
     expect(payload.native.distribution).toHaveLength(4);
     expect(payload.ordinary.distribution).toHaveLength(4);
     expect(payload.replay).not.toBeNull();
     expect(payload.replay?.distribution).toHaveLength(4);
     expect(details['predictionCommitmentV2']).toMatch(/^sha256:/u);
+    const parentLedgers = harness.runtime.ledgers(parent.runId);
+    expect(payload.state.trainingLedgerHeads).toEqual({
+      babyA: parentLedgers.babyA.map((event) => event.entryHash),
+      babyB: parentLedgers.babyB.map((event) => event.entryHash),
+    });
 
     const records = harness.runtime.turnRecords(child.runId);
     expect(records).toHaveLength(1);

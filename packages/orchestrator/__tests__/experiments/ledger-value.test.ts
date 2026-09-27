@@ -156,8 +156,9 @@ describe('LV01 paired collector gates', () => {
       }).branches[0]!.config;
       await harness.runtime.createRun(child);
       const seedToken = fixedTokenInventory(32)[2] as string;
-      await harness.runtime.writerFor(child.runId).appendLedgerEvent({
-        runId: child.runId,
+      // Branches reference the parent's frozen ledger: seed the parent run.
+      await harness.runtime.writerFor(parent.runId).appendLedgerEvent({
+        runId: parent.runId,
         babyId: 'B',
         turn: 0,
         draft: {

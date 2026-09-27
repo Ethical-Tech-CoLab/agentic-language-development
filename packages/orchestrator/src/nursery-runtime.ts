@@ -1336,10 +1336,17 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
           );
         }
         if (phase === 'evaluating' && run.config.lv01PairedCase !== undefined) {
-          const [babyALedger, babyBLedger] = await Promise.all([
-            run.controllerEvidence.readEvents(run.runId, 'baby-a-ledger'),
-            run.controllerEvidence.readEvents(run.runId, 'baby-b-ledger'),
-          ]);
+          // Prototype batchEvaluation: a branch references (never copies)
+          // the parent's frozen training ledger, so heads below are parent
+          // heads and the mapping input is the parent's sealed prefix.
+          if (run.config.parentRunId === undefined) {
+            throw new RunConfigurationError([
+              { path: 'parentRunId', message: 'LV01 paired cases map the frozen parent training ledger' },
+            ]);
+          }
+          const unscoped = this.#localWriter(run);
+          const babyALedger = unscoped.readEvents(run.config.parentRunId, 'baby-a-ledger');
+          const babyBLedger = unscoped.readEvents(run.config.parentRunId, 'baby-b-ledger');
           const receiverPolicyHash = run.policyRefs[receiver]?.policyHash
             ?? hashCanonical(HASH_DOMAINS.policyCheckpoint, run.adapters[receiver].exportPolicy());
           const commitment = hashCanonical('lv01-paired-pre-action-prediction/v1', {
@@ -1612,7 +1619,10 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const receiverLedger = receiver === 'baby-a' ? babyALedger : babyBLedger;
     const parsed = receiverLedger.map((event) =>
       LedgerEventSchema.parse(parseCanonicalJson(event.canonicalJson)));
-    const publicKeys = run.signers.publicKeys();
+    // Parent streams verify under parent keys; the child never re-signs them.
+    const publicKeys = run.config.parentRunId === undefined
+      ? run.signers.publicKeys()
+      : this.#signerProvider()(run.config.parentRunId).publicKeys();
     const records = mapLv01LedgerAssociations(parsed, receiver, (event) => {
       const key = publicKeys.find((entry) => entry.keyId === event.writerKeyId);
       return key !== undefined &&

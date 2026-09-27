@@ -3,9 +3,12 @@
  *
  * Reconstructs case identity, the delivered token, prediction-before-action
  * ordering, the shared action draw, parent state, and the sample outcome
- * from raw records: the registered case plan, raw ledger events, committed
- * prediction payloads, draw records, the sealed treatment batch, and the
- * hash-linked evidence transcript. It never reads collector-created boolean
+ * from raw records: the registered case plan, the parent's frozen ledger
+ * streams, committed prediction payloads, draw records, the sealed treatment
+ * batch, and the hash-linked evidence transcript. Per the Prototype
+ * batchEvaluation rule, branches reference (never copy) the parent
+ * evidence, so every branch maps the same parent streams and heads.
+ * It never reads collector-created boolean
  * flags (`actionRecordedAfterPrediction`, `restoredBeforeAction`,
  * `identicalTokenCoincidence`): ordering comes from transcript sequences,
  * restore from lineage digests, and coincidence is recomputed.
@@ -63,6 +66,11 @@ export interface Lv01AuditSharedInput {
   readonly authenticate: Lv01LedgerAuthenticate;
   readonly parent: Lv01AuditParentBundle;
   readonly treatmentBatch: Lv01LedgerTreatmentBatch;
+  /** The parent's frozen ledger streams, referenced by every branch. */
+  readonly parentLedgerEvents: {
+    readonly babyA: readonly LedgerEvent[];
+    readonly babyB: readonly LedgerEvent[];
+  };
 }
 
 export type Lv01AuditTranscriptEventType =
@@ -85,10 +93,6 @@ export interface Lv01AuditedBranch {
   readonly runId: string;
   readonly payload: Lv01PairedPredictionPayload;
   readonly predictionCommitment: string;
-  readonly ledgerEvents: {
-    readonly babyA: readonly LedgerEvent[];
-    readonly babyB: readonly LedgerEvent[];
-  };
   readonly drawSeed: string;
   readonly drawCommitment: string;
   readonly disclosure: Lv01ActionDrawDisclosure;
@@ -293,22 +297,29 @@ export function auditLv01PairedCase(input: {
     }
   }
 
+  const sharedReceiver = first.payload.receiver;
+  if (sharedReceiver !== 'baby-a' && sharedReceiver !== 'baby-b') fail('case receiver role is invalid');
+  const parentStreams = sharedReceiver === 'baby-a'
+    ? input.shared.parentLedgerEvents.babyA
+    : input.shared.parentLedgerEvents.babyB;
+  const parentRecords = mapLv01LedgerAssociations(parentStreams, sharedReceiver, input.shared.authenticate);
+  const parentHeads = {
+    babyA: input.shared.parentLedgerEvents.babyA.map((event) => event.entryHash),
+    babyB: input.shared.parentLedgerEvents.babyB.map((event) => event.entryHash),
+  };
+
   const audited = input.branches.map((branch) => {
     const receiver = branch.payload.receiver;
-    if (receiver !== 'baby-a' && receiver !== 'baby-b') fail(`${branch.branch} receiver role is invalid`);
-    const streams = branch.payload.receiver === 'baby-a' ? branch.ledgerEvents.babyA : branch.ledgerEvents.babyB;
-    const records = mapLv01LedgerAssociations(streams, receiver, input.shared.authenticate);
+    if (receiver !== sharedReceiver) fail(`${branch.branch} receiver disagrees with the case`);
+    const records = parentRecords;
     for (const record of records) {
       if (record.sequence > branch.payload.cutoff.sequence || record.turn > branch.payload.cutoff.turn) {
         fail(`${branch.branch} training ledger reaches past the committed cutoff`);
       }
     }
     const heads = branch.payload.state.trainingLedgerHeads;
-    if (
-      !sameStrings(heads.babyA, branch.ledgerEvents.babyA.map((event) => event.entryHash)) ||
-      !sameStrings(heads.babyB, branch.ledgerEvents.babyB.map((event) => event.entryHash))
-    ) {
-      fail(`${branch.branch} ledger heads disagree with the raw ledger streams`);
+    if (!sameStrings(heads.babyA, parentHeads.babyA) || !sameStrings(heads.babyB, parentHeads.babyB)) {
+      fail(`${branch.branch} ledger heads disagree with the parent streams`);
     }
     verifyLv01PairedPredictionPayload(
       branch.payload,

@@ -205,6 +205,24 @@ function validCase(): ValidCase {
   const drawSeed = deriveLv01ActionDrawSeed(ROOT_SEED, SCOPE);
   const { ordinaryId, ordinaryFit } = ordinarySelection();
   const model = frozenModel();
+  // One frozen parent stream pair, referenced (never copied) by every branch.
+  const parentBabyB = [
+    ledgerEvent(PARENT_RUN_ID, 'babyB', { sequence: 1, turn: 0 }),
+    ledgerEvent(PARENT_RUN_ID, 'babyB', {
+      sequence: 2,
+      turn: 1,
+      eventType: 'hypothesis.revised',
+      subjectId: 'symbol:S02',
+      content: { termRef: 'symbol:S02', associationOverTypeCodes: weights2() },
+    }),
+  ];
+  const parentBabyA = [ledgerEvent(PARENT_RUN_ID, 'babyA', { sequence: 1, turn: 0 })];
+  const parentHeads = {
+    babyA: parentBabyA.map((event) => event.entryHash),
+    babyB: parentBabyB.map((event) => event.entryHash),
+  };
+  const parentRecords = mapLv01LedgerAssociations(parentBabyB, 'baby-b', () => true);
+  const parentCutoff = deriveLv01LedgerCutoff(parentRecords);
   const deliveredFor = (branch: Lv01Branch): string | null => {
     switch (branch) {
       case 'disabled': return null;
@@ -218,18 +236,6 @@ function validCase(): ValidCase {
   };
   const branches = LV01_BRANCHES.map((branch): Lv01AuditedBranch => {
     const runId = `${PREFIX}-${branch}`;
-    const babyB = [
-      ledgerEvent(runId, 'babyB', { sequence: 1, turn: 0 }),
-      ledgerEvent(runId, 'babyB', {
-        sequence: 2,
-        turn: 1,
-        eventType: 'hypothesis.revised',
-        subjectId: 'symbol:S02',
-        content: { termRef: 'symbol:S02', associationOverTypeCodes: weights2() },
-      }),
-    ];
-    const babyA = [ledgerEvent(runId, 'babyA', { sequence: 1, turn: 0 })];
-    const records = mapLv01LedgerAssociations(babyB, 'baby-b', () => true);
     const planned = plan.branches.find((entry) => entry.branch === branch)!;
     const { payload, commitment } = buildLv01PairedPredictionPayload({
       branch,
@@ -241,18 +247,15 @@ function validCase(): ValidCase {
       candidateTypeCodes: candidates,
       deliveredToken: deliveredFor(branch),
       symbolInventory: [...inventory],
-      ledgerRecords: records,
-      cutoff: deriveLv01LedgerCutoff(records),
+      ledgerRecords: parentRecords,
+      cutoff: parentCutoff,
       frozenModel: model,
       ordinaryId,
       ordinaryFit,
       state: {
         scenarioStateHash: SCENARIO,
         receiverPolicyHash: POLICY,
-        trainingLedgerHeads: {
-          babyA: babyA.map((event) => event.entryHash),
-          babyB: babyB.map((event) => event.entryHash),
-        },
+        trainingLedgerHeads: { babyA: [...parentHeads.babyA], babyB: [...parentHeads.babyB] },
       },
       scheduleDigest: SCHEDULE,
     });
@@ -322,7 +325,6 @@ function validCase(): ValidCase {
       runId,
       payload,
       predictionCommitment: commitment,
-      ledgerEvents: { babyA, babyB },
       drawSeed,
       drawCommitment: commit.drawCommitment,
       disclosure,
@@ -345,6 +347,7 @@ function validCase(): ValidCase {
       parentRandomSeed: ROOT_SEED,
     },
     treatmentBatch: batch,
+    parentLedgerEvents: { babyA: parentBabyA, babyB: parentBabyB },
   };
   return { plan, shared, branches, batch };
 }
@@ -476,17 +479,20 @@ describe('LV01 independent auditor', () => {
 
   it('rejects a future ledger row past the committed cutoff', () => {
     const input = validCase();
-    const branches = structuredClone(input.branches);
-    const target = branches[0]!;
-    const future = ledgerEvent(target.runId, 'babyB', {
+    const future = ledgerEvent(PARENT_RUN_ID, 'babyB', {
       sequence: 9,
       turn: 99,
       subjectId: 'symbol:S09',
       content: { termRef: 'symbol:S09', associationOverTypeCodes: weights() },
     });
-    // structuredClone strips classless function props; rebuild the events object.
-    branches[0] = { ...target, ledgerEvents: { babyA: [...target.ledgerEvents.babyA], babyB: [...target.ledgerEvents.babyB, future] } };
-    expect(() => auditLv01PairedCase({ ...input, branches })).toThrow(/past the committed cutoff/u);
+    const shared = {
+      ...input.shared,
+      parentLedgerEvents: {
+        babyA: [...input.shared.parentLedgerEvents.babyA],
+        babyB: [...input.shared.parentLedgerEvents.babyB, future],
+      },
+    };
+    expect(() => auditLv01PairedCase({ ...input, shared })).toThrow(/past the committed cutoff/u);
   });
 
   it('rejects a substituted treatment slice and a misreported coincidence', () => {
@@ -506,7 +512,7 @@ describe('LV01 independent auditor', () => {
     const input = validCase();
     const rebuilt = structuredClone(input.branches);
     const target = rebuilt.find((entry) => entry.branch === 'constant')!;
-    const records = mapLv01LedgerAssociations(target.ledgerEvents.babyB, 'baby-b', () => true);
+    const records = mapLv01LedgerAssociations(input.shared.parentLedgerEvents.babyB, 'baby-b', () => true);
     const { payload, commitment } = buildLv01PairedPredictionPayload({
       branch: 'constant',
       predictionTreatment: 'ordinary-records',
@@ -558,7 +564,7 @@ describe('LV01 auditor acceptance behaviors', () => {
       expect(value).toBeCloseTo(expected[index] as number, 15);
     }
     expect(normal.payload.native.source).toBe('training-ledger');
-    const records = mapLv01LedgerAssociations(normal.ledgerEvents.babyB, 'baby-b', () => true);
+    const records = mapLv01LedgerAssociations(input.shared.parentLedgerEvents.babyB, 'baby-b', () => true);
     const index = indexLv01TrainingLedger(records, 'baby-b', deriveLv01LedgerCutoff(records));
     expect(selectLedgerConsistentToken(index, 1, candidates, [...inventory])).toBe('S01');
     expect(normal.payload.replay).not.toBeNull();
@@ -576,7 +582,7 @@ describe('LV01 auditor acceptance behaviors', () => {
 
   it('predicts identically across signature envelopes; corruption fails verification', () => {
     const input = validCase();
-    const events = input.branches[0]!.ledgerEvents.babyB;
+    const events = input.shared.parentLedgerEvents.babyB;
     const reenveloped = events.map((event, position) => ({
       ...event,
       entryHash: hashCanonical('audit-reenvelope/v1', position),
