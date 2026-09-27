@@ -303,6 +303,29 @@ export type Lv01StagePacket = z.infer<typeof Lv01StagePacketSchema>;
 export type Lv01StageBinding = z.infer<typeof Lv01StageBindingSchema>;
 export type Lv01GateReceipt = z.infer<typeof Lv01GateReceiptSchema>;
 
+/** Immutable stage-collection audit verdict over journal, cases, and reserves. */
+export const Lv01AuditReceiptSchema = z.object({
+  schemaVersion: z.literal(1),
+  studyId: z.literal('LV01'),
+  stage: Lv01StageSchema,
+  version: positiveInteger,
+  packetCommitment: hashString,
+  journalHash: hashString,
+  auditedCases: z.array(z.object({
+    slot: nonNegativeInteger,
+    kind: z.enum(['primary', 'reserve']),
+    caseCommitment: hashString,
+  }).strict()),
+  unusedReserves: z.array(nonNegativeInteger),
+  status: z.enum(['verified', 'blocked']),
+  reasons: z.array(nonEmptyString),
+  researchFinding: z.literal(false),
+  scientificDisposition: Lv01ScientificDispositionSchema,
+  claimBoundary: nonEmptyString,
+}).strict();
+
+export type Lv01AuditReceipt = z.infer<typeof Lv01AuditReceiptSchema>;
+
 /** Prospectively allocated, role-separated seeds for registered research runs. */
 export const RunSeedBindingsSchema = z
   .object({

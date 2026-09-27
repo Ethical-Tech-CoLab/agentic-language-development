@@ -14,6 +14,7 @@ export const EXPECTED_SCHEMA_EXPORTS = [
   'Lv01StagePacketSchema',
   'Lv01StageBindingSchema',
   'Lv01GateReceiptSchema',
+  'Lv01AuditReceiptSchema',
   'RunConfigSchema',
   'RunSeedBindingsSchema',
   'ObservationSchema',

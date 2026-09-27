@@ -186,7 +186,7 @@ export function assessLv01Admission(input: Lv01AdmissionInput): Lv01Admission {
   if (!input.numericalQualificationVerified) reasons.push('numerical-qualification-missing');
   if (!input.topologyQualificationVerified) reasons.push('topology-qualification-missing');
   if (!input.sourceClean) reasons.push('source-not-clean');
-  if (!input.registrationBound && input.stage !== 'development' && input.stage !== 'qualification') reasons.push('registration-binding-missing');
+  if (!input.registrationBound) reasons.push('registration-binding-missing');
   if (!input.resourcesSufficient) reasons.push('resource-allocation-missing');
   return { status: reasons.length === 0 ? 'ready' : 'blocked', reasons };
 }

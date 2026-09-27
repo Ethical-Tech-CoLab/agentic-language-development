@@ -54,23 +54,30 @@ export async function initializeLv01Journal(lock: Lv01JournalLock, journal: Lv01
   return event;
 }
 
-export async function readLv01Journal(journalPath: string): Promise<readonly Lv01JournalEvent[]> {
-  let events: Lv01JournalEvent[];
-  try {
-    events = (await readFile(journalPath, 'utf8')).trim().split('\n').filter(Boolean)
-      .map((line) => JSON.parse(line) as Lv01JournalEvent);
-  } catch { fail(`journal cannot be read at ${journalPath}`); }
+/** Pure journal verification; the file reader below is IO around this. */
+export function verifyLv01JournalEvents(events: readonly unknown[]): readonly Lv01JournalEvent[] {
   if (events.length === 0) fail('journal has no events');
-  for (const [index, event] of events.entries()) {
+  const typed = events as readonly Lv01JournalEvent[];
+  for (const [index, event] of typed.entries()) {
     if (event.schemaVersion !== 1 || event.sequence !== index + 1 ||
+        typeof event.journal !== 'object' || event.journal === null ||
         event.journalHash !== hashCanonical('lv01-stage-journal/v1', event.journal)) {
       fail(`journal event ${index + 1} is malformed or tampered`);
     }
-    if (index > 0 && events[index - 1]?.journal.terminal !== 'open') {
+    if (index > 0 && typed[index - 1]?.journal.terminal !== 'open') {
       fail('journal changes after terminal accounting');
     }
   }
-  return events;
+  return typed;
+}
+
+export async function readLv01Journal(journalPath: string): Promise<readonly Lv01JournalEvent[]> {
+  let events: unknown[];
+  try {
+    events = (await readFile(journalPath, 'utf8')).trim().split('\n').filter(Boolean)
+      .map((line) => JSON.parse(line) as unknown);
+  } catch { fail(`journal cannot be read at ${journalPath}`); }
+  return verifyLv01JournalEvents(events);
 }
 
 export async function appendLv01Journal(lock: Lv01JournalLock, journal: Lv01StageJournal, recordedAt: string): Promise<Lv01JournalEvent> {
