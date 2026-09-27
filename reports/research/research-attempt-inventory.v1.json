@@ -1,0 +1,1488 @@
+{
+ "schemaVersion": 1,
+ "classification": "research-attempt-inventory",
+ "researchFinding": false,
+ "inventoryVersion": "v1",
+ "handoff": "R01",
+ "measuredAt": "2026-09-27T16:00:56Z",
+ "sourceCommit": "04ef2caa28ca12f2f628944d212f938f2c72fdbc",
+ "countsByTerminalState": {
+  "missing": 5,
+  "failed": 24,
+  "sealed": 17
+ },
+ "protocols": {
+  "developmentResourceAllocation": 23,
+  "pairedDevelopmentAllocation": 5,
+  "note": "All 23 development allocations declare smallFixture.iteration=1; all 5 paired packets declare status design-locked-not-executed"
+ },
+ "v23Iteration1Conflict": "Every development allocation v1..v23 declares smallFixture.iteration=1 (v23: protocols/lv01-development-resource-allocation.v23.json, runId lv01-development-v23-p0001, net 10.250.185.x/28), while 22 retained development evidence dirs (v2..v23) coexist with a five-iteration lifetime policy (research-validation-plan.md:128-133; research-direction-audit.md A09 P1). The checker (scripts/check-lv01-development-allocation.mjs:33) expects iteration 1, so v23 passes the check while lifetime compliance is unestablished: no per-attempt lifetime classification exists, no retrospective exemption/reset is permitted, and the v2 amendment does not reset history. R01-3 must reconcile before new collection; until then new collection stays blocked per handoff acceptance.",
+ "unresolvedItems": [
+  "detector-v3 missing receipt.json (failure observations only) \u2014 needs exact-handle read-only recheck per R01-2",
+  "development-v8, v10, malformed-v2, paired-v17 missing any terminal file",
+  "development-v1 allocation with no evidence dir (unused/superseded slot)",
+  "v13/v14 sealed fixture-results superseded by failure terminals \u2014 must not be counted as sealed",
+  "malformed-v2 stale v21 bundle \u2014 provenance anomaly to record, not evidence for v2"
+ ],
+ "entries": [
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v1",
+   "attemptId": "lv01-development-v1-p0001",
+   "stage": "allocation-only",
+   "protocol": "protocols/lv01-development-resource-allocation.v1.json",
+   "plannedWork": "smallFixture iteration 1, p0001, 64 train/24+24+24 cases; fullCalibration iter2 p0002-p0006 reserved",
+   "terminalState": "missing",
+   "evidenceRoot": null,
+   "lastAuthoritativeObservation": "No evidence dir; v2 protocol states v1 superseded unused (predates fixture runner). Unused slot.",
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v2",
+   "attemptId": "lv01-development-v2-p0001",
+   "stage": "configuration",
+   "protocol": "protocols/lv01-development-resource-allocation.v2.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v2/lv01-development-v2-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=configuration: ENOENT contracts/learner-contract.scratch-rl.v0.md. No Docker launch.",
+   "retainedBytes": 517,
+   "terminalFiles": [
+    "fixture-failure.json"
+   ],
+   "sourceCommit": null,
+   "seedHash": null,
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "Error: ENOENT: no such file or directory, open '/home/shawn/Development/agentic-language-development/contracts/learner-contract.scratch-rl.v0.md'",
+    "stage": "configuration",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v3",
+   "attemptId": "lv01-development-v3-p0001",
+   "stage": "container-execution",
+   "protocol": "protocols/lv01-development-resource-allocation.v3.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v3/lv01-development-v3-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=container-execution: witness signer rejected versioned identity before controller execution. No controller turn.",
+   "retainedBytes": 3162,
+   "terminalFiles": [
+    "fixture-failure.json"
+   ],
+   "sourceCommit": "cc4f99f5f3b0c1c059095843da69cf743d3f7d9f",
+   "seedHash": "sha256:cba886d4f05f8b767b46ee80a0c7576225e24172e2fd6f4eb6feb7c31a305ae7",
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "The witness signer rejected the versioned LV01 development identity before controller execution.",
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v4",
+   "attemptId": "lv01-development-v4-p0001",
+   "stage": "container-execution",
+   "protocol": "protocols/lv01-development-resource-allocation.v4.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v4/lv01-development-v4-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=container-execution: docker compose up failed (offline-verifier exit path); failure-analysis.json retained (not-tested).",
+   "retainedBytes": 201549,
+   "terminalFiles": [
+    "failure-analysis.json",
+    "fixture-failure.json"
+   ],
+   "sourceCommit": "55ffc2f2b0807470ca4094bed4b4dc173a910cc2",
+   "seedHash": "sha256:f21d0c80594cd6803ad709a1f49a3ec44d8aac3689478d27b1bf45a8130184d1",
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "Error: Command failed: docker compose --project-name ald-lv01-development-v4 --file deploy/mode-r/docker-compose.application.v1.yml --file deploy/mode-r/docker-compose.lv01.v1.yml up --build --abort-on-container-exit --exit-code-from offline-verifier",
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v5",
+   "attemptId": "lv01-development-v5-p0001",
+   "stage": "launcher",
+   "protocol": "protocols/lv01-development-resource-allocation.v5.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v5/lv01-development-v5-p0001",
+   "lastAuthoritativeObservation": "fixture-aborted.json attemptStatus=aborted stage=launcher: config written, no containers/results. Retained ordinary controller-result (turns 0,1) is not an LV01 result.",
+   "retainedBytes": 452790,
+   "terminalFiles": [
+    "fixture-aborted.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "bcba275ab1ac222ae1ebb9ca0b0025de2989c11f",
+   "seedHash": "sha256:00bff26ce730e101c852fb431ffcf9db0fb11d502827370b0eaa5273ab8aa34f",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:f1451c681263ede2722a06058f8dbdb60e7f54315015c0a1a242d8c786a6db69",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 7,
+     "babyA": 7,
+     "baby-b-ledger": 7,
+     "babyB": 7,
+     "channel": 2,
+     "audit": 1,
+     "turns": 2,
+     "intervention": 1
+    }
+   },
+   "terminalDetail": {
+    "file": "fixture-aborted.json",
+    "stage": "launcher",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested",
+    "attemptStatus": "aborted"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v6",
+   "attemptId": "lv01-development-v6-p0001",
+   "stage": "result-validation",
+   "protocol": "protocols/lv01-development-resource-allocation.v6.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v6/lv01-development-v6-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=result-validation: Compose did not forward ALD_MODE_R_CONTROLLER_STAGE; ordinary 2-turn path, no LV01 fixture result.",
+   "retainedBytes": 452837,
+   "terminalFiles": [
+    "fixture-failure.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "2f57a99fad30bf26d5d9d51a8fb480d7b9766000",
+   "seedHash": "sha256:d4ff61e6e7a3efc806abb9a05324260c49b0e6c61895cb929631bde67657e470",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:5218976f5d79236c1ff1e561438335925bc2d804e69cbe330ee448049d981e3f",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 7,
+     "babyA": 7,
+     "baby-b-ledger": 7,
+     "babyB": 7,
+     "channel": 2,
+     "audit": 1,
+     "turns": 2,
+     "intervention": 1
+    }
+   },
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "The Compose environment did not forward ALD_MODE_R_CONTROLLER_STAGE, so the controller completed its ordinary two-turn path and wrote no LV01 fixture result.",
+    "stage": "result-validation",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v7",
+   "attemptId": "lv01-development-v7-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v7.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v7/lv01-development-v7-p0001",
+   "lastAuthoritativeObservation": "output/lv01-fixture-result.json state=sealed (64 train/24 eval, 11 ckpts) + offline-verification.json all checks true. No authority-observation file (pre-authority era).",
+   "retainedBytes": 3400426,
+   "terminalFiles": [
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "a8f40d4fbd0fa2a99ab24ad527b5d186817e2a62",
+   "seedHash": "sha256:3d86fd8592a7d82586e7abac9d8bae5ee249e0b137a370dfa5ba004570fe3931",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:abb07107dd6ff82174919b480496de5730118d2870685ef23220b22e3aae369a",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 228,
+     "babyA": 228,
+     "baby-b-ledger": 231,
+     "babyB": 231,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v7-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v8",
+   "attemptId": "lv01-development-v8-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v8.json",
+   "plannedWork": "smallFixture iteration 1 p0001 (measure same fixture after v7)",
+   "terminalState": "missing",
+   "evidenceRoot": "evidence/lv01/development-v8/lv01-development-v8-p0001",
+   "lastAuthoritativeObservation": "NO terminal file: no fixture-result/failure, no receipt, no offline-verification. Only initial policies bundle + run-config. Abandoned start / sampling abort per v9 claimBoundary.",
+   "retainedBytes": 466410,
+   "terminalFiles": [],
+   "sourceCommit": "deba38ed71cdb766054eab27091cf3b8614fd518",
+   "seedHash": "sha256:073b54693e57fb0e5f4d77bb689b0857a6bc6a8ef64254c3b0e54630bf44d08f",
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v9",
+   "attemptId": "lv01-development-v9-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v9.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v9/lv01-development-v9-p0001",
+   "lastAuthoritativeObservation": "output/lv01-fixture-result.json state=sealed (64/24, 12 ckpts) + offline-verification all true + lv01-fixture-resources.json.",
+   "retainedBytes": 4563954,
+   "terminalFiles": [
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "db7ef2a03bc7228289353a50e1fa1776723b5109",
+   "seedHash": "sha256:3a3b724a9195198a7a2c1d574b947352c7dfc053ed1f47eee68223578f6038d7",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:bfd43d8d5e2bbd049f6ed3f338e7d01f51d3ce738fa468588e357ff457582e10",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 229,
+     "babyA": 229,
+     "baby-b-ledger": 227,
+     "babyB": 227,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 466,
+    "startedAt": "2026-09-21T20:16:14.084Z",
+    "endedAt": "2026-09-21T20:29:30.536Z",
+    "maxSampledMemoryBytes": 91603599
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v9-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v10",
+   "attemptId": "lv01-development-v10-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v10.json",
+   "plannedWork": "smallFixture iteration 1 p0001 (bounded fixture with authority observation)",
+   "terminalState": "missing",
+   "evidenceRoot": "evidence/lv01/development-v10/lv01-development-v10-p0001",
+   "lastAuthoritativeObservation": "NO terminal file: output/ empty; runtime partially populated (signer socks, pubkeys). No result/failure/receipt. Abandoned start.",
+   "retainedBytes": 3407,
+   "terminalFiles": [],
+   "sourceCommit": "2c12c2e976f21700c9fca5e05cee68cee29b6019",
+   "seedHash": "sha256:dd89b87fb2813077ce17734db92b5f4ba49c3ef9043b6570fc2279bdf1a8ef91",
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v11",
+   "attemptId": "lv01-development-v11-p0001",
+   "stage": "container-execution",
+   "protocol": "protocols/lv01-development-resource-allocation.v11.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v11/lv01-development-v11-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=container-execution: 'selected authority observation was never available'. Resources file retained (not-tested).",
+   "retainedBytes": 13323,
+   "terminalFiles": [
+    "fixture-failure.json",
+    "output/lv01-fixture-resources.json"
+   ],
+   "sourceCommit": "7db8c03b9e4c8f34b3994f306282f19f966281b3",
+   "seedHash": "sha256:dddd89b88a3bf5c0633ac873c799a7cd30470da92a37d2f6b0b654e7eb8102e1",
+   "resourceSamples": {
+    "sampleCount": 122,
+    "startedAt": "2026-09-21T20:52:06.020Z",
+    "endedAt": "2026-09-21T20:54:07.556Z",
+    "maxSampledMemoryBytes": 0
+   },
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "AssertionError: selected authority observation was never available",
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v12",
+   "attemptId": "lv01-development-v12-p0001",
+   "stage": "container-execution",
+   "protocol": "protocols/lv01-development-resource-allocation.v12.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v12/lv01-development-v12-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json + output/lv01-authority-failure.json: 'no live selected-application authority observation was available'.",
+   "retainedBytes": 57726,
+   "terminalFiles": [
+    "fixture-failure.json",
+    "output/lv01-authority-failure.json",
+    "output/lv01-fixture-resources.json"
+   ],
+   "sourceCommit": "f28458ea2e055615aadfa93136567b606913761f",
+   "seedHash": "sha256:99391405c281525e9fb225290b881d95fef9f2952265e3bdae7ba36a7fb6eba0",
+   "resourceSamples": {
+    "sampleCount": 138,
+    "startedAt": "2026-09-21T20:56:51.509Z",
+    "endedAt": "2026-09-21T20:59:09.129Z",
+    "maxSampledMemoryBytes": 0
+   },
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "AssertionError: selected authority observation was never available",
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v13",
+   "attemptId": "lv01-development-v13-p0001",
+   "stage": "result-validation",
+   "protocol": "protocols/lv01-development-resource-allocation.v13.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v13/lv01-development-v13-p0001",
+   "lastAuthoritativeObservation": "fixture-failure.json stage=result-validation + authority-failure: 'model-adapter-a must have no network route (1!==0)'. A state=sealed fixture-result exists but is superseded by the failure terminal.",
+   "retainedBytes": 4644346,
+   "terminalFiles": [
+    "fixture-failure.json",
+    "output/lv01-authority-failure.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "30c5126f1053bba8e0e0d1489ba05b6846185466",
+   "seedHash": "sha256:889d168b2fd5b7d6c5476d73db4398e37a49dcd20c1494089f7d45a327bf6c90",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:5df4c6160566829da728109bbbdb77d1f7f043299038d2ced841db4570fa5046",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 229,
+     "babyA": 229,
+     "baby-b-ledger": 233,
+     "babyB": 233,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 434,
+    "startedAt": "2026-09-21T21:01:21.179Z",
+    "endedAt": "2026-09-21T21:14:06.822Z",
+    "maxSampledMemoryBytes": 93365207
+   },
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "AssertionError: AssertionError: model-adapter-a must have no network route",
+    "stage": "result-validation",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v14",
+   "attemptId": "lv01-development-v14-p0001",
+   "stage": "result-validation",
+   "protocol": "protocols/lv01-development-resource-allocation.v14.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v14/lv01-development-v14-p0001",
+   "lastAuthoritativeObservation": "Same as v13: fixture-failure + authority-failure 'model-adapter-a must have no network route (1!==0)'; sealed fixture-result superseded.",
+   "retainedBytes": 4637884,
+   "terminalFiles": [
+    "fixture-failure.json",
+    "output/lv01-authority-failure.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "9dc6997bde14396430145fe9955eac07629f62eb",
+   "seedHash": "sha256:d571e9046a36adf9e2f7c12d203fc560b05cdc3133f04fcc39788ecdb687db9d",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:8e20836753112ee28618ef59bd83206dc9d483914472595edbf6c2cb097d82ee",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 225,
+     "babyA": 225,
+     "baby-b-ledger": 231,
+     "babyB": 231,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 445,
+    "startedAt": "2026-09-21T21:15:53.515Z",
+    "endedAt": "2026-09-21T21:28:50.487Z",
+    "maxSampledMemoryBytes": 91844772
+   },
+   "terminalDetail": {
+    "file": "fixture-failure.json",
+    "failure": "AssertionError: AssertionError: model-adapter-a must have no network route",
+    "stage": "result-validation",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v15",
+   "attemptId": "lv01-development-v15-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v15.json",
+   "plannedWork": "smallFixture iteration 1 p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v15/lv01-development-v15-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,12 ckpts) + authority-observation + offline-verification all true. NOTE: v15 is the tabular-path mistake; R02 excludes it from recurrent estimates.",
+   "retainedBytes": 4645133,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "8901224c33f7672dcae3957234ab3f87503ea43a",
+   "seedHash": "sha256:7a459bb4e1841c88b9a97e70e21f765268c053caa5468b84ef13efdff900394d",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:fad0e96c204f0b618098585d271fe5f5237aafe7a4b997d78ccea8f3dda237ea",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 230,
+     "babyA": 230,
+     "baby-b-ledger": 234,
+     "babyB": 234,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 444,
+    "startedAt": "2026-09-21T21:30:42.352Z",
+    "endedAt": "2026-09-21T21:43:36.873Z",
+    "maxSampledMemoryBytes": 92736061
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v15-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v16",
+   "attemptId": "lv01-development-v16-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v16.json",
+   "plannedWork": "smallFixture iteration 1 p0001 (recurrent-path fixture after v15 erratum)",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v16/lv01-development-v16-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,12 ckpts) + authority-observation + offline-verification all true. R02-eligible sealed recurrent.",
+   "retainedBytes": 6512648,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "8f22f8ef1fb269a0901c42de97ac54248f136412",
+   "seedHash": "sha256:a594fff260e4ecc77373b8c6e0f7b0f03860fe2bda7e37296653803723b98b19",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:9fd23bcb456f893ff195efc8f3ce36ce40219e7fae2cf1255bfedcf67b6dc838",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 226,
+     "babyA": 226,
+     "baby-b-ledger": 234,
+     "babyB": 234,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 444,
+    "startedAt": "2026-09-21T21:50:20.440Z",
+    "endedAt": "2026-09-21T22:03:20.404Z",
+    "maxSampledMemoryBytes": 97066680
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v16-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v17",
+   "attemptId": "lv01-development-v17-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v17.json",
+   "plannedWork": "smallFixture iteration 1 p0001 (parent for seven-branch case)",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v17/lv01-development-v17-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,11 ckpts) + authority-observation + offline-verification all true.",
+   "retainedBytes": 6324648,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "afc7e389123dea5b43eb1b5b17902e69079e0b18",
+   "seedHash": "sha256:c8a36c6c1bded48269fcd97b9a57a638fdb87045db5b038339d340cc95802aa8",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:ac28ae36640e7a50adac7e63cf7e1382b63609613692ececeb855ba4eaa553ca",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 210,
+     "babyA": 210,
+     "baby-b-ledger": 215,
+     "babyB": 215,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 460,
+    "startedAt": "2026-09-22T00:55:44.300Z",
+    "endedAt": "2026-09-22T01:09:06.037Z",
+    "maxSampledMemoryBytes": 98587116
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v17-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v18",
+   "attemptId": "lv01-development-v18-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v18.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.145.0/28,.16/28,.32/28",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v18/lv01-development-v18-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,11 ckpts) + authority-observation + offline-verification all true.",
+   "retainedBytes": 6481898,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "7ab0b3d58147d1254eeea7aeb6a5ad8693249826",
+   "seedHash": "sha256:3a230a17100364771dbf2fd4c8a0d0428b8f84f58dd3d9944a8a5fceaeea0bed",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:e3be82617b4785ab2cded44ab95757c822247ae4b1b68d7ea25c68956c4b3b0d",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 222,
+     "babyA": 222,
+     "baby-b-ledger": 230,
+     "babyB": 230,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 442,
+    "startedAt": "2026-09-22T01:26:57.784Z",
+    "endedAt": "2026-09-22T01:39:56.882Z",
+    "maxSampledMemoryBytes": 99950264
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v18-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v19",
+   "attemptId": "lv01-development-v19-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v19.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.153.x/28",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v19/lv01-development-v19-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,11 ckpts) + authority-observation + offline-verification all true.",
+   "retainedBytes": 6519515,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "0fe683dfa47fa82b2669627ed21691fdba41dfbc",
+   "seedHash": "sha256:12a58a3a932ae5a749edeedd2ae9eab931d19864fb36b885a31ffa4f9ba6ef89",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:17b970a4fe443159bf2f2f41ac128530f21ffe56c8662abd9a08eafcf47b0447",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 231,
+     "babyA": 231,
+     "baby-b-ledger": 230,
+     "babyB": 230,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 450,
+    "startedAt": "2026-09-22T01:54:35.170Z",
+    "endedAt": "2026-09-22T02:07:40.493Z",
+    "maxSampledMemoryBytes": 98356429
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v19-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v20",
+   "attemptId": "lv01-development-v20-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v20.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.161.x/28",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v20/lv01-development-v20-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,11 ckpts) + authority-observation + offline-verification all true.",
+   "retainedBytes": 6466987,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "08015e6aad6fdd7eef0fc3115c62929f5792ab29",
+   "seedHash": "sha256:c27bf18b4367636945305ce35cb61856d2c4ad2c3d0635968589fa57f53cf6ec",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:6a9d034025488fafb973433a39a385451083d179983a8404030dca3501e07dbe",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 230,
+     "babyA": 230,
+     "baby-b-ledger": 224,
+     "babyB": 224,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 461,
+    "startedAt": "2026-09-22T02:22:41.782Z",
+    "endedAt": "2026-09-22T02:36:03.566Z",
+    "maxSampledMemoryBytes": 98639544
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v20-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v21",
+   "attemptId": "lv01-development-v21-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v21.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.169.x/28",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v21/lv01-development-v21-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,11 ckpts) + authority-observation + offline-verification all true. Parent of sealed paired-v21 and several fault-qualification children.",
+   "retainedBytes": 6550618,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:f19c630abed11b4706975c8a8f7cb2cd2c3a592200af8b280a4074b0340dee5b",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 243,
+     "babyA": 243,
+     "baby-b-ledger": 226,
+     "babyB": 226,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 453,
+    "startedAt": "2026-09-22T02:58:46.846Z",
+    "endedAt": "2026-09-22T03:12:00.460Z",
+    "maxSampledMemoryBytes": 98576630
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v21-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v22",
+   "attemptId": "lv01-development-v22-p0001",
+   "stage": "preflight-check",
+   "protocol": "protocols/lv01-development-resource-allocation.v22.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.192.x/28 (H07 uncertain-write remainder path)",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/development-v22",
+   "lastAuthoritativeObservation": "preflight-failure.json: verifyAllocation mismatch, file reserves 10.250.192.x but runner derives thirdOctet 177 (10.250.177.x). No containers started; p0001 slot deliberately NOT created; single-use gate still permits future --run.",
+   "retainedBytes": null,
+   "groupedRuns": [],
+   "seedHash": null,
+   "sourceCommit": null,
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "development",
+   "version": "v23",
+   "attemptId": "lv01-development-v23-p0001",
+   "stage": "fixture",
+   "protocol": "protocols/lv01-development-resource-allocation.v23.json",
+   "plannedWork": "smallFixture iteration 1 p0001; net 10.250.185.x/28 (after v22 mismatch)",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/development-v23/lv01-development-v23-p0001",
+   "lastAuthoritativeObservation": "fixture-result state=sealed (64/24,12 ckpts) + authority-observation + offline-verification all true (checked 2026-09-26). R02-eligible sealed recurrent. ITERATION-1 CONFLICT: declares iteration 1 (see notes).",
+   "retainedBytes": 6583383,
+   "terminalFiles": [
+    "output/lv01-authority-observation.json",
+    "output/lv01-fixture-resources.json",
+    "output/lv01-fixture-result.json",
+    "output/offline-verification.json"
+   ],
+   "sourceCommit": "b9943cea6613342e6db6546b371754c24aee9dac",
+   "seedHash": "sha256:7510a22b548253528a94e29648cd9fa358e6a37a2ba55ce76a329a410c539b21",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:75bc55e625d1ae4a882d54a2e9ad9223f308136eb245a3f0889f5ec8ef46a28a",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 239,
+     "babyA": 239,
+     "baby-b-ledger": 224,
+     "babyB": 224,
+     "channel": 88,
+     "turns": 88,
+     "intervention": 1
+    }
+   },
+   "resourceSamples": {
+    "sampleCount": 488,
+    "startedAt": "2026-09-26T15:12:14.555Z",
+    "endedAt": "2026-09-26T15:26:19.916Z",
+    "maxSampledMemoryBytes": 98618573
+   },
+   "terminalDetail": {
+    "file": "fixtureResult",
+    "state": "sealed",
+    "runId": "lv01-development-v23-p0001"
+   },
+   "lifetimeIterationDeclared": 1,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "paired-development",
+   "version": "v17",
+   "attemptId": "lv01-paired-development-v17-p0001-normal (+6 unstarted branches)",
+   "stage": "branch:normal",
+   "protocol": "protocols/lv01-paired-development-allocation.v17.json",
+   "plannedWork": "7 branches (normal,disabled,constant,random,shuffled,ledger-consistent,ledger-shuffled) bound to parent lv01-development-v17-p0001",
+   "terminalState": "missing",
+   "evidenceRoot": "evidence/lv01/paired-development-v17/lv01-paired-development-v17-p0001-normal",
+   "lastAuthoritativeObservation": "NO study-level paired-case receipt/failure; only branch output/compose-output.log (28KB build log). Missing terminal.",
+   "retainedBytes": 1786022,
+   "terminalFiles": [],
+   "sourceCommit": "afc7e389123dea5b43eb1b5b17902e69079e0b18",
+   "seedHash": "sha256:c8a36c6c1bded48269fcd97b9a57a638fdb87045db5b038339d340cc95802aa8",
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "paired-development",
+   "version": "v18",
+   "attemptId": "lv01-paired-development-v18-p0001-normal",
+   "stage": "branch:normal",
+   "protocol": "protocols/lv01-paired-development-allocation.v18.json",
+   "plannedWork": "7 branches bound to parent lv01-development-v18-p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/paired-development-v18",
+   "lastAuthoritativeObservation": "paired-case-failure.json stage=branch:normal: 'branch Compose failed: Network ..._control-plane Creating'.",
+   "retainedBytes": 1851941,
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "paired-development",
+   "version": "v19",
+   "attemptId": "lv01-paired-development-v19-p0001-normal",
+   "stage": "branch:normal",
+   "protocol": "protocols/lv01-paired-development-allocation.v19.json",
+   "plannedWork": "7 branches bound to parent lv01-development-v19-p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/paired-development-v19",
+   "lastAuthoritativeObservation": "paired-case-failure.json stage=branch:normal: 'branch Compose failed: Network ..._control-plane Creating'.",
+   "retainedBytes": 1867137,
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "paired-development",
+   "version": "v20",
+   "attemptId": "lv01-paired-development-v20-p0001-normal",
+   "stage": "branch:normal",
+   "protocol": "protocols/lv01-paired-development-allocation.v20.json",
+   "plannedWork": "7 branches bound to parent lv01-development-v20-p0001",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/paired-development-v20",
+   "lastAuthoritativeObservation": "paired-case-failure.json stage=branch:normal: 'branch Compose failed: Network ..._baby-a-gateway Creating'.",
+   "retainedBytes": 3959240,
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "paired-development",
+   "version": "v21",
+   "attemptId": "lv01-paired-development-v21-p0001-{normal,disabled,constant,random,shuffled,ledger-consistent,ledger-shuffled}",
+   "stage": "seven-branch",
+   "protocol": "protocols/lv01-paired-development-allocation.v21.json",
+   "plannedWork": "7 branches bound to parent lv01-development-v21-p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/paired-development-v21",
+   "lastAuthoritativeObservation": "paired-case-receipt.json: all 7 branches with prediction commitments, actionRecordedAfterPrediction=true, restoredBeforeAction=true. not-tested, not a pilot/behavioral result.",
+   "retainedBytes": 28387121,
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "detector",
+   "version": "v1",
+   "attemptId": "lv01-detector-v1-p0001",
+   "stage": "container-execution",
+   "protocol": null,
+   "plannedWork": "Selected-topology detector observation, gru-actor-critic-v1 (see scripts/run-lv01-detector-development.mjs)",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/detector-v1/lv01-detector-v1-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: 'detector Compose failed: Network ald-lv01-detector-v1_baby-a-gateway Creating' (controller-scenario exit 137). Plus pre-attempt runner failure log: dirty tree 'M packages/types/src/schemas.ts'.",
+   "retainedBytes": 58332,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "5289f050c66bd5d91e1e761f3c06192f854ccc73",
+   "seedHash": "sha256:e299ff9e0556674931b09f063720932ef6329bd5a536c3bc6f585e8eaf6348e9",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "AssertionError: detector Compose failed:  Network ald-lv01-detector-v1_baby-a-gateway  Creating",
+    "passed": false,
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested",
+    "sealedTurnCount": null,
+    "capturedRows": null
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "detector",
+   "version": "v2",
+   "attemptId": "lv01-detector-v2-p0001",
+   "stage": "container-execution",
+   "protocol": null,
+   "plannedWork": "Selected-topology detector observation, gru-actor-critic-v1",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/detector-v2/lv01-detector-v2-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: detector Compose failed, controller-scenario exit 1; observations failure: AssertionError 'paused'!=='sealed'. No detector decision.",
+   "retainedBytes": 33734298,
+   "terminalFiles": [
+    "output/lv01-detector-observations.json",
+    "receipt.json"
+   ],
+   "sourceCommit": "bf3d110da1461595c902d616a61cc2f225ae7a96",
+   "seedHash": "sha256:2e47e40448828df1eab6fd4f7caee11103900273e0b27f7114abb82314ef7426",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "AssertionError: detector Compose failed: compose exited 1: service \"controller-scenario\" didn't complete successfully: exit 1",
+    "passed": false,
+    "stage": "container-execution",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested",
+    "sealedTurnCount": null,
+    "capturedRows": null
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "detector",
+   "version": "v3",
+   "attemptId": "lv01-detector-v3-p0001",
+   "stage": "observation-stage",
+   "protocol": null,
+   "plannedWork": "Selected-topology detector observation, gru-actor-critic-v1, maxTurnsPerRun 2016",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/detector-v3/lv01-detector-v3-p0001",
+   "lastAuthoritativeObservation": "output/lv01-detector-observations.json failure='Error: evidence RPC timed out', disposition not-tested; NO receipt.json (missing terminal receipt). Read-only raw DB: 1987 turn_records, 1987 channel_events, 3976 policies (max idx 1985) vs maxTurns 2016 => stalled ~turn 1986/2016. Per R01-2: recheck by exact project/handle read-only; do not version-bump after timeout.",
+   "retainedBytes": 686397600,
+   "terminalFiles": [
+    "output/lv01-detector-observations.json"
+   ],
+   "sourceCommit": "110572aba75dc4f8bfb10ff85bf73232bf30d4ed",
+   "seedHash": "sha256:e1efd12ffd5be3193485c3e5c9a1f367d588f455c0adb61c784502716e8c8ac9",
+   "terminalDetail": {
+    "file": "output/lv01-detector-observations.json",
+    "failure": "Error: evidence RPC timed out",
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "application-fault",
+   "version": "v3",
+   "attemptId": "lv01-application-fault-v3-p0001-{baby-peer-death,anchor-service-death}",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "2 fresh recurrent service-death cases (baby-peer-death, anchor-service-death)",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/application-fault-v3",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true: baby-peer-death committed-adapter-failure; anchor-service-death sealing-blocked. Software qualification only.",
+   "retainedBytes": 3899908,
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "commitment-window-fault",
+   "version": "v2",
+   "attemptId": "lv01-commitment-window-fault-v2-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Controller-loss qualification after durable paired prediction commitment",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/commitment-window-fault-v2/lv01-commitment-window-fault-v2-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure: 'timed out waiting for .../output/lv01-commitment-window-ready.json'.",
+   "retainedBytes": 1852326,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "timed out waiting for evidence/lv01/commitment-window-fault-v2/lv01-commitment-window-fault-v2-p0001-normal/output/lv01-commitment-window-ready.json",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "commitment-window-fault",
+   "version": "v3",
+   "attemptId": "lv01-commitment-window-fault-v3-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Controller-loss qualification, parent lv01-development-v21-p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/commitment-window-fault-v3/lv01-commitment-window-fault-v3-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true. One controller-loss qualification; not a pilot/behavioral result.",
+   "retainedBytes": 2675429,
+   "terminalFiles": [
+    "output/lv01-commitment-window-ready.json",
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": null,
+    "passed": true,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "five-rejection-safety",
+   "version": "v1",
+   "attemptId": "lv01-five-rejection-safety-v1-p0001",
+   "stage": "safety-qualification",
+   "protocol": null,
+   "plannedWork": "Five-rejection safety pause, selected topology",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/five-rejection-safety-v1/lv01-five-rejection-safety-v1-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true. One safety pause; not a deadline/behavioral result.",
+   "retainedBytes": 2826840,
+   "terminalFiles": [
+    "output/offline-verification.json",
+    "receipt.json"
+   ],
+   "sourceCommit": "35f25b860235d438b6fe6fe50a288746b00bea08",
+   "seedHash": "sha256:lv01-five-rejection-safety-v1-p0001",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:d1363ef21d0b5a69b047f4afb23690d1bbc57d684daaf66ad1885dea70648292",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 10,
+     "babyA": 10,
+     "baby-b-ledger": 8,
+     "babyB": 8,
+     "channel": 5,
+     "turns": 5,
+     "intervention": 2
+    }
+   },
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": null,
+    "passed": true,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "late-callback",
+   "version": "v1",
+   "attemptId": "lv01-late-callback-v1-p0001",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Late-action timeout/quarantine case",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/late-callback-v1/lv01-late-callback-v1-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: 'late-callback controller failed, 1!==0'.",
+   "retainedBytes": 201885,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "7302046648c07d1ec9ca8527d33e5205a76a1108",
+   "seedHash": "sha256:lv01-late-callback-v1-p0001",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "late-callback controller failed\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "late-callback",
+   "version": "v2",
+   "attemptId": "lv01-late-callback-v2-p0001",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Bounded recurrent late-action timeout/quarantine",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/late-callback-v2/lv01-late-callback-v2-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true (controller exit 0, verification block, resourceSnapshots).",
+   "retainedBytes": 577930,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "01d94814a93320de4252dbf435d215c7a175a6fd",
+   "seedHash": "sha256:lv01-late-callback-v2-p0001",
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "malformed-proposal",
+   "version": "v1",
+   "attemptId": "lv01-malformed-proposal-v1-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Malformed proposal rejected by Gateway",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/malformed-proposal-v1/lv01-malformed-proposal-v1-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure: 'malformed-proposal Compose failed: Network ..._control-plane Creating, 1!==0'.",
+   "retainedBytes": 4043404,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "malformed-proposal Compose failed:  Network ald-lv01-malformed-proposal-v1_control-plane  Creating\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "malformed-proposal",
+   "version": "v2",
+   "attemptId": "lv01-malformed-proposal-v2-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Malformed proposal rejected by Gateway",
+   "terminalState": "missing",
+   "evidenceRoot": "evidence/lv01/malformed-proposal-v2/lv01-malformed-proposal-v2-p0001-normal",
+   "lastAuthoritativeObservation": "NO terminal file: no receipt, no logs; runtime/evidence/gateway-state empty. output/bundles contains a STALE bundle for lv01-development-v21-p0001 (not this runId). Missing terminal.",
+   "retainedBytes": 1837336,
+   "terminalFiles": [],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "malformed-proposal",
+   "version": "v3",
+   "attemptId": "lv01-malformed-proposal-v3-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Malformed proposal rejected by Gateway",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/malformed-proposal-v3/lv01-malformed-proposal-v3-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure: 'malformed-proposal Compose failed: Network ..._baby-b-gateway Creating, 1!==0'.",
+   "retainedBytes": 1891683,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "malformed-proposal Compose failed:  Network ald-lv01-malformed-proposal-v3_baby-b-gateway  Creating\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "malformed-proposal",
+   "version": "v4",
+   "attemptId": "lv01-malformed-proposal-v4-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Malformed proposal rejected by Gateway",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/malformed-proposal-v4/lv01-malformed-proposal-v4-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure: 'malformed-proposal Compose failed: Network ..._baby-a-gateway Creating, 1!==0'.",
+   "retainedBytes": 4033866,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "malformed-proposal Compose failed:  Network ald-lv01-malformed-proposal-v4_baby-a-gateway  Creating\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "malformed-proposal",
+   "version": "v5",
+   "attemptId": "lv01-malformed-proposal-v5-p0001-normal",
+   "stage": "fault-qualification",
+   "protocol": null,
+   "plannedWork": "Malformed proposal rejected by Gateway, parent lv01-development-v21-p0001",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/malformed-proposal-v5/lv01-malformed-proposal-v5-p0001-normal",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true. One Gateway rejection; not a pilot/behavioral result.",
+   "retainedBytes": 4037644,
+   "terminalFiles": [
+    "output/offline-verification.json",
+    "receipt.json"
+   ],
+   "sourceCommit": "3d654fd268f1166f80b52abcc0bdf1f6e776d46a",
+   "seedHash": "sha256:b155e2f946a164a7e9cc379efdaf25c35b425a5c492eaf8c246554be3c2c4378",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:1c4798706df1a56a2250bbd06c650ac501c41aac6eed1c5576d01bee83bec2bc",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 5,
+     "babyA": 5,
+     "baby-b-ledger": 3,
+     "babyB": 3,
+     "channel": 1,
+     "turns": 1,
+     "intervention": 1
+    }
+   },
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": null,
+    "passed": true,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "recurrent-lifecycle",
+   "version": "v1",
+   "attemptId": "lv01-recurrent-lifecycle-v1-p0001",
+   "stage": "lifecycle-qualification",
+   "protocol": null,
+   "plannedWork": "Recurrent pause/restart/recover path",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/recurrent-lifecycle-v1/lv01-recurrent-lifecycle-v1-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: 'prepare controller failed, 1!==0'.",
+   "retainedBytes": 18086,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "8c22916ab0356325b37cf2e8b22e2119d60c1906",
+   "seedHash": "sha256:c46c4ad684c4bf9f237e06accfaaf0d54fdb09a28479a5fe4a3eb627ab227fa7",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "prepare controller failed\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "recurrent-lifecycle",
+   "version": "v2",
+   "attemptId": "lv01-recurrent-lifecycle-v2-p0001",
+   "stage": "lifecycle-qualification",
+   "protocol": null,
+   "plannedWork": "Recurrent pause/restart/recover path",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/recurrent-lifecycle-v2/lv01-recurrent-lifecycle-v2-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: 'prepare controller failed, 1!==0'.",
+   "retainedBytes": 17992,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "637968a651e8657403e9bb728b603340a62cb475",
+   "seedHash": "sha256:27dbbd9fca12f46d9cbac11b305bdf18c9d3dfba4ba2ffd03b56fc14700b5427",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "prepare controller failed\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "recurrent-lifecycle",
+   "version": "v3",
+   "attemptId": "lv01-recurrent-lifecycle-v3-p0001",
+   "stage": "lifecycle-qualification",
+   "protocol": null,
+   "plannedWork": "Recurrent pause/restart/recover path",
+   "terminalState": "failed",
+   "evidenceRoot": "evidence/lv01/recurrent-lifecycle-v3/lv01-recurrent-lifecycle-v3-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure: 'prepare controller failed, 1!==0'.",
+   "retainedBytes": 203247,
+   "terminalFiles": [
+    "receipt.json"
+   ],
+   "sourceCommit": "44424d3dfadb529071aa643637a07d745b5462b7",
+   "seedHash": "sha256:2a13de2e12852429d879c226a9acfdc369cf1c01d9c8c98a657dd491ea829d40",
+   "terminalDetail": {
+    "file": "receipt.json",
+    "failure": "prepare controller failed\n\n1 !== 0\n",
+    "passed": false,
+    "researchFinding": false,
+    "scientificDisposition": "not-tested"
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  },
+  {
+   "study": "LV01",
+   "family": "recurrent-lifecycle",
+   "version": "v4",
+   "attemptId": "lv01-recurrent-lifecycle-v4-p0001",
+   "stage": "lifecycle-qualification",
+   "protocol": null,
+   "plannedWork": "Bounded recurrent pause/restart/recover, 2 policy updates/role",
+   "terminalState": "sealed",
+   "evidenceRoot": "evidence/lv01/recurrent-lifecycle-v4/lv01-recurrent-lifecycle-v4-p0001",
+   "lastAuthoritativeObservation": "receipt.json failure=null passed=true (prepare+recovery+offlineVerification, policies 4049-param GRU).",
+   "retainedBytes": 1927652,
+   "terminalFiles": [
+    "output/offline-verification.json",
+    "receipt.json"
+   ],
+   "sourceCommit": "b127fedc1df5a3bbe05cf1a5e030d18553d924ad",
+   "seedHash": "sha256:f4d7ed3c0bcaad7f2575984be62967109b4a019973adb346fbb8333dd4240767",
+   "offlineVerification": {
+    "exitCode": 0,
+    "allTrue": false,
+    "bundleManifestHash": "sha256:cd57cdd22d7da39e9cf8d5fc826dcb7308a9cb448a08b68a7702516350994b1d",
+    "finalVerifiedSizes": {
+     "baby-a-ledger": 12,
+     "babyA": 12,
+     "baby-b-ledger": 13,
+     "babyB": 13,
+     "channel": 3,
+     "audit": 1,
+     "turns": 3,
+     "intervention": 4
+    }
+   },
+   "lifetimeIterationDeclared": null,
+   "lifetimeClassification": "unresolved"
+  }
+ ]
+}

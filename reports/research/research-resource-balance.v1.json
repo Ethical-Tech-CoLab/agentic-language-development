@@ -1,0 +1,89 @@
+{
+ "schemaVersion": 1,
+ "classification": "research-resource-balance",
+ "researchFinding": false,
+ "balanceVersion": "v1",
+ "handoff": "R01",
+ "measuredAt": "2026-09-27T16:00:56Z",
+ "ceilings": {
+  "cpuHours": 72,
+  "retainedPlusWorkingBytes": 26843545600,
+  "residentBytes": 6442450944,
+  "externalSpend": 0
+ },
+ "retainedBytes": {
+  "totalEvidence": 5527700332,
+  "lv01": 857119191,
+  "byLv01Family": {
+   "application-fault-v3": 3899908,
+   "commitment-window-fault-v2": 1852326,
+   "commitment-window-fault-v3": 2675429,
+   "detector-v1": 58332,
+   "detector-v2": 33734298,
+   "detector-v3": 686397600,
+   "development-v10": 3407,
+   "development-v11": 13323,
+   "development-v12": 57726,
+   "development-v13": 4644346,
+   "development-v14": 4637884,
+   "development-v15": 4645133,
+   "development-v16": 6512648,
+   "development-v17": 6324648,
+   "development-v18": 6481898,
+   "development-v19": 6519515,
+   "development-v2": 517,
+   "development-v20": 6466987,
+   "development-v21": 6550618,
+   "development-v22": 2725,
+   "development-v23": 6583383,
+   "development-v3": 3162,
+   "development-v4": 201549,
+   "development-v5": 452790,
+   "development-v6": 452837,
+   "development-v7": 3400426,
+   "development-v8": 466410,
+   "development-v9": 4563954,
+   "five-rejection-safety-v1": 2826840,
+   "late-callback-v1": 201885,
+   "late-callback-v2": 577930,
+   "malformed-proposal-v1": 4043404,
+   "malformed-proposal-v2": 1837336,
+   "malformed-proposal-v3": 1891683,
+   "malformed-proposal-v4": 4033866,
+   "malformed-proposal-v5": 4037644,
+   "paired-development-v17": 1786022,
+   "paired-development-v18": 1851941,
+   "paired-development-v19": 1867137,
+   "paired-development-v20": 3959240,
+   "paired-development-v21": 28387121,
+   "recurrent-lifecycle-v1": 18086,
+   "recurrent-lifecycle-v2": 17992,
+   "recurrent-lifecycle-v3": 203247,
+   "recurrent-lifecycle-v4": 1927652
+  }
+ },
+ "workingBytes": {
+  "status": "unresolved",
+  "note": "No historical staging/working-peak measurements retained; du snapshots post-hoc only."
+ },
+ "cpuHours": {
+  "status": "unresolved",
+  "note": "Per-attempt CPU exists only as sampled cpuPercent spots in lv01-fixture-resources.json (13/52 run dirs), never cumulative cgroup usage; detector v1/v2/v3 and paired branches have no CPU records. No defensible cumulative charge can be derived; zero-for-missing is prohibited."
+ },
+ "peakMemoryBytes": {
+  "status": "partially-measured",
+  "note": "Max sampled container RSS per attempt available for 13 run dirs with resource samples; all other attempts unresolved. Conservative summed-peak reconciliation requires full-workload calibration (R06)."
+ },
+ "liveReserved": {
+  "containers": 0,
+  "status": "measured-zero",
+  "note": "ald-lv01-detector-v3 torn down 2026-09-27 after 15:49 UTC terminal capture; 0 remaining. No live study handles."
+ },
+ "externalSpend": 0,
+ "backupsExports": {
+  "status": "included-in-retained",
+  "note": "No separate backup/export roots located outside evidence/; export blobs counted once in retained bytes."
+ },
+ "remainingCapacity": "UNRESOLVED",
+ "gateDecision": "New experimental collection stays BLOCKED: iteration compliance unresolved (see iteration-accounting-deviation.v1.md) and CPU/working-peak charges unresolved. R02-R05 preparation proceeds; R06 is first lawful launcher."
+}
