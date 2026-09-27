@@ -79,6 +79,15 @@ export {
   type Lv01ActionDrawScope,
 } from './lv01-action-draw.js';
 export {
+  auditLv01PairedCase,
+  LV01_AUDIT_CASE_DOMAIN,
+  type Lv01AuditParentBundle,
+  type Lv01AuditSharedInput,
+  type Lv01AuditTranscriptEntry,
+  type Lv01AuditTranscriptEventType,
+  type Lv01AuditedBranch,
+} from './lv01-auditor.js';
+export {
   checkLv01BranchOrderStability,
   type Lv01BranchDigest,
 } from './lv01-order-check.js';
