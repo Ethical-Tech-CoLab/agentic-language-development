@@ -25,7 +25,10 @@ if (command === 'show') {
   process.exit(0);
 }
 if (command === 'release') {
-  const { values } = parseArgs({ options: { owner: { type: 'string' }, reason: { type: 'string', default: '' } } });
+  const { values } = parseArgs({
+    args: process.argv.slice(3),
+    options: { owner: { type: 'string' }, reason: { type: 'string', default: '' } },
+  });
   if (!existsSync(ACTIVE)) fail('no active lease to release');
   const active = JSON.parse(readFileSync(ACTIVE, 'utf8'));
   if (!values.owner || values.owner !== active.owner) fail('release requires the owning --owner');
@@ -36,6 +39,7 @@ if (command === 'release') {
 }
 // create
 const { values } = parseArgs({
+  args: process.argv.slice(3),
   options: {
     owner: { type: 'string' },
     task: { type: 'string' },

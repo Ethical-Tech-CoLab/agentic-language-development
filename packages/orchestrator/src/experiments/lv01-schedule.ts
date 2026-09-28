@@ -91,10 +91,12 @@ export function buildLv01Schedule(input: {
         if (truth.targetTypeCode !== expectedTarget) {
           fail(`${partition} case ${caseIndex} target ${truth.targetTypeCode} breaks round-robin (expected ${expectedTarget})`);
         }
-        if (truth.candidateTypeCodes.length !== 4 || !truth.candidateTypeCodes.includes(truth.targetTypeCode)) {
+        // Receiver-order candidates (ground truth carries no candidateTypeCodes
+        // field; receiverOrder is the 4-shuffle of target plus distractors).
+        if (truth.receiverOrder.length !== 4 || !truth.receiverOrder.includes(truth.targetTypeCode)) {
           fail(`${partition} case ${caseIndex} has malformed candidates`);
         }
-        for (const code of truth.candidateTypeCodes) {
+        for (const code of truth.receiverOrder) {
           if (!LV01_ELIGIBLE_TYPE_CODES.includes(code)) fail(`${partition} case ${caseIndex} uses ineligible type ${code}`);
         }
         cases[partition].push({
@@ -103,7 +105,7 @@ export function buildLv01Schedule(input: {
           caseIndex,
           receiverRole: receiver,
           targetTypeCode: truth.targetTypeCode,
-          candidateTypeCodes: [...truth.candidateTypeCodes],
+          candidateTypeCodes: [...truth.receiverOrder],
           candidateRefs: [...truth.candidateRefs],
           stateHash: generated.scenario.stateHash,
         });
