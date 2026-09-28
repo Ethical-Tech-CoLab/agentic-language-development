@@ -35,7 +35,7 @@ import {
   indexLv01TrainingLedger,
   loadLearnerContract,
 } from '@ald/learners';
-import { ReferentialScenarioEngine } from '@ald/scenario';
+import { LV01_UNTOUCHED_TYPE_CODES, ReferentialScenarioEngine } from '@ald/scenario';
 import {
   CheckpointManifestSchema,
   LedgerEventSchema,
@@ -649,7 +649,7 @@ export async function collectLv01Slot(input: {
       version: 1,
       symbolInventory: fixedTokenInventory(parent.symbolInventorySize ?? 32),
       interactionMode: parent.interactionMode,
-      heldOutTypeCodes: [0, 5, 10, 15],
+      heldOutTypeCodes: [...LV01_UNTOUCHED_TYPE_CODES],
     },
     seeds.scenario,
   );
@@ -1031,6 +1031,17 @@ export async function auditLv01Stage(input: {
   if (journal === undefined) fail('journal has no events');
 
   const parentDocs = await readLv01BundleDocs(input.parentBundleDir);
+  // Audit-time schedule inputs: re-verified from the packet, never trusted
+  // from the collect-time schedule.json claim each slot carries.
+  const auditParent = typedParentConfig(parentDocs);
+  const auditAllocationRaw = await readFile(packet.allocation.path, 'utf8').catch(() => {
+    fail(`allocation file ${packet.allocation.path} is missing`);
+  });
+  if (`sha256:${sha256Bytes(Buffer.from(auditAllocationRaw, 'utf8')).toString('hex')}` !== packet.allocation.sha256) {
+    fail('allocation bytes differ from the registered packet allocation');
+  }
+  const auditWorkload = lv01WorkloadForCollection(packet.stage, JSON.parse(auditAllocationRaw) as unknown);
+  if (auditWorkload.withinSupportTestCases < 1) fail(`${packet.stage} allocation schedules no within-support test cases`);
   const cases: Lv01StageCaseAudit[] = [];
   for (const slot of journal.slots) {
     if (slot.status !== 'valid') continue;
@@ -1055,6 +1066,54 @@ export async function auditLv01Stage(input: {
     const { caseCommitment } = auditLv01PairedCase({ plan, shared, branches: audited });
     if (slot.caseCommitment !== caseCommitment) {
       fail(`slot ${slot.index} journal case disagrees with the replayed audit`);
+    }
+    // Rebuild the slot schedule from packet-bound seeds and re-bind the
+    // collect-time claim: commitment equality, executed-case slot binding,
+    // and served-instance agreement across every branch.
+    const auditSeeds = lv01SlotSeeds(packet.packetCommitment, slot.index);
+    const auditEngine = new ReferentialScenarioEngine(
+      {
+        version: 1,
+        symbolInventory: fixedTokenInventory(auditParent.symbolInventorySize ?? 32),
+        interactionMode: auditParent.interactionMode,
+        heldOutTypeCodes: [...LV01_UNTOUCHED_TYPE_CODES],
+      },
+      auditSeeds.scenario,
+    );
+    const rebuilt = buildLv01Schedule({
+      engine: auditEngine,
+      counts: {
+        training: 0,
+        'validation-fit': auditWorkload.validationFitCases,
+        'validation-selection': auditWorkload.validationSelectionCases,
+        'within-support-test': auditWorkload.withinSupportTestCases,
+      },
+      receiverRoles: ['baby-a', 'baby-b'],
+    });
+    const storedSchedule = JSON.parse(await readFile(join(caseDir, 'schedule.json'), 'utf8')) as {
+      readonly commitment?: unknown;
+      readonly executedCaseId?: unknown;
+    };
+    if (typeof storedSchedule.commitment !== 'string' || typeof storedSchedule.executedCaseId !== 'string') {
+      fail(`slot ${slot.index} schedule record is malformed`);
+    }
+    if (verifyLv01ScheduleCoverage(rebuilt, [storedSchedule.executedCaseId]) !== storedSchedule.commitment) {
+      fail(`slot ${slot.index} schedule commitment disagrees with the rebuilt schedule`);
+    }
+    const auditReceiver = slot.index % 2 === 1 ? 'baby-b' : 'baby-a';
+    const expected = scheduledCaseFor(
+      rebuilt,
+      'within-support-test',
+      auditReceiver,
+      (slot.index - 1) % auditWorkload.withinSupportTestCases,
+    );
+    if (storedSchedule.executedCaseId !== expected.caseId) {
+      fail(`slot ${slot.index} executed case ${storedSchedule.executedCaseId} is not the scheduled slot case`);
+    }
+    for (const branch of audited) {
+      if (branch.payload.state.scenarioStateHash !== expected.stateHash) {
+        fail(`slot ${slot.index} branch ${branch.branch} served a case outside the rebuilt schedule`);
+      }
     }
     cases.push({ slot: slot.index, caseCommitment });
   }

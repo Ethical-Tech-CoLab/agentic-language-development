@@ -14,6 +14,7 @@ export {
   ReferentialScenarioEngine,
   LV01_ELIGIBLE_TYPE_CODES,
   LV01_PARTITION_CASES,
+  LV01_UNTOUCHED_TYPE_CODES,
   ScenarioEngineError,
   readGroundTruth,
   zoneOfPossibleAgreement,

@@ -63,7 +63,7 @@ export const LV01_ELIGIBLE_TYPE_CODES = [
   1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14,
 ] as const;
 
-const LV01_UNTOUCHED_TYPE_CODES = [0, 5, 10, 15] as const;
+export const LV01_UNTOUCHED_TYPE_CODES = [0, 5, 10, 15] as const;
 
 /** Per-receiver-role cases required by each frozen LV01 partition. */
 export const LV01_PARTITION_CASES: Readonly<Record<Lv01Partition, number>> = {

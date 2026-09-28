@@ -1,6 +1,7 @@
 /** LV01 fail-closed paired-case collection and immutable slot accounting. */
 import { hashCanonical } from '@ald/hashing';
 import { createDerivedRunConfig } from '@ald/lifecycle';
+import { LV01_UNTOUCHED_TYPE_CODES } from '@ald/scenario';
 import type { RunConfig } from '@ald/types';
 
 import {
@@ -172,7 +173,7 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
           },
           // Frozen LV01 untouched diagonal: the nursery builds its engine
           // held-out list from here, and scheduled cases require it.
-          interventionPlan: { version: 1, heldOutTypeCodes: [0, 5, 10, 15] },
+          interventionPlan: { version: 1, heldOutTypeCodes: [...LV01_UNTOUCHED_TYPE_CODES] },
           lv01PairedCase: {
             version: 1,
             branch,
