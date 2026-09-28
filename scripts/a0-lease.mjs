@@ -25,10 +25,15 @@ if (command === 'show') {
   process.exit(0);
 }
 if (command === 'release') {
-  const { values } = parseArgs({
-    args: process.argv.slice(3),
-    options: { owner: { type: 'string' }, reason: { type: 'string', default: '' } },
-  });
+  let values;
+  try {
+    values = parseArgs({
+      args: process.argv.slice(3),
+      options: { owner: { type: 'string' }, reason: { type: 'string', default: '' } },
+    }).values;
+  } catch {
+    fail('release takes only --owner and --reason');
+  }
   if (!existsSync(ACTIVE)) fail('no active lease to release');
   const active = JSON.parse(readFileSync(ACTIVE, 'utf8'));
   if (!values.owner || values.owner !== active.owner) fail('release requires the owning --owner');
@@ -38,17 +43,22 @@ if (command === 'release') {
   process.exit(0);
 }
 // create
-const { values } = parseArgs({
-  args: process.argv.slice(3),
-  options: {
-    owner: { type: 'string' },
-    task: { type: 'string' },
-    command: { type: 'string' },
-    preflight: { type: 'string' },
-    timeout: { type: 'string' },
-    'declared-peak-bytes': { type: 'string', default: '805306368' },
-  },
-});
+let values;
+try {
+  values = parseArgs({
+    args: process.argv.slice(3),
+    options: {
+      owner: { type: 'string' },
+      task: { type: 'string' },
+      command: { type: 'string' },
+      preflight: { type: 'string' },
+      timeout: { type: 'string' },
+      'declared-peak-bytes': { type: 'string', default: '805306368' },
+    },
+  }).values;
+} catch {
+  fail('create takes only --owner, --task, --command, --preflight, --timeout, and --declared-peak-bytes');
+}
 for (const key of ['owner', 'task', 'command', 'preflight', 'timeout']) {
   if (!values[key]) fail(`create requires --${key}`);
 }

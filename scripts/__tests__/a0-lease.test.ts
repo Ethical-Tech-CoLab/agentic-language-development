@@ -79,6 +79,19 @@ describe('A0 single host-job lease', () => {
     expect(existsSync(ACTIVE)).toBe(false);
   });
 
+  it('rejects stray positionals with structured JSON', () => {
+    if (activeLeaseExists()) return;
+    const created = run('create', 'bogus', '--owner', OWNER);
+    expect(created.status).toBe(2);
+    expect(JSON.parse(created.stderr).lease).toBe('error');
+    expect(created.stderr).toContain('create takes only');
+    const released = run('release', 'bogus', '--owner', OWNER);
+    expect(released.status).toBe(2);
+    expect(JSON.parse(released.stderr).lease).toBe('error');
+    expect(released.stderr).toContain('release takes only');
+    expect(existsSync(ACTIVE)).toBe(false);
+  });
+
   it('rejects stale and non-admitting preflight receipts', () => {
     if (activeLeaseExists()) return;
     const blocked = writePreflight({ admission: 'block' });
