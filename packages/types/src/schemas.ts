@@ -208,6 +208,17 @@ export const Lv01PairedCaseSchema = z.object({
     caseId: nonEmptyString,
     drawSeedCommitment: hashString,
   }).strict().optional(),
+  /**
+   * Scheduled LV01 case served instead of counter-based episodes. Turn 0 is
+   * always baby-b by role math, so the schedule names the served receiver
+   * explicitly and the runtime serves that role's case; single-turn runs
+   * only (enforced alongside the paired-case requirements).
+   */
+  scheduledCase: z.object({
+    partition: z.enum(['training', 'validation-fit', 'validation-selection', 'within-support-test']),
+    caseIndex: nonNegativeInteger,
+    receiverRole: z.enum(['baby-a', 'baby-b']),
+  }).strict().optional(),
 }).strict();
 
 /** LV01 stage artifacts distinguish execution accounting from research results. */

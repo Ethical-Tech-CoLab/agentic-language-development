@@ -918,7 +918,14 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
       (run.lifecycle.state === 'evaluating' ? 'evaluating' : 'running');
     const turn = run.turn;
     await this.#applyCurriculumTransitions(run, turn);
-    const sender = senderForTurn(turn, run.config.roleReversalPeriod);
+    // Scheduled LV01 turns take their roles from the schedule, not the turn
+    // counter: turn 0 is always baby-b by role math, so baby-a cases could
+    // otherwise never be served. Paired-case runs are single-turn by schema.
+    const scheduledRoles = run.config.lv01PairedCase?.scheduledCase;
+    if (scheduledRoles !== undefined && turn !== 0) {
+      throw new RunConfigurationError([{ path: 'lv01PairedCase.scheduledCase', message: 'scheduled LV01 cases serve turn 0 only' }]);
+    }
+    const sender = scheduledRoles !== undefined ? otherRole(scheduledRoles.receiverRole) : senderForTurn(turn, run.config.roleReversalPeriod);
     const scratch: TurnScratch = {
       turn,
       phase,
@@ -1237,13 +1244,16 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     const { turn, phase, split, sender, receiver } = scratch;
 
     const slot = await this.#slotFor(run, turn, phase, split);
+    const scheduled = run.config.lv01PairedCase?.scheduledCase;
     const instance =
       scratch.instance ??
       slot?.instance ??
-      run.engine.generate(this.#episodeIndex(run, phase), split, {
-        sender,
-        receiver,
-      });
+      (scheduled !== undefined
+        ? this.#scheduledInstance(run, scheduled, { sender, receiver })
+        : run.engine.generate(this.#episodeIndex(run, phase), split, {
+            sender,
+            receiver,
+          }));
     scratch.instance = instance;
 
     // §8.1 step 1 / §10.1: the only observation a Baby ever sees comes from
@@ -1911,14 +1921,33 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
    * the episode index, so the record still names the episode the turn was
    * about.
    */
+  /**
+   * Serve one explicitly scheduled LV01 case. The engine regenerates the
+   * scheduled case from the run seed; the collector pre-generated the
+   * identical instance offline for treatment planning, and the audit trips
+   * on any drift between scheduled and served.
+   */
+  #scheduledInstance(
+    run: RunRuntime,
+    scheduled: { readonly partition: 'training' | 'validation-fit' | 'validation-selection' | 'within-support-test'; readonly caseIndex: number },
+    roles: { sender: BabyRole; receiver: BabyRole },
+  ): ScenarioInstance {
+    if (run.engine.generateLv01Case === undefined) {
+      throw new RunConfigurationError([{ path: 'lv01PairedCase.scheduledCase', message: 'scheduled LV01 cases need an engine with generateLv01Case' }]);
+    }
+    return run.engine.generateLv01Case(scheduled.caseIndex, scheduled.partition, roles).scenario;
+  }
+
   #instanceFor(run: RunRuntime, scratch: TurnScratch): ScenarioInstance {
-    return (
-      scratch.instance ??
-      run.engine.generate(this.#episodeIndex(run, scratch.phase), scratch.split, {
-        sender: scratch.sender,
-        receiver: scratch.receiver,
-      })
-    );
+    const scheduled = run.config.lv01PairedCase?.scheduledCase;
+    if (scratch.instance !== undefined) return scratch.instance;
+    if (scheduled !== undefined) {
+      return this.#scheduledInstance(run, scheduled, { sender: scratch.sender, receiver: scratch.receiver });
+    }
+    return run.engine.generate(this.#episodeIndex(run, scratch.phase), scratch.split, {
+      sender: scratch.sender,
+      receiver: scratch.receiver,
+    });
   }
 
   /** The per-Baby observations of this turn, for the turn record's hashes. */
@@ -3095,14 +3124,17 @@ export class NurseryRuntimeImpl implements NurseryRuntime {
     );
     let episodeIndex = this.#episodeIndex(run, phase);
 
+    const scheduled = run.config.lv01PairedCase?.scheduledCase;
     for (let offset = 0; offset < size; offset += 1) {
       const slotTurn = turn + offset;
-      const slotSender = senderForTurn(slotTurn, run.config.roleReversalPeriod);
+      const slotSender = scheduled !== undefined ? otherRole(scheduled.receiverRole) : senderForTurn(slotTurn, run.config.roleReversalPeriod);
       const slotReceiver = otherRole(slotSender);
-      const instance = run.engine.generate(episodeIndex, split, {
-        sender: slotSender,
-        receiver: slotReceiver,
-      });
+      const instance = scheduled !== undefined
+        ? this.#scheduledInstance(run, scheduled, { sender: slotSender, receiver: slotReceiver })
+        : run.engine.generate(episodeIndex, split, {
+            sender: slotSender,
+            receiver: slotReceiver,
+          });
       episodeIndex += 1;
 
       const slotObservation = assertObservationHygiene(

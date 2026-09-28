@@ -494,6 +494,16 @@ export interface ScenarioEngine {
     split: ScenarioSplit,
     roles: { sender: BabyRole; receiver: BabyRole },
   ): ScenarioInstance;
+  /**
+   * Explicitly scheduled LV01 case. Optional so existing engines keep
+   * working; the nursery fails closed when a scheduled run needs it and
+   * the engine does not implement it.
+   */
+  generateLv01Case?(
+    caseIndex: number,
+    partition: Lv01Partition,
+    roles: { sender: BabyRole; receiver: BabyRole },
+  ): Lv01ScenarioCase;
   /** Evaluates the receiver's task action against researcher ground truth. */
   evaluate(instance: ScenarioInstance, action: AgentActionProposal): Outcome;
   /** E03 `oracle`: minimal sufficient artifact from researcher-only ground truth. */

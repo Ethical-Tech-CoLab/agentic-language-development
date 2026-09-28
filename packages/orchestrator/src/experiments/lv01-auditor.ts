@@ -366,7 +366,12 @@ export function auditLv01PairedCase(input: {
 
     const scope = scopeOf(branch.branch);
     assertLv01ActionDrawScope(scope);
-    const seed = deriveLv01ActionDrawSeed(input.shared.parent.parentRandomSeed, scope);
+    // Slot-bound derivation: the plan (not the parent stream) carries the
+    // scenario seed, and the run seed must be that same seed.
+    const slotScenario = planned.config.seedBindings?.scenario;
+    if (slotScenario === undefined || slotScenario.length === 0) fail(`${branch.branch} plan has no slot scenario seed`);
+    if (planned.config.randomSeed !== slotScenario) fail(`${branch.branch} run seed is not the slot scenario seed`);
+    const seed = deriveLv01ActionDrawSeed(slotScenario, scope);
     if (seed !== branch.drawSeed) fail(`${branch.branch} draw seed is not the registered derivation`);
     const draw = recomputedDrawCommitment({
       drawSeed: branch.drawSeed,

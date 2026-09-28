@@ -55,13 +55,31 @@ export interface Lv01PairedCasePlanInput {
   }>>;
   /**
    * Shared action-draw scope. One seed per case (no branch part); the
-   * receiver role is always baby-b because paired branches run turn 0.
+   * receiver role follows the scheduled case (turn 0 is always baby-b by
+   * role math, so baby-a cases name their receiver explicitly).
    */
   readonly actionDrawScope: {
     readonly stage: 'development' | 'qualification' | 'shadow' | 'generalization' | 'pilot';
     readonly slotKind: 'primary' | 'reserve';
     readonly slotIndex: string;
     readonly partition: 'dev' | 'within-support' | 'novel-composition';
+  };
+  /**
+   * Slot-bound seed material. Every branch of the slot shares it (paired
+   * serving); distinct slots get distinct scenarios and bindings.
+   */
+  readonly slotSeeds: {
+    readonly scenario: string;
+    readonly babyA: string;
+    readonly babyB: string;
+    readonly gateway: string;
+    readonly analysis: string;
+  };
+  /** Scheduled LV01 case served by every branch of this paired case. */
+  readonly scheduledCase: {
+    readonly partition: 'training' | 'validation-fit' | 'validation-selection' | 'within-support-test';
+    readonly caseIndex: number;
+    readonly receiverRole: 'baby-a' | 'baby-b';
   };
 }
 
@@ -103,15 +121,14 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
   if (!/^policies\/baby-a-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyAInitialPolicyRef)) fail('baby-a policy reference is invalid');
   if (!/^policies\/baby-b-(?:latest|policy-(?:initial|[0-9]+))\.json$/u.test(input.babyBInitialPolicyRef)) fail('baby-b policy reference is invalid');
   if (!/^[a-z0-9-]+$/u.test(input.childRunIdPrefix)) fail('child run identifier prefix is invalid');
-  const parentBindings = input.parent.seedBindings;
-  if (parentBindings === undefined) fail('paired cases require parent seed bindings');
+  if (input.parent.seedBindings === undefined) fail('paired cases require parent seed bindings');
   const drawScope = {
     ...input.actionDrawScope,
-    receiverRole: 'baby-b' as const,
+    receiverRole: input.scheduledCase.receiverRole,
     caseId: `${input.childRunIdPrefix}:turn:0`,
   };
   assertLv01ActionDrawScope(drawScope);
-  const drawSeed = deriveLv01ActionDrawSeed(input.parent.randomSeed, drawScope);
+  const drawSeed = deriveLv01ActionDrawSeed(input.slotSeeds.scenario, drawScope);
   const drawSeedCommitment = hashCanonical('lv01-action-draw-seed/v1', drawSeed);
   const preStateCommitment = hashCanonical('lv01-paired-pre-state/v1', {
     parentRunId: input.parent.runId,
@@ -140,7 +157,22 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
           // episodes would be a separate paired-case allocation, not a
           // silent expansion of this branch-reset primitive.
           evaluationTurns: 1,
-          seedBindings: { ...parentBindings, actionDraw: drawSeed },
+          // Slot-bound seeds: the scenario seed doubles as the run seed so
+          // the nursery regenerates this slot's scheduled case; bindings
+          // stay consistent (scenario must equal randomSeed).
+          randomSeed: input.slotSeeds.scenario,
+          seedBindings: {
+            version: 1,
+            scenario: input.slotSeeds.scenario,
+            babyA: input.slotSeeds.babyA,
+            babyB: input.slotSeeds.babyB,
+            gateway: input.slotSeeds.gateway,
+            analysis: input.slotSeeds.analysis,
+            actionDraw: drawSeed,
+          },
+          // Frozen LV01 untouched diagonal: the nursery builds its engine
+          // held-out list from here, and scheduled cases require it.
+          interventionPlan: { version: 1, heldOutTypeCodes: [0, 5, 10, 15] },
           lv01PairedCase: {
             version: 1,
             branch,
@@ -148,6 +180,7 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
             preStateCommitment,
             ...(ledgerSlice === undefined ? {} : { ledgerTreatment: { ...ledgerSlice } }),
             actionDraw: { ...drawScope, drawSeedCommitment },
+            scheduledCase: { ...input.scheduledCase },
           },
         },
       },

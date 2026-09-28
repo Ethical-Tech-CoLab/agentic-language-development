@@ -72,6 +72,14 @@ describe('LV01 paired prediction production evidence', () => {
       babyBInitialPolicyRef: 'policies/baby-b-latest.json',
       childRunIdPrefix: 'lv01-paired-prediction-child',
       actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
+      slotSeeds: {
+        scenario: `sha256:${'6'.repeat(64)}`,
+        babyA: `sha256:${'1'.repeat(64)}`,
+        babyB: `sha256:${'2'.repeat(64)}`,
+        gateway: `sha256:${'3'.repeat(64)}`,
+        analysis: `sha256:${'4'.repeat(64)}`,
+      },
+      scheduledCase: { partition: 'within-support-test', caseIndex: 0, receiverRole: 'baby-b' },
       ledgerTreatments: {
         'ledger-consistent': { ...ledgerSlice },
         'ledger-shuffled': { ...ledgerSlice },

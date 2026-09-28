@@ -97,7 +97,9 @@ export function buildLv01Schedule(input: {
           fail(`${partition} case ${caseIndex} has malformed candidates`);
         }
         for (const code of truth.receiverOrder) {
-          if (!LV01_ELIGIBLE_TYPE_CODES.includes(code)) fail(`${partition} case ${caseIndex} uses ineligible type ${code}`);
+          if (!(LV01_ELIGIBLE_TYPE_CODES as readonly number[]).includes(code)) {
+            fail(`${partition} case ${caseIndex} uses ineligible type ${code}`);
+          }
         }
         cases[partition].push({
           caseId: scheduleCaseId(partition, receiver, caseIndex),

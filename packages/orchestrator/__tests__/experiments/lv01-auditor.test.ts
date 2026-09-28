@@ -50,6 +50,13 @@ const CHECKPOINT = `sha256:${'c'.repeat(64)}`;
 const SCENARIO = `sha256:${'f'.repeat(64)}`;
 const POLICY = `sha256:${'a'.repeat(64)}`;
 const SCHEDULE = `sha256:${'b'.repeat(64)}`;
+const SLOT_SEEDS = {
+  scenario: `sha256:${'d'.repeat(64)}`,
+  babyA: `sha256:${'5'.repeat(64)}`,
+  babyB: `sha256:${'6'.repeat(64)}`,
+  gateway: `sha256:${'7'.repeat(64)}`,
+  analysis: `sha256:${'8'.repeat(64)}`,
+};
 const SCOPE = {
   stage: 'development' as const,
   slotKind: 'primary' as const,
@@ -174,6 +181,22 @@ function validCase(): ValidCase {
   );
   const batchCutoff = deriveLv01LedgerCutoff(batchRecords);
   const batchIndex = indexLv01TrainingLedger(batchRecords, 'baby-b', batchCutoff);
+  const batchRecordsA = mapLv01LedgerAssociations(
+    [
+      ledgerEvent('batch-index', 'babyA', { sequence: 1, turn: 0 }),
+      ledgerEvent('batch-index', 'babyA', {
+        sequence: 2,
+        turn: 1,
+        eventType: 'hypothesis.revised',
+        subjectId: 'symbol:S02',
+        content: { termRef: 'symbol:S02', associationOverTypeCodes: weights2() },
+      }),
+    ],
+    'baby-a',
+    () => true,
+  );
+  const batchCutoffA = deriveLv01LedgerCutoff(batchRecordsA);
+  const batchIndexA = indexLv01TrainingLedger(batchRecordsA, 'baby-a', batchCutoffA);
   const batch = buildLedgerTreatmentBatch({
     cases: (['ledger-consistent', 'ledger-shuffled'] as const).map((branch) => ({
       caseId: caseIdFor(branch),
@@ -181,7 +204,7 @@ function validCase(): ValidCase {
       targetTypeCode: 1,
       candidateTypeCodes: candidates,
     })),
-    nativeIndex: batchIndex,
+    nativeIndexes: { babyA: batchIndexA, babyB: batchIndex },
     symbolInventory: [...inventory],
     derangementSeed: 'audit-derangement',
   });
@@ -197,12 +220,14 @@ function validCase(): ValidCase {
       slotIndex: SCOPE.slotIndex,
       partition: SCOPE.partition,
     },
+    slotSeeds: { ...SLOT_SEEDS },
+    scheduledCase: { partition: 'within-support-test', caseIndex: 0, receiverRole: 'baby-b' },
     ledgerTreatments: {
       'ledger-consistent': { ...sliceLedgerTreatment(batch, caseIdFor('ledger-consistent'), 'ledger-consistent') },
       'ledger-shuffled': { ...sliceLedgerTreatment(batch, caseIdFor('ledger-shuffled'), 'ledger-shuffled') },
     },
   });
-  const drawSeed = deriveLv01ActionDrawSeed(ROOT_SEED, SCOPE);
+  const drawSeed = deriveLv01ActionDrawSeed(SLOT_SEEDS.scenario, SCOPE);
   const { ordinaryId, ordinaryFit } = ordinarySelection();
   const model = frozenModel();
   // One frozen parent stream pair, referenced (never copied) by every branch.

@@ -2,8 +2,8 @@
  * LV01 stage collector (R05.2b-ii).
  *
  * Pure front half: workload resolution, packet-bound slot seeds, the
- * offline branch-target peek, treatment-case construction, and paired-case
- * preparation. The executor runs one paired case for real: create each
+ * offline scheduled branch-target lookup, treatment-case construction, and
+ * paired-case preparation. The executor runs one paired case for real: create each
  * planned branch run, step its single turn-0 evaluation, live-gate the
  * treatment delivery against the committed slice, and export the branch
  * bundles. The slot collector derives everything from the sealed parent
@@ -29,18 +29,18 @@ import {
   InMemorySignerRegistry,
   hashCanonical,
   hashCarrierMark,
+  sha256Bytes,
 } from '@ald/hashing';
 import {
   indexLv01TrainingLedger,
   loadLearnerContract,
 } from '@ald/learners';
-import { ReferentialScenarioEngine, readGroundTruth } from '@ald/scenario';
+import { ReferentialScenarioEngine } from '@ald/scenario';
 import {
   CheckpointManifestSchema,
   LedgerEventSchema,
   RunConfigSchema,
   fixedTokenInventory,
-  otherRole,
   type Clock,
   type LedgerEvent,
   type Lv01AuditReceipt,
@@ -52,7 +52,6 @@ import {
 
 import {
   createNurseryRuntime,
-  senderForTurn,
   type NurseryRuntimeImpl,
 } from '../nursery-runtime.js';
 import { simpleCheckpointFactory } from '../testing.js';
@@ -94,6 +93,13 @@ import {
   type Lv01RoleNativeIndexes,
   type Lv01TreatmentCase,
 } from './lv01-ledger-treatments.js';
+import {
+  buildLv01Schedule,
+  scheduledCaseFor,
+  verifyLv01ScheduleCoverage,
+  type Lv01Schedule,
+  type Lv01ScheduledCase,
+} from './lv01-schedule.js';
 import {
   deriveLv01LedgerCutoff,
   mapLv01LedgerAssociations,
@@ -163,66 +169,55 @@ export function lv01SlotSeeds(
   };
 }
 
-export interface Lv01PeekedBranchTarget {
+export interface Lv01ScheduledBranchTarget {
   readonly targetTypeCode: number;
   readonly candidateTypeCodes: readonly number[];
   readonly candidateRefs: readonly string[];
   readonly receiver: 'baby-a' | 'baby-b';
   /** The scheduled instance state hash; served turn records must match it. */
   readonly stateHash: string;
+  /** Schedule identity of the served case, bound into the audit record. */
+  readonly scheduledCaseId: string;
 }
 
 /**
- * Peek the scheduled turn-0 evaluation case offline. Replicates exactly how
- * the runtime serves a branch's first turn (evaluation-only derived run:
- * episode 0 of the evaluation split with turn-0 roles); the executor and
- * audit both trip on any drift between this peek and the served case.
+ * Look up the scheduled turn-0 case offline. Replicates exactly how the
+ * runtime serves a branch's first turn (scheduled LV01 case for the slot's
+ * receiver role); the executor and audit both trip on any drift between
+ * this lookup and the served case. Never the generic evaluation split.
  */
-export function peekLv01BranchTarget(input: {
-  readonly randomSeed: string;
-  readonly symbolInventorySize: number;
-  readonly interactionMode: RunConfig['interactionMode'];
-  readonly heldOutTypeCodes: readonly number[];
-  readonly roleReversalPeriod: number;
-}): Lv01PeekedBranchTarget {
-  const engine = new ReferentialScenarioEngine(
-    {
-      version: 1,
-      symbolInventory: fixedTokenInventory(input.symbolInventorySize),
-      interactionMode: input.interactionMode,
-      heldOutTypeCodes: [...input.heldOutTypeCodes],
-    },
-    input.randomSeed,
-  );
-  const sender = senderForTurn(0, input.roleReversalPeriod);
-  const receiver = otherRole(sender);
-  if (receiver !== 'baby-b') fail('paired branches require a turn-0 baby-b receiver');
-  const instance = engine.generate(0, 'evaluation', { sender, receiver });
-  const truth = readGroundTruth(instance.groundTruth);
+export function scheduledLv01BranchTarget(input: {
+  readonly schedule: Lv01Schedule;
+  readonly partition: Lv01ScheduledCase['partition'];
+  readonly caseIndex: number;
+  readonly receiver: 'baby-a' | 'baby-b';
+}): Lv01ScheduledBranchTarget {
+  const entry = scheduledCaseFor(input.schedule, input.partition, input.receiver, input.caseIndex);
   return {
-    targetTypeCode: truth.targetTypeCode,
-    candidateTypeCodes: [...truth.receiverOrder],
-    candidateRefs: [...truth.candidateRefs],
-    receiver,
-    stateHash: instance.stateHash,
+    targetTypeCode: entry.targetTypeCode,
+    candidateTypeCodes: [...entry.candidateTypeCodes],
+    candidateRefs: [...entry.candidateRefs],
+    receiver: entry.receiverRole,
+    stateHash: entry.stateHash,
+    scheduledCaseId: entry.caseId,
   };
 }
 
 /**
  * The two ledger-branch treatment cases for one paired case, keyed by the
- * branch run identities the plan will derive. Both peek the same scheduled
- * instance (all branches share the parent engine); the batch deranges the
- * two selections within the baby-b role.
+ * branch run identities the plan will derive. Both name the same scheduled
+ * instance (all branches serve one scheduled case per slot); the batch
+ * deranges the two selections within the slot receiver role.
  */
 export function buildLv01TreatmentCases(
-  peeked: Lv01PeekedBranchTarget,
+  scheduled: Lv01ScheduledBranchTarget,
   childRunIdPrefix: string,
 ): readonly [Lv01TreatmentCase, Lv01TreatmentCase] {
   const treatmentCase = (branch: 'ledger-consistent' | 'ledger-shuffled'): Lv01TreatmentCase => ({
     caseId: `${childRunIdPrefix}-${branch}:turn:0`,
-    receiverRole: peeked.receiver,
-    targetTypeCode: peeked.targetTypeCode,
-    candidateTypeCodes: [...peeked.candidateTypeCodes],
+    receiverRole: scheduled.receiver,
+    targetTypeCode: scheduled.targetTypeCode,
+    candidateTypeCodes: [...scheduled.candidateTypeCodes],
   });
   return [treatmentCase('ledger-consistent'), treatmentCase('ledger-shuffled')];
 }
@@ -243,6 +238,18 @@ export interface Lv01PairedCaseInputs {
   readonly nativeIndexes: Lv01RoleNativeIndexes;
   readonly symbolInventory: readonly string[];
   readonly derangementSeed: string;
+  readonly slotSeeds: {
+    readonly scenario: string;
+    readonly babyA: string;
+    readonly babyB: string;
+    readonly gateway: string;
+    readonly analysis: string;
+  };
+  readonly scheduledCase: {
+    readonly partition: 'training' | 'validation-fit' | 'validation-selection' | 'within-support-test';
+    readonly caseIndex: number;
+    readonly receiverRole: 'baby-a' | 'baby-b';
+  };
 }
 
 /** Commit the treatment batch, then plan the seven branches around its slices. */
@@ -268,6 +275,8 @@ export function prepareLv01PairedCase(input: Lv01PairedCaseInputs): {
     babyBInitialPolicyRef: input.babyBInitialPolicyRef,
     childRunIdPrefix: input.childRunIdPrefix,
     actionDrawScope: input.actionDrawScope,
+    slotSeeds: input.slotSeeds,
+    scheduledCase: input.scheduledCase,
     ledgerTreatments: {
       'ledger-consistent': sliceFor('ledger-consistent'),
       'ledger-shuffled': sliceFor('ledger-shuffled'),
@@ -569,11 +578,11 @@ async function directoryBytes(root: string): Promise<number> {
 
 /**
  * Collect one slot end to end: derive everything from the sealed parent
- * bundle, peek the scheduled target, commit the treatment batch BEFORE any
- * branch runs, execute all seven branches, verify the served case equals
- * the peeked case, and self-audit through the independent loader +
- * auditor. Returns the audited case commitment; throws (invalid slot) on
- * any divergence.
+ * bundle, build the slot schedule and look up the scheduled case, commit
+ * the treatment batch BEFORE any branch runs, execute all seven branches,
+ * verify the served case equals the scheduled case, and self-audit through
+ * the independent loader + auditor. Returns the audited case commitment;
+ * throws (invalid slot) on any divergence.
  */
 export async function collectLv01Slot(input: {
   readonly packet: Lv01StagePacket;
@@ -617,20 +626,55 @@ export async function collectLv01Slot(input: {
     babyA: indexLv01TrainingLedger(recordsA, 'baby-a', deriveLv01LedgerCutoff(recordsA)),
     babyB: indexLv01TrainingLedger(recordsB, 'baby-b', deriveLv01LedgerCutoff(recordsB)),
   };
-  // All branches share the baby-b receiver in the current single-role
-  // schedule; the served cutoff moves per role with the both-role schedule.
-  const cutoff = deriveLv01LedgerCutoff(recordsB);
+  // Served cutoff follows the slot's scheduled receiver role.
+  const receiver: 'baby-a' | 'baby-b' = input.slot % 2 === 1 ? 'baby-b' : 'baby-a';
+  const cutoff = deriveLv01LedgerCutoff(receiver === 'baby-a' ? recordsA : recordsB);
 
-  const peeked = peekLv01BranchTarget({
-    randomSeed: parent.randomSeed,
-    symbolInventorySize: parent.symbolInventorySize ?? 32,
-    interactionMode: parent.interactionMode,
-    heldOutTypeCodes: parent.interventionPlan?.heldOutTypeCodes ?? [],
-    roleReversalPeriod: parent.roleReversalPeriod,
+  // Slot schedule: the engine runs on the slot scenario seed (shared with
+  // the branch run configs below), the frozen LV01 held-out diagonal is
+  // asserted explicitly rather than inherited, and training cases stay in
+  // the parent domain (no-overlap against parent training refs is loader
+  // work, tracked separately).
+  const seeds = lv01SlotSeeds(input.packet.packetCommitment, input.slot);
+  const allocationRaw = await readFile(input.packet.allocation.path, 'utf8').catch(() => {
+    fail(`allocation file ${input.packet.allocation.path} is missing`);
   });
+  if (`sha256:${sha256Bytes(Buffer.from(allocationRaw, 'utf8')).toString('hex')}` !== input.packet.allocation.sha256) {
+    fail('allocation bytes differ from the registered packet allocation');
+  }
+  const workload = lv01WorkloadForCollection(input.packet.stage, JSON.parse(allocationRaw) as unknown);
+  if (workload.withinSupportTestCases < 1) fail(`${input.packet.stage} allocation schedules no within-support test cases`);
+  const scheduleEngine = new ReferentialScenarioEngine(
+    {
+      version: 1,
+      symbolInventory: fixedTokenInventory(parent.symbolInventorySize ?? 32),
+      interactionMode: parent.interactionMode,
+      heldOutTypeCodes: [0, 5, 10, 15],
+    },
+    seeds.scenario,
+  );
+  const schedule = buildLv01Schedule({
+    engine: scheduleEngine,
+    counts: {
+      training: 0,
+      'validation-fit': workload.validationFitCases,
+      'validation-selection': workload.validationSelectionCases,
+      'within-support-test': workload.withinSupportTestCases,
+    },
+    receiverRoles: ['baby-a', 'baby-b'],
+  });
+  // Rotation across slots keeps targets balanced: same-role slots would
+  // otherwise all test the round-robin head of the test partition.
+  const scheduled = scheduledLv01BranchTarget({
+    schedule,
+    partition: 'within-support-test',
+    caseIndex: (input.slot - 1) % workload.withinSupportTestCases,
+    receiver,
+  });
+  const scheduleCommitment = verifyLv01ScheduleCoverage(schedule, [scheduled.scheduledCaseId]);
   const childRunIdPrefix = `lv01-${input.packet.stage}-v${input.packet.version}-s${slotLabel}`;
   if (!/^[a-z0-9-]+$/u.test(childRunIdPrefix)) fail('child run identifier prefix is invalid');
-  const treatmentCases = buildLv01TreatmentCases(peeked, childRunIdPrefix);
+  const treatmentCases = buildLv01TreatmentCases(scheduled, childRunIdPrefix);
   const { plan, batch } = prepareLv01PairedCase({
     parent,
     parentCheckpointHash,
@@ -658,8 +702,15 @@ export async function collectLv01Slot(input: {
       slotIndex: slotLabel,
       partition: input.partition,
     }),
+    slotSeeds: { scenario: seeds.scenario, babyA: seeds.babyA, babyB: seeds.babyB, gateway: seeds.gateway, analysis: seeds.analysis },
+    scheduledCase: { partition: 'within-support-test', caseIndex: (input.slot - 1) % workload.withinSupportTestCases, receiverRole: receiver },
   });
   await writeFile(join(caseDir, 'treatment-batch.json'), `${JSON.stringify(batch, null, 2)}\n`, 'utf8');
+  await writeFile(
+    join(caseDir, 'schedule.json'),
+    `${JSON.stringify({ commitment: scheduleCommitment, counts: schedule.counts, executedCaseId: scheduled.scheduledCaseId, cases: schedule.cases }, null, 2)}\n`,
+    'utf8',
+  );
 
   const harness = await createLv01CollectorHarness({
     root: input.store.root,
@@ -680,7 +731,7 @@ export async function collectLv01Slot(input: {
   }
   const rssPostBranches = process.memoryUsage.rss();
 
-  // Served case must equal the peeked case: every branch payload commits
+  // Served case must equal the scheduled case: every branch payload commits
   // the scenario it actually served, and the loader already bound the
   // payload to the turn record and the intention selection.
   const verificationStart = Date.now();
@@ -690,8 +741,8 @@ export async function collectLv01Slot(input: {
   }
   const audited = branchDocs.map((docs) => loadLv01AuditedBranch(docs));
   for (const branch of audited) {
-    if (branch.payload.state.scenarioStateHash !== peeked.stateHash) {
-      fail(`branch ${branch.branch} served a case outside the committed peek`);
+    if (branch.payload.state.scenarioStateHash !== scheduled.stateHash) {
+      fail(`branch ${branch.branch} served a case outside the committed schedule`);
     }
     if (branch.payload.cutoff.sequence !== cutoff.sequence || branch.payload.cutoff.turn !== cutoff.turn) {
       fail(`branch ${branch.branch} committed a cutoff outside the parent index`);
@@ -699,7 +750,7 @@ export async function collectLv01Slot(input: {
   }
   // Served-vs-batch target verification belongs here but the audited branch
   // payload carries no served target yet; the previous call compared the
-  // batch against its own peek input (tautological) and is removed rather
+  // batch against its own schedule input (tautological) and is removed rather
   // than kept as theater. A5 loader work exposes served targets, then this
   // call returns with independently observed values.
   const first = audited[0];
@@ -912,6 +963,10 @@ export function rebuildLv01CasePlan(input: {
   if (firstPairedCase === undefined) fail('branch run-config carries no LV01 paired case');
   const drawScope = firstPairedCase.actionDraw;
   if (drawScope === undefined) fail('branch run-config carries no draw scope');
+  const scheduledCase = firstPairedCase.scheduledCase;
+  if (scheduledCase === undefined) fail('branch run-config carries no scheduled case');
+  const firstSeeds = first.data.seedBindings;
+  if (firstSeeds === undefined) fail('branch run-config carries no seed bindings');
   const firstBranch = firstPairedCase.branch;
   if (!first.data.runId.endsWith(`-${firstBranch}`)) fail('branch run identity carries no branch suffix');
   const prefix = first.data.runId.slice(0, -(firstBranch.length + 1));
@@ -942,6 +997,18 @@ export function rebuildLv01CasePlan(input: {
       slotKind: drawScope.slotKind,
       slotIndex: drawScope.slotIndex,
       partition: drawScope.partition,
+    },
+    slotSeeds: {
+      scenario: firstSeeds.scenario,
+      babyA: firstSeeds.babyA,
+      babyB: firstSeeds.babyB,
+      gateway: firstSeeds.gateway,
+      analysis: firstSeeds.analysis,
+    },
+    scheduledCase: {
+      partition: scheduledCase.partition,
+      caseIndex: scheduledCase.caseIndex,
+      receiverRole: scheduledCase.receiverRole,
     },
     ledgerTreatments: slices,
   });

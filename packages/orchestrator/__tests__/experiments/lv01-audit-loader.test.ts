@@ -76,12 +76,17 @@ async function capture(
   const ledgerEvents = runtime.ledgers(parent.runId);
   const records = mapLv01LedgerAssociations(ledgerEvents.babyB, 'baby-b', () => true);
   const cutoff = deriveLv01LedgerCutoff(records);
+  const recordsA = mapLv01LedgerAssociations(ledgerEvents.babyA, 'baby-a', () => true);
+  const cutoffA = deriveLv01LedgerCutoff(recordsA);
   const batch = buildLedgerTreatmentBatch({
     cases: [
       { caseId: 'lv01-loader-child-normal:turn:0', receiverRole: 'baby-b', targetTypeCode: 1, candidateTypeCodes: [1, 4, 9, 14] },
       { caseId: 'lv01-loader-child-ledger-consistent:turn:0', receiverRole: 'baby-b', targetTypeCode: 4, candidateTypeCodes: [1, 4, 9, 14] },
     ],
-    nativeIndex: indexLv01TrainingLedger(records, 'baby-b', cutoff),
+    nativeIndexes: {
+      babyA: indexLv01TrainingLedger(recordsA, 'baby-a', cutoffA),
+      babyB: indexLv01TrainingLedger(records, 'baby-b', cutoff),
+    },
     symbolInventory: Array.from({ length: 32 }, (_, index) => `S${String(index + 1).padStart(2, '0')}`),
     derangementSeed: 'loader-fixture',
   });
@@ -92,6 +97,14 @@ async function capture(
     babyBInitialPolicyRef: 'policies/baby-b-latest.json',
     childRunIdPrefix: 'lv01-loader-child',
     actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
+    slotSeeds: {
+      scenario: `sha256:${'6'.repeat(64)}`,
+      babyA: `sha256:${'1'.repeat(64)}`,
+      babyB: `sha256:${'2'.repeat(64)}`,
+      gateway: `sha256:${'3'.repeat(64)}`,
+      analysis: `sha256:${'4'.repeat(64)}`,
+    },
+    scheduledCase: { partition: 'within-support-test', caseIndex: 0, receiverRole: 'baby-b' },
     ledgerTreatments: {
       'ledger-consistent': { selectedToken: 'S01', deliveredToken: 'S01', batchCommitment: batch.batchCommitment, sourceCaseId: 'loader' },
       'ledger-shuffled': { selectedToken: 'S01', deliveredToken: 'S01', batchCommitment: batch.batchCommitment, sourceCaseId: 'loader' },
