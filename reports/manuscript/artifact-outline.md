@@ -47,8 +47,8 @@ Contract (from R05 happy path plus missing/corrupt/stale/failure/null paths):
 |---|---|---|
 | Sealed main-stage manifest | `TBD` | TBD |
 | Sealed repeat-stage manifest | `TBD` | TBD |
-| Registered design packet (R03) | `TBD` | TBD |
-| Registered analysis packet | `TBD` | TBD |
+| Registered design packet (R03) | `protocols/lv01-study-design.v2.json`, `protocols/lv01-analysis-plan.v2.json`, `protocols/lv01-seed-resource-policy.v2.json`, `protocols/lv01-prototype-execution-profile.v2.json`, `protocols/lv01-direction-amendment.v2.json` (paths; registration digests TBD) | TBD |
+| Registered analysis packet | Included above (`protocols/lv01-analysis-plan.v2.json`) | TBD |
 | Environment manifest freeze delta | `TBD` | TBD |
 
 ## B4. Verification steps (reviewer script)
@@ -59,6 +59,9 @@ Contract (from R05 happy path plus missing/corrupt/stale/failure/null paths):
 4. `TBD`: confirm regenerated tables match the manuscript's tables byte for
    byte (or by stated digest comparison).
 5. `TBD`: confirm the R10 reproduction receipt references this exact run.
+6. On any mismatch: retain a discrepancy record (expected vs observed
+   digests, inputs, command, environment) beside the receipt — a mismatch
+   is never a silent pass and never deleted.
 
 ## B5. Retention and size notes
 

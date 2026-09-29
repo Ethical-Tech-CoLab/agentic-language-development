@@ -3,9 +3,8 @@
 Status: **pre-results skeleton**. Every `TBD` marks a field that must be
 populated only from verified R09/R10 evidence. No result stated here is an
 observation. Venue target (conditional): TMLR; see `review-package.md` for
-the preparation gate. `plans/publication-venue-assessment.md` is a working
-note only — current official TMLR pages govern the author-guide rules at
-freeze.
+the preparation gate. Current official TMLR pages govern the author-guide
+rules at freeze.
 
 ## 1. Exact question
 
@@ -52,7 +51,7 @@ out from training, or fields the causal-ledger protocol forbids.
 
 | Comparator | Reads before action | Must not read |
 |---|---|---|
-| Ordinary records only (`uniform`, `validation-majority`, `transcript-only`, `task-history`, `ordinary-record-softmax`) | `TBD` (allowed ordinary-record fields from the R03 packet; five predictors share this access with distinct fits, §5.4) | Ledger content, snapshots, future turns |
+| Ordinary records only (`uniform`, `validation-majority`, `transcript-only`, `task-history`, `ordinary-record-softmax`) | Declared past ordinary records and current allowed token/candidates (five predictors share this access with distinct fits, §5.4) | Ledger content, snapshots, future turns |
 | Latest permitted sparse ledger | Ordinary records + latest ledger snapshot at/before the decision turn | Future ledger revisions, probe labels |
 | Equal-content unsigned history | Ordinary records + unsigned record with byte-identical semantic content | Signature/anchor fields (tests content, not signing) |
 | Periodic full association snapshot | Ordinary records + full snapshot at 64-episode cadence plus cutoffs | Off-cadence state |
@@ -75,7 +74,7 @@ hardware or side-channel guarantee. See §8 (logical isolation) and the
 |---|---|---|
 | Prototype runtime, recurrent learner family, naming game, fixed-token channel | Tracked source at `TBD` commit; qualification receipts `TBD` | No redesign; frozen via R03 packet |
 | Ledger capture, signing, verification machinery | Prior qualification receipts `TBD` | None claimed |
-| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets, frozen `9be6e536` (§5.1) |
+| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets: lineage `9be6e536` + R03-B F1/F2 committed `9c25643` (§5.1); seed-vocabulary amendment committed `f4cc224` |
 | Prediction/intervention/replay integration (delivered messages, pre-action vectors, true draws, state resets) | — | R04, verified by negative/positive cases `TBD` |
 | Study CLI, provenance, admission, terminal accounting | — | R05 command contracts `TBD` |
 | Main + repeat data, fixed analysis, reproduction | — | R09/R10 evidence `TBD` |
@@ -89,7 +88,9 @@ decision, never mere presence or a verifier pass.
 ## 5. Methods
 
 Methods below are design facts transcribed strictly from the frozen LV01 v2
-packets (R03, commit `9be6e536`) and other tracked `protocols/` sources.
+packets (R03: original lineage commit `9be6e536`, plus R03-B F1/F2
+committed in `9c25643` plus seed-vocabulary amendment committed in
+`f4cc224`, with digests as listed in §5.1) and other tracked `protocols/` sources.
 Ignored `plans/` files coordinate work; they are not registrations or
 evidence and fix no method here (see
 `reports/research/authority-binding-proposals.v1.md` for the tracked
@@ -101,10 +102,10 @@ conflict with this prose.
 
 | Packet | Path | SHA-256 |
 |---|---|---|
-| Study design | `protocols/lv01-study-design.v2.json` | `sha256:8fa62f2d8b32f2dfadf0db6450e4687dd9bb85e93824afbb4827edb345cb4743` |
+| Study design | `protocols/lv01-study-design.v2.json` | `sha256:a483f25f36abe198247b3992df7a7739120c7748ca83c787d01bdf317f34a576` |
 | Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` |
-| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:2c3c483c7b44c3072fa72c2c9f285c14062db75d7ff2d135288ac477edb84d07` |
-| Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:3880e72bc37ddb6cb94094399bf22dcec327777fb387158e4488590292653c86` |
+| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:d3e927b57819029dfe64f2635611cba1cac020bbf929981be3be843c58dd96cd` |
+| Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:26211acef67fe352e3dd4a8672b2ad8f9ced8ed5dd0f10199d8614aa0b1302f1` |
 | Direction amendment | `protocols/lv01-direction-amendment.v2.json` | `sha256:8d661ca1b7ef719f27843d86d0d08dc3009817a440d978678772525b2fea3cd9` |
 
 Status honestly stated: the packets self-declare
@@ -158,7 +159,12 @@ Registration, qualification (R06), pilot (R07), and lock (R08) receipts:
   observation tensors, delivered message tokens, candidate observations in
   committed order. Everything else is forbidden (peer references/weights/
   hidden state, true scenario target, scenario seed, action draw/PRNG,
-  wall clock, auditor results, test labels/outcomes). This is logical
+  wall clock, auditor results, test labels/outcomes). Per-role refinement
+  (R03-B F1): the sender row's own target flag is permitted sender-only
+  input as its private referent cue; 'true scenario target' binds
+  receiver rows and ordinary-record predictor fits
+  (observationSchemas senderAllowed/roleReading; profile
+  runtime.roleInputs). This is logical
   separation under a trusted process and operator for cooperative
   learners, established by code-path and input-boundary checks — not
   resistance to a malicious shared-process agent, and no side-channel
@@ -303,16 +309,21 @@ success/probability contrasts [−1,1].
   SHA-256 hex of UTF-8 parts joined by single NUL bytes, with parts
   root/studyId/stage/policyVersion/slotKind/slotIndex/purpose/role/
   partition/case/branch as applicable. Stages: development,
-  qualification, pilot, main, repeat. Purposes include
-  scenario/learner-per-agent/gateway/action-draw/intervention-shuffle/
-  branch-order/analysis. Scenario/case identities and action draws omit
+  qualification, pilot, confirmatory, replication. Purposes include
+  scenario/learner/baby-a/learner/baby-b/gateway/action-draw/
+  intervention-shuffle/branch-order/analysis. Scenario/case identities
+  and action draws omit
   only branch (paired branches share scenario, observation, pre-state,
   draw); intervention shuffles and branch orders append branch; learner
   initialization occurs once per dyad. All identities are unique across
   LV01 v2 and collision-checked against every retained and registered
   earlier identity including all v1 and E00–E50 identities. NUL in
   parts, signing-key derivation, and any cross-stage or legacy identity
-  reuse are prohibited.
+  reuse are prohibited. Per-role intervention-shuffle streams separate
+  as hex-followed-by-role on the 64-character NUL-derived base seed
+  (derivation.roleStreamSeparation, R03-B F2; fixed-length prefix keeps
+  the construction injective); the base seed itself follows the
+  NUL-joined rule above.
 - Development: lifetime 5-iteration allowance (not renewed); small
   fixture (64 training cases, 24 cases per evaluation partition, 0.25
   CPU-hours, 1 GiB); five complete full-workload calibration dyads for
@@ -436,7 +447,9 @@ reading order and the claims each table can and cannot support.
    intervention. Task success alone is never read as causal listening,
    and LV-C alone never licenses a learned-communication sentence
    (joint LV-U + LV-C + native-beats-uniform rule, §5.5).
-5. LV-L (`TBD` definition from the R03 packet): `TBD`.
+5. LV-L: exact-replay target-action probability contrast, ledger-consistent
+   minus ledger-shuffled delivered messages (§5.5) — a controlled local
+   intervention effect, not introspection or composition. Estimate `TBD`.
 6. All baselines: every registered comparator reported, including ones that
    beat the ledger. No outcome selection.
 7. Cost table: measured capture, storage, query, and verification cost with
