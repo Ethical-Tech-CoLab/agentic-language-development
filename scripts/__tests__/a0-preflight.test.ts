@@ -56,7 +56,7 @@ describe('A0 admission preflight', () => {
     expect(receipt.admission).toBe('diagnostic');
     expect(receipt.diagnostic).toBe(true);
     expect(receipt.reasons.join('\n')).toContain('diagnostic-only');
-    expect(receipt.policyRev).toBe(2);
+    expect(receipt.policyRev).toBe(5);
     expect(receipt.task).toBe('t');
     expect(receipt.command).toBe('c');
     expect(typeof receipt.source).toBe('string');
@@ -102,6 +102,25 @@ describe('A0 admission preflight', () => {
     expect(receipt.io.ioSupported).toBe(false);
     expect(receipt.io.ioReady).toBe(false);
     expect(receipt.reasons.join('\n')).toContain('disk-heavy');
+  });
+
+  it('never gates leads on retired agent caps, and records the advisory profile', () => {
+    // Pins the rev-5 contract on this host (caps cleared): no fixed-limit
+    // mismatch reasons may appear, and the receipt must state explicitly
+    // that no agent caps were enforced.
+    const out = run('--window-sec', '5', '--interval-sec', '5', '--task', 't', '--command', 'c', ...iso('nocaps'));
+    const receipt = JSON.parse(out.stdout);
+    expect(receipt.policyRev).toBe(5);
+    expect(receipt.enforcement.agentCapsEnforced).toBe(false);
+    expect(receipt.reasons.join('\n')).not.toContain('!= policy');
+  });
+
+  it('refuses a declared workload that cannot fit host reserve without a cap', () => {
+    // Deterministic on any host: 1.5x a 1-TiB declared peak always exceeds
+    // the reserve floor, exercising the cap-free headroom branch.
+    const out = run('--window-sec', '5', '--interval-sec', '5', '--declared-peak-bytes', '1099511627776', ...iso('floor'));
+    expect(out.status).toBe(1);
+    expect(JSON.parse(out.stdout).reasons.join('\n')).toContain('headroom');
   });
 
   it('treats corrupt lease state as an error, never a measurement', () => {

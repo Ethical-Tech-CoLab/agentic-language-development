@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,7 +44,7 @@ const writePreflight = (overrides: Record<string, unknown> = {}): string => {
   writeFileSync(path, `${JSON.stringify({
     admission: 'admit',
     at: new Date().toISOString(),
-    policyRev: 2,
+    policyRev: 5,
     task: 'test',
     command: 'true',
     source: SOURCE,
@@ -154,6 +154,8 @@ describe('A0 single host-job lease', () => {
     if (activeLeaseExists()) return;
     const cases: Array<[string, Record<string, unknown>, string]> = [
       ['wrong policy', { policyRev: 1 }, 'policy rev'],
+      ['old policy rev 2', { policyRev: 2 }, 'policy rev'],
+      ['old policy rev 4', { policyRev: 4 }, 'policy rev'],
       ['wrong task', { task: 'other' }, 'task'],
       ['wrong command', { command: 'rm -rf /' }, 'command'],
       ['wrong source', { source: 'other-source' }, 'source'],
@@ -219,5 +221,16 @@ describe('A0 single host-job lease', () => {
     } finally {
       rmSync(ACTIVE, { force: true });
     }
+  });
+
+  it('refuses a tampered preflight receipt with a structured error', () => {
+    if (activeLeaseExists()) return;
+    const preflight = writePreflight();
+    appendFileSync(preflight, 'tampered');
+    const refused = run(...createArgs(preflight));
+    expect(refused.status).toBe(2);
+    expect(JSON.parse(refused.stderr).lease).toBe('error');
+    expect(refused.stderr).toContain('missing or invalid');
+    expect(existsSync(ACTIVE)).toBe(false);
   });
 });

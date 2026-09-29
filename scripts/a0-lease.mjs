@@ -14,7 +14,7 @@ import { parseArgs } from 'node:util';
 
 const DIR = '.artifacts/a0-leases';
 const ACTIVE = `${DIR}/active.json`;
-const POLICY_REV = 2; // keep in sync with scripts/a0-preflight.mjs
+const POLICY_REV = 5; // keep in sync with scripts/a0-preflight.mjs
 const MAX_PREFLIGHT_AGE_MS = 10 * 60 * 1000;
 // Leaf properties verified against transient scope units on 2026-09-28:
 // scope units ACCEPT MemoryHigh/MemoryMax/TasksMax/TimeoutStopSec/
@@ -63,7 +63,14 @@ if (!['create', 'show', 'release'].includes(command)) {
 }
 if (command === 'show') {
   if (!existsSync(ACTIVE)) fail('no active lease');
-  console.log(readFileSync(ACTIVE, 'utf8'));
+  let text;
+  try {
+    text = readFileSync(ACTIVE, 'utf8');
+    JSON.parse(text);
+  } catch {
+    fail(`lease state at ${ACTIVE} is corrupt; operator inspection required (never auto-deleted)`);
+  }
+  console.log(text);
   process.exit(0);
 }
 if (command === 'release') {

@@ -2,14 +2,16 @@
 // A0 host admission preflight. Dependency-free: node builtins only, read-only
 // inspection plus receipt/baseline/history writes under .artifacts/.
 // Exit 0 = admit, 1 = block/diagnostic (with reasons), 2 = preflight error.
-// Policy: plans/shared-host-resource-policy.md revision 2 (POLICY_REV).
+// Policy: plans/research-validation-plan.md section 6, Resource policy revision 5 (POLICY_REV).
 // Windows shorter than 60s/5s are diagnostic-only and can never admit.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, statfsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-const POLICY_REV = 2;
+import { headroomVerdict, highWatermarkVerdict } from './a0-headroom.mjs';
+
+const POLICY_REV = 5;
 const POLICY_WINDOW_SEC = 60;
 const POLICY_INTERVAL_SEC = 5;
 const POLICY_CPU = { busyPct: 60, stealPct: 10, load1: 3 };
@@ -20,14 +22,10 @@ const POLICY_PEAK_ALLOWANCE = 1.5;
 const POLICY_OOM_QUIET_SEC = 600;
 const POLICY_HEALTH_MAX_AGE_SEC = 300;
 // Effective cgroup v2 values expected from deploy/a0/aldresearch.slice.
-const POLICY_SLICE = {
-  'cpu.max': '100000 100000',
-  'cpu.weight': '10',
-  'memory.high': '1610612736',
-  'memory.max': '2147483648',
-  'memory.swap.max': '0',
-  'pids.max': '128',
-};
+// Revision 5: agent caps are retired (prompt-level discipline only). The
+// aggregate slice is observed, never limit-compared; per-job scopes created
+// at launch carry the explicit bounds instead (see scripts/a0-lease.mjs).
+const OBSERVED_SLICE_FILES = ['cpu.max', 'cpu.weight', 'memory.high', 'memory.max', 'memory.swap.max', 'pids.max'];
 const POLICY_NICE = 15;
 
 function fail(message) {
@@ -243,38 +241,35 @@ if (values['reconcile-oom']) {
 // --- enforcement state (effective values compared with policy, never assumed) ---
 const source = values.source ?? autoSource();
 const reasons = [];
-const enforcement = { policyRev: POLICY_REV, slicePresent: cgText(`${dir}/cgroup.controllers`) !== null };
+const enforcement = { policyRev: POLICY_REV, agentCapsEnforced: false, slicePresent: cgText(`${dir}/cgroup.controllers`) !== null };
 if (!enforcement.slicePresent) {
-  reasons.push('enforcement: aldresearch.slice absent (install per deploy/a0/README.md)');
+  reasons.push('enforcement: aldresearch.slice absent (accounting group unreadable)');
 } else {
   enforcement.limits = {};
-  for (const [file, expected] of Object.entries(POLICY_SLICE)) {
-    const effective = cgText(`${dir}/${file}`);
-    const match = effective === expected;
-    enforcement.limits[file] = { effective, expected, match };
-    if (!match) {
-      reasons.push(`enforcement: ${file} effective ${effective ?? 'absent'} != policy ${expected}${effective === 'max' ? ' (unbounded)' : ''}`);
-    }
+  for (const file of OBSERVED_SLICE_FILES) {
+    enforcement.limits[file] = { effective: cgText(`${dir}/${file}`) };
   }
   enforcement.ioDelegated = (cgText(`${userSlice}/cgroup.controllers`) ?? '').split(' ').includes('io');
   enforcement.ioMax = cgText(`${dir}/io.max`);
   enforcement.ioSupported = enforcement.ioDelegated && enforcement.ioMax !== null;
-  // Membership + nice: every in-slice resident must run at policy nice.
+  // Membership + nice: advisory observation only. Lead properties never gate
+  // admission (rev5); per-job members below keep their binding checks.
   const walk = sliceMembers();
   if (walk.error) {
     reasons.push(`enforcement: ${walk.error}`);
     enforcement.members = null;
   } else {
     enforcement.members = [];
+    enforcement.leadNiceAdvisory = [];
     for (const { pid, unit } of walk.members) {
       const stat = procStat(pid);
       if (!stat) {
-        reasons.push(`enforcement: member ${pid} (${unit}) vanished during enumeration`);
+        enforcement.members.push({ pid, unit, note: 'vanished during enumeration' });
         continue;
       }
       enforcement.members.push({ pid, unit, nice: stat.nice, starttime: stat.starttime, comm: procComm(pid) });
       if (stat.nice !== POLICY_NICE) {
-        reasons.push(`enforcement: member ${pid} (${procComm(pid)}, ${unit}) nice ${stat.nice} != policy ${POLICY_NICE}`);
+        enforcement.leadNiceAdvisory.push(`member ${pid} (${procComm(pid)}, ${unit}) nice ${stat.nice} != courteous ${POLICY_NICE}`);
       }
     }
   }
@@ -407,19 +402,21 @@ for (const [metric, count] of Object.entries(valid)) {
 
 // --- checks ---
 const charge = enforcement.slicePresent ? cgNumber(`${dir}/memory.current`) : null;
-const researchCap = enforcement.slicePresent ? cgNumber(`${dir}/memory.max`) : null;
-if (memWorst === null) reasons.push('memory: MemAvailable unreadable');
-else if (charge === null) reasons.push('memory: aggregate research charge unreadable (no containment)');
-else if (researchCap === null) reasons.push('memory: aggregate research cap unreadable (unbounded)');
-else {
-  const totalCharge = charge + uncappedRss;
-  if (memWorst - Math.max(0, researchCap - totalCharge) < POLICY_MEM_FLOOR) {
-    reasons.push(`memory: headroom check fails (availWorst=${memWorst}, sliceCharge=${charge}, uncappedRss=${uncappedRss}, cap=${researchCap})`);
-  }
-}
-const high = enforcement.slicePresent ? cgNumber(`${dir}/memory.high`) : null;
-if (high !== null && charge !== null && charge + uncappedRss + POLICY_PEAK_ALLOWANCE * declaredPeak > high) {
-  reasons.push(`memory: declared workload (peak=${declaredPeak}, 1.5x allowance, charge=${charge}, uncapped=${uncappedRss}) does not fit below high watermark ${high}`);
+const researchCapRaw = enforcement.slicePresent ? cgText(`${dir}/memory.max`) : null;
+const researchCapUnbounded = researchCapRaw !== null && researchCapRaw.trim() === 'max';
+const researchCap = researchCapUnbounded || researchCapRaw === null ? null : cgNumber(`${dir}/memory.max`);
+// Headroom verdict lives in ./a0-headroom.mjs so the occupancy-vs-growth
+// boundary is unit-testable; the receipt records the returned reason verbatim.
+const headroom = headroomVerdict({ memWorst, charge, uncappedRss, researchCap, researchCapUnbounded, declaredPeak });
+if (!headroom.admitted) reasons.push(headroom.reason);
+const highRaw = enforcement.slicePresent ? cgText(`${dir}/memory.high`) : null;
+const highUnbounded = highRaw !== null && highRaw.trim() === 'max';
+const high = highUnbounded || highRaw === null ? null : cgNumber(`${dir}/memory.high`);
+// Unbounded high (rev5: no cap installed) skips the fit check; a missing or
+// malformed high refuses. Ungated on charge: charge problems already refuse.
+if (charge !== null && !highUnbounded) {
+  const highCheck = highWatermarkVerdict({ high, charge, uncappedRss, declaredPeak });
+  if (!highCheck.admitted) reasons.push(highCheck.reason);
 }
 if (cpuBusyWorst !== null && cpuBusyWorst >= POLICY_CPU.busyPct) {
   reasons.push(`cpu: busy worst ${cpuBusyWorst.toFixed(1)}% >= ${POLICY_CPU.busyPct}%`);

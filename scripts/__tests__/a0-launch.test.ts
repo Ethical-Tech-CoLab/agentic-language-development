@@ -53,7 +53,7 @@ const writeReceipt = (command: string, healthFile: string): string => {
   writeFileSync(path, `${JSON.stringify({
     admission: 'admit',
     at: new Date().toISOString(),
-    policyRev: 2,
+    policyRev: 5,
     task: 'launch-test',
     command,
     source: SOURCE,
@@ -118,10 +118,78 @@ describe('A0 job launcher', () => {
     expect(unitGone(lease.unit as string)).toBe(true);
     const record = releasedRecordFor(lease.id as string);
     expect(record.outcome).toBe('timeout');
+    expect(record.detail as string).toMatch(/deadline 3s exceeded/);
     expect(record.membersVerified).toBe(true);
     expect(record.readbackVerified).toBe(true);
-    const roles = ((record.members ?? []) as Array<{ role: string }>).map((m) => m.role).sort();
-    expect(roles).toEqual(['launcher', 'payload']);
+    const roles = ((record.members ?? []) as Array<{ role: string }>).map((m) => m.role);
+    // Membership shape: exactly one launcher, at least one genuine payload,
+    // no other roles. No exact payload count: sh+sleep yield a transient pair.
+    expect(roles.filter((r) => r === 'launcher')).toHaveLength(1);
+    expect(roles.filter((r) => r === 'payload').length).toBeGreaterThanOrEqual(1);
+    expect([...new Set(roles)].sort()).toEqual(['launcher', 'payload']);
+  });
+
+  it('attributes a systemd RuntimeMaxSec stop as timeout without any supervisor sample', () => {
+    if (activeLeaseExists()) return;
+    // sample-sec 60 forces childExit-first: no supervisor sample can run
+    // before the 3s systemd stop, so classification rests purely on the
+    // systemd unit Result evidence.
+    const lease = acquire('sleep 30', '3');
+    const launched = spawnSync(process.execPath, [launchCli, '--owner', OWNER, '--sample-sec', '60'], { cwd: root, encoding: 'utf8' });
+    expect(launched.status).toBe(124);
+    expect(JSON.parse(launched.stdout).outcome).toBe('timeout');
+    expect(existsSync(ACTIVE)).toBe(false);
+    expect(unitGone(lease.unit as string)).toBe(true);
+    const record = releasedRecordFor(lease.id as string);
+    expect(record.outcome).toBe('timeout');
+    expect(record.timeoutOrigin).toBe('systemd-result');
+    expect(record.detail as string).toMatch(/deadline 3s exceeded/);
+    expect(record.samples).toBe(0);
+    expect(record.membersVerified).toBe(true);
+    expect(record.readbackVerified).toBe(true);
+  });
+
+  it('retains an ordinary near-boundary nonzero exit as completed', () => {
+    if (activeLeaseExists()) return;
+    // Exits 3 at ~2.5s of a 3s deadline: a wall-clock verdict could relabel
+    // this on slow observation, but systemd reports an ordinary exit-code
+    // result, so the original status stands with no timeout origin.
+    const lease = acquire('sleep 2.5; exit 3', '3');
+    const launched = spawnSync(process.execPath, [launchCli, '--owner', OWNER, '--sample-sec', '1'], { cwd: root, encoding: 'utf8' });
+    const body = JSON.parse(launched.stdout);
+    expect(body.outcome).toBe('completed');
+    expect(body.exitCode).toBe(3);
+    expect(launched.status).toBe(3);
+    expect(existsSync(ACTIVE)).toBe(false);
+    expect(unitGone(lease.unit as string)).toBe(true);
+    const record = releasedRecordFor(lease.id as string);
+    expect(record.outcome).toBe('completed');
+    expect(record.timeoutOrigin).toBeUndefined();
+    expect(record.originEvidence).toBeUndefined();
+    expect(record.exitCode).toBe(3);
+  });
+
+  it('retains a self-signalled payload as completed without timeout origin', () => {
+    if (activeLeaseExists()) return;
+    // Signal death alone is not timeout evidence: systemd reports a signal
+    // result, not a timeout result.
+    const lease = acquire('kill -TERM $$', '60');
+    const launched = spawnSync(process.execPath, [launchCli, '--owner', OWNER, '--sample-sec', '1'], { cwd: root, encoding: 'utf8' });
+    const body = JSON.parse(launched.stdout);
+    expect(body.outcome).toBe('completed');
+    // Coherence: CLI nonzero with the raw null code preserved, signal set,
+    // completed outcome, no timeout attribution (observed SIGTERM here).
+    expect(launched.status).not.toBe(0);
+    expect(body.exitCode).toBeNull();
+    expect(body.signal).toBeTruthy();
+    expect(existsSync(ACTIVE)).toBe(false);
+    expect(unitGone(lease.unit as string)).toBe(true);
+    const record = releasedRecordFor(lease.id as string);
+    expect(record.outcome).toBe('completed');
+    expect(record.timeoutOrigin).toBeUndefined();
+    expect(record.originEvidence).toBeUndefined();
+    expect(record.exitCode).toBeNull();
+    expect(record.signal).toBe('SIGTERM');
   });
 
   it('propagates a failing payload exit code without supervisor error', () => {
@@ -144,6 +212,22 @@ describe('A0 job launcher', () => {
     expect(launched.status).toBe(2);
     expect(launched.stderr).toContain('owning');
     expect(readFileSync(ACTIVE, 'utf8')).toBe(before);
+  });
+
+  it('refuses a lease bound to a prior policy revision', () => {
+    if (activeLeaseExists()) return;
+    acquire('true', '60');
+    const before = readFileSync(ACTIVE, 'utf8');
+    try {
+      const lease = JSON.parse(before);
+      lease.policyRev = 4;
+      writeFileSync(ACTIVE, `${JSON.stringify(lease)}\n`);
+      const launched = spawnSync(process.execPath, [launchCli, '--owner', OWNER], { cwd: root, encoding: 'utf8' });
+      expect(launched.status).toBe(2);
+      expect(launched.stderr).toContain('policy rev');
+    } finally {
+      rmSync(ACTIVE, { force: true });
+    }
   });
 
   it('refuses to launch when the bound receipt changed after acquisition', () => {

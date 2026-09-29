@@ -1,19 +1,20 @@
 # A0 shared-host containment (repo-side artifacts)
 
 Status: HARDENED IMPLEMENTATION — preflight/lease/launcher repairs committed,
-NOT qualified. A0 stays HOST_BLOCKED until install + qualification below pass.
-Policy: `plans/shared-host-resource-policy.md` revision 2.
+NOT qualified. Per-job execution stays unqualified until the checks below pass (no slice install exists under rev5).
+Policy: `plans/research-validation-plan.md` section 6 (Resource policy revision 5, agent-managed). The revision-4 enforced profile below is a historical record: DO NOT install this template or reimpose agent caps.
 
 ## What this is
 
 - `aldresearch.slice`: the project-specific aggregate boundary (user manager).
-  Caps: 1 CPU-equivalent, 1536M high / 2G max RAM, no swap, 128 tasks.
-- `scripts/a0-preflight.mjs`: dependency-free admission check. Compares every
-  effective slice limit with policy, verifies member nice levels and
-  lease-recorded residents (PID + start-time identity, slice membership),
-  samples all required readings at every 5s sample of the 60s window, checks
-  the headroom formula, PSI, available-to-user storage on the job filesystem,
-  I/O binding, read-only production health, and OOM recovery state.
+  Retired caps (historical only, never install): 1 CPU-equivalent, 3584M high / 4G max RAM, no swap, 128 tasks. Job scopes created at launch carry the live bounds.
+- `scripts/a0-preflight.mjs`: dependency-free admission check. Observes (never
+  limit-compares) effective slice values, records member nice levels as
+  advisory, verifies lease-recorded residents (PID + start-time identity,
+  slice membership), samples all required readings at every 5s sample of the
+  60s window, checks the cap-free headroom formula, PSI, available-to-user
+  storage on the job filesystem, I/O binding, read-only production health,
+  and OOM recovery state.
   Exit 0 admit / 1 block / 2 error. Windows other than 60s/5s are
   diagnostic-only and can never admit.
 - `scripts/a0-lease.mjs`: single-lease registry (`create|show|release`).

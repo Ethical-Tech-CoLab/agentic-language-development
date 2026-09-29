@@ -6,7 +6,7 @@
 // and performs owned-unit cleanup on every path. No auto-restart, no broad
 // kill, no second job. Exit: job code on completion, 124 on timeout,
 // 2 on supervision/refusal/monitor failure.
-// Policy: plans/shared-host-resource-policy.md revision 2.
+// Policy: plans/research-validation-plan.md section 6 (Resource policy revision 5).
 import { createHash } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 
 const DIR = '.artifacts/a0-leases';
 const ACTIVE = `${DIR}/active.json`;
-const POLICY_REV = 2; // keep in sync with scripts/a0-preflight.mjs
+const POLICY_REV = 5; // keep in sync with scripts/a0-preflight.mjs
 const POLICY_NICE = 15;
 const MAX_PREFLIGHT_AGE_MS = 10 * 60 * 1000;
 const STOP_TIMEOUT_MS = 20_000;
@@ -137,12 +137,17 @@ function checkHealth(file, maxAgeSec) {
 }
 
 // 1. Deprioritize self (payload inherits this nice; verified below via /proc).
-try {
-  setPriority(process.pid, POLICY_NICE);
-} catch (error) {
-  fail(`cannot set launcher nice ${POLICY_NICE}: ${error.message}`);
+// Never raise priority: an already-more-courteous nice is compliant-or-safer
+// (raising nice needs no privilege; lowering it does, and fails under EACCES).
+const selfNice = procNice(process.pid);
+if (selfNice !== null && selfNice < POLICY_NICE) {
+  try {
+    setPriority(process.pid, POLICY_NICE);
+  } catch (error) {
+    fail(`cannot set launcher nice ${POLICY_NICE}: ${error.message}`);
+  }
 }
-if (procNice(process.pid) !== POLICY_NICE) fail('launcher nice readback mismatch');
+if ((procNice(process.pid) ?? -1) < POLICY_NICE) fail('launcher nice readback below courteous level');
 
 // 2. Load + authorize the active lease (never auto-repair state).
 if (!existsSync(ACTIVE)) fail('no active lease to launch');
@@ -289,7 +294,7 @@ if (!earlyExit && unitActive(lease.unit)) {
   const procs = read(`${leafDir}/cgroup.procs`);
   const pids = (procs ?? '').split('\n').filter(Boolean).map(Number);
   if (pids.length > 0) {
-    const bad = pids.filter((p) => procNice(p) !== POLICY_NICE);
+    const bad = pids.filter((p) => (procNice(p) ?? -1) < POLICY_NICE);
     if (bad.length === 0) {
       membersVerified = true;
       saveActive({
@@ -350,9 +355,14 @@ async function sample() {
   const cpu = cpuSample();
   const oom = { global: globalOomKills(), userSlice: oomKills(userSliceName()), researchSlice: oomKills(sliceDir) };
   const sliceCur = Number(read(`${sliceDir}/memory.current`));
-  const sliceHigh = Number(read(`${sliceDir}/memory.high`));
+  const sliceHighRaw = read(`${sliceDir}/memory.high`);
+  // Unbounded high (rev5: no aggregate cap) is a valid state, not missing
+  // telemetry; a missing file keeps its historical read-as-0 behavior.
+  const sliceHighUnbounded = sliceHighRaw !== null && sliceHighRaw.trim() === 'max';
+  const sliceHigh = sliceHighUnbounded ? Number.POSITIVE_INFINITY : Number(sliceHighRaw);
   const leafCur = Number(read(`${leafDir}/memory.current`));
-  const inputs = { mem, some, full, ioFull, load, sliceCur, sliceHigh, leafCur, ...oom };
+  const inputs = { mem, some, full, ioFull, load, sliceCur, leafCur, ...oom };
+  if (!sliceHighUnbounded) inputs.sliceHigh = sliceHigh;
   const unreadable = Object.entries(inputs).filter(([, v]) => v === null || (typeof v === 'number' && !Number.isFinite(v))).map(([k]) => k);
   if (unreadable.length > 0 && !earlyExit) throw new Error(`monitor telemetry unreadable: ${unreadable.join(',')}`);
   if (Number.isFinite(leafCur)) leafPeak = Math.max(leafPeak, leafCur);
@@ -427,10 +437,29 @@ if (!result) {
 
 // 8. Owned cleanup on every path (never broad-kill, never auto-restart).
 const q = await unitQuiesced(lease.unit, leafDir);
-let outcome = result.launchFailed ? 'launch-failed' : (result.stopped?.outcome ?? 'completed');
+// 7b. Timeout origin for a child exit with no supervisor stop decision.
+// systemd unit Result is the single authoritative source: 'timeout' proves
+// the RuntimeMaxSec second layer fired. No wall-clock inference — an
+// ordinary exit keeps its original status, and unreadable evidence is
+// recorded explicitly as unknown, never inferred either way.
+let systemdTimeout = false;
+let originEvidence;
+if (!result.launchFailed && !result.stopped) {
+  const unitResult = unitShow(lease.unit, ['Result'])?.Result ?? null;
+  if (unitResult === 'timeout') {
+    systemdTimeout = true;
+  } else if (unitResult === null) {
+    originEvidence = 'unknown';
+    if (Date.now() > deadlineMs) log({ event: 'timeout-origin-unknown', code: result.code, signal: result.signal });
+  }
+}
+let outcome = result.launchFailed ? 'launch-failed' : (result.stopped?.outcome ?? (systemdTimeout ? 'timeout' : 'completed'));
 let detail = result.launchFailed
   ? `leaf failed to start (${stderrHead.split('\n')[0]}; see journalctl --user -u ${lease.unit})`
-  : (result.stopped?.detail ?? `exit ${result.code} signal ${result.signal}`);
+  : (result.stopped?.detail ?? (systemdTimeout
+    ? `deadline ${lease.timeoutSec}s exceeded (systemd unit Result=timeout; child exit ${result.code} signal ${result.signal})`
+    : `exit ${result.code} signal ${result.signal}`));
+const timeoutOrigin = outcome === 'timeout' ? (result.stopped ? 'supervisor-sample' : 'systemd-result') : undefined;
 if (!q.quiesced) {
   writeMonitorBlock(`unit ${lease.unit} left survivors after stop: ${q.survivors.join(',')} (operator must clear; no broad kill performed)`);
   outcome = 'cleanup-survivors';
@@ -439,9 +468,9 @@ if (!q.quiesced) {
 } else if (stopRequest?.monitorBlock || outcome === 'monitor-failed') {
   writeMonitorBlock(`monitor failure during ${lease.id}: ${detail} (investigate, then remove this file explicitly)`);
 }
-const record = releaseLease({ outcome, detail, exitCode: result.code, signal: result.signal ?? null, samples, leafPeakBytes: leafPeak, slicePeakBytes: slicePeak, membersVerified, readbackVerified });
-log({ event: 'released', outcome, exitCode: result.code });
-console.log(JSON.stringify({ launch: outcome === 'completed' ? 'done' : 'stopped', id: lease.id, outcome, detail, exitCode: result.code, signal: result.signal ?? null }, null, 2));
+const record = releaseLease({ outcome, detail, exitCode: result.code, signal: result.signal ?? null, timeoutOrigin, originEvidence, samples, leafPeakBytes: leafPeak, slicePeakBytes: slicePeak, membersVerified, readbackVerified });
+log({ event: 'released', outcome, exitCode: result.code, timeoutOrigin, originEvidence });
+console.log(JSON.stringify({ launch: outcome === 'completed' ? 'done' : 'stopped', id: lease.id, outcome, detail, exitCode: result.code, signal: result.signal ?? null, timeoutOrigin, originEvidence }, null, 2));
 if (outcome === 'completed') process.exit(result.code ?? 1);
 if (outcome === 'timeout') process.exit(124);
 process.exit(2);

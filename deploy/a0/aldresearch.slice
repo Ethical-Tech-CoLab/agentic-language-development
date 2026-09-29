@@ -1,5 +1,8 @@
+# RETIRED under resource-policy revision 5 (agent-managed mode): DO NOT INSTALL.
+# Values below are the historical revision-4 enforced profile, preserved as a
+# record. Per-job scopes created at launch carry the explicit bounds instead.
 [Unit]
-Description=ALD research aggregate boundary (A0)
+Description=ALD research aggregate boundary (A0) — HISTORICAL, DO NOT INSTALL
 Documentation=file:%h/Development/agentic-language-development/deploy/a0/README.md
 Before=slices.target
 
@@ -11,8 +14,8 @@ CPUWeight=10
 # Aggregate containment: high watermark is the operating bound, max is the
 # last-resort boundary. Includes all descendants and charged cache.
 MemoryAccounting=yes
-MemoryHigh=1536M
-MemoryMax=2G
+MemoryHigh=3584M
+MemoryMax=4G
 MemorySwapMax=0
 # Task ceiling counts threads, not just top-level processes.
 TasksAccounting=yes
