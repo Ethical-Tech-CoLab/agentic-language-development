@@ -30,6 +30,7 @@
     },
     "rule": "Every materialized seed is the SHA-256 hex of all applicable parts joined by single NUL bytes. Every identity must be unique across LV01 v2 and collision-checked against all retained and registered earlier identities, including every v1 identity.",
     "sharedPairing": "Scenario and case identities and receiver action draws intentionally omit branch only, so paired branches share scenario, observation, pre-state and draw. Independent intervention shuffles and branch orders append branch. Learner initialization occurs once per dyad.",
+    "roleStreamSeparation": "Per-role intervention-shuffle streams separate by concatenating the role code onto the 64-character hex base seed (hex followed by role); the fixed-length hex prefix keeps the construction injective across roles. This is the registered per-role form; the base seed itself follows the NUL-joined rule above. Implemented at the lv01-ledger-treatments.ts ledgerShuffledDerangement call site.",
     "prohibited": ["NUL in parts", "signing-key derivation", "reuse of development, qualification, pilot, main or repeat identities", "reuse of any v1 or E00-E50 identity"]
   },
   "stages": {

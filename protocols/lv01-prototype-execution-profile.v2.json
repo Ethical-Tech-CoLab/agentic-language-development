@@ -15,6 +15,17 @@
     "separation": ["separate agent state", "separate weights", "separate optimizers", "separate memories", "separate PRNG domains", "separate ledger handles"],
     "allowedInputs": ["approved numeric observation tensors", "delivered message tokens", "candidate observations in committed order"],
     "forbiddenInputs": ["peer references", "peer weights or hidden state", "true scenario target", "scenario seed", "action draw or action PRNG values", "wall clock", "auditor results", "test labels", "test outcomes"],
+    "roleInputs": {
+      "sender": {
+        "allowed": ["approved numeric observation tensors", "delivered message tokens", "candidate observations in committed order", "private referent cue (own target flag)"],
+        "forbidden": ["peer references", "peer weights or hidden state", "scenario seed", "action draw or action PRNG values", "wall clock", "auditor results", "test labels", "test outcomes"]
+      },
+      "receiver": {
+        "allowed": ["approved numeric observation tensors", "delivered message tokens", "candidate observations in committed order"],
+        "forbidden": ["peer references", "peer weights or hidden state", "true scenario target", "scenario seed", "action draw or action PRNG values", "wall clock", "auditor results", "test labels", "test outcomes"]
+      },
+      "rule": "roleInputs refines allowedInputs and forbiddenInputs per role; where they differ, roleInputs governs. The sender row's private referent cue is its own target flag only; the receiver row never observes the target. Mirrors study-design observationSchemas roleReading."
+    },
     "separationClaim": "Logical separation under a trusted process and operator for cooperative learners, established by code-path and input-boundary checks. Not resistance to a malicious shared-process agent; no side-channel timing-normalization claim."
   },
   "records": {

@@ -93,6 +93,8 @@
   "observationSchemas": {
     "agentAllowed": ["approved numeric observation tensors", "delivered message tokens", "candidate observations in committed order"],
     "agentForbidden": ["peer references", "peer weights or hidden state", "true scenario target", "scenario seed", "action draw or action PRNG", "wall clock", "auditor results", "test labels"],
+    "senderAllowed": ["private referent cue (own target flag)"],
+    "roleReading": "agentAllowed and agentForbidden bind both roles except the sender row's own target flag: the sender's private referent cue is permitted sender-only input, and 'true scenario target' in agentForbidden binds receiver rows and ordinary-record predictor fits. See prototype-execution-profile runtime.roleInputs for the runtime table.",
     "predictorForbidden": ["test outcomes", "action PRNG values", "post-cutoff ledger events", "true test target in ordinary-record fits"],
     "claimBoundary": "Code-path and input-boundary checks must establish this restriction for these cooperative learners. This is logical separation under a trusted process and operator, not resistance to a malicious shared-process agent."
   },

@@ -923,6 +923,12 @@ export class ReferentialScenarioEngine implements ScenarioEngine {
    * negotiation profile — its own utility for that candidate and its own
    * reservation value. Receiver row: the attribute codes it is permitted to
    * see (one under `asymmetric-information`), then its own utility columns.
+   *
+   * Binding to `protocols/lv01-study-design.v2.json` observationSchemas: the
+   * sender row's target flag is the sender's private referent cue (permitted
+   * sender-only input); receiver rows exclude it. The contract's generic
+   * agentForbidden "true scenario target" reads per-role per this binding,
+   * registered in observationSchemas senderAllowed/roleReading (R03-B F1).
    */
   private buildObservationPayloads(
     truth: ReferentialGroundTruth,

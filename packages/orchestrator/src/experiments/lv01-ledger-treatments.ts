@@ -160,9 +160,13 @@ export function buildLedgerTreatmentBatch(input: {
     const roleCases = treated.filter((entry) => entry.receiverRole === role);
     if (roleCases.length === 0) continue;
     // Per-role stream separation still concatenates the role onto the base
-    // seed. Replacing this with a NUL-joined role part changes committed
-    // shuffle outcomes pinned by tests, so it waits for an admitted run that
-    // can re-verify the exact pins; the base seed itself is registered-form.
+    // seed. The 64-char hex prefix is fixed-length, so hex||role is injective
+    // and the construction is safe as designed, registered in seed-policy
+    // derivation.roleStreamSeparation (R03-B F2). Replacing this with a
+    // NUL-joined role part changes
+    // committed shuffle outcomes pinned by tests, so migration would churn
+    // pinned evidence for no functional gain; the base seed itself is
+    // registered-form.
     const permutation = ledgerShuffledDerangement(
       roleCases.length,
       `${input.derangementSeed}${role}`,

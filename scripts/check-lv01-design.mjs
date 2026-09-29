@@ -137,10 +137,11 @@ if (version === '1') {
     'separate PRNG domains',
     'separate ledger handles',
   ]);
-  // KNOWN DEFECT, pinned deliberately: the blanket target prohibition below
-  // wrongly includes the sender's required private referent cue. The planned
-  // role-table correction changes this list, the protocol bytes, and the
-  // manuscript digests together; do not edit one without the others.
+  // Role-table correction (R03-B F1): the blanket ban below binds receiver
+  // rows; the sender's private referent cue is granted per-role in
+  // runtime.roleInputs and study-design observationSchemas. The pins, the
+  // protocol bytes, and the manuscript digests change together; do not edit
+  // one without the others.
   assert.deepEqual(profile.runtime.forbiddenInputs, [
     'peer references',
     'peer weights or hidden state',
@@ -152,6 +153,11 @@ if (version === '1') {
     'test labels',
     'test outcomes',
   ]);
+  assert.ok(profile.runtime.roleInputs.sender.allowed.includes('private referent cue (own target flag)'));
+  assert.equal(profile.runtime.roleInputs.sender.forbidden.includes('true scenario target'), false);
+  assert.deepEqual(profile.runtime.roleInputs.receiver.forbidden, profile.runtime.forbiddenInputs);
+  assert.ok(design.observationSchemas.senderAllowed.includes('private referent cue (own target flag)'));
+  assert.match(design.observationSchemas.roleReading, /receiver rows/);
   assert.ok(profile.retention.snapshots.includes('every 64 training episodes'));
   assert.ok(profile.preActionCommitment.payload.includes('full probability vectors for native, ordinary-record and replay predictors'));
   assert.match(profile.preActionCommitment.persistence, /Hashing the inputs alone is insufficient/u);
@@ -176,6 +182,10 @@ if (version === '1') {
   assert.deepEqual(policy.derivation.partValues.stages, ['development', 'qualification', 'pilot', 'main', 'repeat']);
   assert.ok(policy.derivation.partValues.purposes.includes('intervention-shuffle'));
   assert.match(policy.derivation.algorithm, /NUL/u);
+  // Per-role stream registration (R03-B F2): hex||role separation is the
+  // registered form; pins, bytes, and manuscript digests change together.
+  assert.match(policy.derivation.roleStreamSeparation, /hex followed by role/);
+  assert.match(policy.derivation.roleStreamSeparation, /injective/);
 }
 assert.equal(cards.cards.some((card) => card.id === 'LV01'), false, 'LV01 cannot rewrite the original portfolio');
 assert.equal(analysis.family.familywiseAlpha, 0.05);
