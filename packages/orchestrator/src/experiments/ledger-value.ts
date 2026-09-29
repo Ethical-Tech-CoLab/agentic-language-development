@@ -2,7 +2,7 @@
 import { hashCanonical } from '@ald/hashing';
 import { createDerivedRunConfig } from '@ald/lifecycle';
 import { LV01_UNTOUCHED_TYPE_CODES } from '@ald/scenario';
-import type { RunConfig } from '@ald/types';
+import { GENESIS_HASH, type RunConfig } from '@ald/types';
 
 import {
   assertLv01ActionDrawScope,
@@ -174,6 +174,11 @@ export function createLv01PairedCasePlan(input: Lv01PairedCasePlanInput): Lv01Pa
           // Frozen LV01 untouched diagonal: the nursery builds its engine
           // held-out list from here, and scheduled cases require it.
           interventionPlan: { version: 1, heldOutTypeCodes: [...LV01_UNTOUCHED_TYPE_CODES] },
+          // The derived engine config differs from the parent's (held-outs
+          // above), so the inherited scenarioBundleHash cannot name it. Pass
+          // the documented genesis placeholder; the nursery binds the actual
+          // served-engine hash at createRun (SPEC §15.1).
+          scenarioBundleHash: GENESIS_HASH,
           lv01PairedCase: {
             version: 1,
             branch,

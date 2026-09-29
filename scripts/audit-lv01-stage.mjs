@@ -25,14 +25,18 @@ const stage = values.stage;
 const version = Number(values.version);
 
 const registration = `protocols/lv01-${stage}-registration.v${version}.json`;
+const bindingPath = `protocols/lv01-${stage}-registration-binding.v${version}.json`;
 const stageDir = join(values['evidence-dir'], 'lv01', `${stage}-v${version}`);
 assert.equal(existsSync(registration), true, `missing prospective registration ${registration}`);
+assert.equal(existsSync(bindingPath), true, `missing prospective binding ${bindingPath}`);
 assert.equal(existsSync(values['parent-bundle']), true, `missing parent bundle ${values['parent-bundle']}`);
 assert.equal(existsSync(stageDir), true, `missing collected stage ${stageDir}`);
 const packet = JSON.parse(readFileSync(registration, 'utf8'));
+const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
 
 const { receipt, reportPath } = await auditLv01Stage({
   packet,
+  binding,
   parentBundleDir: values['parent-bundle'],
   stageDir,
 });

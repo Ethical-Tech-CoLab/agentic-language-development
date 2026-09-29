@@ -1021,10 +1021,13 @@ export function rebuildLv01CasePlan(input: {
  */
 export async function auditLv01Stage(input: {
   readonly packet: unknown;
+  readonly binding: unknown;
   readonly parentBundleDir: string;
   readonly stageDir: string;
 }): Promise<{ readonly receipt: Lv01AuditReceipt; readonly reportPath: string }> {
   const packet = verifyLv01StagePacket(input.packet);
+  const binding = verifyLv01StageBinding(input.binding, packet);
+  void binding;
   const journalPath = join(input.stageDir, 'journal.jsonl');
   const journalEvents = await readLv01Journal(journalPath);
   const journal = journalEvents.at(-1)?.journal;
@@ -1040,7 +1043,13 @@ export async function auditLv01Stage(input: {
   if (`sha256:${sha256Bytes(Buffer.from(auditAllocationRaw, 'utf8')).toString('hex')}` !== packet.allocation.sha256) {
     fail('allocation bytes differ from the registered packet allocation');
   }
-  const auditWorkload = lv01WorkloadForCollection(packet.stage, JSON.parse(auditAllocationRaw) as unknown);
+  let auditAllocation: unknown;
+  try {
+    auditAllocation = JSON.parse(auditAllocationRaw) as unknown;
+  } catch {
+    fail(`allocation file ${packet.allocation.path} is not valid JSON`);
+  }
+  const auditWorkload = lv01WorkloadForCollection(packet.stage, auditAllocation);
   if (auditWorkload.withinSupportTestCases < 1) fail(`${packet.stage} allocation schedules no within-support test cases`);
   const cases: Lv01StageCaseAudit[] = [];
   for (const slot of journal.slots) {
@@ -1090,10 +1099,15 @@ export async function auditLv01Stage(input: {
       },
       receiverRoles: ['baby-a', 'baby-b'],
     });
-    const storedSchedule = JSON.parse(await readFile(join(caseDir, 'schedule.json'), 'utf8')) as {
-      readonly commitment?: unknown;
-      readonly executedCaseId?: unknown;
-    };
+    let storedSchedule: { readonly commitment?: unknown; readonly executedCaseId?: unknown };
+    try {
+      storedSchedule = JSON.parse(await readFile(join(caseDir, 'schedule.json'), 'utf8')) as {
+        readonly commitment?: unknown;
+        readonly executedCaseId?: unknown;
+      };
+    } catch {
+      fail(`slot ${slot.index} schedule record is malformed`);
+    }
     if (typeof storedSchedule.commitment !== 'string' || typeof storedSchedule.executedCaseId !== 'string') {
       fail(`slot ${slot.index} schedule record is malformed`);
     }

@@ -465,9 +465,129 @@ describe('LV01 collector live collection', () => {
     expect(collection.slots).toHaveLength(1);
 
     const stageDir = join(evidenceDir, 'lv01', `${packet.stage}-v${packet.version}`);
-    const { receipt, reportPath } = await auditLv01Stage({ packet, parentBundleDir: bundleDir, stageDir });
+    const { receipt, reportPath } = await auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir });
     expect(receipt.status).toBe('verified');
     expect(receipt.auditedCases).toHaveLength(1);
     expect(reportPath).toBe(join(stageDir, 'audit-receipt.json'));
+  }, 180_000);
+
+  async function collectedStage() {
+    const { bundleDir } = await trainedParentBundle();
+    if (harness === undefined || scratch === undefined) throw new Error('setup failed');
+    const store = { root: harness.root, databasePath: harness.databasePath };
+    harness.close();
+
+    const packet = compileLv01StagePacket(await packetInputWithAllocation(scratch));
+    const binding = bindLv01StagePacket(packet, '1'.repeat(40), packet.allocation.sha256);
+    const evidenceDir = join(scratch, 'evidence');
+    const collection = await collectLv01Stage({
+      packet,
+      binding,
+      parentBundleDir: bundleDir,
+      evidenceDir,
+      softwareCommit: 'git:lv01-collector-test',
+      partition: 'dev',
+      ordinary: { ...ORDINARY },
+      store,
+      owner: 'lv01-collector-test',
+    });
+    // Tamper tests require a valid collection: auditing a failed terminal
+    // skips every slot and would resolve instead of engaging the checks.
+    expect(collection.journal.terminal).toBe('completed');
+    expect(collection.cases).toHaveLength(1);
+    expect(collection.slots).toHaveLength(1);
+    const stageDir = join(evidenceDir, 'lv01', `${packet.stage}-v${packet.version}`);
+    return { packet, binding, bundleDir, stageDir, caseDir: join(stageDir, 'slot-0001') };
+  }
+
+  async function scheduleRecord(caseDir: string) {
+    return JSON.parse(await readFile(join(caseDir, 'schedule.json'), 'utf8')) as {
+      commitment: string;
+      executedCaseId: string;
+    };
+  }
+
+  it('audit rejects a binding that does not match the packet (F1-BIND)', async () => {
+    const { packet, binding, bundleDir, stageDir } = await collectedStage();
+    const forged = { ...binding, packetCommitment: hash('9') };
+    await expect(
+      auditLv01Stage({ packet, binding: forged, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/binding does not match the registered packet/u);
+  }, 180_000);
+
+  it('audit rejects a missing allocation file (F1-ALLOC-MISSING)', async () => {
+    const { packet, binding, bundleDir, stageDir } = await collectedStage();
+    await rm(packet.allocation.path, { force: true });
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/allocation file .* is missing/u);
+  }, 180_000);
+
+  it('audit rejects a changed allocation file (F1-ALLOC-CHANGED)', async () => {
+    const { packet, binding, bundleDir, stageDir } = await collectedStage();
+    const raw = await readFile(packet.allocation.path, 'utf8');
+    await writeFile(packet.allocation.path, `${raw} `, 'utf8');
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/allocation bytes differ from the registered packet allocation/u);
+  }, 180_000);
+
+  it('audit rejects a changed schedule commitment (F1-COMM-CHANGED)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    const record = await scheduleRecord(caseDir);
+    await writeFile(join(caseDir, 'schedule.json'), JSON.stringify({ ...record, commitment: hash('9') }), 'utf8');
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/schedule commitment disagrees with the rebuilt schedule/u);
+  }, 180_000);
+
+  it('audit rejects a missing schedule record (F1-COMM-MALFORMED)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    await rm(join(caseDir, 'schedule.json'), { force: true });
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/schedule record is malformed/u);
+  }, 180_000);
+
+  it('audit rejects a corrupt schedule record (F1-COMM-MALFORMED)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    await writeFile(join(caseDir, 'schedule.json'), '{not valid json', 'utf8');
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/schedule record is malformed/u);
+  }, 180_000);
+
+  it('audit rejects a wrong-shape schedule record (F1-COMM-MALFORMED)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    await writeFile(join(caseDir, 'schedule.json'), JSON.stringify({ commitment: 42 }), 'utf8');
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/schedule record is malformed/u);
+  }, 180_000);
+
+  it('audit rejects an executed case from another scheduled slot (F1-CASE-WRONG)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    const record = await scheduleRecord(caseDir);
+    await writeFile(
+      join(caseDir, 'schedule.json'),
+      JSON.stringify({ ...record, executedCaseId: 'within-support-test:baby-a:0000' }),
+      'utf8',
+    );
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/is not the scheduled slot case/u);
+  }, 180_000);
+
+  it('audit rejects an executed case outside the schedule (F1-CASE-OUTSIDE)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    const record = await scheduleRecord(caseDir);
+    await writeFile(
+      join(caseDir, 'schedule.json'),
+      JSON.stringify({ ...record, executedCaseId: 'within-support-test:baby-b:9999' }),
+      'utf8',
+    );
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/is outside the committed schedule/u);
   }, 180_000);
 });
