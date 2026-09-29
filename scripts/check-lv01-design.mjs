@@ -175,11 +175,10 @@ if (version === '1') {
   ]);
   assert.match(profile.records.releaseSchedule, /^none/u);
   assert.deepEqual(Object.keys(policy.stages).sort(), ['confirmatory', 'development', 'pilot', 'qualification', 'replication']);
-  // KNOWN DEFECT, pinned deliberately: seed derivation still labels stages
-  // main/repeat where the stage blocks use confirmatory/replication. The
-  // planned seed-label correction changes this list, the protocol bytes,
-  // and the manuscript digests together.
-  assert.deepEqual(policy.derivation.partValues.stages, ['development', 'qualification', 'pilot', 'main', 'repeat']);
+  // Seed-label correction (R03-B vocabulary): derivation stage labels match
+  // the stage blocks and Lv01StageSchema (confirmatory/replication). The
+  // pin, the protocol bytes, and the manuscript digests change together.
+  assert.deepEqual(policy.derivation.partValues.stages, ['development', 'qualification', 'pilot', 'confirmatory', 'replication']);
   assert.ok(policy.derivation.partValues.purposes.includes('intervention-shuffle'));
   assert.match(policy.derivation.algorithm, /NUL/u);
   // Per-role stream registration (R03-B F2): hex||role separation is the
