@@ -74,7 +74,7 @@ hardware or side-channel guarantee. See §8 (logical isolation) and the
 |---|---|---|
 | Prototype runtime, recurrent learner family, naming game, fixed-token channel | Tracked source at `TBD` commit; qualification receipts `TBD` | No redesign; frozen via R03 packet |
 | Ledger capture, signing, verification machinery | Prior qualification receipts `TBD` | None claimed |
-| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets: lineage `9be6e536` + R03-B F1/F2 committed `9c25643` (§5.1); seed-vocabulary amendment committed `f4cc224` |
+| LV01 v2 design/analysis/resource/profile amendment (D01–D12) | — | R03 packets: lineage `9be6e536` + R03-B F1/F2 committed `9c25643` (§5.1); seed-vocabulary amendment committed `f4cc224`; F-R04-1 draw-scope/B1 amendment committed `591c9ce` |
 | Prediction/intervention/replay integration (delivered messages, pre-action vectors, true draws, state resets) | — | R04, verified by negative/positive cases `TBD` |
 | Study CLI, provenance, admission, terminal accounting | — | R05 command contracts `TBD` |
 | Main + repeat data, fixed analysis, reproduction | — | R09/R10 evidence `TBD` |
@@ -90,7 +90,8 @@ decision, never mere presence or a verifier pass.
 Methods below are design facts transcribed strictly from the frozen LV01 v2
 packets (R03: original lineage commit `9be6e536`, plus R03-B F1/F2
 committed in `9c25643` plus seed-vocabulary amendment committed in
-`f4cc224`, with digests as listed in §5.1) and other tracked `protocols/` sources.
+`f4cc224` plus F-R04-1 draw-scope/B1 amendment committed in
+`591c9ce`, with digests as listed in §5.1) and other tracked `protocols/` sources.
 Ignored `plans/` files coordinate work; they are not registrations or
 evidence and fix no method here (see
 `reports/research/authority-binding-proposals.v1.md` for the tracked
@@ -104,7 +105,7 @@ conflict with this prose.
 |---|---|---|
 | Study design | `protocols/lv01-study-design.v2.json` | `sha256:a483f25f36abe198247b3992df7a7739120c7748ca83c787d01bdf317f34a576` |
 | Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` |
-| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:d3e927b57819029dfe64f2635611cba1cac020bbf929981be3be843c58dd96cd` |
+| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:ff4d0ac0f8f8122d917bb7017d12305aeb87b03fc1821218778271c6a9928c58` |
 | Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:26211acef67fe352e3dd4a8672b2ad8f9ced8ed5dd0f10199d8614aa0b1302f1` |
 | Direction amendment | `protocols/lv01-direction-amendment.v2.json` | `sha256:8d661ca1b7ef719f27843d86d0d08dc3009817a440d978678772525b2fea3cd9` |
 
