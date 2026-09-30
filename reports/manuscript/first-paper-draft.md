@@ -210,8 +210,7 @@ Registration, qualification (R06), pilot (R07), and lock (R08) receipts:
   intervention contrast, not spontaneous partner understanding. Branch
   order is a deterministic seeded permutation per case, counterbalanced;
   scenario, receiver observation, pre-state, and draw are shared across
-  branches within a case. Yield: 5,160 receiver decisions per dyad (1,680
-  test).
+  branches within a case. Yield: 5,160 receiver decisions per dyad (3,000 training + 240 fit + 240 selection + 1,680 test).
 - Audit: an independent auditor reconstructs case identity, delivered
   token, prediction-before-action ordering, actual draw, parent state,
   and sample outcome from raw records. Collector-created true flags and
