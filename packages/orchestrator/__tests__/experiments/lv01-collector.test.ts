@@ -33,6 +33,7 @@ import {
   compileLv01StagePacket,
 } from '../../src/experiments/lv01-stage-packets.js';
 import {
+  LV01_PARTITION_CASE_BINDING,
   auditLv01Stage,
   buildLv01TreatmentCases,
   collectLv01Slot,
@@ -454,7 +455,7 @@ describe('LV01 collector live collection', () => {
       binding,
       parentBundleDir: bundleDir,
       evidenceDir,
-      softwareCommit: 'git:lv01-collector-test',
+      softwareCommit: '1'.repeat(40),
       partition: 'dev',
       ordinary: { ...ORDINARY },
       store,
@@ -471,6 +472,56 @@ describe('LV01 collector live collection', () => {
     expect(reportPath).toBe(join(stageDir, 'audit-receipt.json'));
   }, 180_000);
 
+  it('binds every CLI draw-scope partition to the within-support-test case partition', () => {
+    expect(LV01_PARTITION_CASE_BINDING).toEqual({
+      dev: 'within-support-test',
+      'within-support': 'within-support-test',
+      'novel-composition': 'within-support-test',
+    });
+  });
+
+  it('rejects a collect whose software commit differs from the bound source', async () => {
+    const { bundleDir } = await trainedParentBundle();
+    if (harness === undefined || scratch === undefined) throw new Error('setup failed');
+    const store = { root: harness.root, databasePath: harness.databasePath };
+    harness.close();
+
+    const packet = compileLv01StagePacket(await packetInputWithAllocation(scratch));
+    const binding = bindLv01StagePacket(packet, '1'.repeat(40), packet.allocation.sha256);
+    await expect(collectLv01Stage({
+      packet,
+      binding,
+      parentBundleDir: bundleDir,
+      evidenceDir: join(scratch, 'evidence'),
+      softwareCommit: '2'.repeat(40),
+      partition: 'dev',
+      ordinary: { ...ORDINARY },
+      store,
+      owner: 'lv01-collector-test',
+    })).rejects.toThrow('does not match bound source');
+  });
+
+  it('rejects a collect under the reserved novel-composition label', async () => {
+    const { bundleDir } = await trainedParentBundle();
+    if (harness === undefined || scratch === undefined) throw new Error('setup failed');
+    const store = { root: harness.root, databasePath: harness.databasePath };
+    harness.close();
+
+    const packet = compileLv01StagePacket(await packetInputWithAllocation(scratch));
+    const binding = bindLv01StagePacket(packet, '1'.repeat(40), packet.allocation.sha256);
+    await expect(collectLv01Stage({
+      packet,
+      binding,
+      parentBundleDir: bundleDir,
+      evidenceDir: join(scratch, 'evidence'),
+      softwareCommit: '1'.repeat(40),
+      partition: 'novel-composition',
+      ordinary: { ...ORDINARY },
+      store,
+      owner: 'lv01-collector-test',
+    })).rejects.toThrow('is reserved: no protocol case counterpart exists');
+  });
+
   async function collectedStage() {
     const { bundleDir } = await trainedParentBundle();
     if (harness === undefined || scratch === undefined) throw new Error('setup failed');
@@ -485,7 +536,7 @@ describe('LV01 collector live collection', () => {
       binding,
       parentBundleDir: bundleDir,
       evidenceDir,
-      softwareCommit: 'git:lv01-collector-test',
+      softwareCommit: '1'.repeat(40),
       partition: 'dev',
       ordinary: { ...ORDINARY },
       store,

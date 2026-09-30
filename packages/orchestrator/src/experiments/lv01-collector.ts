@@ -181,6 +181,35 @@ export interface Lv01ScheduledBranchTarget {
 }
 
 /**
+ * F-R04-1 binding: CLI draw-scope partition → protocol case partition.
+ *
+ * v2 implements within-support-test case selection on every draw scope; the
+ * CLI value distinguishes seed domains (action-draw scopes and derangement
+ * seeds), not case sources. 'novel-composition' has no protocol case
+ * counterpart and is seed-domain-only (reserved). The seed policy registers
+ * the draw-scope partition subdomain; partValues.partitions governs case
+ * partitions only. Values below equal current behavior exactly (no byte
+ * churn); the map makes the binding explicit and single-sourced.
+ *
+ * Development-on-test disposition: seed-policy
+ * stages.development.testExposureDisposition governs; its conditions must
+ * hold for any development collection.
+ *
+ * CITATION RULE (F-R04-1 B2): content claims must cite the served case
+ * partition from schedule.json/run-configs, never the draw-scope label. No
+ * run under this binding may be reported as novel-composition,
+ * generalization, or development-selection evidence. Same slot across
+ * different draw-scope labels serves the IDENTICAL scenario instance
+ * (scenario seed is partition-independent; only action draw and derangement
+ * vary): cross-label same-slot runs are never independent content evidence.
+ */
+export const LV01_PARTITION_CASE_BINDING: Record<'dev' | 'within-support' | 'novel-composition', 'within-support-test'> = {
+  dev: 'within-support-test',
+  'within-support': 'within-support-test',
+  'novel-composition': 'within-support-test',
+};
+
+/**
  * Look up the scheduled turn-0 case offline. Replicates exactly how the
  * runtime serves a branch's first turn (scheduled LV01 case for the slot's
  * receiver role); the executor and audit both trip on any drift between
@@ -667,7 +696,7 @@ export async function collectLv01Slot(input: {
   // otherwise all test the round-robin head of the test partition.
   const scheduled = scheduledLv01BranchTarget({
     schedule,
-    partition: 'within-support-test',
+    partition: LV01_PARTITION_CASE_BINDING[input.partition],
     caseIndex: (input.slot - 1) % workload.withinSupportTestCases,
     receiver,
   });
@@ -691,8 +720,9 @@ export async function collectLv01Slot(input: {
     nativeIndexes,
     symbolInventory: fixedTokenInventory(parent.symbolInventorySize ?? 32),
     // Registered-form batch seed. Partition passes through the draw-scope
-    // vocabulary (dev/within-support/novel-composition); aligning it with
-    // the seed policy's partition vocabulary is deferred design work.
+    // vocabulary (dev/within-support/novel-composition) as seed-domain
+    // labels per LV01_PARTITION_CASE_BINDING and the seed policy
+    // derivation.partitionSubdomains note.
     derangementSeed: deriveLv01DerangementSeed({
       root: 'ald-ledger-value-v2',
       studyId: 'LV01',
@@ -703,7 +733,7 @@ export async function collectLv01Slot(input: {
       partition: input.partition,
     }),
     slotSeeds: { scenario: seeds.scenario, babyA: seeds.babyA, babyB: seeds.babyB, gateway: seeds.gateway, analysis: seeds.analysis },
-    scheduledCase: { partition: 'within-support-test', caseIndex: (input.slot - 1) % workload.withinSupportTestCases, receiverRole: receiver },
+    scheduledCase: { partition: LV01_PARTITION_CASE_BINDING[input.partition], caseIndex: (input.slot - 1) % workload.withinSupportTestCases, receiverRole: receiver },
   });
   await writeFile(join(caseDir, 'treatment-batch.json'), `${JSON.stringify(batch, null, 2)}\n`, 'utf8');
   await writeFile(
@@ -822,7 +852,19 @@ export async function collectLv01Stage(input: {
 }): Promise<Lv01StageCollection> {
   const packet = verifyLv01StagePacket(input.packet);
   const binding = verifyLv01StageBinding(input.binding, packet);
-  void binding;
+  // F-R04-2: the bound source is a gate, not a stamp. A collect on a tree
+  // different from the bound source must fail here, not stamp the unbound
+  // HEAD into bundles. (Dirty-tree-at-same-HEAD stays with admission
+  // sourceClean, out of scope.)
+  if (binding.sourceCommit !== input.softwareCommit) {
+    fail(`collect source ${input.softwareCommit} does not match bound source ${binding.sourceCommit}`);
+  }
+  // F-R04-1 gate: 'novel-composition' has no protocol case counterpart; a
+  // stage collected under that label would serve within-support-test content
+  // and verify. Reserved until the counterpart exists — never relabeled.
+  if (input.partition === 'novel-composition') {
+    fail('collect partition novel-composition is reserved: no protocol case counterpart exists');
+  }
   const stageDir = join(input.evidenceDir, 'lv01', `${packet.stage}-v${packet.version}`);
   await mkdir(stageDir, { recursive: true });
   const journalPath = join(stageDir, 'journal.jsonl');

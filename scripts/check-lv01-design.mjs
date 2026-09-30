@@ -185,6 +185,12 @@ if (version === '1') {
   // registered form; pins, bytes, and manuscript digests change together.
   assert.match(policy.derivation.roleStreamSeparation, /hex followed by role/);
   assert.match(policy.derivation.roleStreamSeparation, /injective/);
+  // Draw-scope partition subdomain registration (R04 F-R04-1).
+  assert.match(policy.derivation.partitionSubdomains, /seed-domain labels/);
+  assert.match(policy.derivation.partitionSubdomains, /within-support-test/);
+  // Development-on-test disposition (R04 F-R04-1 B1): must predate runs.
+  assert.match(policy.stages.development.testExposureDisposition, /no test-content-driven changes/);
+  assert.match(policy.stages.development.testExposureDisposition, /costs and measurement only/);
 }
 assert.equal(cards.cards.some((card) => card.id === 'LV01'), false, 'LV01 cannot rewrite the original portfolio');
 assert.equal(analysis.family.familywiseAlpha, 0.05);
