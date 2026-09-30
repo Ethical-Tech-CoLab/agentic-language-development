@@ -61,12 +61,16 @@ function receipt(path) {
 }
 
 function status() {
+  // F-R05-1 document branch: status/check-package surface v1 checks only;
+  // v2 readiness has no surface here (see claimBoundary). Parameterizing
+  // awaits v2 topology/registration evidence, which does not exist yet.
   run('scripts/check-lv01-design.mjs', '--version', '1');
   run('scripts/check-lv01-power-qualification.mjs');
   const topology = receipt('reports/research/lv01-topology-qualification.v1.json');
   const report = {
     schemaVersion: 1,
     studyId: 'LV01',
+    designVersion: 1,
     executionReadiness: topology?.passed === true ? 'unresolved' : 'blocked',
     attemptStatus: 'unstarted',
     scientificDisposition: 'not-tested',
@@ -77,7 +81,7 @@ function status() {
       registration: 'missing',
       resourceAllocation: 'missing',
     },
-    claimBoundary: 'Current source checks only. No stage registration, topology qualification, collection, or scientific result is implied.',
+    claimBoundary: 'Current source checks only, v1 design checks only; v2 readiness is not surfaced here. No stage registration, topology qualification, collection, or scientific result is implied.',
   };
   console.log(JSON.stringify(report, null, 2));
 }
