@@ -17,8 +17,6 @@ const POLICY_INTERVAL_SEC = 5;
 const POLICY_CPU = { busyPct: 60, stealPct: 10, load1: 3 };
 const POLICY_PSI = { memSome: 5, memFull: 1, ioFull: 5 };
 const POLICY_STORAGE_RESERVE = { bytes: 10 * 1024 ** 3, frac: 0.1 };
-const POLICY_MEM_FLOOR = 2 * 1024 ** 3;
-const POLICY_PEAK_ALLOWANCE = 1.5;
 const POLICY_OOM_QUIET_SEC = 600;
 const POLICY_HEALTH_MAX_AGE_SEC = 300;
 // Effective cgroup v2 values expected from deploy/a0/aldresearch.slice.

@@ -98,9 +98,6 @@ function procStarttime(pid) {
 function userSliceName() {
   return `/sys/fs/cgroup/user.slice/user-${uid}.slice`;
 }
-function procCgroup(pid) {
-  return read(`/proc/${pid}/cgroup`)?.trim() ?? null;
-}
 function unitActive(unit) {
   try {
     execFileSync('systemctl', ['--user', 'is-active', '--quiet', unit], { stdio: 'ignore' });
@@ -191,8 +188,6 @@ if (!Number.isFinite(receiptAge) || receiptAge < 0 || receiptAge > MAX_PREFLIGHT
 // RSS is counted as an uncapped in-scope resident by the preflight via the
 // recorded member entry below; policy keeps the observer outside the job it
 // may terminate, which this satisfies (outside the leaf entirely).
-const launcherStarttime = procStarttime(process.pid);
-
 const logFile = values.log ?? `${DIR}/job-${lease.id}.log`;
 mkdirSync(DIR, { recursive: true });
 const log = (event) => {
@@ -244,7 +239,6 @@ const childExit = new Promise((resolve) => {
   child.on('exit', (code, signal) => resolve({ code, signal }));
   child.on('error', (error) => resolve({ code: null, signal: null, spawnError: error.message }));
 });
-const spawnT0 = Date.now();
 log({ event: 'spawn', run: lease.run });
 
 // 6. Verify effective limits + membership + nice at launch.
@@ -468,7 +462,7 @@ if (!q.quiesced) {
 } else if (stopRequest?.monitorBlock || outcome === 'monitor-failed') {
   writeMonitorBlock(`monitor failure during ${lease.id}: ${detail} (investigate, then remove this file explicitly)`);
 }
-const record = releaseLease({ outcome, detail, exitCode: result.code, signal: result.signal ?? null, timeoutOrigin, originEvidence, samples, leafPeakBytes: leafPeak, slicePeakBytes: slicePeak, membersVerified, readbackVerified });
+releaseLease({ outcome, detail, exitCode: result.code, signal: result.signal ?? null, timeoutOrigin, originEvidence, samples, leafPeakBytes: leafPeak, slicePeakBytes: slicePeak, membersVerified, readbackVerified });
 log({ event: 'released', outcome, exitCode: result.code, timeoutOrigin, originEvidence });
 console.log(JSON.stringify({ launch: outcome === 'completed' ? 'done' : 'stopped', id: lease.id, outcome, detail, exitCode: result.code, signal: result.signal ?? null, timeoutOrigin, originEvidence }, null, 2));
 if (outcome === 'completed') process.exit(result.code ?? 1);

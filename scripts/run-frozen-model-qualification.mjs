@@ -8,7 +8,7 @@ import {
   statSync,
 } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { basename, dirname, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
