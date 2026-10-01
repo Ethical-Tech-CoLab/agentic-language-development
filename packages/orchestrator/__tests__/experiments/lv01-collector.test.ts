@@ -203,7 +203,7 @@ async function packetInputWithAllocation(dir: string) {
 }
 
 describe('LV01 collector pure planning', () => {
-  it('resolves only small-fixture workloads and fails closed otherwise', () => {
+  it('resolves small-fixture and pinned prototype workloads and fails closed otherwise', () => {
     const allocation = {
       allocation: {
         smallFixture: {
@@ -223,6 +223,38 @@ describe('LV01 collector pure planning', () => {
     });
     expect(() => lv01WorkloadForCollection('development', { allocation: {} })).toThrow(/small-fixture/);
     expect(() => lv01WorkloadForCollection('development', null)).toThrow(/small-fixture/);
+    expect(lv01WorkloadForCollection('development', {
+      allocation: {
+        prototype: {
+          trainingCases: 3000,
+          validationFitCases: 240,
+          validationSelectionCases: 240,
+          withinSupportTestCases: 240,
+        },
+      },
+    })).toEqual({
+      profile: 'prototype',
+      trainingTurns: 3000,
+      validationFitCases: 240,
+      validationSelectionCases: 240,
+      withinSupportTestCases: 240,
+    });
+    expect(() => lv01WorkloadForCollection('development', {
+      allocation: {
+        prototype: {
+          trainingCases: 2999,
+          validationFitCases: 240,
+          validationSelectionCases: 240,
+          withinSupportTestCases: 240,
+        },
+      },
+    })).toThrow(/must match the pinned full workload/u);
+    expect(() => lv01WorkloadForCollection('development', {
+      allocation: {
+        smallFixture: { trainingCases: 4, validationFitCases: 2, validationSelectionCases: 2, withinSupportTestCases: 2 },
+        prototype: { trainingCases: 3000, validationFitCases: 240, validationSelectionCases: 240, withinSupportTestCases: 240 },
+      },
+    })).toThrow(/both smallFixture and prototype/u);
   });
 
   it('derives deterministic slot seeds with no fresh entropy', () => {

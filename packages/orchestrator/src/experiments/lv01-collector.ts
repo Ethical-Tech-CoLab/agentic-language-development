@@ -119,8 +119,21 @@ function fail(message: string): never {
   throw new Error(`LV01 collector: ${message}`);
 }
 
+/**
+ * Full-workload case counts, pinned to protocols/lv01-study-design.v2.json
+ * task.partitions (training 3000, validationFit 240, validationSelection 240,
+ * withinSupportTest 240; 5,160 receiver decisions per dyad). A prototype
+ * allocation block executes only on an exact match — never a silent resize.
+ */
+export const LV01_FULL_WORKLOAD_COUNTS = {
+  trainingCases: 3000,
+  validationFitCases: 240,
+  validationSelectionCases: 240,
+  withinSupportTestCases: 240,
+} as const;
+
 export interface Lv01CollectionWorkload {
-  readonly profile: 'small-fixture';
+  readonly profile: 'small-fixture' | 'prototype';
   readonly trainingTurns: number;
   readonly validationFitCases: number;
   readonly validationSelectionCases: number;
@@ -128,14 +141,37 @@ export interface Lv01CollectionWorkload {
 }
 
 /**
- * Resolve the executable workload from the bound allocation. Only
- * small-fixture blocks execute in-process; the full 5,160-decision
- * Prototype-worker path is unimplemented and fails closed here. Full
- * workloads must never silently switch to production transport.
+ * Resolve the executable workload from the bound allocation. Small-fixture
+ * blocks execute in-process at their stated counts; prototype blocks execute
+ * only on an exact match to LV01_FULL_WORKLOAD_COUNTS. Anything else fails
+ * closed here. Full workloads must never silently switch to production
+ * transport.
  */
 export function lv01WorkloadForCollection(stage: string, allocation: unknown): Lv01CollectionWorkload {
   const root = (allocation as Record<string, unknown> | null)?.['allocation'] as Record<string, unknown> | undefined;
   const fixture = root?.['smallFixture'] as Record<string, unknown> | undefined;
+  const prototype = root?.['prototype'] as Record<string, unknown> | undefined;
+  if (fixture !== undefined && prototype !== undefined) {
+    fail(`${stage} allocation carries both smallFixture and prototype blocks`);
+  }
+  if (prototype !== undefined) {
+    const pinned = (
+      name: 'trainingCases' | 'validationFitCases' | 'validationSelectionCases' | 'withinSupportTestCases',
+    ): number => {
+      const value: unknown = prototype[name];
+      if (typeof value !== 'number' || value !== LV01_FULL_WORKLOAD_COUNTS[name]) {
+        fail(`${stage} prototype ${name} must match the pinned full workload (${String(LV01_FULL_WORKLOAD_COUNTS[name])})`);
+      }
+      return value;
+    };
+    return {
+      profile: 'prototype',
+      trainingTurns: pinned('trainingCases'),
+      validationFitCases: pinned('validationFitCases'),
+      validationSelectionCases: pinned('validationSelectionCases'),
+      withinSupportTestCases: pinned('withinSupportTestCases'),
+    };
+  }
   const trainingTurns = fixture?.['trainingCases'];
   if (typeof trainingTurns !== 'number' || !Number.isInteger(trainingTurns) || trainingTurns < 1) {
     fail(`${stage} allocation carries no executable small-fixture workload`);
