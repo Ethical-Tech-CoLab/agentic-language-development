@@ -127,6 +127,17 @@ if (version === '1') {
   }
 } else {
   assert.equal(design.execution.deploymentMode, 'prototype');
+  assert.equal(
+    design.evaluation.receiverDecisionsDerivation,
+    '5160 = 3000 training + 240 validation-fit + 240 validation-selection + 1680 test (240 cases x 7 branches); one receiver decision per training/validation episode.',
+  );
+  assert.equal(
+    design.task.partitions.training.cases
+      + design.task.partitions.validationFit.cases
+      + design.task.partitions.validationSelection.cases
+      + design.task.partitions.withinSupportTest.cases * design.evaluation.branches.length,
+    design.evaluation.receiverDecisionsPerDyad,
+  );
   assert.equal(profile.runtime.deploymentMode, 'prototype');
   assert.equal(profile.runtime.topology, 'prototype-disposable-worker');
   assert.deepEqual(profile.runtime.separation, [

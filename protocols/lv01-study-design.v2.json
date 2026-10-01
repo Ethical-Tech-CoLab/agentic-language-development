@@ -88,6 +88,7 @@
     "branches": ["normal", "disabled", "constant", "random", "shuffled", "ledger-consistent", "ledger-shuffled"],
     "receiverDecisionsPerDyad": 5160,
     "testReceiverDecisionsPerDyad": 1680,
+    "receiverDecisionsDerivation": "5160 = 3000 training + 240 validation-fit + 240 validation-selection + 1680 test (240 cases x 7 branches); one receiver decision per training/validation episode.",
     "interventionRule": "Constant uses inventory element 0; random uses a dedicated uniform stream; shuffled uses a role-local derangement; ledger-consistent selects the native predictor's target-maximizing token with inventory-order ties; ledger-shuffled permutes those selected messages within role using a fixed derangement. Identical-token coincidences are preserved."
   },
   "observationSchemas": {
