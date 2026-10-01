@@ -210,3 +210,10 @@ export {
   wireLv01CollectionOrdinary,
   type Lv01OrdinaryWiringReceipt,
 } from './lv01-ordinary-wiring.js';
+export {
+  LV01_PARENT_TRAINING_SEEDS_DOMAIN,
+  trainLv01SlotParent,
+  type Lv01SlotParentSeeds,
+  type Lv01SlotParentTraining,
+  type Lv01TrainedParentReceipt,
+} from './lv01-parent-training.js';
