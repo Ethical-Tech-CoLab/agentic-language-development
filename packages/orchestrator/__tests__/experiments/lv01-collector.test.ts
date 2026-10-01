@@ -8,7 +8,7 @@
  * export its bundle, then collect and audit for real: no collector boolean
  * reaches the auditor.
  */
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -34,6 +34,8 @@ import {
 } from '../../src/experiments/lv01-stage-packets.js';
 import {
   LV01_PARTITION_CASE_BINDING,
+  assertLv01SlotBranchCensus,
+  assertLv01SlotSingleServedCase,
   auditLv01Stage,
   buildLv01TreatmentCases,
   collectLv01Slot,
@@ -351,6 +353,41 @@ describe('LV01 collector pure planning', () => {
     // Hyphenated branch names must not corrupt the prefix recovery.
     expect(rebuilt.branches[6]?.config.runId.endsWith('-ledger-shuffled')).toBe(true);
   });
+
+  it('census accepts exactly the seven contracted branch entries in any order', () => {
+    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
+    expect(() => assertLv01SlotBranchCensus(1, [...expected].reverse(), expected)).not.toThrow();
+  });
+
+  it('census rejects an extra branch entry beyond the contract', () => {
+    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
+    expect(() => assertLv01SlotBranchCensus(1, [...expected, 'lv01-development-v101-s0001-evil'], expected)).toThrow(
+      /branch census disagrees with the seven-branch contract/u,
+    );
+  });
+
+  it('census rejects a missing branch entry', () => {
+    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
+    expect(() => assertLv01SlotBranchCensus(1, expected.slice(1), expected)).toThrow(
+      /branch census disagrees with the seven-branch contract/u,
+    );
+  });
+
+  it('singleton accepts one served case across all branches', () => {
+    expect(() => assertLv01SlotSingleServedCase(1, Array.from({ length: 7 }, () => 'state-hash'))).not.toThrow();
+  });
+
+  it('singleton rejects branches serving distinct cases', () => {
+    expect(() => assertLv01SlotSingleServedCase(1, ['hash-a', 'hash-b'])).toThrow(
+      /served 2 distinct cases, expected exactly one/u,
+    );
+  });
+
+  it('singleton rejects an empty served set', () => {
+    expect(() => assertLv01SlotSingleServedCase(1, [])).toThrow(
+      /served 0 distinct cases, expected exactly one/u,
+    );
+  });
 });
 
 describe('LV01 collector live collection', () => {
@@ -640,5 +677,13 @@ describe('LV01 collector live collection', () => {
     await expect(
       auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
     ).rejects.toThrow(/is outside the committed schedule/u);
+  }, 180_000);
+
+  it('audit rejects an extra branch directory beyond the seven-branch contract (CENSUS-EXTRA)', async () => {
+    const { packet, binding, bundleDir, stageDir, caseDir } = await collectedStage();
+    await mkdir(join(caseDir, 'branches', `lv01-${packet.stage}-v${packet.version}-s0001-evil`), { recursive: true });
+    await expect(
+      auditLv01Stage({ packet, binding, parentBundleDir: bundleDir, stageDir }),
+    ).rejects.toThrow(/branch census disagrees with the seven-branch contract/u);
   }, 180_000);
 });

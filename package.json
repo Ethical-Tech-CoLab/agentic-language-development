@@ -1,6 +1,6 @@
 {
   "name": "agentic-language-development",
-  "version": "0.1.503",
+  "version": "0.1.504",
   "private": true,
   "description": "Research infrastructure for grounded, auditable emergent agent communication",
   "type": "module",

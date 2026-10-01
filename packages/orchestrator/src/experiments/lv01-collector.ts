@@ -1057,6 +1057,30 @@ export function rebuildLv01CasePlan(input: {
 }
 
 /**
+ * Census v3 (A): the served branch entries of one dyad-slot must equal the
+ * contracted seven exactly — no missing, no extras. Order-insensitive;
+ * the caller enumerates the raw branches directory.
+ */
+export function assertLv01SlotBranchCensus(slot: number, served: readonly string[], expected: readonly string[]): void {
+  const actual = [...served].sort();
+  const wanted = [...expected].sort();
+  if (actual.length !== wanted.length || actual.some((entry, index) => entry !== wanted[index])) {
+    fail(`slot ${slot} branch census disagrees with the seven-branch contract`);
+  }
+}
+
+/**
+ * Census v3 (A): every branch of one dyad-slot serves the same single case.
+ * The caller binds that one case to the rebuilt schedule separately.
+ */
+export function assertLv01SlotSingleServedCase(slot: number, scenarioStateHashes: readonly string[]): void {
+  const distinct = new Set(scenarioStateHashes);
+  if (distinct.size !== 1) {
+    fail(`slot ${slot} served ${distinct.size} distinct cases, expected exactly one`);
+  }
+}
+
+/**
  * Audit a collected stage from raw bundles only: replay every valid slot
  * through the loader + auditor against a rebuilt plan, then judge the
  * journal, cases, and reserves into an immutable receipt.
@@ -1100,14 +1124,21 @@ export async function auditLv01Stage(input: {
     const caseDir = join(input.stageDir, `slot-${slotLabel}`);
     const batch = JSON.parse(await readFile(join(caseDir, 'treatment-batch.json'), 'utf8')) as Lv01LedgerTreatmentBatch;
     const branchDocs: Lv01BundleDocs[] = [];
+    const branchesDir = join(caseDir, 'branches');
+    assertLv01SlotBranchCensus(
+      slot.index,
+      await readdir(branchesDir),
+      LV01_BRANCHES.map((branch) => `lv01-${packet.stage}-v${packet.version}-s${slotLabel}-${branch}`),
+    );
     for (const branch of LV01_BRANCHES) {
       const runId = `lv01-${packet.stage}-v${packet.version}-s${slotLabel}-${branch}`;
-      branchDocs.push(await readLv01BundleDocs(join(caseDir, 'branches', runId)));
+      branchDocs.push(await readLv01BundleDocs(join(branchesDir, runId)));
     }
     const plan = rebuildLv01CasePlan({ parentDocs, branchDocs });
     const audited = branchDocs.map((docs) => loadLv01AuditedBranch(docs));
     const first = audited[0];
     if (first === undefined) fail(`slot ${slot.index} has no audited branches`);
+    assertLv01SlotSingleServedCase(slot.index, audited.map((branch) => branch.payload.state.scenarioStateHash));
     const shared = loadLv01AuditShared({
       parentDocs,
       branchDocs: branchDocs[0] as Lv01BundleDocs,
