@@ -22,7 +22,7 @@ never tune the repeat from main outcomes. Figures are generated artifacts
 checked into this directory beside the tables; no hand-drawn or hand-edited
 numbers appear in any figure.
 
-## Component definitions (verify against the sealed R03 packet at freeze)
+## Component definitions (verify against the sealed R03 packet at freeze; ranges unbound pending the §5.7 operating-characteristic record, not a frozen norm)
 
 - LV-U: incremental utility, range [-2, 2]. Primary contrast uses the prior
   H4 0.02 Brier margin and 0.04 planning alternative.

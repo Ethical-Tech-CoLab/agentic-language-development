@@ -103,7 +103,7 @@ conflict with this prose.
 
 | Packet | Path | SHA-256 |
 |---|---|---|
-| Study design | `protocols/lv01-study-design.v2.json` | `sha256:a483f25f36abe198247b3992df7a7739120c7748ca83c787d01bdf317f34a576` |
+| Study design | `protocols/lv01-study-design.v2.json` | `sha256:5784f7b5311148a30346b38962947818244a3f982ddeb04809b012a65aaf98f6` |
 | Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` |
 | Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:ff4d0ac0f8f8122d917bb7017d12305aeb87b03fc1821218778271c6a9928c58` |
 | Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:26211acef67fe352e3dd4a8672b2ad8f9ced8ed5dd0f10199d8614aa0b1302f1` |
@@ -210,7 +210,7 @@ Registration, qualification (R06), pilot (R07), and lock (R08) receipts:
   intervention contrast, not spontaneous partner understanding. Branch
   order is a deterministic seeded permutation per case, counterbalanced;
   scenario, receiver observation, pre-state, and draw are shared across
-  branches within a case. Yield: 5,160 receiver decisions per dyad (3,000 training + 240 fit + 240 selection + 1,680 test).
+  branches within a case. Yield: 5,160 receiver decisions per dyad (3,000 training + 240 fit + 240 selection + 1,680 test [240 cases × 7 branches]).
 - Audit: an independent auditor reconstructs case identity, delivered
   token, prediction-before-action ordering, actual draw, parent state,
   and sample outcome from raw records. Collector-created true flags and
@@ -267,7 +267,7 @@ LV-U inherits the outcome-blind H4 margin 0.02 and planning alternative
 `protocols/confirmatory-power-model-amendment.v1.json` — prospective
 relevance conventions, not measured human-utility thresholds, preserved
 through pilot and main. Component ranges: LV-U [−2,2], LV-P [−2,0],
-success/probability contrasts [−1,1].
+success/probability contrasts [−1,1] (working ranges; unbound pending the §5.7 operating-characteristic record — not a frozen norm).
 
 - Unit: independently trained dyad; average within receiver role, then
   equally across roles, then across dyads. Both-role observations stay
@@ -323,7 +323,7 @@ success/probability contrasts [−1,1].
   as hex-followed-by-role on the 64-character NUL-derived base seed
   (derivation.roleStreamSeparation, R03-B F2; fixed-length prefix keeps
   the construction injective); the base seed itself follows the
-  NUL-joined rule above.
+  NUL-joined rule above. Draw-scope and derangement partition parts use the CLI vocabulary (dev, within-support, novel-composition) as seed-domain labels; case selection binds to the protocol case partition (within-support-test for all draw scopes in v2; derivation.partitionSubdomains, F-R04-1).
 - Development: lifetime 5-iteration allowance (not renewed); small
   fixture (64 training cases, 24 cases per evaluation partition, 0.25
   CPU-hours, 1 GiB); five complete full-workload calibration dyads for
@@ -349,7 +349,7 @@ success/probability contrasts [−1,1].
   blocks selection. Locked N=`TBD` (R08 not run).
 - Reserves: one-sided 95% Wilson upper invalid-run probability from
   the pilot; smallest R with `P[Binomial(N+R,pUpper) <= R] >= 0.95`,
-  separately per main/repeat stage. The complete `2*(N+R)` allocation
+  separately per main (= confirmatory)/repeat (= replication) stage. The complete `2*(N+R)` allocation
   plus overhead and a fixed analysis/reproduction/packaging allocation
   must be reserved before main starts. R=`TBD`.
 - Repeat: fresh stage identities, same locked N and ordered reserve
@@ -390,7 +390,7 @@ case blocks registration for a documented methods revision. Receipt:
   the frozen profile. Working description (UNBOUND until the tracked P2
   binding lands — currently only in the ignored master plan §4.5, which
   fixes nothing): benchmark query and verification operations on
-  the first ten registered primary dyads in each main/repeat cohort,
+  the first ten registered primary dyads in each main (= confirmatory)/repeat (= replication) cohort,
   independently of outcomes: one warmup and five measured invocations
   per record format, deterministic rotated format order; retain
   individual timings and summarize within dyad before across-dyad
