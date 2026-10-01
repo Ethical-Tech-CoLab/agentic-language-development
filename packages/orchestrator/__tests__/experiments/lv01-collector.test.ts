@@ -32,6 +32,9 @@ import {
   wireLv01CollectionOrdinary,
 } from '../../src/experiments/lv01-ordinary-wiring.js';
 import {
+  trainLv01SlotParent,
+} from '../../src/experiments/lv01-parent-training.js';
+import {
   bindLv01StagePacket,
   compileLv01StagePacket,
 } from '../../src/experiments/lv01-stage-packets.js';
@@ -550,6 +553,99 @@ describe('LV01 collector live collection', () => {
     expect(receipt.auditedCases).toHaveLength(1);
     expect(reportPath).toBe(join(stageDir, 'audit-receipt.json'));
   }, 180_000);
+
+  async function collectedPerSlotStage() {
+    harness = await createHarness({
+      lv01PredictionFor: (config) =>
+        config.lv01PairedCase === undefined ? undefined : { ...ORDINARY },
+    });
+    if (harness === undefined) throw new Error('harness unavailable');
+    const active: Harness = harness;
+    scratch = await mkdtemp(join(tmpdir(), 'ald-lv01-perslot-'));
+    const packet = compileLv01StagePacket({
+      ...(await packetInputWithAllocation(scratch)),
+      slotPlan: { primaries: 2, reserves: 1 },
+    });
+    const binding = bindLv01StagePacket(packet, '1'.repeat(40), packet.allocation.sha256);
+    const evidenceDir = join(scratch, 'evidence');
+    const stageDir = join(evidenceDir, 'lv01', `${packet.stage}-v${packet.version}`);
+    await mkdir(join(stageDir, 'parents'), { recursive: true });
+    const seedsFor = (slot: number) => {
+      const derived = lv01SlotSeeds(packet.packetCommitment, slot);
+      return {
+        scenario: derived.scenario,
+        babyA: derived.babyA,
+        babyB: derived.babyB,
+        gateway: derived.gateway,
+        analysis: derived.analysis,
+      };
+    };
+    for (const slot of [1, 2]) {
+      await trainLv01SlotParent({
+        runtime: active.runtime,
+        database: active.database,
+        signerProvider: (runId: string) => active.signerProvider(runId),
+        runId: `lv01-perslot-parent-${slot}`,
+        seeds: seedsFor(slot),
+        training: {
+          track: 'scratch-rl',
+          modelRef: 'gru-actor-critic-v1',
+          learningSignal: 'extrinsic-task',
+          maxTurnsPerRun: 4,
+          evaluationTurns: 1,
+        },
+        ledgerValuePlan: LEDGER_VALUE_PLAN,
+        runsRoot: active.root,
+        bundleDir: join(stageDir, 'parents', `slot-${String(slot).padStart(4, '0')}`),
+        softwareCommit: '1'.repeat(40),
+        deploymentMode: 'prototype',
+        protocolGitCommit: 'git:test-protocol',
+      });
+    }
+    const store = { root: active.root, databasePath: active.databasePath };
+    active.close();
+    const collection = await collectLv01Stage({
+      packet,
+      binding,
+      parentBundleDirFor: (slot: number) => join(stageDir, 'parents', `slot-${String(slot).padStart(4, '0')}`),
+      evidenceDir,
+      softwareCommit: '1'.repeat(40),
+      partition: 'dev',
+      ordinary: { ...ORDINARY },
+      store,
+      owner: 'lv01-collector-test',
+    });
+    expect(collection.journal.terminal).toBe('completed');
+    expect(collection.cases).toHaveLength(2);
+    return { packet, binding, stageDir, collection };
+  }
+
+  it('collects a stage with per-slot trained parents and audits it green', async () => {
+    const { packet, binding, stageDir, collection } = await collectedPerSlotStage();
+    expect(collection.journal.slots.filter((slot) => slot.status === 'valid').map((slot) => slot.parentBundleRef).sort())
+      .toEqual(['parents/slot-0001', 'parents/slot-0002']);
+    const { receipt } = await auditLv01Stage({ packet, binding, stageDir });
+    expect(receipt.status).toBe('verified');
+    expect(receipt.auditedCases).toHaveLength(2);
+  }, 300_000);
+
+  it('audit rejects a forged parent ref escaping the stage directory', async () => {
+    const { packet, binding, stageDir } = await collectedPerSlotStage();
+    const journalPath = join(stageDir, 'journal.jsonl');
+    const lines = (await readFile(journalPath, 'utf8')).trim().split('\n');
+    const last = JSON.parse(lines[lines.length - 1] as string) as {
+      journal: { slots: { status: string; parentBundleRef?: string }[] };
+    } & Record<string, unknown>;
+    const forged = {
+      ...(last.journal as object),
+      slots: last.journal.slots.map((slot) => slot.status === 'valid' ? { ...slot, parentBundleRef: '../escape' } : slot),
+    };
+    lines[lines.length - 1] = JSON.stringify({ ...last, journal: forged, journalHash: hashCanonical('lv01-stage-journal/v1', forged) });
+    await writeFile(journalPath, `${lines.join('\n')}\n`, 'utf8');
+    await expect(
+      auditLv01Stage({ packet, binding, stageDir }),
+    ).rejects.toThrow(/escapes the stage directory/u);
+  }, 300_000);
 
   it('binds every CLI draw-scope partition to the within-support-test case partition', () => {
     expect(LV01_PARTITION_CASE_BINDING).toEqual({

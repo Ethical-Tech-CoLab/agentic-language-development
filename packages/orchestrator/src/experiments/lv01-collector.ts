@@ -14,7 +14,7 @@
  * bundles and raw records only.
  */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { isAbsolute, join, relative, sep } from 'node:path';
 
 import {
   SqliteEvidenceWriter,
@@ -62,6 +62,7 @@ import {
   createLv01StageJournal,
   finalizeLv01Stage,
   recordLv01SlotCase,
+  recordLv01SlotParent,
   transitionLv01Slot,
   type Lv01Branch,
   type Lv01PairedCasePlan,
@@ -842,7 +843,8 @@ export interface Lv01StageCollection {
 export async function collectLv01Stage(input: {
   readonly packet: unknown;
   readonly binding: unknown;
-  readonly parentBundleDir: string;
+  readonly parentBundleDir?: string;
+  readonly parentBundleDirFor?: (slot: number, kind: 'primary' | 'reserve') => string | Promise<string>;
   readonly evidenceDir: string;
   readonly softwareCommit: string;
   readonly partition: 'dev' | 'within-support' | 'novel-composition';
@@ -879,7 +881,8 @@ export async function collectLv01Stage(input: {
 
 async function runStageLocked(input: {
   readonly packet: Lv01StagePacket;
-  readonly parentBundleDir: string;
+  readonly parentBundleDir?: string;
+  readonly parentBundleDirFor?: (slot: number, kind: 'primary' | 'reserve') => string | Promise<string>;
   readonly softwareCommit: string;
   readonly partition: 'dev' | 'within-support' | 'novel-composition';
   readonly ordinary: Lv01PairedPredictionProvider;
@@ -910,11 +913,15 @@ async function runStageLocked(input: {
     const slotWallStart = Date.now();
     const slotCpuStart = process.cpuUsage();
     try {
+      const slotParentDir = input.parentBundleDirFor === undefined
+        ? input.parentBundleDir
+        : await input.parentBundleDirFor(index, kind);
+      if (slotParentDir === undefined) fail('collect requires parentBundleDir or parentBundleDirFor');
       const collected = await collectLv01Slot({
         packet,
         slot: index,
         kind,
-        parentBundleDir: input.parentBundleDir,
+        parentBundleDir: slotParentDir,
         stageDir: input.stageDir,
         softwareCommit: input.softwareCommit,
         partition: input.partition,
@@ -923,6 +930,13 @@ async function runStageLocked(input: {
       });
       const terminal = captureLv01SlotTerminal(journal, index, 'valid', collected.resources, null);
       journal = recordLv01SlotCase(terminal.journal, index, collected.caseCommitment);
+      if (input.parentBundleDirFor !== undefined) {
+        const ref = relative(input.stageDir, slotParentDir);
+        if (ref === '' || isAbsolute(ref) || ref === '..' || ref.startsWith(`..${sep}`)) {
+          fail(`slot ${index} parent bundle escapes the stage directory`);
+        }
+        journal = recordLv01SlotParent(journal, index, ref);
+      }
       cases.push({ slot: index, caseCommitment: collected.caseCommitment });
       slots.push(collected);
     } catch (error) {
@@ -1088,7 +1102,7 @@ export function assertLv01SlotSingleServedCase(slot: number, scenarioStateHashes
 export async function auditLv01Stage(input: {
   readonly packet: unknown;
   readonly binding: unknown;
-  readonly parentBundleDir: string;
+  readonly parentBundleDir?: string;
   readonly stageDir: string;
 }): Promise<{ readonly receipt: Lv01AuditReceipt; readonly reportPath: string }> {
   const packet = verifyLv01StagePacket(input.packet);
@@ -1099,10 +1113,33 @@ export async function auditLv01Stage(input: {
   const journal = journalEvents.at(-1)?.journal;
   if (journal === undefined) fail('journal has no events');
 
-  const parentDocs = await readLv01BundleDocs(input.parentBundleDir);
+  // Per-slot parents resolve from the journaled stageDir-relative ref when
+  // present, else the legacy single parentBundleDir. Refs are containment-
+  // checked on every read; bundle docs are cached by resolved directory.
+  const parentDocsCache = new Map<string, Lv01BundleDocs>();
+  const parentDocsFor = async (slot: { readonly index: number; readonly parentBundleRef?: string }): Promise<Lv01BundleDocs> => {
+    let dir: string;
+    if (slot.parentBundleRef === undefined) {
+      if (input.parentBundleDir === undefined) {
+        fail(`slot ${slot.index} has no parent binding and no legacy parentBundleDir`);
+      }
+      dir = input.parentBundleDir;
+    } else {
+      const resolved = join(input.stageDir, slot.parentBundleRef);
+      const ref = relative(input.stageDir, resolved);
+      if (ref === '' || isAbsolute(ref) || ref === '..' || ref.startsWith(`..${sep}`)) {
+        fail(`slot ${slot.index} parent bundle ref escapes the stage directory`);
+      }
+      dir = resolved;
+    }
+    const cached = parentDocsCache.get(dir);
+    if (cached !== undefined) return cached;
+    const docs = await readLv01BundleDocs(dir);
+    parentDocsCache.set(dir, docs);
+    return docs;
+  };
   // Audit-time schedule inputs: re-verified from the packet, never trusted
   // from the collect-time schedule.json claim each slot carries.
-  const auditParent = typedParentConfig(parentDocs);
   const auditAllocationRaw = await readFile(packet.allocation.path, 'utf8').catch(() => {
     fail(`allocation file ${packet.allocation.path} is missing`);
   });
@@ -1120,6 +1157,8 @@ export async function auditLv01Stage(input: {
   const cases: Lv01StageCaseAudit[] = [];
   for (const slot of journal.slots) {
     if (slot.status !== 'valid') continue;
+    const parentDocs = await parentDocsFor(slot);
+    const auditParent = typedParentConfig(parentDocs);
     const slotLabel = String(slot.index).padStart(4, '0');
     const caseDir = join(input.stageDir, `slot-${slotLabel}`);
     const batch = JSON.parse(await readFile(join(caseDir, 'treatment-batch.json'), 'utf8')) as Lv01LedgerTreatmentBatch;

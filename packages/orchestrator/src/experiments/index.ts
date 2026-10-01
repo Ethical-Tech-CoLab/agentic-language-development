@@ -33,6 +33,7 @@ export {
   createLv01StageJournal,
   finalizeLv01Stage,
   recordLv01SlotCase,
+  recordLv01SlotParent,
   scaleLv01ReserveForSlots,
   transitionLv01Slot,
   verifyLv01PairedCase,

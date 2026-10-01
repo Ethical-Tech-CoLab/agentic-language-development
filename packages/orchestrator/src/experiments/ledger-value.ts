@@ -13,7 +13,7 @@ export const LV01_BRANCHES = ['normal', 'disabled', 'constant', 'random', 'shuff
 export type Lv01Branch = (typeof LV01_BRANCHES)[number];
 export type Lv01Stage = 'development' | 'qualification' | 'pilot' | 'confirmatory' | 'replication';
 export type Lv01SlotStatus = 'unattempted' | 'running' | 'valid' | 'invalid' | 'aborted';
-export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; readonly caseCommitment?: string; readonly resources?: Lv01SlotResources; }
+export interface Lv01Slot { readonly index: number; readonly kind: 'primary' | 'reserve'; readonly status: Lv01SlotStatus; readonly reason?: string; readonly caseCommitment?: string; readonly parentBundleRef?: string; readonly resources?: Lv01SlotResources; }
 export interface Lv01StageJournal { readonly stage: Lv01Stage; readonly version: number; readonly attemptId: string; readonly slots: readonly Lv01Slot[]; readonly terminal: 'open' | 'completed' | 'failed' | 'aborted'; }
 export interface Lv01AdmissionInput { readonly designVerified: boolean; readonly numericalQualificationVerified: boolean; readonly topologyQualificationVerified: boolean; readonly sourceClean: boolean; readonly registrationBound: boolean; readonly resourcesSufficient: boolean; readonly designHashesLive: boolean; readonly hostReady: boolean; readonly stage: Lv01Stage; }
 export interface Lv01Admission { readonly status: 'ready' | 'blocked' | 'unresolved'; readonly reasons: readonly string[]; }
@@ -231,6 +231,14 @@ export function captureLv01SlotTerminal(journal: Lv01StageJournal, index: number
     slots: updated.slots.map((entry) => (entry.index === index ? { ...entry, resources } : entry)),
   };
   return { journal: journalWithResources, slot: journalWithResources.slots.find((slot) => slot.index === index)!, resources, failureStage };
+}
+/** Link a valid slot to its own trained parent bundle (stageDir-relative); valid slots only. */
+export function recordLv01SlotParent(journal: Lv01StageJournal, index: number, parentBundleRef: string): Lv01StageJournal {
+  if (journal.terminal !== 'open') fail('terminal journal cannot change');
+  const slot = journal.slots.find((entry) => entry.index === index); if (!slot) fail('unknown slot');
+  if (slot.status !== 'valid') fail('only a valid slot can link a parent');
+  if (parentBundleRef.length === 0 || parentBundleRef.startsWith('/') || parentBundleRef.split('/').includes('..')) fail('parent bundle ref must be a contained relative path');
+  return { ...journal, slots: journal.slots.map((entry) => entry.index === index ? { ...entry, parentBundleRef } : entry) };
 }
 /** Link a valid slot to its audited case commitment; valid slots only. */
 export function recordLv01SlotCase(journal: Lv01StageJournal, index: number, caseCommitment: string): Lv01StageJournal {
