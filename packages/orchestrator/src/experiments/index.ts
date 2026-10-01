@@ -208,6 +208,7 @@ export {
 } from './lv01-collector.js';
 export {
   LV01_ORDINARY_WIRING_FOLDS_DOMAIN,
+  partitionLv01OrdinaryRowsBySchedule,
   wireLv01CollectionOrdinary,
   type Lv01OrdinaryWiringReceipt,
 } from './lv01-ordinary-wiring.js';

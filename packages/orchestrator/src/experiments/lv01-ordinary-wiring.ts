@@ -15,6 +15,7 @@ import {
 import { hashCanonical } from '@ald/hashing';
 
 import type { Lv01PairedPredictionProvider } from './lv01-paired-predictions.js';
+import type { Lv01Schedule } from './lv01-schedule.js';
 
 export const LV01_ORDINARY_WIRING_FOLDS_DOMAIN = 'lv01-ordinary-wiring-folds/v1' as const;
 
@@ -26,6 +27,56 @@ export interface Lv01OrdinaryWiringReceipt {
   readonly trainingCases: number;
   readonly validationFitCases: number;
   readonly validationSelectionCases: number;
+}
+
+/**
+ * Assign caller-supplied ordinary rows to training/validation folds by
+ * schedule case membership. Within-support test cases are rejected outright:
+ * test rows never enter ordinary folds. Row EXTRACTION from raw evidence
+ * (delivered token, candidates, action per case) is a separate
+ * methods-defined mapping and stays out of this pure partitioner.
+ */
+export function partitionLv01OrdinaryRowsBySchedule(
+  rows: readonly Lv01OrdinaryRecord[],
+  schedule: Lv01Schedule,
+): {
+  readonly training: readonly Lv01OrdinaryRecord[];
+  readonly validationFit: readonly Lv01OrdinaryRecord[];
+  readonly validationSelection: readonly Lv01OrdinaryRecord[];
+} {
+  const home = new Map<string, 'training' | 'validationFit' | 'validationSelection'>();
+  const claim = (
+    entries: readonly { readonly caseId: string }[],
+    fold: 'training' | 'validationFit' | 'validationSelection',
+  ): void => {
+    for (const entry of entries) {
+      if (home.has(entry.caseId)) {
+        throw new Error(`LV01 ordinary folds: schedule lists case ${entry.caseId} twice`);
+      }
+      home.set(entry.caseId, fold);
+    }
+  };
+  claim(schedule.cases.training, 'training');
+  claim(schedule.cases['validation-fit'], 'validationFit');
+  claim(schedule.cases['validation-selection'], 'validationSelection');
+  const folds: {
+    training: Lv01OrdinaryRecord[];
+    validationFit: Lv01OrdinaryRecord[];
+    validationSelection: Lv01OrdinaryRecord[];
+  } = { training: [], validationFit: [], validationSelection: [] };
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (seen.has(row.caseId)) {
+      throw new Error(`LV01 ordinary folds: rows list case ${row.caseId} twice`);
+    }
+    seen.add(row.caseId);
+    const fold = home.get(row.caseId);
+    if (fold === undefined) {
+      throw new Error(`LV01 ordinary folds: row case ${row.caseId} is outside the training/validation schedule`);
+    }
+    folds[fold].push(row);
+  }
+  return folds;
 }
 
 export function wireLv01CollectionOrdinary(input: {
