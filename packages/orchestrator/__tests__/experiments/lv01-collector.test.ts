@@ -29,6 +29,9 @@ import {
 } from '../../src/experiments/lv01-paired-predictions.js';
 import { verifyLv01TreatmentTargets } from '../../src/experiments/lv01-ledger-treatments.js';
 import {
+  wireLv01CollectionOrdinary,
+} from '../../src/experiments/lv01-ordinary-wiring.js';
+import {
   bindLv01StagePacket,
   compileLv01StagePacket,
 } from '../../src/experiments/lv01-stage-packets.js';
@@ -476,6 +479,45 @@ describe('LV01 collector live collection', () => {
       cases: unknown[];
     };
     expect(batch.cases).toHaveLength(2);
+  }, 120_000);
+
+  it('collects one slot with a wired fitted ordinary provider', async () => {
+    const { bundleDir } = await trainedParentBundle();
+    if (harness === undefined || scratch === undefined) throw new Error('setup failed');
+    const store = { root: harness.root, databasePath: harness.databasePath };
+    harness.close();
+
+    const babyB = (caseId: string, action: number) => ({
+      caseId,
+      receiverRole: 'baby-b' as const,
+      deliveredToken: inventory[action % inventory.length] as string,
+      candidateTypeCodes: [1, 2, 3, 4],
+      actualSelectedCandidateIndex: action % 4,
+    });
+    const { provider, receipt } = wireLv01CollectionOrdinary({
+      inventory: [...inventory],
+      training: [babyB('wire-train-0', 0), babyB('wire-train-1', 1), babyB('wire-train-2', 2), babyB('wire-train-3', 3)],
+      validationFit: [babyB('wire-fit-0', 1), babyB('wire-fit-1', 2)],
+      validationSelection: [babyB('wire-sel-0', 0), babyB('wire-sel-1', 3)],
+    });
+    expect(receipt.receiverRole).toBe('baby-b');
+
+    const packet = compileLv01StagePacket(await packetInputWithAllocation(scratch));
+    const stageDir = join(scratch, 'stage');
+    const collected = await collectLv01Slot({
+      packet,
+      slot: 1,
+      kind: 'primary',
+      parentBundleDir: bundleDir,
+      stageDir,
+      softwareCommit: 'git:lv01-collector-test',
+      partition: 'dev',
+      ordinary: { ...provider },
+      store,
+    });
+    expect(collected.caseCommitment).toMatch(/^sha256:[0-9a-f]{64}$/u);
+    expect(collected.executions).toHaveLength(7);
+    expect(Object.keys(collected.outcomes)).toHaveLength(7);
   }, 120_000);
 
   it('collects a stage and audits it to a verified receipt', async () => {
