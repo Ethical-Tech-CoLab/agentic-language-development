@@ -1,0 +1,55 @@
+{
+ "schemaVersion": 1,
+ "classification": "research-resource-balance",
+ "researchFinding": false,
+ "balanceVersion": "v2",
+ "handoff": "R01",
+ "measuredAt": "2026-10-01T12:42:21Z",
+ "supersedes": {
+  "priorVersion": "v1",
+  "priorMeasuredAt": "2026-09-27T16:00:56Z",
+  "priorTotalEvidence": 5527700332,
+  "note": "v1 file untouched. Only delta is the provenance preservation copy + manifest (spec reports/research/provenance-preservation-manifest-spec.v1.md). All v1 per-family rows stand."
+ },
+ "ceilings": {
+  "cpuHours": 72,
+  "retainedPlusWorkingBytes": 26843545600,
+  "residentBytes": 6442450944,
+  "externalSpend": 0
+ },
+ "retainedBytes": {
+  "totalEvidence": 5606120255,
+  "lv01": 857119191,
+  "provenancePreservation": {
+   "bundleBytes": 78417499,
+   "manifestBytes": 2424,
+   "manifest": "evidence/provenance/ald-pre-purge-2026-09-27.manifest.json",
+   "bundleSha256": "sha256:bdec28e9bb04d5296067c5f8332fed8529489ee8a68f58221f1f1a583f5902de"
+  },
+  "byLv01Family": "unchanged from v1; see research-resource-balance.v1.json"
+ },
+ "workingBytes": {
+  "status": "unresolved",
+  "note": "No historical staging/working-peak measurements retained; du snapshots post-hoc only."
+ },
+ "cpuHours": {
+  "status": "unresolved",
+  "note": "Per-attempt CPU exists only as sampled cpuPercent spots in lv01-fixture-resources.json (13/52 run dirs), never cumulative cgroup usage; detector v1/v2/v3 and paired branches have no CPU records. No defensible cumulative charge can be derived; zero-for-missing is prohibited."
+ },
+ "peakMemoryBytes": {
+  "status": "partially-measured",
+  "note": "Max sampled container RSS per attempt available for 13 run dirs with resource samples; all other attempts unresolved. Conservative summed-peak reconciliation requires full-workload calibration (R06)."
+ },
+ "liveReserved": {
+  "containers": 0,
+  "status": "measured-zero",
+  "note": "No live study handles. Re-verification of container state was out of scope for this preservation-only version; v1 teardown record stands."
+ },
+ "externalSpend": 0,
+ "backupsExports": {
+  "status": "included-in-retained",
+  "note": "Preservation copy lives inside evidence/provenance/ and is counted once in totalEvidence above. No roots outside evidence/."
+ },
+ "remainingCapacity": "UNRESOLVED",
+ "gateDecision": "New experimental collection stays BLOCKED: iteration compliance unresolved (see iteration-accounting-deviation.v1.md) and CPU/working-peak charges unresolved. R02-R05 preparation proceeds; R06 is first lawful launcher."
+}
