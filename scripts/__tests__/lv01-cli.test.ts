@@ -1,8 +1,11 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { bindLv01StagePacket, compileLv01StagePacket } from '@ald/orchestrator';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -66,6 +69,7 @@ afterEach(() => {
   cleanFixtures('development', '1', true);
   cleanFixtures('development', '101');
   cleanFixtures('confirmatory', '102');
+  cleanFixtures('development', '999');
 });
 
 describe('LV01 execution CLI', () => {
@@ -172,4 +176,115 @@ describe('LV01 execution CLI', () => {
       reasons: ['resource-allocation-missing', 'host-not-ready'],
     });
   });
+
+  it('collect rejects both parent-bundle and per-slot-parents', () => {
+    const result = run(...collectArgs('development', '1'), '--per-slot-parents');
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('unknown or repeated option');
+  });
+
+  it('train-parents requires strict options and a bound packet', () => {
+    const missing = run('train-parents', '--stage', 'development', '--version', '999');
+    expect(missing.status).not.toBe(0);
+    expect(missing.stderr).toContain('missing required option');
+    const unbound = run(
+      'train-parents', '--stage', 'development', '--version', '999', '--run', '--slots', '1',
+      '--parents-dir', 'parents', '--store-root', 'store', '--database-path', 'db',
+      '--track', 'scratch-rl', '--model-ref', 'gru-actor-critic-v1', '--learning-signal', 'extrinsic-task',
+      '--max-turns', '4', '--evaluation-turns', '1', '--ledger-value-plan', 'plan.json',
+      '--deployment-mode', 'prototype', '--protocol-commit', 'git:test',
+    );
+    expect(unbound.status).not.toBe(0);
+    expect(unbound.stderr).toContain('missing numerical qualification receipt');
+  });
+
+  it('trains per-slot parents then collects and audits through the stage scripts', () => {
+    const version = '999';
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+    const hash = (char: string): string => `sha256:${char.repeat(64)}`;
+    const allocation = {
+      schemaVersion: 1,
+      studyId: 'LV01',
+      status: 'design-locked-not-executed',
+      allocation: {
+        smallFixture: { trainingCases: 4, validationFitCases: 2, validationSelectionCases: 2, withinSupportTestCases: 2 },
+      },
+    };
+    const allocationPath = `protocols/lv01-development-resource-allocation.v${version}.json`;
+    const allocationRaw = `${JSON.stringify(allocation)}\n`;
+    writeFileSync(join(root, allocationPath), allocationRaw);
+    const allocationSha = `sha256:${createHash('sha256').update(allocationRaw, 'utf8').digest('hex')}`;
+    const compiled = compileLv01StagePacket({
+      stage: 'development',
+      version: 999,
+      designVersion: 2,
+      designCommitmentHash: hash('a'),
+      analysisCommitmentHash: hash('b'),
+      seedResourceCommitmentHash: hash('c'),
+      sourceCommit: head,
+      modelIdentity: {
+        architecture: 'gru-actor-critic-v1',
+        track: 'scratch-rl',
+        parameterCountPerAgent: 4049,
+        inputSize: 50,
+        hiddenSize: 16,
+      },
+      allocation: { path: allocationPath, sha256: allocationSha },
+      qualifications: {
+        designCheck: 'passed',
+        powerCheck: 'passed',
+        topology: { path: `reports/research/lv01-topology-qualification.v${version}.json`, sha256: hash('f'), passed: true },
+      },
+      slotPlan: { primaries: 2, reserves: 1 },
+    });
+    writeFileSync(join(root, `protocols/lv01-development-registration.v${version}.json`), `${JSON.stringify(compiled)}\n`);
+    writeFileSync(
+      join(root, `protocols/lv01-development-registration-binding.v${version}.json`),
+      `${JSON.stringify(bindLv01StagePacket(compiled, head, allocationSha))}\n`,
+    );
+    const work = mkdtempSync(join(tmpdir(), 'ald-lv01-g4b-'));
+    try {
+      const storeRoot = join(work, 'store');
+      const evidenceDir = join(work, 'evidence');
+      const parentsDir = join(evidenceDir, 'lv01', `development-v${version}`, 'parents');
+      const planPath = join(work, 'ledger-value-plan.json');
+      writeFileSync(planPath, JSON.stringify({
+        version: 1,
+        designCommitmentHash: hash('a'),
+        analysisCommitmentHash: hash('b'),
+        seedResourceCommitmentHash: hash('c'),
+        predictionFunctionVersion: 'lv01-ledger-value-prediction/v1',
+        partitionContractVersion: 'lv01-within-support/v1',
+      }));
+      const train = spawnSync(process.execPath, [
+        'scripts/train-lv01-slot-parents.mjs', '--stage', 'development', '--version', version, '--run',
+        '--slots', '1,2', '--parents-dir', parentsDir, '--store-root', storeRoot,
+        '--track', 'scratch-rl', '--model-ref', 'gru-actor-critic-v1', '--learning-signal', 'extrinsic-task',
+        '--max-turns', '4', '--evaluation-turns', '1', '--ledger-value-plan', planPath,
+        '--deployment-mode', 'prototype', '--protocol-commit', 'git:test',
+      ], { cwd: root, encoding: 'utf8' });
+      if (train.status !== 0) console.log('TRAIN-FAIL stdout:', train.stdout, 'stderr:', train.stderr);
+      expect(train.status).toBe(0);
+      expect(existsSync(join(parentsDir, 'slot-0001'))).toBe(true);
+      expect(existsSync(join(parentsDir, 'slot-0002'))).toBe(true);
+      expect(existsSync(join(parentsDir, 'training-receipts.json'))).toBe(true);
+      const collect = spawnSync(process.execPath, [
+        'scripts/collect-lv01-stage.mjs', '--stage', 'development', '--version', version, '--run',
+        '--per-slot-parents', '--evidence-dir', evidenceDir, '--partition', 'dev',
+        '--ordinary-id', 'uniform', '--store-root', storeRoot, '--owner', 'lv01-cli-test',
+      ], { cwd: root, encoding: 'utf8' });
+      if (collect.status !== 0) console.log('COLLECT-FAIL stdout:', collect.stdout, 'stderr:', collect.stderr);
+      expect(collect.status).toBe(0);
+      expect(collect.stdout).toContain('collected: 2 cases');
+      const audit = spawnSync(process.execPath, [
+        'scripts/audit-lv01-stage.mjs', '--stage', 'development', '--version', version,
+        '--live-evidence', '--evidence-dir', evidenceDir,
+      ], { cwd: root, encoding: 'utf8' });
+      if (audit.status !== 0) console.log('AUDIT-FAIL stdout:', audit.stdout, 'stderr:', audit.stderr);
+      expect(audit.status).toBe(0);
+      expect(audit.stdout).toContain('verified');
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+    }
+  }, 300_000);
 });

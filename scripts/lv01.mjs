@@ -209,23 +209,39 @@ switch (command) {
     break;
   }
   case 'audit': {
-    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--live-evidence', false], ['--parent-bundle', true], ['--evidence-dir', true]]));
+    const wantsParentBundle = process.argv.includes('--parent-bundle');
+    const spec = new Map([['--stage', true], ['--version', true], ['--live-evidence', false], ['--evidence-dir', true]]);
+    if (wantsParentBundle) spec.set('--parent-bundle', true);
+    const options = parse(command, spec);
     const stage = options.get('--stage');
     const version = Number(options.get('--version'));
     if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
     requireBinding(stage, version);
     requireCollection(stage, version, options.get('--evidence-dir'));
-    run('scripts/audit-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--live-evidence', '--parent-bundle', options.get('--parent-bundle'), '--evidence-dir', options.get('--evidence-dir'));
+    run('scripts/audit-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--live-evidence', ...(wantsParentBundle ? ['--parent-bundle', options.get('--parent-bundle')] : []), '--evidence-dir', options.get('--evidence-dir'));
+    break;
+  }
+  case 'train-parents': {
+    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--run', false], ['--slots', true], ['--parents-dir', true], ['--store-root', true], ['--database-path', true], ['--track', true], ['--model-ref', true], ['--learning-signal', true], ['--max-turns', true], ['--evaluation-turns', true], ['--ledger-value-plan', true], ['--deployment-mode', true], ['--protocol-commit', true]]));
+    const stage = options.get('--stage');
+    const version = Number(options.get('--version'));
+    if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
+    requireBinding(stage, version);
+    run('scripts/train-lv01-slot-parents.mjs', '--stage', stage, '--version', String(version), '--run', '--slots', options.get('--slots'), '--parents-dir', options.get('--parents-dir'), '--store-root', options.get('--store-root'), '--database-path', options.get('--database-path'), '--track', options.get('--track'), '--model-ref', options.get('--model-ref'), '--learning-signal', options.get('--learning-signal'), '--max-turns', options.get('--max-turns'), '--evaluation-turns', options.get('--evaluation-turns'), '--ledger-value-plan', options.get('--ledger-value-plan'), '--deployment-mode', options.get('--deployment-mode'), '--protocol-commit', options.get('--protocol-commit'));
     break;
   }
   case 'collect': {
-    const options = parse(command, new Map([['--stage', true], ['--version', true], ['--run', false], ['--parent-bundle', true], ['--evidence-dir', true], ['--partition', true], ['--ordinary-id', true], ['--store-root', true], ['--database-path', true], ['--owner', true]]));
+    const perSlotParents = process.argv.includes('--per-slot-parents');
+    const spec = new Map([['--stage', true], ['--version', true], ['--run', false], ['--evidence-dir', true], ['--partition', true], ['--ordinary-id', true], ['--store-root', true], ['--database-path', true], ['--owner', true]]);
+    if (perSlotParents) spec.set('--per-slot-parents', false);
+    else spec.set('--parent-bundle', true);
+    const options = parse(command, spec);
     const stage = options.get('--stage');
     const version = Number(options.get('--version'));
     if (!stages.has(stage) || !Number.isInteger(version) || version < 1) fail('invalid stage or version');
     if (!partitions.has(options.get('--partition'))) fail(`unsupported partition ${options.get('--partition')}`);
     requireAdmission(stage, version);
-    run('scripts/collect-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--run', '--parent-bundle', options.get('--parent-bundle'), '--evidence-dir', options.get('--evidence-dir'), '--partition', options.get('--partition'), '--ordinary-id', options.get('--ordinary-id'), '--store-root', options.get('--store-root'), '--database-path', options.get('--database-path'), '--owner', options.get('--owner'));
+    run('scripts/collect-lv01-stage.mjs', '--stage', stage, '--version', String(version), '--run', ...(perSlotParents ? ['--per-slot-parents'] : ['--parent-bundle', options.get('--parent-bundle')]), '--evidence-dir', options.get('--evidence-dir'), '--partition', options.get('--partition'), '--ordinary-id', options.get('--ordinary-id'), '--store-root', options.get('--store-root'), '--database-path', options.get('--database-path'), '--owner', options.get('--owner'));
     break;
   }
   case 'reduce-pilot': {

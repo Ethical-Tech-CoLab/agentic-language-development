@@ -19,8 +19,8 @@ const { values } = parseArgs({
 assert.ok(values.stage && stages.has(values.stage), 'stage must be supported, never arbitrary');
 assert.match(values.version ?? '', /^[1-9]\d*$/u, 'version must be a positive integer');
 assert.equal(values['live-evidence'], true, 'audit requires --live-evidence');
-assert.ok(values['parent-bundle'], 'audit requires --parent-bundle');
 assert.ok(values['evidence-dir'], 'audit requires --evidence-dir');
+const hasParentBundle = (values['parent-bundle'] ?? '').length > 0;
 const stage = values.stage;
 const version = Number(values.version);
 
@@ -29,7 +29,9 @@ const bindingPath = `protocols/lv01-${stage}-registration-binding.v${version}.js
 const stageDir = join(values['evidence-dir'], 'lv01', `${stage}-v${version}`);
 assert.equal(existsSync(registration), true, `missing prospective registration ${registration}`);
 assert.equal(existsSync(bindingPath), true, `missing prospective binding ${bindingPath}`);
-assert.equal(existsSync(values['parent-bundle']), true, `missing parent bundle ${values['parent-bundle']}`);
+if (hasParentBundle) {
+  assert.equal(existsSync(values['parent-bundle']), true, `missing parent bundle ${values['parent-bundle']}`);
+}
 assert.equal(existsSync(stageDir), true, `missing collected stage ${stageDir}`);
 const packet = JSON.parse(readFileSync(registration, 'utf8'));
 const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
@@ -37,7 +39,7 @@ const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
 const { receipt, reportPath } = await auditLv01Stage({
   packet,
   binding,
-  parentBundleDir: values['parent-bundle'],
+  ...(hasParentBundle ? { parentBundleDir: values['parent-bundle'] } : {}),
   stageDir,
 });
 console.log(`LV01 ${stage} v${version} audit: ${receipt.status} ${reportPath}`);
