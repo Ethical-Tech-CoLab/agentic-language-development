@@ -103,8 +103,8 @@ conflict with this prose.
 
 | Packet | Path | SHA-256 |
 |---|---|---|
-| Study design | `protocols/lv01-study-design.v2.json` | `sha256:5784f7b5311148a30346b38962947818244a3f982ddeb04809b012a65aaf98f6` |
-| Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2` |
+| Study design | `protocols/lv01-study-design.v2.json` | `sha256:0259516e998c4fe2a87ec32f59746e56c4fedf32d48183338b98a8dcf7875f99` |
+| Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:c4012a15323b33e039508a01e49451a50958b7d8458868b8fa808fb5dfd1adda` |
 | Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:ff4d0ac0f8f8122d917bb7017d12305aeb87b03fc1821218778271c6a9928c58` |
 | Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:26211acef67fe352e3dd4a8672b2ad8f9ced8ed5dd0f10199d8614aa0b1302f1` |
 | Direction amendment | `protocols/lv01-direction-amendment.v2.json` | `sha256:8d661ca1b7ef719f27843d86d0d08dc3009817a440d978678772525b2fea3cd9` |
