@@ -39,3 +39,11 @@ builder-side assertion: WITHDRAWN 2026-10-03 — already asserted (`lv01-schedul
 
 `lv01-ordinary-loader.ts:58-73,:45-51,:61-66`; schedule header.
 Determined from committed bytes eefb80c, read in tree 2026-10-03.
+
+## §6 follow-up (traced 2026-10-03)
+
+V1 §6 item 2 (inventory-32 pin) design source: SPEC §9.1 default S01..S32
+via `fixedTokenInventory(32)` (`packages/types/src/domains.ts:294-302`;
+cf. `packages/gateway/src/conformance-vectors.ts:17-18`). Packet pin text
+for R03 freeze: "Delivered-token inventory is the SPEC §9.1 default
+S01..S32."
