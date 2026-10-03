@@ -14,6 +14,8 @@ import {
 } from '@ald/analysis';
 import { hashCanonical } from '@ald/hashing';
 
+import { extractLv01OrdinaryRecords } from './lv01-ordinary-loader.js';
+import type { Lv01BundleDocs } from './lv01-audit-loader.js';
 import type { Lv01PairedPredictionProvider } from './lv01-paired-predictions.js';
 import type { Lv01Schedule } from './lv01-schedule.js';
 
@@ -77,6 +79,47 @@ export function partitionLv01OrdinaryRowsBySchedule(
     folds[fold].push(row);
   }
   return folds;
+}
+
+export interface Lv01ComposedOrdinaryRole {
+  readonly provider: Lv01PairedPredictionProvider;
+  readonly receipt: Lv01OrdinaryWiringReceipt;
+}
+
+/**
+ * Compose collection-time ordinary providers straight from parent evidence:
+ * extract records, split per receiver role (pooling forbidden, Q5), partition
+ * each role's rows by schedule membership, and wire each role's folds. Roles
+ * with no extracted rows are omitted; every other failure (empty folds,
+ * unlisted episodes, disagreement) propagates fail-closed from the stages.
+ */
+export function composeLv01OrdinaryProvidersFromParent(input: {
+  readonly parentDocs: Lv01BundleDocs;
+  readonly schedule: Lv01Schedule;
+  readonly inventory: readonly string[];
+}): {
+  readonly byRole: Partial<Readonly<Record<'baby-a' | 'baby-b', Lv01ComposedOrdinaryRole>>>;
+  readonly extractedCases: number;
+} {
+  const records = extractLv01OrdinaryRecords({
+    parentDocs: input.parentDocs,
+    schedule: input.schedule,
+    inventory: input.inventory,
+  });
+  const byRole: Partial<Record<'baby-a' | 'baby-b', Lv01ComposedOrdinaryRole>> = {};
+  for (const role of ['baby-a', 'baby-b'] as const) {
+    const rows = records.filter((row) => row.receiverRole === role);
+    if (rows.length === 0) continue;
+    const folds = partitionLv01OrdinaryRowsBySchedule(rows, input.schedule);
+    const { provider, receipt } = wireLv01CollectionOrdinary({
+      inventory: input.inventory,
+      training: folds.training,
+      validationFit: folds.validationFit,
+      validationSelection: folds.validationSelection,
+    });
+    byRole[role] = { provider, receipt };
+  }
+  return { byRole, extractedCases: records.length };
 }
 
 export function wireLv01CollectionOrdinary(input: {
