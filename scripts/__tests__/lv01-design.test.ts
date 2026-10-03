@@ -36,11 +36,44 @@ function fixture(change?: (design: Record<string, unknown>) => void): string {
   return directory;
 }
 
-function run(directory: string) {
-  return spawnSync(process.execPath, [join(root, 'scripts/check-lv01-design.mjs')], {
+function run(directory: string, version?: string) {
+  const args = version === undefined
+    ? [join(root, 'scripts/check-lv01-design.mjs')]
+    : [join(root, 'scripts/check-lv01-design.mjs'), '--version', version];
+  return spawnSync(process.execPath, args, {
     cwd: directory,
     encoding: 'utf8',
   });
+}
+
+const requiredV2 = [
+  ...required,
+  'protocols/lv01-study-design.v2.json',
+  'protocols/lv01-analysis-plan.v2.json',
+  'protocols/lv01-seed-resource-policy.v2.json',
+  'protocols/lv01-prototype-execution-profile.v2.json',
+  'protocols/lv01-direction-amendment.v2.json',
+  'protocols/confirmatory-power-model-amendment.v1.json',
+];
+
+function fixtureV2(change?: (file: string, packet: Record<string, unknown>) => string | void): string {
+  const directory = mkdtempSync(join(tmpdir(), 'ald-lv01-design-'));
+  temporary.push(directory);
+  for (const source of requiredV2) {
+    const target = join(directory, source);
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(join(root, source), target);
+  }
+  if (change !== undefined) {
+    for (const source of ['protocols/lv01-study-design.v2.json', 'protocols/lv01-analysis-plan.v2.json']) {
+      const target = join(directory, source);
+      const packet = JSON.parse(readFileSync(target, 'utf8')) as Record<string, unknown>;
+      if (change(source, packet) === 'edited') {
+        writeFileSync(target, `${JSON.stringify(packet, null, 2)}\n`);
+      }
+    }
+  }
+  return directory;
 }
 
 afterEach(() => { while (temporary.length > 0) rmSync(temporary.pop()!, { recursive: true, force: true }); });
@@ -58,5 +91,35 @@ describe('LV01 design contract', () => {
     const source = join(directory, 'protocols/research-protocol-cards.v1.json');
     writeFileSync(source, `${readFileSync(source, 'utf8')}\n`);
     expect(run(directory).status).not.toBe(0);
+  });
+});
+
+describe('LV01 design contract v2 packets', () => {
+  it('accepts the v2 packets with R03 ordinary-record pins', () => {
+    expect(run(fixtureV2(), '2').status).toBe(0);
+  });
+  it('rejects a tampered delivered-token inventory', () => {
+    const directory = fixtureV2((file, packet) => {
+      if (file !== 'protocols/lv01-study-design.v2.json') return;
+      ((packet.channel as Record<string, unknown>).deliveredTokenInventory as Record<string, unknown>).tokens = ['rogue'];
+      return 'edited';
+    });
+    expect(run(directory, '2').status).not.toBe(0);
+  });
+  it('rejects a dropped window clarification key', () => {
+    const directory = fixtureV2((file, packet) => {
+      if (file !== 'protocols/lv01-analysis-plan.v2.json') return;
+      delete (packet.ordinaryRecordWindow as Record<string, unknown>).emptyFoldRule;
+      return 'edited';
+    });
+    expect(run(directory, '2').status).not.toBe(0);
+  });
+  it('rejects an unresolvable inventory ref', () => {
+    const directory = fixtureV2((file, packet) => {
+      if (file !== 'protocols/lv01-analysis-plan.v2.json') return;
+      (packet.ordinaryRecordWindow as Record<string, unknown>).deliveredTokenInventoryRef = 'study-design.channel.missing';
+      return 'edited';
+    });
+    expect(run(directory, '2').status).not.toBe(0);
   });
 });

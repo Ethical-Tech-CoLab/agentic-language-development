@@ -202,6 +202,37 @@ if (version === '1') {
   // Development-on-test disposition (R04 F-R04-1 B1): must predate runs.
   assert.match(policy.stages.development.testExposureDisposition, /no test-content-driven changes/);
   assert.match(policy.stages.development.testExposureDisposition, /costs and measurement only/);
+  // R03 ordinary-record packet pins (mapping v1 §6 + v1.1 §6 follow-up):
+  // delivered-token inventory object plus the three window clarifications.
+  // Nested additions: top-level key lists above are unaffected. The pins,
+  // the protocol bytes, and the manuscript digests change together.
+  assert.equal(design.channel.deliveredTokenInventory.source, 'SPEC §9.1 default');
+  assert.equal(design.channel.deliveredTokenInventory.constructor, 'fixedTokenInventory(32)');
+  assert.deepEqual(design.channel.deliveredTokenInventory.tokens, [
+    'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10',
+    'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18', 'S19', 'S20',
+    'S21', 'S22', 'S23', 'S24', 'S25', 'S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32',
+  ]);
+  assert.equal(design.channel.deliveredTokenInventory.tokens.length, design.channel.inventorySize);
+  assert.deepEqual(Object.keys(design.channel).sort(), ['capacityClaimBoundary', 'carrier', 'deliveredTokenInventory', 'inventorySize', 'marksPerMessage', 'maximumCapacityBits']);
+  assert.equal(
+    analysis.ordinaryRecordWindow.deliveryFactScope,
+    'Delivery/action facts observed via intention.recorded + outcome agreement are the ordinary record\'s own fields, not forbidden ledger content.',
+  );
+  assert.equal(analysis.ordinaryRecordWindow.deliveredTokenInventoryRef, 'study-design.channel.deliveredTokenInventory');
+  assert.equal(analysis.ordinaryRecordWindow.emptyFoldRule, 'Empty folds fail closed; no silent drop.');
+  assert.deepEqual(Object.keys(analysis.ordinaryRecordWindow).sort(), [
+    'deliveredTokenInventoryRef', 'deliveryFactScope', 'emptyFoldRule',
+    'forbidden', 'majorityReconciliation', 'refit', 'selection',
+    'trainingCasesPerReceiverRole', 'validationFitCasesPerReceiverRole', 'validationSelectionCasesPerReceiverRole',
+  ]);
+  const inventoryRefParts = analysis.ordinaryRecordWindow.deliveredTokenInventoryRef.split('.');
+  assert.equal(inventoryRefParts[0], 'study-design');
+  let inventoryRefTarget = design;
+  for (const part of inventoryRefParts.slice(1)) {
+    inventoryRefTarget = inventoryRefTarget?.[part];
+  }
+  assert.ok(inventoryRefTarget !== undefined && inventoryRefTarget !== null, 'deliveredTokenInventoryRef resolves against the design packet');
 }
 assert.equal(cards.cards.some((card) => card.id === 'LV01'), false, 'LV01 cannot rewrite the original portfolio');
 assert.equal(analysis.family.familywiseAlpha, 0.05);

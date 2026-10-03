@@ -42,7 +42,10 @@
     "selection": "lowest realized multiclass Brier on validation-selection; tie tolerance 1e-12 and predictor list order",
     "refit": "chosen model refits using training, validation-fit and validation-selection records before test prediction",
     "majorityReconciliation": "The validation-majority baseline follows the same rule: fit and selection on declared folds, final refit on all permitted training plus validation observations.",
-    "forbidden": ["ledger events", "policy bytes", "hidden state", "action PRNG", "future test data", "true test target"]
+    "forbidden": ["ledger events", "policy bytes", "hidden state", "action PRNG", "future test data", "true test target"],
+    "deliveryFactScope": "Delivery/action facts observed via intention.recorded + outcome agreement are the ordinary record's own fields, not forbidden ledger content.",
+    "deliveredTokenInventoryRef": "study-design.channel.deliveredTokenInventory",
+    "emptyFoldRule": "Empty folds fail closed; no silent drop."
   },
   "score": {
     "name": "multiclass-brier/v1",
