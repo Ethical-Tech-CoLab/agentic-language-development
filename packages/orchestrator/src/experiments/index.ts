@@ -213,6 +213,9 @@ export {
   type Lv01OrdinaryWiringReceipt,
 } from './lv01-ordinary-wiring.js';
 export {
+  extractLv01OrdinaryRecords,
+} from './lv01-ordinary-loader.js';
+export {
   LV01_PARENT_TRAINING_SEEDS_DOMAIN,
   trainLv01SlotParent,
   type Lv01SlotParentSeeds,

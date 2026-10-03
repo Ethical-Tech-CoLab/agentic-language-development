@@ -129,7 +129,7 @@ function typedInterventions(docs: Lv01BundleDocs): TypedIntervention[] {
   });
 }
 
-function typedTurns(docs: Lv01BundleDocs): Record<string, unknown>[] {
+export function typedTurns(docs: Lv01BundleDocs): Record<string, unknown>[] {
   return docs.turns.map((entry, index) => {
     const parsed = TurnRecordSchema.safeParse(entry);
     if (!parsed.success) fail(`turn-records.jsonl line ${index + 1} is invalid: ${parsed.error.issues[0]?.message ?? 'unknown'}`);
@@ -137,7 +137,7 @@ function typedTurns(docs: Lv01BundleDocs): Record<string, unknown>[] {
   });
 }
 
-function typedLedger(events: readonly unknown[], file: string): LedgerEvent[] {
+export function typedLedger(events: readonly unknown[], file: string): LedgerEvent[] {
   return events.map((entry, index) => {
     const parsed = LedgerEventSchema.safeParse(entry);
     if (!parsed.success) fail(`${file} line ${index + 1} is invalid: ${parsed.error.issues[0]?.message ?? 'unknown'}`);
