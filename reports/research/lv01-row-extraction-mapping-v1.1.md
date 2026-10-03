@@ -5,6 +5,12 @@ Tracked mirror of `plans/drafts/lv01-row-extraction-mapping-v1.1.md`
 Canonical working copy remains `plans/drafts/`; read together with the
 v1 mirror. Single-turn behavior identical under v1 and v1.1.
 
+Correction 2026-10-03 (operator-caught, mirrors `plans/drafts/`): the
+original C3(b) falsely stated the builder asserts no cross-partition
+uniqueness. It DOES (`lv01-schedule.ts:127-131`, both stateHash and
+caseId). C3(b) WITHDRAWN; C3(a) stands, narrowed to malformed
+caller-supplied schedules.
+
 ## C1. Per-episode-turn intention matching (refines v1 Q1 "turn-0")
 
 The intention record is matched at `event.turn === turn.turn` per episode
@@ -23,11 +29,11 @@ duplicate scenario hashes within the ordinary partitions (fail closed).
 
 ## C3. Recommendation (non-blocking hardening)
 
-Remove the C2 trust assumption at both ends: (a) loader-side explicit
+Narrow the C2 trust assumption (loader end): (a) loader-side explicit
 test-partition membership pre-check — reject any turn whose hash appears
 in a within-support-test case with a distinct test-episode error (today
 such turns fail as "unlisted", which is correct but conflated); (b)
-builder-side cross-partition uniqueness assertion in `buildLv01Schedule`.
+builder-side assertion: WITHDRAWN 2026-10-03 — already asserted (`lv01-schedule.ts:127-131`); guards malformed supplied schedules only.
 
 ## Evidence index
 
