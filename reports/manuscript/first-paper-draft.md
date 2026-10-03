@@ -103,9 +103,9 @@ conflict with this prose.
 
 | Packet | Path | SHA-256 |
 |---|---|---|
-| Study design | `protocols/lv01-study-design.v2.json` | `sha256:0259516e998c4fe2a87ec32f59746e56c4fedf32d48183338b98a8dcf7875f99` |
+| Study design | `protocols/lv01-study-design.v2.json` | `sha256:be1fdb3dc8b3571fb9c1a7299ba0c48004d8e2139abe1cc758eb0de854d90b4c` |
 | Analysis plan | `protocols/lv01-analysis-plan.v2.json` | `sha256:c4012a15323b33e039508a01e49451a50958b7d8458868b8fa808fb5dfd1adda` |
-| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:ff4d0ac0f8f8122d917bb7017d12305aeb87b03fc1821218778271c6a9928c58` |
+| Seed/resource policy | `protocols/lv01-seed-resource-policy.v2.json` | `sha256:85564cdc99fcd22aa40a193f27b7f9ea78c0c1b19f4b70961935c203778c8ffb` |
 | Execution profile | `protocols/lv01-prototype-execution-profile.v2.json` | `sha256:26211acef67fe352e3dd4a8672b2ad8f9ced8ed5dd0f10199d8614aa0b1302f1` |
 | Direction amendment | `protocols/lv01-direction-amendment.v2.json` | `sha256:8d661ca1b7ef719f27843d86d0d08dc3009817a440d978678772525b2fea3cd9` |
 
