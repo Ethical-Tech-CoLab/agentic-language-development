@@ -9,6 +9,7 @@ import {
   LV01_ORDINARY_WIRING_FOLDS_DOMAIN,
   composeLv01OrdinaryProvidersFromParent,
   partitionLv01OrdinaryRowsBySchedule,
+  selectLv01OrdinaryProviderForCase,
   wireLv01CollectionOrdinary,
 } from '../../src/experiments/lv01-ordinary-wiring.js';
 import type { Lv01OrdinaryRecord } from '@ald/analysis';
@@ -265,6 +266,29 @@ describe('LV01 ordinary parent composition', () => {
     expect(composed.extractedCases).toBe(3);
     expect(composed.byRole['baby-a']).toBeUndefined();
     expect(composed.byRole['baby-b']!.receipt.receiverRole).toBe('baby-b');
+  });
+
+  it('selects the scheduled case receiver provider and never substitutes roles', () => {
+    const folds: Fold[] = ['training', 'validation-fit', 'validation-selection'];
+    const turns: Record<string, unknown>[] = [];
+    const intentions: Record<string, unknown>[] = [];
+    const cases: { partition: Fold; role: 'baby-a' | 'baby-b'; state: string }[] = [];
+    folds.forEach((partition, index) => {
+      const state = `sha256:${`${index}b`.padEnd(64, '0')}`;
+      const built = episode('baby-b', index, state, inventory[index] as string, 'ref-b');
+      turns.push(built.turn);
+      intentions.push(built.intention);
+      cases.push({ partition, role: 'baby-b', state });
+    });
+    const composed = composeLv01OrdinaryProvidersFromParent({
+      parentDocs: cdocs(turns, [], intentions),
+      schedule: cschedule(cases),
+      inventory: [...inventory],
+    });
+    expect(selectLv01OrdinaryProviderForCase(composed, 'baby-b'))
+      .toBe(composed.byRole['baby-b']!.provider);
+    expect(() => selectLv01OrdinaryProviderForCase(composed, 'baby-a'))
+      .toThrow(/no composed ordinary provider for baby-a/u);
   });
 
   it('propagates fail-closed when a role leaves a fold empty', () => {

@@ -210,6 +210,7 @@ export {
   LV01_ORDINARY_WIRING_FOLDS_DOMAIN,
   composeLv01OrdinaryProvidersFromParent,
   partitionLv01OrdinaryRowsBySchedule,
+  selectLv01OrdinaryProviderForCase,
   wireLv01CollectionOrdinary,
   type Lv01ComposedOrdinaryRole,
   type Lv01OrdinaryWiringReceipt,

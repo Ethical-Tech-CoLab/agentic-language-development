@@ -122,6 +122,23 @@ export function composeLv01OrdinaryProvidersFromParent(input: {
   return { byRole, extractedCases: records.length };
 }
 
+/**
+ * Bind a scheduled case to its receiver-role provider from a composed
+ * parent-evidence set. Collection serves one case with one receiver, so
+ * exactly that role's fitted provider flows in; a missing role fails
+ * closed rather than substituting the other role's fit.
+ */
+export function selectLv01OrdinaryProviderForCase(
+  composed: { readonly byRole: Partial<Readonly<Record<'baby-a' | 'baby-b', Lv01ComposedOrdinaryRole>>> },
+  receiverRole: 'baby-a' | 'baby-b',
+): Lv01PairedPredictionProvider {
+  const entry = composed.byRole[receiverRole];
+  if (entry === undefined) {
+    throw new Error(`LV01 ordinary wiring: no composed ordinary provider for ${receiverRole}`);
+  }
+  return entry.provider;
+}
+
 export function wireLv01CollectionOrdinary(input: {
   readonly inventory: readonly string[];
   readonly training: readonly Lv01OrdinaryRecord[];
