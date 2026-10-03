@@ -68,6 +68,23 @@ describe('LV01 scientific case schedule', () => {
     expect(ids.size).toBe(schedule.totalCases);
   });
 
+  it('keeps scenario hashes disjoint across all partitions and roles (C2 join anchor)', () => {
+    const schedule = buildLv01Schedule({ engine: fixtureEngine('lv01-schedule-fixture'), counts: { ...SMALL } });
+    const partitions = ['training', 'validation-fit', 'validation-selection', 'within-support-test'] as const;
+    const states = new Set(
+      partitions.flatMap((partition) => schedule.cases[partition].map((entry) => entry.stateHash)),
+    );
+    expect(states.size).toBe(schedule.totalCases);
+    const ordinary = new Set(
+      (['training', 'validation-fit', 'validation-selection'] as const).flatMap(
+        (partition) => schedule.cases[partition].map((entry) => entry.stateHash),
+      ),
+    );
+    for (const entry of schedule.cases['within-support-test']) {
+      expect(ordinary.has(entry.stateHash)).toBe(false);
+    }
+  });
+
   it('commits deterministically and separates run seeds', () => {
     const first = buildLv01Schedule({ engine: fixtureEngine('lv01-schedule-fixture'), counts: { ...SMALL } });
     const rebuilt = buildLv01Schedule({ engine: fixtureEngine('lv01-schedule-fixture'), counts: { ...SMALL } });
