@@ -169,6 +169,11 @@ if (version === '1') {
   assert.deepEqual(profile.runtime.roleInputs.receiver.forbidden, profile.runtime.forbiddenInputs);
   assert.ok(design.observationSchemas.senderAllowed.includes('private referent cue (own target flag)'));
   assert.match(design.observationSchemas.roleReading, /receiver rows/);
+  // P6 contract-subkey amendment: design per-role subkeys mirror the
+  // profile runtime table exactly. Pins, bytes, digests change together.
+  assert.deepEqual(design.observationSchemas.sender, profile.runtime.roleInputs.sender);
+  assert.deepEqual(design.observationSchemas.receiver, profile.runtime.roleInputs.receiver);
+  assert.deepEqual(Object.keys(design.observationSchemas).sort(), ['agentAllowed', 'agentForbidden', 'claimBoundary', 'predictorForbidden', 'receiver', 'roleReading', 'sender', 'senderAllowed']);
   assert.ok(profile.retention.snapshots.includes('every 64 training episodes'));
   assert.ok(profile.preActionCommitment.payload.includes('full probability vectors for native, ordinary-record and replay predictors'));
   assert.match(profile.preActionCommitment.persistence, /Hashing the inputs alone is insufficient/u);
@@ -196,6 +201,10 @@ if (version === '1') {
   // registered form; pins, bytes, and manuscript digests change together.
   assert.match(policy.derivation.roleStreamSeparation, /hex followed by role/);
   assert.match(policy.derivation.roleStreamSeparation, /injective/);
+  // P6 seed-policy registration: exact suffix vocabulary consumed by the
+  // hex||role construction (BabyRole codes, not partValues.roles).
+  assert.deepEqual(policy.derivation.roleStreamRoleCodes, ['baby-a', 'baby-b']);
+  assert.deepEqual(Object.keys(policy.derivation).sort(), ['algorithm', 'partValues', 'partitionSubdomains', 'parts', 'prohibited', 'roleStreamRoleCodes', 'roleStreamSeparation', 'rule', 'sharedPairing']);
   // Draw-scope partition subdomain registration (R04 F-R04-1).
   assert.match(policy.derivation.partitionSubdomains, /seed-domain labels/);
   assert.match(policy.derivation.partitionSubdomains, /within-support-test/);

@@ -65,7 +65,7 @@ function fixtureV2(change?: (file: string, packet: Record<string, unknown>) => s
     copyFileSync(join(root, source), target);
   }
   if (change !== undefined) {
-    for (const source of ['protocols/lv01-study-design.v2.json', 'protocols/lv01-analysis-plan.v2.json']) {
+    for (const source of ['protocols/lv01-study-design.v2.json', 'protocols/lv01-analysis-plan.v2.json', 'protocols/lv01-seed-resource-policy.v2.json']) {
       const target = join(directory, source);
       const packet = JSON.parse(readFileSync(target, 'utf8')) as Record<string, unknown>;
       if (change(source, packet) === 'edited') {
@@ -118,6 +118,25 @@ describe('LV01 design contract v2 packets', () => {
     const directory = fixtureV2((file, packet) => {
       if (file !== 'protocols/lv01-analysis-plan.v2.json') return;
       (packet.ordinaryRecordWindow as Record<string, unknown>).deliveredTokenInventoryRef = 'study-design.channel.missing';
+      return 'edited';
+    });
+    expect(run(directory, '2').status).not.toBe(0);
+  });
+  it('accepts the v2 packets with P6 subkey and role-code pins', () => {
+    expect(run(fixtureV2(), '2').status).toBe(0);
+  });
+  it('rejects a tampered sender subkey', () => {
+    const directory = fixtureV2((file, packet) => {
+      if (file !== 'protocols/lv01-study-design.v2.json') return;
+      ((packet.observationSchemas as Record<string, Record<string, unknown>>).sender.forbidden as unknown[]).push('true scenario target');
+      return 'edited';
+    });
+    expect(run(directory, '2').status).not.toBe(0);
+  });
+  it('rejects tampered role-stream role codes', () => {
+    const directory = fixtureV2((file, packet) => {
+      if (file !== 'protocols/lv01-seed-resource-policy.v2.json') return;
+      (packet.derivation as Record<string, unknown>).roleStreamRoleCodes = ['baby-a', 'rogue'];
       return 'edited';
     });
     expect(run(directory, '2').status).not.toBe(0);
