@@ -166,6 +166,52 @@ describe('LV01 ordinary loader', () => {
       .toThrow(/serves case training:baby-b:0000 twice/u);
   });
 
+  it('rejects within-support-test episodes with the distinct v1.1 C3a error', () => {
+    const base = schedule();
+    const withTest: Lv01Schedule = {
+      ...base,
+      cases: {
+        ...base.cases,
+        'within-support-test': [{
+          caseId: 'within-support-test:baby-b:0000',
+          partition: 'within-support-test',
+          caseIndex: 0,
+          receiverRole: 'baby-b',
+          targetTypeCode: 1,
+          candidateTypeCodes: [1, 2, 3, 4],
+          candidateRefs: ['ref-a', 'ref-b', 'ref-c', 'ref-d'],
+          stateHash: hash('e'),
+        }],
+      },
+    };
+    const test = docs({ turns: [turn({ scenarioStateHash: hash('e') })] });
+    expect(() => extractLv01OrdinaryRecords({ parentDocs: test, schedule: withTest, inventory: [...inventory] }))
+      .toThrow(/within-support-test scenario .* test episodes are never ordinary/u);
+  });
+
+  it('still rejects a test turn when a malformed schedule shares its hash with ordinary', () => {
+    const base = schedule();
+    const collision: Lv01Schedule = {
+      ...base,
+      cases: {
+        ...base.cases,
+        'within-support-test': [{
+          caseId: 'within-support-test:baby-b:0000',
+          partition: 'within-support-test',
+          caseIndex: 0,
+          receiverRole: 'baby-b',
+          targetTypeCode: 1,
+          candidateTypeCodes: [1, 2, 3, 4],
+          candidateRefs: ['ref-a', 'ref-b', 'ref-c', 'ref-d'],
+          stateHash: hash('a'),
+        }],
+      },
+    };
+    const test = docs({ turns: [turn({ scenarioStateHash: hash('a') })] });
+    expect(() => extractLv01OrdinaryRecords({ parentDocs: test, schedule: collision, inventory: [...inventory] }))
+      .toThrow(/within-support-test scenario .* test episodes are never ordinary/u);
+  });
+
   it('fails closed on missing, duplicated, or delivery-less intention records', () => {
     const base = docs({ turns: [turn({})] });
     expect(() => extractLv01OrdinaryRecords({ parentDocs: { ...base, ledgerB: [] }, schedule: schedule(), inventory: [...inventory] }))

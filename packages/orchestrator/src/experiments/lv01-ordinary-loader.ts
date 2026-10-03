@@ -4,10 +4,11 @@
  * Pure: parent bundle documents plus the committed schedule and the frozen
  * token inventory in, ordinary records out. Implements HANDYM's
  * row-extraction mapping v1 (plans/drafts/lv01-row-extraction-mapping.v1.md,
- * Q1-Q5): one record per executed scheduled case in the training/validation
- * partitions, delivery/action facts from the turn's intention record plus
- * outcome agreement, candidate codes from the joined scheduled case, counts
- * bound to schedule membership, per-role fits downstream.
+ * Q1-Q5) plus the v1.1 C3a distinct test-episode rejection: one record per
+ * executed scheduled case in the training/validation partitions,
+ * delivery/action facts from the turn's intention record plus outcome
+ * agreement, candidate codes from the joined scheduled case, counts bound
+ * to schedule membership, per-role fits downstream.
  *
  * The evidence-to-schedule join rides the codebase's established key: the
  * turn's served scenarioStateHash against the scheduled case's unique
@@ -49,6 +50,9 @@ export function extractLv01OrdinaryRecords(input: {
       home.set(entry.stateHash, entry);
     }
   }
+  // Mapping v1.1 C3a: test-partition episodes get their own rejection so a
+  // test turn never hides inside the generic unlisted-episode error.
+  const testHashes = new Set(input.schedule.cases['within-support-test'].map((entry) => entry.stateHash));
   const turns = typedTurns(input.parentDocs);
   if (turns.length === 0) fail('parent bundle carries no turn records');
   const ledgerA = typedLedger(input.parentDocs.ledgerA, 'baby-a-ledger.jsonl');
@@ -58,6 +62,10 @@ export function extractLv01OrdinaryRecords(input: {
   for (const turn of turns) {
     const scenarioStateHash = turn['scenarioStateHash'];
     if (typeof scenarioStateHash !== 'string') fail('turn record carries no scenario state hash');
+    // Test membership is checked BEFORE the ordinary lookup: a malformed
+    // supplied schedule sharing one hash between test and ordinary must
+    // still reject the test turn, never classify it as fit (v1.1 C3a).
+    if (testHashes.has(scenarioStateHash)) fail(`turn served within-support-test scenario ${scenarioStateHash}; test episodes are never ordinary`);
     const scheduled = home.get(scenarioStateHash);
     if (scheduled === undefined) {
       fail(`turn served scenario ${scenarioStateHash} outside the training/validation schedule`);
