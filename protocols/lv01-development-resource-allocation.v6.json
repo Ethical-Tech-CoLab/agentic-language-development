@@ -2,7 +2,7 @@
   "schemaVersion": 1, "studyId": "LV01", "classification": "prospective-development-only-allocation", "status": "design-locked-not-executed", "researchFinding": false, "scientificDisposition": "not-tested", "externalSpend": 0, "publicChainTransaction": false,
   "sourceFreeze": { "commit": "bcba275", "tree": "63ada4c39cef17107127563087f53221674fa174", "version": "0.1.331", "artifacts": [
     {"path":"package.json","sha256":"sha256:3a1325301a146bf92c66f421478b8a611c7426c800ffaa0d50cb2526854e4d21"},
-    {"path":"protocols/lv01-study-design.v1.json","sha256":"sha256:a91e1f54d80c0a909316adbb7eafac411cbabd07a8e0a1e517dba64cbda3b959"},
+    {"path":"protocols/lv01-study-design.v1.json","sha256":"sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
     {"path":"protocols/lv01-analysis-plan.v1.json","sha256":"sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
     {"path":"protocols/lv01-seed-resource-policy.v1.json","sha256":"sha256:a6787881c7af37a6257f6e67f66408b565a0e4b01ea682bbac1427f1469b2dec"},
     {"path":"deploy/mode-r/docker-compose.application.v1.yml","sha256":"sha256:fb49dc379b5b70b7ad233de427dfb00071e3fbe6287d2ee44b6eb40b6868085f"},
