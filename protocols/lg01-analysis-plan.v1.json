@@ -70,9 +70,9 @@
   },
   "sourcePolicies": [
     {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
-    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
-    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
-    {"path": "protocols/lv01-analysis-plan.v2.json", "sha256": "sha256:87be303e23b5dee518ef7c9742701475556b33ed8cef91dd18863eb2965c8df2"}
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"},
+    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"},
+    {"path": "protocols/lv01-analysis-plan.v2.json", "sha256": "sha256:162afcc65eccb926bf0c10c11f1033328860b50ecd1d27291a11ea4761deaaf9"}
   ],
   "claimBoundary": "This is a fixed deferred draft analysis plan, not a pilot result, selected N, resource authorization or finding."
 }

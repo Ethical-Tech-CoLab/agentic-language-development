@@ -93,8 +93,8 @@
   "sourcePolicies": [
     {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
     {"path": "protocols/scenario-split-and-model-comparison.v1.json", "sha256": "sha256:cfac41d3307319f60465c7e2ff05c9fb7b389b6347996b6baf99e20e50ba2671"},
-    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"},
-    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"},
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"},
     {"path": "protocols/seed-and-resource-allocation.v1.json", "sha256": "sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
   ],
   "claimBoundary": "This outcome-blind design is not a registration, qualification, resource allocation, pilot, confirmatory result, replication, independent review, submission or publication."
