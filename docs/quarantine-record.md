@@ -56,16 +56,22 @@ fails closed on mismatch.
 4. Remove the skip branch: the `exitIfQuarantined` import + call in the
    `scripts/check-*.mjs` consumer (5 script-side), or the
    `quarantineSkipLine` import + `if (skip !== null)` block in the test
-   file (2 vitest-side).
+   file (2 vitest-side). Also trim the now-unused probe-only imports/locals
+   in the same commit (`existsSync` in the check script; `existsSync`/`join`
+   or `packet`/`commitPresent` in the vitest-side test).
 5. Update `scripts/__tests__/quarantine.test.ts` in the SAME commit:
    drop the name from `MARKERS`, drop its row from `QUARANTINED_SCRIPTS`
    (script-side) or its wiring assertion (vitest-side).
 6. Re-run the step-2 command plus
    `./node_modules/.bin/vitest run scripts/__tests__/quarantine.test.ts`;
    both must pass with no `QUARANTINED <name>` line.
-7. Update this record: decrement the Active count above and drop the
-   quarantine's table row. No BACKLOG edit is needed (thematic neighbours
-   are informational only — no box was noted or unchecked).
+7. Update this record: decrement the Active count above, update the "exact
+   set of N markers" count in the Mechanism paragraph, and drop the
+   quarantine's table row. Also update the pinned count in the
+   `scripts/__tests__/quarantine.test.ts` test title and the "Active
+   deviation" count in `docs/test-reliability-policy.md`. No BACKLOG edit
+   is needed (thematic neighbours are informational only — no box was
+   noted or unchecked).
 
 ## Relation to the test-reliability policy
 

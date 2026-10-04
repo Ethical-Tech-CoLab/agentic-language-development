@@ -62,6 +62,15 @@ node scripts/anchor-public-submit.mjs --broadcast --network base-sepolia \
 4. Link the receipt and explorer URL from `BACKLOG.md` ALD-020 and the
 conformance matrix, then check the box.
 
+Receipt shape can be checked dry (no network) before the live run:
+
+```sh
+node -e "import('./scripts/anchor-faucet-watch.mjs').then(m => console.log(JSON.stringify(m.readAndAssertReceipt(process.argv[1]))))" /tmp/ald020-receipt.json
+```
+
+It refuses wrong networks, wrong chain ids, and explorer URLs that merely
+contain (rather than start with) `https://sepolia.basescan.org/tx/0x`.
+
 If a broadcast run is interrupted after printing the transaction hash, check
 the explorer before re-running: a fresh process signs at a fresh nonce and
 would pay for a second transaction for the same checkpoint.

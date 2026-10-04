@@ -26,6 +26,9 @@ Do these steps in order, as an administrator of
 
 1. Approve the held workflow on the open pull request (PR #2):
    open the PR → Checks → the `action_required` run → "Approve and run".
+   Approve the currently-held run for the latest PR head — run IDs recorded
+   in docs/hosted-ci-evidence.md lag new pushes (latest recorded run is for
+   a90728a; HEAD has since moved to facdf14).
    Both jobs must execute; if either fails, fix the branch and re-run until
    both are green. This registers the `consolidated-suite` and `mode-r`
    check names on the upstream repository.
@@ -40,7 +43,10 @@ Do these steps in order, as an administrator of
 3. Prove blocking works: open or update any pull request against `main`
    (a no-op commit suffices), confirm the PR shows the two checks as
    pending/required and that merge is blocked until both pass, then let
-   the suite finish and confirm merge unblocks.
+   the suite finish and confirm merge unblocks. If upstream requires
+   approval for every fork-PR run (not just first-time contributors), the
+   demonstration push also lands `action_required`: approve that run first,
+   then confirm pending/required → blocked → green → unblocked.
 4. Record the evidence: run ID(s) from step 1, a screenshot or API capture
    showing the required checks on `main`, and the blocking demonstration
    from step 3. Append a dated paragraph to `docs/hosted-ci-evidence.md`
@@ -64,6 +70,10 @@ Verification without credentials (anyone can re-run these):
 ```sh
 curl -s https://api.github.com/repos/Ethical-Tech-CoLab/agentic-language-development/branches/main \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['protected'])"
+# Rate-limit-safe fallback (prints the limit payload instead of KeyError-ing
+# past 60 req/h):
+curl -s https://api.github.com/repos/Ethical-Tech-CoLab/agentic-language-development/branches/main \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('protected', d))"
 curl -s https://api.github.com/repos/Ethical-Tech-CoLab/agentic-language-development/rulesets
 ```
 
