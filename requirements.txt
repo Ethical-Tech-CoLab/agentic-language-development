@@ -1,0 +1,7 @@
+# Pinned runtime for the independent-statistics sidecar (scripts/*.py ports of
+# the former base-R scripts). Installed into the repo-local .venv via:
+#   uv venv --python 3.13
+#   uv pip install --python .venv/bin/python -r requirements.txt
+# Python floor: 3.13 (matches CI setup-uv). Pinned 2026-10-04.
+numpy==2.5.3
+scipy==1.18.1

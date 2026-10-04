@@ -61,3 +61,13 @@ The encrypted value must authorize each exact study run id. The qualification
 command can run without credentials using ephemeral in-memory signers, but that
 path is explicitly non-confirmatory. Simulated funding removes the wallet/RPC
 dependency; it does not remove the persistent per-run signer or registration gates.
+
+## Toolchain Law (permanent user order, 2026-10-04)
+
+- NEVER install anything via Homebrew on this machine (old installation, no
+  bottles; R was attempted and abandoned for this reason).
+- System packages go through MacPorts ONLY (`port`).
+- Python goes through uv ONLY (`~/.local/bin/uv`, already installed; do NOT
+  reinstall it via MacPorts). Project environments live in the repo `.venv`.
+- The independent-statistics sidecar is Python/scipy (port of the former base-R
+  scripts); R/Rscript must not be reintroduced to code, docs, or CI.
