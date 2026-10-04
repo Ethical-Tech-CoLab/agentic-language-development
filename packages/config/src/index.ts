@@ -67,7 +67,7 @@ export function loadRuntimeEnvironment(
   ]) {
     if (source[forbidden] !== undefined) {
       throw new Error(
-        `${forbidden} is a direct secret value; use si fort --mode files`,
+        `${forbidden} is a direct secret value; use fort run --mode files`,
       );
     }
   }

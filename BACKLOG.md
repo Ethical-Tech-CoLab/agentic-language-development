@@ -1174,7 +1174,7 @@ These resolve details the source documents name but do not fix. Each is implemen
 - **Run configuration.** Optional `evaluationTurns` (runtime default 200) fixes the evaluation-phase budget; `symbolInventorySize`/`maxSymbolsPerMessage` are valid only for `fixed-token` and `maxStrokes` only for `generative-canvas`.
 - **Learner contracts.** Files carry a `<!-- contract: <track> version: <n> -->` header exempt from the banned-pattern lint; `promptBundleHash` is the canonical hash of `{ track: text }`.
 - **Signer boundary.** Public-study per-run seeds are encrypted in `safe` and
-  materialized only through `si fort` files mode. The Nursery accepts a mode-0600
+  materialized only through `fort` files mode. The Nursery accepts a mode-0600
   regular file with an exact run-id map and never mounts it into either learner;
   runId grammar remains `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`.
 - **Twin routes (Mode P).** Roles arrive as `x-ald-role` + `x-ald-service-token`; default dev tokens `dev-<role>` exist only for prototype mode. `POST /reset` returns 501 until the runtime exposes adapter re-initialization. `GET /runs` is added as a read-only convenience implied by the session routes.

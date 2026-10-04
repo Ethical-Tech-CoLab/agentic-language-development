@@ -343,7 +343,7 @@ prospective amendment and allocation.
   The [journal-bearing reference receipt](reports/research/mode-r-journal-reference-audit-receipt.json)
   separately checks a later clean-source four-track replay and the paired
   hash-only write intents; it also leaves B12 open. Persistent study signers are
-  accepted only from `si fort` files-mode materialization mounted into the Nursery;
+  accepted only from `fort` files-mode materialization mounted into the Nursery;
   neither learner receives that mount or its path.
   The [prospective authority graph](protocols/mode-r-authority-graph.v1.json)
   and its [v2 writer-capability amendment](protocols/mode-r-authority-graph.v2.json)

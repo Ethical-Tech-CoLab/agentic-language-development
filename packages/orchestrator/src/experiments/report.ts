@@ -229,7 +229,7 @@ function renderE11Section(e11: E11Result): string {
       'therefore no E00-E03 qualification in EXPERIMENT-NOTEBOOK.md\'s sense.',
     '',
     '**Next steps:** authorize a Base Sepolia wallet and RPC credential through ' +
-      '`si fort` file materialization, register the protocol, then run in Mode R.',
+      '`fort run` file materialization, register the protocol, then run in Mode R.',
   ];
   return lines.join('\n');
 }

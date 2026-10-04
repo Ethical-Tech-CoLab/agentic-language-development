@@ -480,7 +480,7 @@ envelope in the matching encrypted `safe` environment, then let Fort materialize
 it for only the Nursery service:
 
 ```sh
-si fort run --repo agentic-language-development --env dev \
+fort --host https://fort.aureuma.ai run --repo agentic-language-development --env dev \
   --keys ALD_RUN_SIGNER_SEEDS_JSON --mode files -- \
   pnpm run test:mode-r-study
 ```

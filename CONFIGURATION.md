@@ -1,7 +1,7 @@
 # Configuration
 
 Runtime configuration is loaded through `@ald/config`. Environment variables contain
-only non-secret operational values or short-lived file paths materialized by `si fort`.
+only non-secret operational values or short-lived file paths materialized by `fort`.
 Private key material, signer seeds, RPC credentials, and API tokens must never be
 stored directly in environment variables or repository files.
 
@@ -25,7 +25,7 @@ stored directly in environment variables or repository files.
 ## Secret Handling
 
 - Store all secret values only in the encrypted `safe` repository and access them
-  through `si fort`; do not create ad-hoc secret files.
+  through `fort`; do not create ad-hoc secret files.
 - Do not commit `.env` files. The repository ignores `.env` and `.env.*`.
 - The approved research `RunConfig` defaults to `anchorClass: "simulated"` and uses
   no wallet, RPC credential, faucet, token, or fee.
@@ -52,7 +52,7 @@ pnpm run build
 Research-grade Mode R uses Fort file materialization:
 
 ```sh
-si fort run --repo agentic-language-development --env dev \
+fort --host https://fort.aureuma.ai run --repo agentic-language-development --env dev \
   --keys ALD_RUN_SIGNER_SEEDS_JSON --mode files -- \
   pnpm run test:mode-r-study
 ```

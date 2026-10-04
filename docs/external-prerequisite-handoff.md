@@ -53,7 +53,7 @@ enforcement claims but no longer blocks local synthetic experiments.
 Research-grade signer material is materialized only in files mode:
 
 ```sh
-si fort run --repo agentic-language-development --env dev \
+fort --host https://fort.aureuma.ai run --repo agentic-language-development --env dev \
   --keys ALD_RUN_SIGNER_SEEDS_JSON --mode files -- \
   pnpm run test:mode-r-study
 ```
