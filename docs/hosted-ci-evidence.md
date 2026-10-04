@@ -38,3 +38,10 @@ The exact admin sequence to enable it (approve the PR run first so the
 `consolidated-suite` and `mode-r` check names exist, then require them on `main`,
 then demonstrate blocking) is documented in
 `docs/required-check-enforcement.md`.
+
+The trigger half fired again the same night: pushing `a90728a` to the PR
+branch produced upstream run
+([37178076830](https://github.com/Ethical-Tech-CoLab/agentic-language-development/actions/runs/37178076830)),
+`action_required` with zero jobs started — every proposed change reaches CI,
+and execution still awaits the maintainer approval that step 1 of the
+runbook requires.
