@@ -223,7 +223,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const receipt = {
       schemaVersion: 1,
       classification: 'synthetic-confirmatory-pilot-reduction-software-qualification',
-      capturedAt: '2026-09-20',
+      capturedAt: '2026-10-04',
       passed: true,
       syntheticFixturesOnly: true,
       originalEvidenceVerified: false,
