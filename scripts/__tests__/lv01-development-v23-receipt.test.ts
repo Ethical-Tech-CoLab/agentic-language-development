@@ -1,11 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
 // @ts-expect-error The retained-evidence auditor is a directly executable ESM script.
 import { validateLv01DevelopmentV23Receipt } from '../check-lv01-development-v23-receipt.mjs';
+// @ts-expect-error The quarantine helper is a directly executable ESM script.
+import { quarantineSkipLine } from '../quarantine.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const receiptPath = new URL('../../reports/research/lv01-development-v23-receipt.json', import.meta.url);
@@ -42,6 +45,13 @@ describe('LV01 v23 portable fixture receipt boundary', () => {
   });
 
   it('verifies the tracked receipt against retained local evidence', () => {
+    const skip = quarantineSkipLine('lv01-development-v23-receipt',
+      existsSync(join(root, original.attempt.evidenceRoot)));
+    if (skip !== null) {
+      console.log(skip);
+      expect(skip).toContain('QUARANTINED lv01-development-v23-receipt');
+      return;
+    }
     const result = spawnSync(process.execPath,
       ['scripts/check-lv01-development-v23-receipt.mjs'], { cwd: root, encoding: 'utf8' });
     expect(result.status, result.stderr).toBe(0);

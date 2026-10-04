@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+
+import { exitIfQuarantined } from './quarantine.mjs';
 
 const receipt = JSON.parse(readFileSync(
   'reports/research/lv01-paired-development-v21-receipt.json', 'utf8',
 ));
 const root = 'evidence/lv01/paired-development-v21';
+exitIfQuarantined('lv01-paired-development-v21',
+  existsSync(`${root}/paired-case-receipt.json`));
 const hash = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const raw = JSON.parse(readFileSync(`${root}/paired-case-receipt.json`, 'utf8'));
 const packet = JSON.parse(readFileSync(

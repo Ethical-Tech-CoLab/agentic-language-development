@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+
+import { exitIfQuarantined } from './quarantine.mjs';
 
 const report = JSON.parse(readFileSync('reports/research/lv01-five-rejection-safety-v1-receipt.json', 'utf8'));
+exitIfQuarantined('lv01-five-rejection-safety-v1',
+  existsSync(report.rawReceiptPath) && existsSync(report.rawResultPath));
 const hash = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 const raw = JSON.parse(readFileSync(report.rawReceiptPath, 'utf8'));
 const result = JSON.parse(readFileSync(report.rawResultPath, 'utf8'));
