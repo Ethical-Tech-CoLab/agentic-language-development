@@ -18,6 +18,7 @@
  * public addresses, hashes, and chain data are recorded.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import {
   PUBLIC_ANCHOR_NETWORKS,
@@ -39,8 +40,8 @@ const HELP = `anchor-public-submit.mjs — manual Base anchor submissions (ALD-0
 
   --generate-key --key-file <path>
       Create a new anchor wallet key file (mode 0600, refuses to overwrite).
-      Prints the wallet address only. Fund a Sepolia wallet from a testnet
-      faucet before broadcasting; see docs/anchor-staging.md.
+      Prints { "keyFile", "address" } JSON. Fund a Sepolia wallet from a
+      testnet faucet before broadcasting; see docs/anchor-staging.md.
 
   --dry-run --network <base-sepolia|base-mainnet> --rpc-url-file <path>
       --from <address> --to <address>
@@ -79,7 +80,7 @@ async function loadAnchorOrExplain() {
   }
 }
 
-function readSecretFile(path, label) {
+export function readSecretFile(path, label) {
   let contents;
   try {
     contents = readFileSync(path, 'utf8').trim();
@@ -92,7 +93,7 @@ function readSecretFile(path, label) {
   return contents;
 }
 
-function resolveCheckpointHash(args) {
+export function resolveCheckpointHash(args) {
   if (args.checkpointHash !== null) {
     return { checkpointHash: args.checkpointHash, checkpointManifest: null };
   }
@@ -108,14 +109,14 @@ function resolveCheckpointHash(args) {
   return { checkpointHash: parsed.checkpointHash, checkpointManifest: args.checkpointManifest };
 }
 
-function writeEvidenceOnce(path, value) {
+export function writeEvidenceOnce(path, value) {
   if (existsSync(path)) {
     throw new Error(`Refusing to overwrite existing evidence file ${path}.`);
   }
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
 }
 
-function rpcClient(rpcUrl, label) {
+export function rpcClient(rpcUrl, label) {
   let nextId = 1;
   return async (method, params) => {
     const controller = new AbortController();
@@ -148,7 +149,7 @@ async function runGenerateKey(args) {
   console.log(JSON.stringify({ keyFile: args.keyFile, address: saved.address }, null, 2));
 }
 
-async function runDryRun(args) {
+export async function runDryRun(args) {
   assertNetworkAllowed({ network: args.network, allowMainnet: args.allowMainnet });
   const rpcUrl = readSecretFile(args.rpcUrlFile, 'RPC URL');
   const label = endpointLabelFor(rpcUrl);
@@ -320,9 +321,23 @@ async function main() {
   await runBroadcast(args);
 }
 
-try {
-  await main();
-} catch (error) {
-  console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = error instanceof StagingGateError ? 2 : 1;
+// Importing this module (e.g. from the edge-case tests) must not run the CLI.
+const INVOKED_DIRECTLY = process.argv[1] === fileURLToPath(import.meta.url);
+
+export async function runCli(argv = process.argv.slice(2)) {
+  const savedArgv = process.argv;
+  process.argv = [savedArgv[0], fileURLToPath(import.meta.url), ...argv];
+  try {
+    await main();
+    return 0;
+  } catch (error) {
+    console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
+    return error instanceof StagingGateError ? 2 : 1;
+  } finally {
+    process.argv = savedArgv;
+  }
+}
+
+if (INVOKED_DIRECTLY) {
+  process.exitCode = await runCli();
 }

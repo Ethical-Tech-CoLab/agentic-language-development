@@ -18,7 +18,7 @@
  * carry only public chain data (addresses, hashes, explorer URL).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,6 +31,7 @@ import {
   checkCriterionBox,
   countCriteria,
   decideFunding,
+  endpointLabelFor,
   parseFaucetWatchArgs,
   syncBacklogCount,
   syncSnapshotLine,
@@ -65,7 +66,7 @@ const runGit = (args) => {
   execFileSync('git', args, { cwd: ROOT, stdio: 'inherit' });
 };
 
-function readSecretFile(path, label) {
+export function readSecretFile(path, label) {
   let contents;
   try {
     contents = readFileSync(path, 'utf8').trim();
@@ -78,7 +79,7 @@ function readSecretFile(path, label) {
   return contents;
 }
 
-function resolveCheckpointHash(args) {
+export function resolveCheckpointHash(args) {
   if (args.checkpointHash !== null) return args.checkpointHash;
   let parsed;
   try {
@@ -92,7 +93,7 @@ function resolveCheckpointHash(args) {
   return parsed.checkpointHash;
 }
 
-function rpcClient(rpcUrl, label) {
+export function rpcClient(rpcUrl, label) {
   let nextId = 1;
   return async (method, params) => {
     const controller = new AbortController();
@@ -118,14 +119,9 @@ function rpcClient(rpcUrl, label) {
   };
 }
 
-async function checkOnce(args, checkpointHash, keyAddress) {
+export async function checkOnce(args, checkpointHash, keyAddress) {
   const rpcUrl = readSecretFile(args.rpcUrlFile, 'RPC URL');
-  let host = 'rpc';
-  try {
-    host = new URL(rpcUrl).host;
-  } catch {
-    host = 'rpc';
-  }
+  const host = endpointLabelFor(rpcUrl);
   const call = rpcClient(rpcUrl, host);
   const chainId = Number.parseInt(await call('eth_chainId', []), 16);
   assertSepoliaChainId(chainId);
@@ -167,20 +163,39 @@ function broadcast(args, checkpointHash) {
     '--out', args.receiptOut,
   ];
   execFileSync(process.execPath, submitArgs, { cwd: ROOT, stdio: 'inherit' });
-  const receipt = JSON.parse(readFileSync(args.receiptOut, 'utf8'));
+  return readAndAssertReceipt(args.receiptOut);
+}
+
+/** Read the submitter receipt and refuse anything off the Sepolia path. */
+export function readAndAssertReceipt(receiptOut) {
+  let receipt;
+  try {
+    receipt = JSON.parse(readFileSync(receiptOut, 'utf8'));
+  } catch (cause) {
+    throw new Error(`Could not read broadcast receipt ${receiptOut}.`, { cause });
+  }
   if (receipt.network !== FAUCET_WATCH_NETWORK || receipt.chainId !== PUBLIC_ANCHOR_NETWORKS[FAUCET_WATCH_NETWORK].chainId) {
     throw new Error(`Refusing receipt on unexpected network: ${String(receipt.network)} chain ${String(receipt.chainId)}.`);
   }
-  if (typeof receipt.explorerTxUrl !== 'string' || !receipt.explorerTxUrl.includes('sepolia.basescan.org/tx/0x')) {
+  // Prefix match, not substring: the submitter only ever emits this exact
+  // prefix, and `includes` would accept a spoofed URL with it embedded.
+  if (typeof receipt.explorerTxUrl !== 'string' || !receipt.explorerTxUrl.startsWith('https://sepolia.basescan.org/tx/0x')) {
     throw new Error('Broadcast receipt lacks a valid Sepolia explorer URL.');
   }
   return receipt;
 }
 
-function syncCloseOut(receipt, receiptOut) {
+export function syncCloseOut(receipt, receiptOut) {
   const absoluteReceipt = resolve(ROOT, receiptOut);
   if (!absoluteReceipt.startsWith(`${ROOT}/`)) {
     throw new Error(`--receipt-out must live inside the repository to be committable: ${receiptOut}`);
+  }
+  // Lexical confinement is not enough: a symlink inside the repo could point
+  // outside it. The receipt exists by now (the submitter just wrote it), so
+  // resolve both sides before comparing.
+  const realReceipt = realpathSync(absoluteReceipt);
+  if (!realReceipt.startsWith(`${realpathSync(ROOT)}/`)) {
+    throw new Error(`--receipt-out escapes the repository via symlink: ${receiptOut}`);
   }
   const backlogPath = resolve(ROOT, 'BACKLOG.md');
   const readmePath = resolve(ROOT, 'README.md');
@@ -213,8 +228,8 @@ function syncCloseOut(receipt, receiptOut) {
   return { checked, total };
 }
 
-async function main() {
-  const args = parseFaucetWatchArgs(process.argv.slice(2));
+export async function runWatch(argv) {
+  const args = parseFaucetWatchArgs(argv);
   if (args.help) {
     process.stdout.write(HELP);
     return { acted: false };
@@ -259,9 +274,19 @@ async function main() {
   return { acted: false };
 }
 
-try {
-  await main();
-} catch (error) {
-  console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = error instanceof StagingGateError ? 2 : 1;
+// Importing this module (e.g. from the edge-case tests) must not run the CLI.
+const INVOKED_DIRECTLY = process.argv[1] === fileURLToPath(import.meta.url);
+
+export async function runCli(argv = process.argv.slice(2)) {
+  try {
+    await runWatch(argv);
+    return 0;
+  } catch (error) {
+    console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
+    return error instanceof StagingGateError ? 2 : 1;
+  }
+}
+
+if (INVOKED_DIRECTLY) {
+  process.exitCode = await runCli();
 }

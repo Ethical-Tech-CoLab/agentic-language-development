@@ -6,10 +6,19 @@
  * RPC access, so these tests need no fixtures and touch no network. The live
  * dry-run/broadcast paths in `scripts/anchor-public-submit.mjs` are verified
  * manually against public RPC (read-only) and documented in
- * `docs/anchor-staging.md`.
+ * `docs/anchor-staging.md`; the R7-B edge-case blocks below additionally pin
+ * the offline-testable helpers of both scripts (secret files, manifests,
+ * mocked-RPC clients, receipt checks, close-out confinement, loop bounds, and
+ * the exit-code map) with tmp fixtures and a stubbed `fetch`.
  */
+import { execFileSync } from 'node:child_process';
+import { chmodSync, mkdtempSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { ANCHOR_CHAIN_IDS } from '@ald/anchor';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   MAINNET_ENV_VAR,
@@ -23,11 +32,29 @@ import {
   decideFunding,
   endpointLabelFor,
   explorerTxUrl,
+  parseDecimalWei,
   parseFaucetWatchArgs,
   parsePublicSubmitArgs,
   syncBacklogCount,
   syncSnapshotLine,
 } from '../anchor-staging-gate.mjs';
+import {
+  readSecretFile as readSubmitSecretFile,
+  resolveCheckpointHash as resolveSubmitCheckpointHash,
+  rpcClient as submitRpcClient,
+  runCli as runSubmitCli,
+  runDryRun,
+  writeEvidenceOnce,
+} from '../anchor-public-submit.mjs';
+import {
+  checkOnce,
+  readAndAssertReceipt,
+  readSecretFile as readWatchSecretFile,
+  resolveCheckpointHash as resolveWatchCheckpointHash,
+  runCli as runWatchCli,
+  runWatch,
+  syncCloseOut,
+} from '../anchor-faucet-watch.mjs';
 
 const TX = `0x${'ab'.repeat(32)}`;
 const FROM = `0x${'c1'.repeat(20)}`;
@@ -369,5 +396,537 @@ describe('parseFaucetWatchArgs', () => {
     expect(() => parseFaucetWatchArgs([...base, '--interval-seconds', '0'])).toThrowError(StagingGateError);
     expect(() => parseFaucetWatchArgs([...base, '--watch'])).toThrowError(StagingGateError);
     expect(() => parseFaucetWatchArgs([...base, '--bogus', 'x'])).toThrowError(StagingGateError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R7-B edge cases: strict wei, secrets, mocked RPC, receipts, confinement,
+// loop bounds, and the exit-code map. No live network: `fetch` is stubbed
+// and files live under a fresh tmp dir per test.
+// ---------------------------------------------------------------------------
+
+const WATCH_SCRIPT = fileURLToPath(new URL('../anchor-faucet-watch.mjs', import.meta.url));
+const SUBMIT_SCRIPT = fileURLToPath(new URL('../anchor-public-submit.mjs', import.meta.url));
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
+
+function makeTmp(): string {
+  return mkdtempSync(join(tmpdir(), 'anchor-edge-'));
+}
+
+function writeTmpFile(dir: string, name: string, contents: string, mode = 0o600): string {
+  const path = join(dir, name);
+  writeFileSync(path, contents);
+  chmodSync(path, mode);
+  return path;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+/** Stub `fetch` with per-method JSON-RPC results (or Errors to throw). */
+function stubRpcByMethod(handlers: Record<string, any>): string[] {
+  const calls: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (_url: any, init: any) => {
+    const body = JSON.parse(String(init.body));
+    calls.push(body.method);
+    const handler = handlers[body.method];
+    if (handler instanceof Error) throw handler;
+    if (typeof handler === 'function') return handler(body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ jsonrpc: '2.0', id: body.id, result: handler }),
+    };
+  }));
+  return calls;
+}
+
+describe('parseDecimalWei (strict decimal wei)', () => {
+  it('accepts plain decimals including zero and big values', () => {
+    expect(parseDecimalWei('0')).toBe(0n);
+    expect(parseDecimalWei('271380000000')).toBe(271380000000n);
+  });
+
+  it('rejects hex, floats, padding, signs, and non-strings', () => {
+    for (const bad of ['0x10', '1.5', ' 3', '3 ', '+3', '-1', 'abc', '', '3n']) {
+      expect(() => parseDecimalWei(bad)).toThrowError(StagingGateError);
+    }
+    expect(() => parseDecimalWei(3)).toThrowError(StagingGateError);
+    expect(() => parseDecimalWei(null)).toThrowError(StagingGateError);
+  });
+});
+
+describe('decideFunding edge inputs', () => {
+  it('rejects non-decimal balances (BigInt alone would accept hex/padding)', () => {
+    for (const balanceWei of ['0x10', '1.5', ' 3', '+3', '-1', 'abc']) {
+      expect(() => decideFunding({ balanceWei, requiredWei: '3' })).toThrowError(StagingGateError);
+    }
+  });
+
+  it('rejects non-decimal requirements', () => {
+    for (const requiredWei of ['-1', 'abc', '0x10', '1.5', ' 3']) {
+      expect(() => decideFunding({ balanceWei: '5', requiredWei })).toThrowError(StagingGateError);
+    }
+  });
+
+  it('still funds huge covered balances exactly', () => {
+    const big = '123456789012345678901234567890';
+    expect(decideFunding({ balanceWei: big, requiredWei: big }))
+      .toEqual({ funded: true, shortfallWei: '0' });
+  });
+});
+
+describe('parseFaucetWatchArgs wei and loop bounds', () => {
+  const base = [
+    '--rpc-url-file', 'r', '--key-file', 'k', '--to', TO,
+    '--checkpoint-hash', CHECKPOINT, '--receipt-out', 'o',
+  ];
+
+  it('rejects non-decimal --min-balance-wei', () => {
+    for (const bad of ['0x10', '1.5', ' 3', '-1', 'abc']) {
+      expect(() => parseFaucetWatchArgs([...base, '--min-balance-wei', bad]))
+        .toThrowError(StagingGateError);
+    }
+  });
+
+  it('accepts --watch with --max-checks 2', () => {
+    const args = parseFaucetWatchArgs([...base, '--watch', '--max-checks', '2']);
+    expect(args).toMatchObject({ watch: true, maxChecks: 2 });
+  });
+
+  it('rejects fractional, non-numeric, and unsafe loop settings', () => {
+    for (const flag of ['--max-checks', '--interval-seconds']) {
+      for (const bad of ['1.5', 'abc', '99999999999999999999999', '0', '-2']) {
+        expect(() => parseFaucetWatchArgs([...base, flag, bad])).toThrowError(StagingGateError);
+      }
+    }
+  });
+});
+
+describe('readSecretFile (both scripts)', () => {
+  it.each([
+    ['submit', readSubmitSecretFile],
+    ['watch', readWatchSecretFile],
+  ])('%s trims and rejects empty, blank, and missing files', (_label, readSecret) => {
+    const dir = makeTmp();
+    expect(readSecret(writeTmpFile(dir, 'ok.url', '  https://rpc.example.test\n'), 'RPC URL'))
+      .toBe('https://rpc.example.test');
+    expect(() => readSecret(writeTmpFile(dir, 'empty.url', ''), 'RPC URL')).toThrowError(/empty/);
+    expect(() => readSecret(writeTmpFile(dir, 'blank.url', '  \n'), 'RPC URL')).toThrowError(/empty/);
+    expect(() => readSecret(join(dir, 'missing.url'), 'RPC URL')).toThrowError(/Could not read/);
+  });
+});
+
+describe('resolveCheckpointHash manifests', () => {
+  it('submit: prefers the direct hash, reads valid manifests', () => {
+    const dir = makeTmp();
+    const manifest = writeTmpFile(dir, 'c.json', JSON.stringify({ checkpointHash: CHECKPOINT }));
+    expect(resolveSubmitCheckpointHash({ checkpointHash: CHECKPOINT, checkpointManifest: null }))
+      .toEqual({ checkpointHash: CHECKPOINT, checkpointManifest: null });
+    expect(resolveSubmitCheckpointHash({ checkpointHash: null, checkpointManifest: manifest }))
+      .toEqual({ checkpointHash: CHECKPOINT, checkpointManifest: manifest });
+  });
+
+  it('submit: refuses bad JSON, missing files, and hash-less manifests', () => {
+    const dir = makeTmp();
+    const badJson = writeTmpFile(dir, 'bad.json', '{nope');
+    const noHash = writeTmpFile(dir, 'nohash.json', JSON.stringify({ checkpointHash: '0xdead' }));
+    for (const checkpointManifest of [badJson, join(dir, 'missing.json'), noHash]) {
+      expect(() => resolveSubmitCheckpointHash({ checkpointHash: null, checkpointManifest }))
+        .toThrowError(Error);
+    }
+    expect(() => resolveSubmitCheckpointHash(
+      { checkpointHash: null, checkpointManifest: join(dir, 'no-parent', 'c.json') },
+    )).toThrowError(/Could not read checkpoint manifest/);
+  });
+
+  it('watch: returns the hash string and refuses bad manifests', () => {
+    const dir = makeTmp();
+    const manifest = writeTmpFile(dir, 'c.json', JSON.stringify({ checkpointHash: CHECKPOINT }));
+    expect(resolveWatchCheckpointHash({ checkpointHash: null, checkpointManifest: manifest }))
+      .toBe(CHECKPOINT);
+    expect(() => resolveWatchCheckpointHash(
+      { checkpointHash: null, checkpointManifest: writeTmpFile(dir, 'bad.json', '{nope') },
+    )).toThrowError(Error);
+  });
+});
+
+describe('writeEvidenceOnce', () => {
+  it('writes once and refuses overwrites and missing parent dirs', () => {
+    const dir = makeTmp();
+    const path = join(dir, 'evidence.json');
+    writeEvidenceOnce(path, { a: 1 });
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ a: 1 });
+    expect(() => writeEvidenceOnce(path, { a: 2 })).toThrowError(/Refusing to overwrite/);
+    expect(() => writeEvidenceOnce(join(dir, 'no-parent', 'e.json'), {}))
+      .toThrowError(Error);
+  });
+});
+
+describe('rpcClient faults (mocked fetch)', () => {
+  it('surfaces HTTP failures, JSON-RPC errors, and transport throws as Error', async () => {
+    const call = submitRpcClient('https://rpc.example.test', 'rpc.example.test');
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) })));
+    await expect(call('eth_chainId', [])).rejects.toThrowError(/HTTP 500/);
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true, status: 200, json: async () => ({ error: { message: 'boom' } }),
+    })));
+    await expect(call('eth_chainId', [])).rejects.toThrowError(/boom/);
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('socket hang up'); }));
+    await expect(call('eth_chainId', [])).rejects.toThrowError(/socket hang up/);
+  });
+});
+
+describe('runDryRun with mocked RPC', () => {
+  function dryRunArgs(dir: string): any {
+    return {
+      network: 'base-sepolia',
+      allowMainnet: false,
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://user:pass@rpc.example.test:8545/v2/key?x=1\n'),
+      from: FROM,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out: join(dir, 'dry.json'),
+    };
+  }
+
+  it('records a read-only plan with the host label only (no secrets)', async () => {
+    const dir = makeTmp();
+    const args = dryRunArgs(dir);
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x3b9aca00',
+    });
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await runDryRun(args);
+    expect(log).toHaveBeenCalled();
+    const record = JSON.parse(readFileSync(args.out, 'utf8'));
+    expect(record).toMatchObject({
+      kind: 'anchor-dry-run',
+      broadcast: false,
+      network: 'base-sepolia',
+      chainId: 84532,
+      balanceWei: '0',
+      estimatedGas: '22615',
+      gasPriceWei: '1000000000',
+      rpcEndpointLabel: 'rpc.example.test:8545',
+    });
+    const serialized = JSON.stringify(record);
+    expect(serialized).not.toContain('user:pass');
+    expect(serialized).not.toContain('/v2/key');
+  });
+
+  it('pins gasPriceWei to null when the gas-price call fails', async () => {
+    const dir = makeTmp();
+    const args = dryRunArgs(dir);
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: new Error('gas oracle down'),
+    });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    await runDryRun(args);
+    expect(JSON.parse(readFileSync(args.out, 'utf8')).gasPriceWei).toBeNull();
+  });
+
+  it('refuses chain mismatches, bad chain hex, and bad balance hex', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x1',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(/does not match base-sepolia/);
+    stubRpcByMethod({
+      eth_chainId: '0xZZZ',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(Error);
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0xZZZ',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(Error);
+  });
+});
+
+describe('checkOnce with mocked RPC', () => {
+  function watchArgs(dir: string, extra: Record<string, any> = {}): any {
+    return {
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://user:pass@rpc.example.test/x\n'),
+      to: TO,
+      minBalanceWei: null,
+      ...extra,
+    };
+  }
+
+  it('reports funding state with the host label only', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0xde0b6b3a7640000',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x3b9aca00',
+    });
+    const status = await checkOnce(watchArgs(dir), CHECKPOINT, FROM);
+    expect(status).toMatchObject({
+      funded: true,
+      balanceWei: '1000000000000000000',
+      chainId: 84532,
+      rpcEndpointLabel: 'rpc.example.test',
+    });
+    expect(JSON.stringify(status)).not.toContain('user:pass');
+  });
+
+  it('falls back to a 1-wei requirement when gas data is missing', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: new Error('gas oracle down'),
+    });
+    const status = await checkOnce(watchArgs(dir), CHECKPOINT, FROM);
+    expect(status).toMatchObject({ funded: false, requiredWei: '1', shortfallWei: '1' });
+  });
+
+  it('honours --min-balance-wei over the gas estimate', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+    const status = await checkOnce(watchArgs(dir, { minBalanceWei: '1000' }), CHECKPOINT, FROM);
+    expect(status).toMatchObject({ funded: false, requiredWei: '1000', shortfallWei: '1000' });
+  });
+
+  it('refuses non-Sepolia chains, bad chain hex, and bad balance hex', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x2105',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM))
+      .rejects.toThrowError(StagingGateError);
+    stubRpcByMethod({
+      eth_chainId: '0xZZZ',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(Error);
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: 'not-hex',
+      eth_estimateGas: '0x1',
+      eth_gasPrice: '0x1',
+    });
+    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(Error);
+  });
+});
+
+describe('readAndAssertReceipt', () => {
+  const good = {
+    network: 'base-sepolia',
+    chainId: 84532,
+    explorerTxUrl: `https://sepolia.basescan.org/tx/${TX}`,
+  };
+
+  it('accepts a genuine Sepolia receipt', () => {
+    const dir = makeTmp();
+    const path = writeTmpFile(dir, 'receipt.json', JSON.stringify(good));
+    expect(readAndAssertReceipt(path)).toMatchObject(good);
+  });
+
+  it('refuses wrong networks, wrong chains, and missing explorer URLs', () => {
+    const dir = makeTmp();
+    const variants = [
+      { ...good, network: 'base-mainnet' },
+      { ...good, chainId: 8453 },
+      { ...good, explorerTxUrl: `https://basescan.org/tx/${TX}` },
+      { ...good, explorerTxUrl: null },
+    ];
+    for (const [index, receipt] of variants.entries()) {
+      const path = writeTmpFile(dir, `r${String(index)}.json`, JSON.stringify(receipt));
+      expect(() => readAndAssertReceipt(path)).toThrowError(Error);
+    }
+  });
+
+  it('refuses explorer URLs that merely contain the Sepolia prefix', () => {
+    const dir = makeTmp();
+    const spoofed = writeTmpFile(dir, 'spoof.json', JSON.stringify({
+      ...good,
+      explorerTxUrl: `https://evil.test/?next=https://sepolia.basescan.org/tx/${TX}`,
+    }));
+    expect(() => readAndAssertReceipt(spoofed)).toThrowError(/valid Sepolia explorer URL/);
+  });
+
+  it('refuses malformed JSON and missing files', () => {
+    const dir = makeTmp();
+    const bad = writeTmpFile(dir, 'bad.json', '{nope');
+    expect(() => readAndAssertReceipt(bad)).toThrowError(/Could not read broadcast receipt/);
+    expect(() => readAndAssertReceipt(join(dir, 'missing.json')))
+      .toThrowError(/Could not read broadcast receipt/);
+  });
+});
+
+describe('syncCloseOut confinement (throws before any side effect)', () => {
+  it('refuses absolute outside paths, parent escapes, and the repo root itself', () => {
+    for (const receiptOut of ['/tmp/evil.json', '../evil.json', '.', '..']) {
+      expect(() => syncCloseOut({}, receiptOut)).toThrowError(/inside the repository/);
+    }
+  });
+
+  it('refuses symlink escapes even when the link lives in the repo', () => {
+    const dir = makeTmp();
+    const target = writeTmpFile(dir, 'outside.json', '{}');
+    const link = join(REPO_ROOT, '.r7b-symlink-probe.json');
+    symlinkSync(target, link);
+    try {
+      expect(() => syncCloseOut({}, '.r7b-symlink-probe.json')).toThrowError(/symlink/);
+    } finally {
+      unlinkSync(link);
+    }
+  });
+});
+
+describe('watch loop bounds and exit map', () => {
+  const base = [
+    '--rpc-url-file', 'r', '--key-file', 'k', '--to', TO,
+    '--checkpoint-hash', CHECKPOINT,
+  ];
+
+  function fundedStubs() {
+    return stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0xde0b6b3a7640000',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+  }
+
+  function brokeStubs() {
+    return stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+  }
+
+  /** A curve-valid key file the strict loader accepts (0700 dir, 0600 file). */
+  function keyFile(dir: string): string {
+    return writeTmpFile(dir, 'anchor.key', `${'0x'}${'11'.repeat(32)}\n`);
+  }
+
+  it('single-shot NOT_FUNDED exits 0 without sleeping', async () => {
+    const dir = makeTmp();
+    const calls = brokeStubs();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const receiptOut = join(dir, 'receipt.json');
+    const started = Date.now();
+    const result = await runWatch([
+      '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', keyFile(dir),
+      '--to', TO, '--checkpoint-hash', CHECKPOINT,
+      '--receipt-out', receiptOut, '--interval-seconds', '3600',
+    ]);
+    expect(result).toEqual({ acted: false });
+    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(calls).toHaveLength(4);
+  });
+
+  it('a bounded watch re-checks then gives up cleanly', async () => {
+    const dir = makeTmp();
+    const calls = brokeStubs();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const result = await runWatch([
+      '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', keyFile(dir),
+      '--to', TO, '--checkpoint-hash', CHECKPOINT,
+      '--receipt-out', join(dir, 'receipt.json'),
+      '--watch', '--interval-seconds', '1', '--max-checks', '2',
+    ]);
+    expect(result).toEqual({ acted: false });
+    expect(calls).toHaveLength(8);
+  });
+
+  it('check-only + push reports funded but never broadcasts or pushes', async () => {
+    const dir = makeTmp();
+    fundedStubs();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const receiptOut = join(dir, 'receipt.json');
+    const result = await runWatch([
+      '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', keyFile(dir),
+      '--to', TO, '--checkpoint-hash', CHECKPOINT,
+      '--receipt-out', receiptOut, '--check-only', '--push',
+    ]);
+    expect(result).toEqual({ acted: false });
+    expect(() => readFileSync(receiptOut, 'utf8')).toThrowError(Error);
+  });
+
+  it('an existing receipt-out aborts before any RPC call', async () => {
+    const dir = makeTmp();
+    const calls = fundedStubs();
+    const receiptOut = writeTmpFile(dir, 'receipt.json', '{}');
+    await expect(runWatch([
+      ...base, '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', keyFile(dir), '--receipt-out', receiptOut,
+    ])).rejects.toThrowError(/Refusing to overwrite/);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('in-process exit map: gate errors -> 2, operational errors -> 1', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const dir = makeTmp();
+    expect(await runWatchCli(['--bogus'])).toBe(2);
+    expect(await runSubmitCli(['--bogus'])).toBe(2);
+    expect(await runWatchCli([
+      ...base, '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', join(dir, 'missing.key'), '--receipt-out', join(dir, 'r.json'),
+    ])).toBe(1);
+    expect(await runSubmitCli([
+      '--dry-run', '--rpc-url-file', join(dir, 'missing.url'),
+      '--from', FROM, '--to', TO, '--checkpoint-hash', CHECKPOINT,
+      '--out', join(dir, 'o.json'),
+    ])).toBe(1);
+  });
+
+  it('real process exit codes match the map (subprocess)', () => {
+    const dir = makeTmp();
+    const run = (script: string, argv: string[]): unknown => {
+      try {
+        execFileSync(process.execPath, [script, ...argv], { cwd: REPO_ROOT, stdio: 'pipe' });
+        return 0;
+      } catch (error) {
+        return (error as { status?: unknown }).status;
+      }
+    };
+    expect(run(WATCH_SCRIPT, ['--bogus'])).toBe(2);
+    expect(run(SUBMIT_SCRIPT, ['--bogus'])).toBe(2);
+    expect(run(WATCH_SCRIPT, ['--help'])).toBe(0);
+    expect(run(SUBMIT_SCRIPT, ['--help'])).toBe(0);
+    expect(run(WATCH_SCRIPT, [
+      ...base, '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--key-file', join(dir, 'missing.key'), '--receipt-out', join(dir, 'r.json'),
+    ])).toBe(1);
   });
 });

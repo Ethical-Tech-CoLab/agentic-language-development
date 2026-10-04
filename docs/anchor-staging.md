@@ -22,7 +22,7 @@ research profile and needs a prospective governance amendment per
 - For mainnet: explicit user approval in chat before any broadcast. No
   exceptions, including staging.
 
-Generate a wallet (mode 0600, refuses to overwrite; prints the address only):
+Generate a wallet (mode 0600, refuses to overwrite; prints `{ "keyFile", "address" }` JSON):
 
 ```sh
 node scripts/anchor-public-submit.mjs --generate-key --key-file ~/.ald/sepolia-anchor.key

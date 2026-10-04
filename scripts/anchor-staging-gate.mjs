@@ -247,22 +247,24 @@ export function assertSepoliaChainId(chainId) {
 }
 
 /**
+ * Strict decimal wei: `BigInt()` alone would also accept hex (`0x10`),
+ * surrounding whitespace, and `+`/`-` signs, so the shape is pinned first.
+ */
+export function parseDecimalWei(value) {
+  if (typeof value !== 'string' || !/^\d+$/u.test(value)) {
+    throw new StagingGateError('INVALID_STAGING_ARGS', 'Wei amounts must be non-negative decimal strings.');
+  }
+  return BigInt(value);
+}
+
+/**
  * Funding decision over decimal wei strings. Funded requires a positive
  * balance that covers the required total; a zero balance is never funded,
  * even when the estimate itself is zero.
  */
 export function decideFunding({ balanceWei, requiredWei }) {
-  let balance;
-  let required;
-  try {
-    balance = BigInt(balanceWei);
-    required = BigInt(requiredWei);
-  } catch {
-    throw new StagingGateError('INVALID_STAGING_ARGS', 'balanceWei and requiredWei must be decimal wei strings.');
-  }
-  if (balance < 0n || required < 0n) {
-    throw new StagingGateError('INVALID_STAGING_ARGS', 'balanceWei and requiredWei must not be negative.');
-  }
+  const balance = parseDecimalWei(balanceWei);
+  const required = parseDecimalWei(requiredWei);
   const funded = balance > 0n && balance >= required;
   return { funded, shortfallWei: balance >= required ? '0' : (required - balance).toString() };
 }
@@ -417,7 +419,7 @@ export function parseFaucetWatchArgs(argv) {
   if (args.receiptOut === null) throw usageError('--receipt-out <path> is required.');
   if (args.minBalanceWei !== null) {
     try {
-      if (BigInt(args.minBalanceWei) < 0n) throw new Error('negative');
+      parseDecimalWei(args.minBalanceWei);
     } catch {
       throw usageError('--min-balance-wei must be a non-negative decimal wei string.');
     }
