@@ -71,6 +71,10 @@ export {
   type Lv01PowerSelection,
 } from './ledger-value-power.js';
 export {
+  analyzeLv01DyadVectors,
+  type Lv01DyadVector,
+} from './ledger-value-oc.js';
+export {
   carrierCapacity,
   type CarrierCapacity,
   type CarrierCapacityInput,
