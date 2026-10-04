@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "classification": "synthetic-confirmatory-power-simulator-software-qualification",
+  "capturedAt": "2026-10-04",
+  "passed": true,
+  "researchFinding": false,
+  "registeredExecution": false,
+  "scientificDisposition": "not-tested",
+  "syntheticFixturesOnly": true,
+  "eligiblePilotUsed": false,
+  "campaignPowerResult": false,
+  "selectedPrimarySeeds": null,
+  "resourceAuthorization": false,
+  "externalSpend": 0,
+  "execution": {
+    "commit": "ec3b8f6fa0c0abbb270ff66d1c8be469fd77dfd4",
+    "tree": "2e8a191fcfab49b852137af904ea6a3048a9f119",
+    "version": "0.1.529"
+  },
+  "sourceArtifacts": [
+    {
+      "path": "packages/analysis/src/confirmatory-power-simulation.ts",
+      "bytes": 10404,
+      "sha256": "sha256:f93f1deaca9d9e501391e8a6aacb252a86b45105861602b5badcb0b573c15463"
+    },
+    {
+      "path": "packages/analysis/src/confirmatory-selection.ts",
+      "bytes": 9683,
+      "sha256": "sha256:4f0e3143932f025a2e7ffb3b333b088d287c71a7e61874ffd5e314a72cc395d7"
+    },
+    {
+      "path": "packages/analysis/src/confirmatory-pilot.ts",
+      "bytes": 9165,
+      "sha256": "sha256:761c477b369e3924a5b2479030d5188054c8f79ca113a7a1323978f17cc088fc"
+    },
+    {
+      "path": "packages/analysis/src/hypothesis.ts",
+      "bytes": 11688,
+      "sha256": "sha256:969d6b7825980bfbae4db5688186421c2c306083d5bb7ebec6c272edfb3856e9"
+    },
+    {
+      "path": "packages/analysis/src/special.ts",
+      "bytes": 13297,
+      "sha256": "sha256:8db15e8cd93c6551af579899a8e2fc2bff73ac9c1545d7650e1871fe1e2b0d8a"
+    },
+    {
+      "path": "packages/hashing/src/prng.ts",
+      "bytes": 5087,
+      "sha256": "sha256:a9c03bbe82b7fd74efafccd97793d3b1f9e0c341d7a79e6085b4d2048f01d45e"
+    },
+    {
+      "path": "packages/analysis/__tests__/confirmatory-power-simulation.test.ts",
+      "bytes": 3375,
+      "sha256": "sha256:df077112afc2624565d9fe46a2109263f699a2a4a37c413bf69f4bcadc1e38cf"
+    },
+    {
+      "path": "protocols/confirmatory-power-simulator.v1.json",
+      "bytes": 4252,
+      "sha256": "sha256:985d1c6acf776993295f60d7d2d48802f0035a3af1f6dee4a022fd4edd2e9f51"
+    },
+    {
+      "path": "scripts/check-confirmatory-power-simulator.mjs",
+      "bytes": 2590,
+      "sha256": "sha256:c45614dce5238b9376ce0feccb110f9f52cf6ba045912d43ada4a3c35ff0d162"
+    },
+    {
+      "path": "scripts/check-confirmatory-power-simulator-qualification.mjs",
+      "bytes": 11344,
+      "sha256": "sha256:5002e813653a90e2b959d99ce769bed65e504bf5a66d987ddd7a86d6af6b640d"
+    }
+  ],
+  "qualification": {
+    "fixtureSeed": "ald-confirmatory-power-software-qualification/v1",
+    "fixtureUpperSd": 0.08,
+    "candidates": 8,
+    "componentsPerCandidate": 14,
+    "repetitionsPerCandidate": 30000,
+    "independentReference": {
+      "implementation": "Python 3.13.3 + numpy/scipy (repo .venv, pinned)",
+      "comparisons": 112,
+      "maximumAbsoluteStandardErrors": 2.5511913413778498,
+      "thresholdStandardErrors": 5,
+      "rows": [
+        {
+          "primarySeeds": 25,
+          "delta005": 0.6461723808994455,
+          "delta002": 0.08518814420075055,
+          "delta010": 0.9994596697262073,
+          "binary075": 0.37827851163760684
+        },
+        {
+          "primarySeeds": 50,
+          "delta005": 0.958435083356209,
+          "delta002": 0.203518538514736,
+          "delta010": 0.9999999989783532,
+          "binary075": 0.8369167285373962
+        },
+        {
+          "primarySeeds": 75,
+          "delta005": 0.9970544424978994,
+          "delta002": 0.336822718448139,
+          "delta010": 0.9999999999999996,
+          "binary075": 0.9776948113202305
+        },
+        {
+          "primarySeeds": 100,
+          "delta005": 0.9998454336690112,
+          "delta002": 0.4681726638191466,
+          "delta010": 1,
+          "binary075": 0.9948178984992181
+        },
+        {
+          "primarySeeds": 125,
+          "delta005": 0.9999933881370444,
+          "delta002": 0.5868880587290295,
+          "delta010": 1,
+          "binary075": 0.9993580236022767
+        },
+        {
+          "primarySeeds": 150,
+          "delta005": 0.9999997566696343,
+          "delta002": 0.6877610110135626,
+          "delta010": 1,
+          "binary075": 0.9999227305393676
+        },
+        {
+          "primarySeeds": 200,
+          "delta005": 0.9999999997624566,
+          "delta002": 0.8333919828908418,
+          "delta010": 1,
+          "binary075": 0.9999994872688122
+        },
+        {
+          "primarySeeds": 300,
+          "delta005": 0.9999999999999999,
+          "delta002": 0.9614312901798752,
+          "delta010": 1,
+          "binary075": 0.9999999999814256
+        }
+      ]
+    },
+    "outputSha256": "sha256:03da4ba8ca34d0fcef6d84bd275bd1b86074fe2b067396d0d9a8b81eb7ebde5b",
+    "firstCandidateCounts": {
+      "H1": {
+        "disabled": 19446,
+        "constant": 19353,
+        "random": 19358,
+        "shuffled": 19338
+      },
+      "H2": {
+        "target-action-probability": 19448
+      },
+      "H3": {
+        "held-out-success": 19408
+      },
+      "H4": {
+        "brier-improvement": 2679
+      },
+      "H5": {
+        "stable-acquisition": 11306,
+        "first-stable-turn-ratio": 11332
+      },
+      "H6a": {
+        "restricted-mean-turns": 29986
+      },
+      "H6b": {
+        "excess-cmi-bits": 2596
+      },
+      "H7": {
+        "replacement-degradation": 19418
+      },
+      "H8": {
+        "informativeness-bits": 19468,
+        "normalized-ambiguity": 29990
+      }
+    },
+    "finalCandidateCounts": {
+      "H1": {
+        "disabled": 30000,
+        "constant": 30000,
+        "random": 30000,
+        "shuffled": 30000
+      },
+      "H2": {
+        "target-action-probability": 30000
+      },
+      "H3": {
+        "held-out-success": 30000
+      },
+      "H4": {
+        "brier-improvement": 28826
+      },
+      "H5": {
+        "stable-acquisition": 30000,
+        "first-stable-turn-ratio": 30000
+      },
+      "H6a": {
+        "restricted-mean-turns": 30000
+      },
+      "H6b": {
+        "excess-cmi-bits": 28851
+      },
+      "H7": {
+        "replacement-degradation": 30000
+      },
+      "H8": {
+        "informativeness-bits": 30000,
+        "normalized-ambiguity": 30000
+      }
+    },
+    "diagnosticDependenceModel": "independent-component-streams-diagnostic-only"
+  },
+  "claimBoundary": "This qualifies deterministic synthetic software paths against independent Python reference power calculations. It is not a pilot, campaign power result, selected N, resource authorization, study outcome, scientific finding, independent human review, or publication result."
+}
