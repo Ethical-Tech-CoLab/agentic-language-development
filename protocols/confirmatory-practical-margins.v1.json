@@ -10,8 +10,8 @@
   "externalSpend": 0,
   "sourcePolicies": [
     {"path":"protocols/research-protocol-cards.v1.json","sha256":"sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
-    {"path":"protocols/causal-ledger-and-leakage.v1.json","sha256":"sha256:01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"},
-    {"path":"protocols/confirmatory-design-readiness.v1.json","sha256":"sha256:4546e50d08e8aecd2d192de13e12f88fe132d952173791dd3e329bedaa41f8be"}
+    {"path":"protocols/causal-ledger-and-leakage.v1.json","sha256":"sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"},
+    {"path":"protocols/confirmatory-design-readiness.v1.json","sha256":"sha256:3ccade150b19abfc8e6b0ae137b4cb31ce7d3683eca2a05b148a7bb6cfa66219"}
   ],
   "commonRationale": "Margins are smallest effects worth interpreting, fixed without pilot outcomes. Five-percentage-point behavioral margins reuse E03's already frozen practical equivalence scale. More specialized outcomes use declared scale-specific thresholds; pilots may estimate variance but cannot revise these values.",
   "h5StableConventionRule": {

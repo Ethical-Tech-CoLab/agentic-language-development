@@ -9,8 +9,8 @@
   "independentHumanReview": false,
   "externalSpend": 0,
   "sourcePolicies": [
-    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"},
-    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:a59236a0be2dbc48102ab83120b423b604177ce7e52abc3b176516ed340b367a"}
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:ad3c17609e462d67b769092b455aaaf762368e91ce139ad586643d687a6c1051"}
   ],
   "reason": "Nine separately estimated member-power lower bounds must have simultaneous coverage before their complements are combined. Unadjusted 95% intervals do not provide a 95% family confidence guarantee.",
   "familyConfidence": 0.95,

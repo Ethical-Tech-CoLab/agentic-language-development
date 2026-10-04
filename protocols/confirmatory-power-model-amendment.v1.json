@@ -9,9 +9,9 @@
   "independentHumanReview": false,
   "externalSpend": 0,
   "sourcePolicies": [
-    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"},
-    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:a59236a0be2dbc48102ab83120b423b604177ce7e52abc3b176516ed340b367a"},
-    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:06845a71bf5043e6965edde5330c305319ba10991a6ec36a81bbbb1392d5a1b6"},
+    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path":"protocols/confirmatory-family-selection-amendment.v1.json","sha256":"sha256:ad3c17609e462d67b769092b455aaaf762368e91ce139ad586643d687a6c1051"},
+    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"},
     {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
   ],
   "reason": "Fourteen component tests include paired composites whose dependence is not identified by twenty-slot marginal upper-SD summaries. Treating them as independent could overstate complete-family power.",

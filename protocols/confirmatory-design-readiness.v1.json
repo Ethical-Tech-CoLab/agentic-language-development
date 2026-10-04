@@ -14,7 +14,7 @@
     },
     {
       "path": "protocols/statistical-analysis-and-power.v1.json",
-      "sha256": "sha256:06845a71bf5043e6965edde5330c305319ba10991a6ec36a81bbbb1392d5a1b6"
+      "sha256": "sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"
     },
     {
       "path": "protocols/seed-and-resource-allocation.v1.json",
@@ -22,7 +22,7 @@
     },
     {
       "path": "protocols/causal-ledger-and-leakage.v1.json",
-      "sha256": "sha256:01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"
+      "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"
     }
   ],
   "pilotRule": {

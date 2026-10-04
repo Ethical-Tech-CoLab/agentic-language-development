@@ -11,19 +11,19 @@
   "sourcePolicies": [
     {
       "path": "protocols/confirmatory-component-power-amendment.v1.json",
-      "sha256": "sha256:494133f4b23740b925352e5bb16f0694bc6433046420ec1e738fea465196c575"
+      "sha256": "sha256:b465388779703f1ac11efc4593297f8667033d783ac18f61228de422a0ea6435"
     },
     {
       "path": "protocols/confirmatory-power-model-amendment.v1.json",
-      "sha256": "sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"
+      "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"
     },
     {
       "path": "protocols/confirmatory-practical-margins.v1.json",
-      "sha256": "sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"
+      "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"
     },
     {
       "path": "protocols/confirmatory-validity-reserve-amendment.v1.json",
-      "sha256": "sha256:91aed4cabfd4f7fcb6ccc42bc19c1887986647c68ce281ee614df642cc0a1291"
+      "sha256": "sha256:012debedab717ddcacded58df5e2710d5c21899866200568f1b1b910836f2c63"
     }
   ],
   "analysisVersion": "confirmatory-power-simulation/v1",

@@ -88,9 +88,9 @@
   },
   "sourcePolicies": [
     {"path": "protocols/lv01-analysis-plan.v1.json", "sha256": "sha256:76f4cbc137a47a1fa4fe73edb2f2e7d6be615f4923dc478c67ebc9e33045e12b"},
-    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"},
-    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"},
-    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"}
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
+    {"path": "protocols/confirmatory-power-model-amendment.v1.json", "sha256": "sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"}
   ],
   "marginLineage": "LV-U inherits the outcome-blind H4 margin 0.02 and planning alternative 0.04 from confirmatory-practical-margins.v1.json and confirmatory-power-model-amendment.v1.json. These are prospective relevance conventions, not measured human-utility thresholds; they are preserved through pilot and main.",
   "claimBoundary": "This is a fixed draft analysis plan, not a pilot result, selected N, resource authorization or finding."

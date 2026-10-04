@@ -6,7 +6,7 @@
     "commit": "8cef99cb07daf130c38f93968e5ba24845af49e3",
     "path": "protocols/e00-registration.v5.json",
     "artifactSha256": "sha256:d5510b336513275fce21de19053edc01a0207a36aa205009233b38b21d18b91b",
-    "committedAt": "2026-09-12T13:47:57Z"
+    "committedAt": "2026-09-12T13:47:57+00:00"
   },
   "preRunAnchor": {
     "anchorClass": "simulated",
