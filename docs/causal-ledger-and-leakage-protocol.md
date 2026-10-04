@@ -92,7 +92,7 @@ percentile seed bootstrap is sensitivity-only.
 
 ## Outcome-blind design validation
 
-The base-R receipt contains six exact operating-characteristic calculations.
+The Python/scipy receipt contains six exact operating-characteristic calculations.
 At E02's 200-row test size, a true chance probe clears the 0.10 advantage
 margin with probability 0.9157, boundary false clearance is 0.0426, and the
 deterministic one-hot positive control is detected with probability 1. At

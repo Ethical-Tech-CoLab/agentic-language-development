@@ -41,16 +41,16 @@ def main(argv: list) -> int:
         print("upper-sd must be positive and finite", file=sys.stderr)
         return 1
 
-    # R: sqrt(19 / qchisq(.05 / 7, 19)) -- lower-tail chi-square quantile.
+    # Lower-tail chi-square quantile: sqrt(19 / chi2.ppf(.05 / 7, 19)) (ported from R qchisq).
     factor = math.sqrt(19.0 / stats.chi2.ppf(0.05 / 7.0, 19))
     sys.stdout.write("factor,%.17g\n" % factor)
     for n in NS:
-        # R: qt(1 - .05 / 4, n - 1)
+        # Student-t quantile: t.ppf(1 - .05 / 4, n - 1) (ported from R qt).
         critical = stats.t.ppf(1.0 - 0.05 / 4.0, n - 1)
         sqrt_n = math.sqrt(n)
         for comp_id, alternative, boundary in COMPONENTS:
             delta = (alternative - boundary) / sd
-            # R: pt(critical, n - 1, ncp = sqrt(n) * delta, lower.tail = FALSE)
+            # Non-central t survival: nct.sf(critical, n - 1, sqrt(n) * delta) (ported from R pt).
             power = stats.nct.sf(critical, n - 1, sqrt_n * delta)
             sys.stdout.write("%d,%s,%.17g,%.17g\n" % (n, comp_id, critical, power))
     return 0

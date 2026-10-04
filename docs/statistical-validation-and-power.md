@@ -44,9 +44,9 @@ pseudoreplication.
 
 The former E03 rule rejected a condition when more than 5% of observed seed rates
 were at least 0.35. That count was a useful diagnostic but not a calibrated test. A
-bounded beta-binomial simulation found only 0.0722 probability of satisfying the cap
+bounded beta-binomial simulation found only 0.0771 probability of satisfying the cap
 in the lowest-variance row and zero observed passes in 10,000 repetitions of each
-higher-variance row. Its complete-rule power was therefore at most 0.0705.
+higher-variance row. Its complete-rule power was therefore 0.0743 (upper 0.0796).
 
 The rule is amended before registration:
 
@@ -90,8 +90,8 @@ it is not the primary estimand and cannot be used to relabel invalid runs as val
 Global Holm materially changes sample-size reasoning. Under nine independent
 one-sided standardized tests, N=75 provides only 0.6752 probability that all nine
 reject when the true standardized effect is 0.40. N=100 raises that estimate to
-0.9068 with lower 95% Monte Carlo bound 0.9035. Conversely, even N=150 reaches only
-0.8017 for effect 0.30.
+0.9053 with lower 95% Monte Carlo bound 0.9019. Conversely, even N=150 reaches only
+0.7997 for effect 0.30.
 
 These are sensitivity values, not universal seed counts. Each frozen raw-scale
 margin and blinded-pilot upper variance must feed a member-specific complete
@@ -174,12 +174,12 @@ The prospective
 binds a pure numerical reducer for seven complete twenty-slot pilot corpora. It
 requires exact ordered component keys and distinct registration, run, seed, and
 evidence identities, then computes each sample SD and a one-sided 95% upper SD
-using the R-checked `sqrt(19 / qchisq(0.05, 19))` factor. Its summary is not an
+using the Python/scipy-checked `sqrt(19 / chi2.ppf(0.05, 19))` factor. Its summary is not an
 admitted pilot: original bundle verification, packet ancestry, registered metric
 derivation, and a separate admission receipt remain mandatory. Pilot means present
 in the v2 numerical contract are prohibited inputs to design changes.
 The retained [exact-source qualification receipt](../reports/research/confirmatory-pilot-reduction-qualification-receipt.json)
-binds v0.1.204 and an independent-R recalculation of all fourteen synthetic
+binds v0.1.529 and an independent-Python recalculation of all fourteen synthetic
 component means, sample SDs, and one-sided upper SDs: 42 comparisons with a
 maximum absolute difference of 1.11e-16. The clean-pilot Wilson bound and four
 rejection controls also passed. The routine statistics gate checks receipt

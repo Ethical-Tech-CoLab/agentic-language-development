@@ -5,7 +5,7 @@ without modifying original evidence or implying an agent-language finding.
 
 ## Before the review
 
-Use the repository's Homebrew-managed Node and pnpm environment. Do not start E02,
+Use the repository's pinned toolchain (Node.js >=24.20 <25 via MacPorts, pnpm 12.3.4). Do not start E02,
 provision credentials, or perform a public-chain action. Confirm the working tree and
 the three presentation documents:
 
@@ -47,11 +47,11 @@ delete or overwrite.
 ## Safe verification commands
 
 ```bash
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run lint:project-status
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run audit:campaign-readiness
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run audit:qualification-e00
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run audit:qualification-e01
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm run audit:manuscript-readiness
+pnpm run lint:project-status
+pnpm run audit:campaign-readiness
+pnpm run audit:qualification-e00
+pnpm run audit:qualification-e01
+pnpm run audit:manuscript-readiness
 ```
 
 These checks validate tracked status and receipt summaries. They do not rerun the

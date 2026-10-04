@@ -114,7 +114,7 @@ Milestones are ordinal and gate-based, not date-based. Each milestone's exit gat
 ### M3 — Research-Grade Isolation and Anchoring
 - **Epics in scope:** EPIC-04 testnet path (`ALD-018`–`021`), EPIC-10 (`ALD-053`–`057`), EPIC-11 core (`ALD-058`–`060`), EPIC-13 red-team suites (`ALD-067`–`068`), and EPIC-14 foundations/Gate G1 (`ALD-071`–`073`).
 - **Entry gate:** M2 exit met.
-- **Exit gate:** Mode R isolation, Base Sepolia anchoring, red-team suites, snapshot/restore, and Gate G1 all pass. Corresponds to `LEDGER-INTEGRITY-DESIGN.md` [Phase 2: Testnet Anchoring](LEDGER-INTEGRITY-DESIGN.md#phase-2-testnet-anchoring).
+- **Exit gate:** Mode R isolation, Base Sepolia anchoring, red-team suites, snapshot/restore, and Gate G1 all pass. Corresponds to `LEDGER-INTEGRITY-DESIGN.md` [Phase 2: Simulated Anchoring and Optional Testnet Capability](LEDGER-INTEGRITY-DESIGN.md#phase-2-simulated-anchoring-and-optional-testnet-capability).
 
 ### M4 — Console, Advanced Carriers, and Gate Coverage
 - **Epics in scope:** EPIC-06 remaining (`ALD-031`–`033`), EPIC-08 remaining (`ALD-046`–`047`), EPIC-11 remaining (`ALD-061`–`062`), EPIC-12 (`ALD-063`–`066`), EPIC-14 Gates G2-G4 (`ALD-074`–`076`).
@@ -124,7 +124,7 @@ Milestones are ordinal and gate-based, not date-based. Each milestone's exit gat
 ### M5 — Public Anchoring, Cryptography Research, and Release
 - **Epics in scope:** EPIC-04 mainnet switch (`ALD-022`), EPIC-13 remaining (`ALD-069`–`070`), EPIC-14 Gate G5 (`ALD-077`), EPIC-15 (`ALD-078`–`080`).
 - **Entry gate:** M4 exit met.
-- **Exit gate:** Gate G5 (`ALD-077`) passes, `ALD-078` CI is green on the full consolidated suite, and `ALD-080` release/publication mapping is complete. Corresponds to `LEDGER-INTEGRITY-DESIGN.md` [Phase 3: Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#phase-3-public-anchoring).
+- **Exit gate:** Gate G5 (`ALD-077`) passes, `ALD-078` CI is green on the full consolidated suite, and `ALD-080` release/publication mapping is complete. Corresponds to `LEDGER-INTEGRITY-DESIGN.md` [Phase 3: Optional Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#phase-3-optional-public-anchoring).
 
 ### M6 — Research-Execution Readiness
 - **Epics in scope:** EPIC-16 (`ALD-081`–`086`).
@@ -407,7 +407,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-018 — Anchor receipt schema and storage
 - **Priority:** P1 · **Size:** S · **Class:** MVP · **Depends on:** ALD-013, ALD-002
-- **Spec refs:** `SPECIFICATION.md` [§11.8 Anchor Receipt Reference](SPECIFICATION.md#118-anchor-receipt-reference), `LEDGER-INTEGRITY-DESIGN.md` [§10. Base and L1 Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-base-and-l1-anchoring)
+- **Spec refs:** `SPECIFICATION.md` [§11.8 Anchor Receipt Reference](SPECIFICATION.md#118-anchor-receipt-reference), `LEDGER-INTEGRITY-DESIGN.md` [§10. Simulated Commitments and Optional Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-simulated-commitments-and-optional-public-anchoring)
 - **Scope:** Define and persist the Anchor Receipt structure (checkpoint reference, chain ID, transaction hash, block number, confirmation status) linked one-to-one with a checkpoint manifest.
 - **Acceptance criteria:**
   - [x] A stored Anchor Receipt validates against the `ALD-002` schema and always references an existing checkpoint manifest (`ALD-013`).
@@ -425,7 +425,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-020 — Base Sepolia anchoring client
 - **Priority:** P1 · **Size:** L · **Class:** MVP · **Depends on:** ALD-018, ALD-019
-- **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§10. Base and L1 Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-base-and-l1-anchoring), `SPECIFICATION.md` [§13.4 Base Sepolia / Mainnet Anchoring Policy](SPECIFICATION.md#134-base-sepolia--mainnet-anchoring-policy)
+- **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§10. Simulated Commitments and Optional Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-simulated-commitments-and-optional-public-anchoring), `SPECIFICATION.md` [§13.4 Simulated and Optional Public-Chain Anchoring Policy](SPECIFICATION.md#134-simulated-and-optional-public-chain-anchoring-policy)
 - **Scope:** Implement the client that submits a checkpoint root hash to Base Sepolia and records the resulting transaction as an Anchor Receipt (`ALD-018`), with Base Sepolia as the unconditional default target.
 - **Acceptance criteria:**
   - [ ] A submitted checkpoint root is independently observable on a public Base Sepolia block explorer.
@@ -434,7 +434,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-021 — Anchor confirmation and retry/backoff
 - **Priority:** P1 · **Size:** M · **Class:** MVP · **Depends on:** ALD-015, ALD-020
-- **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§10. Base and L1 Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-base-and-l1-anchoring)
+- **Spec refs:** `LEDGER-INTEGRITY-DESIGN.md` [§10. Simulated Commitments and Optional Public Anchoring](LEDGER-INTEGRITY-DESIGN.md#10-simulated-commitments-and-optional-public-anchoring)
 - **Scope:** Implement finality polling and retry/backoff, then extend the independent verifier to retrieve the transaction through an independently configured RPC, validate chain ID/calldata/receipt/block inclusion, and compare the anchored checkpoint to the final local prefix.
 - **Acceptance criteria:**
   - [x] A receipt is marked `confirmed` only after reaching the configured confirmation depth.
@@ -443,7 +443,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-022 — Mainnet anchoring policy switch
 - **Priority:** P2 · **Size:** M · **Class:** Later-Research · **Depends on:** ALD-020, ALD-021, ALD-003
-- **Spec refs:** `SPECIFICATION.md` [§13.4 Base Sepolia / Mainnet Anchoring Policy](SPECIFICATION.md#134-base-sepolia--mainnet-anchoring-policy)
+- **Spec refs:** `SPECIFICATION.md` [§13.4 Simulated and Optional Public-Chain Anchoring Policy](SPECIFICATION.md#134-simulated-and-optional-public-chain-anchoring-policy)
 - **Scope:** Add an explicit, separately-configured mainnet anchoring path reusing the Sepolia client's logic with a different chain configuration, gated behind a distinct opt-in flag that defaults to off.
 - **Acceptance criteria:**
   - [x] With no explicit opt-in set, the system never submits any transaction to mainnet, confirmed by a test that asserts zero mainnet RPC calls under default config.
@@ -1045,7 +1045,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-083 — Canonical E03 registration compiler
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-082
-- **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), `RESEARCH.md` [Appendix D](RESEARCH.md#appendix-d-pre-registered-e03-protocol)
+- **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `RESEARCH.md` [Appendix D](RESEARCH.md#appendix-d-pre-registered-e03-protocol)
 - **Scope:** Compile E03's registered parameter template, its canonical domain-separated hash, complete seed allocation, and per-condition run-config templates into one validated artifact.
 - **Acceptance criteria:**
   - [x] The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat.
@@ -1058,7 +1058,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-084 — Fail-closed research preflight
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-083
-- **Spec refs:** `SPECIFICATION.md` [§7.1 Pre-Registration Binding](SPECIFICATION.md#71-pre-registration-binding), [§7.2 Experiment Record](SPECIFICATION.md#72-experiment-record)
+- **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), [§11.9 Experiment Record](SPECIFICATION.md#119-experiment-record)
 - **Scope:** Check the immutable software, configuration, isolation, seed, registration, and pre-run commitment bindings before registered pilot or confirmatory collection and report every blocker together.
 - **Acceptance criteria:**
   - [x] Human and JSON outputs independently check Mode R, learning isolation, artifact class, hashes, immutable ancestral commits, seed count, complete registration, and confirmed matching pre-run commitment.
@@ -1069,7 +1069,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-085 — Real open-weight frozen-model qualification
 - **Priority:** P1 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-044, ALD-054, ALD-081
-- **Spec refs:** `SPECIFICATION.md` [§6.7 Frozen Pretrained LLM Track](SPECIFICATION.md#67-frozen-pretrained-llm-track), [§10.3 Research-Grade Isolation Threat Model](SPECIFICATION.md#103-research-grade-isolation-threat-model)
+- **Spec refs:** `SPECIFICATION.md` [§6.7 Model Recommendations (Defaults)](SPECIFICATION.md#67-model-recommendations-defaults), [§10.3 Side-Channel Controls](SPECIFICATION.md#103-side-channel-controls)
 - **Scope:** Exercise the frozen-LLM adapter against a public local model through the loopback-only OpenAI-compatible client and retain privacy-minimized exact provenance.
 - **Acceptance criteria:**
   - [x] The report binds the exact weight-file hash, inference-runtime archive hash, model identity, quantization, software commit, and seed hash.
@@ -1154,7 +1154,7 @@ These are working decisions this backlog encodes. Where a decision is not yet ma
 - **Research vs. software boundary:** this backlog treats every `E00`–`E50` experiment as something the software must make *executable*, never as a task this backlog itself completes. EPIC-14's gates check capability readiness only (§13 of this document is explicit about this).
 - **Cryptography research boundary:** `ALD-069`'s ephemeral-encoding harness is explicitly research instrumentation; `ALD-070` enforces that its output is never substituted for the production integrity mechanisms in EPIC-02/EPIC-04.
 - **Sizing/priority are relative, not calendar-based:** S/M/L reflect complexity, not effort-days; P0/P1/P2 reflect blast radius on integrity/critical-path/research-readiness, not business value.
-- **Open/undecided (not invented here):** the specific open-weight frozen-LLM model, exact retention durations for §14.6, and exact confirmation-depth thresholds for §13.4 are left to be filled in when their owning item (ALD-044, ALD-062, ALD-021 respectively) is picked up, using whatever value the source documents specify at that time — this backlog does not invent them.
+- **Resolved during implementation:** the open-weight frozen-LLM default is `qwen3-4b-q4-k-m` (ALD-044/ALD-085, `reports/qualification/frozen-model-qwen3-4b-q4-k-m.json`); retention uses `prototypeRetentionDays: 30` (SPEC §18, ALD-062); confirmation depth uses `1-confirmation` (Sepolia) / `safe-tag` (mainnet) (SPEC §18, ALD-021).
 
 ### Implementation decisions recorded during the verifiable-core build (2026-09-07)
 

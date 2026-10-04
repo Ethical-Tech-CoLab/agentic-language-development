@@ -51,14 +51,32 @@ function parseBacklog(backlog) {
     const start = match.index;
     const end = matches[index + 1]?.index ?? backlog.length;
     const section = backlog.slice(start, end);
-    const criteria = [...section.matchAll(/^  - \[([x ])\] (.+)$/gmu)].map(
-      (criterion, criterionIndex) => ({
+    const criteria = [];
+    for (const line of section.split('\n')) {
+      const start = /^  - \[([x ])\] (.+)$/u.exec(line);
+      if (start) {
+        criteria.push({ checked: start[1] === 'x', parts: [start[2]], open: true });
+        continue;
+      }
+      // Join ONLY a 2-space continuation directly adjacent to a criterion
+      // line (multi-line criterion statements); anything else (blank lines,
+      // prose bullets, appendix notes) ends the criterion.
+      const continuation = /^  ([^- ].*)$/u.exec(line);
+      if (continuation && criteria.length > 0 && criteria[criteria.length - 1].open) {
+        criteria[criteria.length - 1].parts.push(continuation[1]);
+      } else if (criteria.length > 0) {
+        criteria[criteria.length - 1].open = false;
+      }
+    }
+    items.push({
+      id: match[1],
+      title: normalize(match[2]),
+      criteria: criteria.map((criterion, criterionIndex) => ({
         id: `${match[1]}.${String(criterionIndex + 1)}`,
-        checked: criterion[1] === 'x',
-        statement: normalize(criterion[2]),
-      }),
-    );
-    items.push({ id: match[1], title: normalize(match[2]), criteria });
+        checked: criterion.checked,
+        statement: normalize(criterion.parts.join(' ')),
+      })),
+    });
   }
   return items;
 }

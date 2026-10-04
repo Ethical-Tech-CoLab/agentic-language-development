@@ -19,7 +19,7 @@ simulated commitment records three confirmations and zero currency. The seeds re
 unused. Exact v0.1.119 passed the full 1,963-test gate, release-auditor hash check,
 and ordinary two-container Mode R preflight. The
 [execution-gate receipt](../reports/research/e02-v3-execution-gate.md) authorizes one
-sequential v3 attempt. That attempt started on exact commit `9ec08ec` at
+sequential v3 attempt. That attempt started on exact commit `9ec08ec` (rewritten as `4ee6ffd`) at
 2026-09-13T20:49:51Z. Slot 1 is running under a no-restart service; the
 [start receipt](../reports/research/e02-v3-execution-start.json) is not a completion
 or result.
@@ -88,7 +88,7 @@ uses 816 rows and the original normalization.
 
 ### Registered v1 attempt disposition
 
-The attempt started from exact clean commit `895d59a90b66cf74603d58f1962c58f98e29dfb9`.
+The attempt started from exact clean commit `895d59a90b66cf74603d58f1962c58f98e29dfb9` (rewritten as `93dc55ef84f503abbdd8307e15fb656d880bfb84`).
 Slot 1 retained 465 turn records and 930 delivered adapter-entry observations. At
 turns 460–464, five consecutive learner response timeouts triggered the configured
 safety pause. The next turn was correctly refused because a paused run does not
@@ -113,7 +113,7 @@ identifiers, and seed root are still required before another registered attempt.
 ### Registered v2 attempt disposition
 
 The attempt started from exact clean commit
-`7ed10f9f844f6a51c257f1f57829a57bbdf754ab`. Slot 1 retained 161 turn records,
+`7ed10f9f844f6a51c257f1f57829a57bbdf754ab` (rewritten as `40bb76fcb46d1ce0960da8ce5a60b10c3514ecbf`). Slot 1 retained 161 turn records,
 324 delivered observations, 162 accepted channel events, and one checkpoint. One
 deadline exceedance and one dropped response occurred after both turn-161
 observations, the accepted sender event, receiver interpretation, and receiver
@@ -136,19 +136,20 @@ they do not qualify E02 itself.
 ### Reproducible design calculation
 
 The conditional sample-size calculation can be reproduced without any observed
-development data using R 4.6.1:
+development data using the repo `.venv` Python/scipy sidecar:
 
-```r
-z <- qnorm(0.95)
-for (n in c(201, 300, 400, 500, 501, 502, 503, 504, 600)) {
-  k <- 0:n
-  p <- k / n
-  upper <- (p + z*z/(2*n) + z*sqrt(p*(1-p)/n + z*z/(4*n*n))) / (1 + z*z/n)
-  critical <- max(k[upper <= 0.35])
-  false_failure <- pbinom(critical, n, 0.25, lower.tail = FALSE)
-  print(c(n = n, critical = critical, false_failure = false_failure,
-          union_bound = max(0, 1 - 60*false_failure)))
-}
+```python
+import numpy as np
+from scipy import stats
+z = stats.norm.ppf(0.95)
+for n in (201, 300, 400, 500, 501, 502, 503, 504, 600):
+    k = np.arange(n + 1)
+    p = k / n
+    upper = (p + z*z/(2*n) + z*np.sqrt(p*(1-p)/n + z*z/(4*n*n))) / (1 + z*z/n)
+    critical = int(np.max(k[upper <= 0.35]))
+    false_failure = stats.binom.sf(critical, n, 0.25)
+    print(dict(n=n, critical=critical, false_failure=false_failure,
+               union_bound=max(0.0, 1 - 60*false_failure)))
 ```
 
 The exact bound is discrete and need not improve at every adjacent sample count;
@@ -163,7 +164,7 @@ Inputs, initialization provenance, exact feature vectors, split indices, results
 and restore evidence become checkpoint-bound analysis attachments.
 
 The audit replays the same estimator and independently recomputes Wilson bounds
-using R's normal quantile and the direct formula. It separately verifies the whole
+using Python's normal quantile (`scipy.stats.norm.ppf`) and the direct formula. It separately verifies the whole
 bundle with TypeScript and Rust. Same-code estimator replay is not an independent
 implementation of model training; different implementations are not independent
 human review. Qualification signers are ephemeral and remain in memory during
@@ -187,7 +188,7 @@ these observations, and no multilingual or future-image guarantee is claimed.
 
 ## Development commands
 
-Use the pinned Homebrew pnpm toolchain to build dependencies. Never overwrite a
+Use the pinned toolchain (Node.js >=24.20 <25 via MacPorts, pnpm 12.3.4) to build dependencies. Never overwrite a
 previous output directory or promote these commands' outputs to registered results.
 
 ```text
@@ -227,7 +228,7 @@ linear analysis/replay allowance, with a ten-hour Nursery-command timeout; the
 post-run audit is outside that wall timeout and inside the host CPU budget. Docker enforces
 512 MiB/one CPU per learner and 2 GiB/two CPUs for the Nursery, no swap allowance,
 and one CPU-hour per container process. The host controller is capped at five CPU
-hours. The primary-process reservation is 20 CPU-hours, plus a two-hour planning
+hours (`maximumHostControllerCpuHours: 5` in the registration packet). The primary-process reservation is 20 CPU-hours, plus a two-hour planning
 allowance for build and audit subprocesses, and 3 GiB planned evidence storage.
 These estimates do not resolve the whole campaign's resource-allocation blocker.
 No response deadline is shortened to make the run cheaper.
@@ -261,7 +262,7 @@ a public transaction. Execution may begin only from a clean descendant containin
 the committed binding and after the full consolidated suite passes.
 
 The prospective v2 packet is committed at
-`f1f63b4607d1b68033f7d8934e56b0b6559dde2b` with canonical hash
+`f1f63b4607d1b68033f7d8934e56b0b6559dde2b` (rewritten as `095b9e227ca4eedf1f5ff6c4da0ee1b54f38c232`) with canonical hash
 `sha256:3d925374d7fd309ddcbb694def69c3bb7d3dd1f93a6742070f84fa32d0a9189d`.
 Its matching binding records a confirmed deterministic simulation at block 1 and
 transaction-shaped identifier
@@ -272,7 +273,7 @@ timestamp, real funds, or external custody is claimed.
 ## Registered v1 execution record
 
 The original attempt started at 2026-09-13 14:16:52 UTC on clean execution commit
-`895d59a90b66cf74603d58f1962c58f98e29dfb9`. That exact commit passed 1,933 tests,
+`895d59a90b66cf74603d58f1962c58f98e29dfb9` (rewritten as `93dc55ef84f503abbdd8307e15fb656d880bfb84`). That exact commit passed 1,933 tests,
 Rust tests/clippy, a 747-file secret scan and the complete consolidated suite.
 The first slot recorded 465 turns before the safety pause and then terminated. This
 is a failed qualification attempt, not a behavioral result.

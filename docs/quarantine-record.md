@@ -20,10 +20,52 @@ Loud skip-if-evidence-absent per check, implemented in
   `scripts/__tests__/quarantine.test.ts` pins the exact set of 7 markers and
   asserts each quarantined unit passes loud.
 
-Reversal (fully reversible): restore the missing evidence (checks
-automatically run full again) or delete the marker (checks fail closed
-again); then remove the skip branch in a cleanup commit and re-run
-un-quarantined. Each marker carries its own `removalCondition`.
+Re-arm vs removal (fully reversible either way):
+
+- Re-arm (back to red): delete the marker. The check fails closed again
+  through its natural path (typically a raw ENOENT/assertion crash — the
+  pre-quarantine red, not a `QUARANTINED` line).
+- Removal (back to green): follow the checklist below. Order matters:
+  evidence first, marker and branch only after the targeted check is green.
+
+A quarantine is stale when its marker file still exists but no `QUARANTINED
+<name>` line appears in gate output: evidence is present, the hard check is
+already running, and only the checklist below remains. Each marker carries
+its own `removalCondition`; a re-freeze (new governance) must update the
+pinned report/packet and the evidence atomically, or the sha256 comparison
+fails closed on mismatch.
+
+## Removal checklist (one checklist per quarantine, same commit)
+
+1. Restore the original retained evidence tree (or re-freeze via new
+   governance, pins + evidence atomically).
+2. Run the quarantine's targeted check and confirm it passes WITHOUT a
+   `QUARANTINED` line (marker still present — this proves auto-restore):
+
+   | Quarantine | Targeted command (repo root) |
+   |-----------|-------------------------------|
+   | `lv01-paired-development-v21` | `node scripts/check-lv01-paired-development-v21-receipt.mjs` |
+   | `lv01-commitment-window-fault-v3` | `node scripts/check-lv01-commitment-window-fault-v3-receipt.mjs` |
+   | `lv01-malformed-proposal-v5` | `node scripts/check-lv01-malformed-proposal-v5-receipt.mjs` |
+   | `lv01-five-rejection-safety-v1` | `node scripts/check-lv01-five-rejection-safety-v1-receipt.mjs` |
+   | `lv01-application-fault-v3` | `node scripts/check-lv01-application-fault-v3-receipt.mjs` |
+   | `lv01-development-allocation-v12` | `./node_modules/.bin/vitest run scripts/__tests__/lv01-fixture-runner.test.ts` |
+   | `lv01-development-v23-receipt` | `./node_modules/.bin/vitest run scripts/__tests__/lv01-development-v23-receipt.test.ts` |
+
+3. Delete `quarantine/<name>.json`.
+4. Remove the skip branch: the `exitIfQuarantined` import + call in the
+   `scripts/check-*.mjs` consumer (5 script-side), or the
+   `quarantineSkipLine` import + `if (skip !== null)` block in the test
+   file (2 vitest-side).
+5. Update `scripts/__tests__/quarantine.test.ts` in the SAME commit:
+   drop the name from `MARKERS`, drop its row from `QUARANTINED_SCRIPTS`
+   (script-side) or its wiring assertion (vitest-side).
+6. Re-run the step-2 command plus
+   `./node_modules/.bin/vitest run scripts/__tests__/quarantine.test.ts`;
+   both must pass with no `QUARANTINED <name>` line.
+7. Update this record: decrement the Active count above and drop the
+   quarantine's table row. No BACKLOG edit is needed (thematic neighbours
+   are informational only — no box was noted or unchecked).
 
 ## Relation to the test-reliability policy
 

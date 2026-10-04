@@ -4508,7 +4508,7 @@
     {
       "id": "ALD-082.3",
       "checked": true,
-      "statement": "The committed seed manifest derives disjoint pilot and full-stage scenario,",
+      "statement": "The committed seed manifest derives disjoint pilot and full-stage scenario, per-role learner, Gateway, and analysis seeds without exposing outcomes.",
       "itemId": "ALD-082",
       "itemTitle": "Reproducible E03 design simulation and seed manifest",
       "disposition": "provisional-mapped",
@@ -4519,7 +4519,7 @@
     {
       "id": "ALD-082.4",
       "checked": true,
-      "statement": "The pilot reducer requires all five non-oracle conditions and exactly twenty",
+      "statement": "The pilot reducer requires all five non-oracle conditions and exactly twenty 200-episode slots, emits only dispersion/design inputs, and blocks the frozen table when estimated latent seed-rate dispersion exceeds 0.20.",
       "itemId": "ALD-082",
       "itemTitle": "Reproducible E03 design simulation and seed manifest",
       "disposition": "provisional-mapped",
@@ -4541,7 +4541,7 @@
     {
       "id": "ALD-083.2",
       "checked": true,
-      "statement": "Run IDs, realized random and component seeds, condition assignments, and the",
+      "statement": "Run IDs, realized random and component seeds, condition assignments, and the pre-registration hash are excluded from the stable RunConfig template while the complete prospective matrix remains inside the hashed artifact.",
       "itemId": "ALD-083",
       "itemTitle": "Canonical E03 registration compiler",
       "disposition": "provisional-mapped",
@@ -4563,7 +4563,7 @@
     {
       "id": "ALD-083.4",
       "checked": true,
-      "statement": "The compiler fixes a twenty-slot zero-reserve pilot and refuses a full E03",
+      "statement": "The compiler fixes a twenty-slot zero-reserve pilot and refuses a full E03 qualification without the retained pilot and 30,000-repetition power decision.",
       "itemId": "ALD-083",
       "itemTitle": "Canonical E03 registration compiler",
       "disposition": "provisional-mapped",
@@ -4596,7 +4596,7 @@
     {
       "id": "ALD-084.3",
       "checked": true,
-      "statement": "A realized run whose stable configuration, stage, condition, or component",
+      "statement": "A realized run whose stable configuration, stage, condition, or component seeds do not match one exact registered matrix entry is blocked.",
       "itemId": "ALD-084",
       "itemTitle": "Fail-closed research preflight",
       "disposition": "provisional-mapped",

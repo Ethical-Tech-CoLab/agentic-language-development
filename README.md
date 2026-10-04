@@ -143,9 +143,9 @@ to its named execution commit; later audit-code changes do not rewrite that rece
 The prospective [pilot-reduction policy](protocols/confirmatory-pilot-reduction.v1.json)
 now has a deterministic reducer for seven complete twenty-slot corpora. It checks
 ordered, distinct run/seed/evidence identities and computes conservative component
-SDs using an R-checked one-sided chi-square factor. Its [write-once qualification
+SDs using a Python/scipy-checked one-sided chi-square factor. Its [qualification
 receipt](reports/research/confirmatory-pilot-reduction-qualification-receipt.json)
-binds the exact v0.1.204 source and 42 independent-R comparisons (maximum absolute
+binds the exact v0.1.529 source and 42 independent Python/scipy comparisons (maximum absolute
 difference 1.11e-16); the routine statistics gate verifies its provenance. This is
 bounded synthetic software qualification only: no original pilot bundles or
 registration ancestry have been admitted, and the v2 summary's means may not
@@ -213,7 +213,7 @@ the retained original receipt and reduction hashes. The tracked
 allows clean-checkout status inspection; raw-data re-audit still requires the
 separately retained ignored evidence. These are Prototype-Mode
 design inputs, not E03 chance-control or behavioral findings.
-The Homebrew-R 30,000-repetition nominal complete-rule simulation passed at
+The frozen R-era (Homebrew-R) 30,000-repetition nominal complete-rule simulation passed at
 25 seeds (lower 95% power bound `0.999872`), but its forced two-invalid-primary-
 per-condition sensitivity passed zero repetitions. Registered reserve and
 invalid-run handling therefore need explicit full-stage qualification; the

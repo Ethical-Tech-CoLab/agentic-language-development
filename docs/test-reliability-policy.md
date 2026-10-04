@@ -29,6 +29,12 @@ following in the same change:
 4. an update to the acceptance-coverage check so no `Done` criterion loses
    its required blocking coverage.
 
-There is currently no quarantine job and no quarantined test. Any future job
+Seven evidence-absent checks are quarantined under the governed deviation in `docs/quarantine-record.md`; there is no separate quarantine job. Any future job
 must preserve failure history and must not be accepted as evidence for an
 experiment-readiness gate.
+
+Active deviation: 7 evidence-absent (not flaky) checks are quarantined via
+loud inline skip under R5-A governance; see `docs/quarantine-record.md`,
+which records the owner, per-check removal conditions, and why a separate
+job would carry no added signal. The deviation ends when that record shows
+zero active quarantines.

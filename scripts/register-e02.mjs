@@ -132,7 +132,7 @@ if (mode === '--compile-v3') {
       failurePolicy: 'Statistical failures do not select replacement seeds; infrastructure failure stops with all partial evidence retained.' },
     evidenceAndAnchorPolicy: { anchorClass: 'simulated', publicChainTransaction: false, externalSpend: 0,
       requiredPreRunConfirmations: 3, postRunConfirmations: 1, privateSigningMaterialExported: false,
-      inputsAndResults: 'checkpoint-bound signed attachments', independentBounds: 'R qnorm and direct Wilson formula',
+      inputsAndResults: 'checkpoint-bound signed attachments', independentBounds: 'R qnorm and direct Wilson formula', // R-era compile source, frozen in protocols/e02-registration.v*.json; live audits record the Python reference instead
       independentVerifier: 'release Rust auditor plus TypeScript verifier',
       modelReplayBoundary: 'same estimator implementation; no independent human review claim',
       evidenceRoot: 'evidence/qualification/e02-v3', receiptPath: 'reports/research/e02-v3-qualification-receipt.json' },
