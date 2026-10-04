@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- malformed status fixtures intentionally cross the JSON boundary */
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -97,7 +97,13 @@ function fixture(mutate: (campaign: any, receipts: Record<string, any>) => void 
     const path = e03Evidence?.find((entry: any) => entry.kind === kind)?.path;
     if (path) values[path] = source(path);
   }
-  if (currentTerminal === 'evidence/qualification/e03-full-v1/receipt.json') {
+  // The checker takes the portable-summary path when retained evidence is
+  // absent (clean checkout), so the fixture mirrors that instead of
+  // requiring gitignored files to exist in the working copy.
+  if (
+    currentTerminal === 'evidence/qualification/e03-full-v1/receipt.json' &&
+    existsSync(join(root, currentTerminal))
+  ) {
     values[currentTerminal] = source(currentTerminal);
   }
   for (const [path, value] of Object.entries(values)) {
@@ -296,7 +302,7 @@ describe('stage-specific campaign progress', () => {
 
   it('accepts the portable E03 full-stage status from a clean checkout', () => {
     const directory = fixture();
-    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'));
+    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'), { force: true });
     const result = run(directory);
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('4 completed gates');
@@ -305,7 +311,14 @@ describe('stage-specific campaign progress', () => {
   it('rejects retained E03 full evidence whose bytes disagree with the portable digest', () => {
     const directory = fixture();
     const path = join(directory, 'evidence/qualification/e03-full-v1/receipt.json');
-    writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    if (existsSync(path)) {
+      writeFileSync(path, `${readFileSync(path, 'utf8')}\n`);
+    } else {
+      // No retained bytes in the working copy: synthesize disagreeing ones.
+      // Any digest mismatch must trip the same contradiction error.
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, '{}\n');
+    }
     const result = run(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('E03 retained original full-stage receipt contradicts the portable summary');
@@ -313,7 +326,7 @@ describe('stage-specific campaign progress', () => {
 
   it('rejects a corrupt portable E03 full-stage run count without raw evidence', () => {
     const directory = fixture();
-    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'));
+    rmSync(join(directory, 'evidence/qualification/e03-full-v1/receipt.json'), { force: true });
     const path = join(directory, 'reports/research/e03-full-v1-status-receipt.json');
     const portable = JSON.parse(readFileSync(path, 'utf8'));
     portable.completedRuns = 149;
