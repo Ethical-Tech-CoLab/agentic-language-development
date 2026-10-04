@@ -51,3 +51,14 @@ The restoring operator records the snapshot path/digest, software commit,
 database checksum, start/end time, per-run `AutoRestoreResult`, and their
 identity. ALD-079 remains externally evidence-gated until an operator other
 than the implementer follows this runbook and attaches that completed record.
+
+Completed 2026-10-04 by independent operator ALDM (not the ALD-060
+implementer): `reports/research/ald-079-independent-restore-validation.json`,
+produced by `scripts/run-ald079-independent-restore.mjs` against a scratch
+recovery unit at commit `59e64bfda283`. Every Restore gate held
+(`restored`/`ok` true, no error, turn and both policies match, all seven
+stream prefixes intact and walking), the §7.3 recovery event and a new
+checkpoint were appended after the snapshot prefix, and one post-restore
+step confirmed the run is resumable. The record's runbook hash binds the
+procedure text as executed; this completion paragraph is the only subsequent
+change to this file.

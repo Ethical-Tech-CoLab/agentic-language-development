@@ -5,7 +5,7 @@
   "researchFinding": false,
   "candidate": {
     "baselineCommit": "559436fee0d7a95ea38fd92fbcbcccf762d10f92",
-    "version": "0.1.445"
+    "version": "0.1.529"
   },
   "sourcePolicy": {
     "checkedBacklogCriteria": "Every checked criterion must have one or more concrete executable assertion paths.",
@@ -416,7 +416,10 @@
         "oracle refuses learner proposals and commits gateway-control artifacts",
         "oracle validates the Scenario Engine artifact against the carrier",
         "rejects control artifacts under the other five conditions",
-        "records both hashes for every Baby-originated condition"
+        "records both hashes for every Baby-originated condition",
+        "delivers the committed treatment token instead of the sender artifact",
+        "fails closed when a ledger branch has no committed slice",
+        "leaves ordinary branches untouched"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/gateway/__tests__/conditions.test.ts"
     },
@@ -1398,6 +1401,12 @@
       ],
       "requiredReceipt": "pnpm run lint:contracts"
     },
+    "scripts/run-ald079-independent-restore.mjs": {
+      "selectors": [
+        "node scripts/run-ald079-independent-restore.mjs"
+      ],
+      "requiredReceipt": "node scripts/run-ald079-independent-restore.mjs"
+    },
     "scripts/run-mode-r-smoke.mjs": {
       "selectors": [
         "pnpm run test:mode-r"
@@ -1475,8 +1484,8 @@
   "summary": {
     "backlogItems": 86,
     "backlogCriteria": 261,
-    "checkedBacklogCriteria": 257,
-    "openBacklogCriteria": 4,
+    "checkedBacklogCriteria": 258,
+    "openBacklogCriteria": 3,
     "normativeLines": 96,
     "mappedNormativeLines": 92,
     "unmappedNormativeLines": 0,
@@ -3609,7 +3618,8 @@
       "itemTitle": "Snapshot and restore mechanism",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/ops/__tests__/snapshot.test.ts"
+        "packages/ops/__tests__/snapshot.test.ts",
+        "scripts/run-ald079-independent-restore.mjs"
       ]
     },
     {
@@ -3620,7 +3630,8 @@
       "itemTitle": "Snapshot and restore mechanism",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/ops/__tests__/snapshot.test.ts"
+        "packages/ops/__tests__/snapshot.test.ts",
+        "scripts/run-ald079-independent-restore.mjs"
       ]
     },
     {
@@ -3631,7 +3642,8 @@
       "itemTitle": "Snapshot and restore mechanism",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/ops/__tests__/snapshot.test.ts"
+        "packages/ops/__tests__/snapshot.test.ts",
+        "scripts/run-ald079-independent-restore.mjs"
       ]
     },
     {
@@ -4261,6 +4273,7 @@
       "disposition": "provisional-mapped",
       "assertionPaths": [
         "scripts/check-api-docs.mjs",
+        "scripts/run-ald079-independent-restore.mjs",
         "scripts/run-mode-r-smoke.mjs"
       ]
     },
@@ -4273,18 +4286,20 @@
       "disposition": "provisional-mapped",
       "assertionPaths": [
         "scripts/check-api-docs.mjs",
+        "scripts/run-ald079-independent-restore.mjs",
         "scripts/run-mode-r-smoke.mjs"
       ]
     },
     {
       "id": "ALD-079.3",
-      "checked": false,
+      "checked": true,
       "statement": "The snapshot/restore runbook is validated by having someone other than the implementer follow it to perform a real restore.",
       "itemId": "ALD-079",
       "itemTitle": "Architecture/API/operations documentation set",
-      "disposition": "external-blocked",
+      "disposition": "provisional-mapped",
       "assertionPaths": [
         "scripts/check-api-docs.mjs",
+        "scripts/run-ald079-independent-restore.mjs",
         "scripts/run-mode-r-smoke.mjs"
       ]
     },
@@ -6641,6 +6656,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]
@@ -6668,6 +6684,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]
@@ -6695,6 +6712,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]
@@ -6722,6 +6740,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]
@@ -6749,6 +6768,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]
@@ -6776,6 +6796,7 @@
         "packages/ops/__tests__/telemetry.test.ts",
         "packages/orchestrator/__tests__/interventions.test.ts",
         "packages/orchestrator/__tests__/run-lifecycle.test.ts",
+        "scripts/run-ald079-independent-restore.mjs",
         "twins/packs/__tests__/routes.test.ts",
         "twins/packs/__tests__/telemetry.test.ts"
       ]

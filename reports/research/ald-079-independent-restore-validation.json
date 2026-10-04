@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "classification": "ald-079-independent-restore-validation",
+  "researchFinding": false,
+  "runbook": {
+    "path": "docs/snapshot-restore-runbook.md",
+    "sha256": "ae18f7572eb3dbe19c2ecb582f65c87742f704f536282c23879c11ee9ee01212"
+  },
+  "operator": {
+    "identity": "ALDM (Muse Code session inland-parsec)",
+    "independence": "Operator is not the ALD-060 snapshot/restore implementer; this is the second-person runbook execution ALD-079 requires."
+  },
+  "softwareCommit": "59e64bfda283c7796c27aa96264f1a4551d9e957",
+  "snapshotIntervalMs": "300000 (SPEC §14.4 default; env unset)",
+  "startedAt": "2026-10-04T04:45:15.809Z",
+  "endedAt": "2026-10-04T04:45:16.733Z",
+  "scratch": {
+    "rootBasename": "ald079-independent-restore-rUQwTk",
+    "note": "Ephemeral OS-temp recovery unit (evidence db + bundle root + snapshot dir); removed after validation unless --keep.",
+    "kept": false
+  },
+  "snapshot": {
+    "pathBasename": "2026-10-04T04-45-16-501Z-60dff513.json",
+    "digest": "sha256:60dff51382dcd1b0d706e12d6bd6a67ad631e0946d5b2b98658b5eb903fc4c23",
+    "runs": 1
+  },
+  "database": {
+    "fileBasename": "evidence.sqlite",
+    "sha256BeforeRestore": "sha256:affd28e0f32d54907f023ed5f4615d144701eef5a9999ce8f3179cab86c59626",
+    "sha256AfterRestore": "sha256:a558f84755893685561fd2495f7872a49bddae735a3c08e525423c55f0b4788c",
+    "walCheckpointedBeforeHash": true
+  },
+  "restore": {
+    "restored": true,
+    "ok": true,
+    "snapshotPathBasename": "2026-10-04T04-45-16-501Z-60dff513.json",
+    "runs": [
+      {
+        "runId": "ald079-independent-restore-1",
+        "snapshotState": "running",
+        "restoredState": "running",
+        "turnMatches": true,
+        "policyMatches": {
+          "baby-a": true,
+          "baby-b": true
+        },
+        "policyFilesWritten": [
+          "baby-a",
+          "baby-b"
+        ],
+        "error": null,
+        "prefix": {
+          "ok": true,
+          "streams": [
+            {
+              "stream": "baby-a-ledger",
+              "expected": {
+                "size": 28,
+                "lastEntryHash": "sha256:ad94319af65e9ef69577bbc9d5101824df767a65c6a3a8450f868bd36007b6dd"
+              },
+              "observed": {
+                "size": 28,
+                "lastEntryHash": "sha256:ad94319af65e9ef69577bbc9d5101824df767a65c6a3a8450f868bd36007b6dd"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "baby-b-ledger",
+              "expected": {
+                "size": 28,
+                "lastEntryHash": "sha256:c6327750bc1608111c26125882e48a27a15d4826e7f8a0b335d0e840bc03cf7e"
+              },
+              "observed": {
+                "size": 28,
+                "lastEntryHash": "sha256:c6327750bc1608111c26125882e48a27a15d4826e7f8a0b335d0e840bc03cf7e"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "channel",
+              "expected": {
+                "size": 8,
+                "lastEntryHash": "sha256:3a5fff144e33e84a7c2acb84483461e12a54a12b0b9c006a872d52e1dd7d750c"
+              },
+              "observed": {
+                "size": 8,
+                "lastEntryHash": "sha256:3a5fff144e33e84a7c2acb84483461e12a54a12b0b9c006a872d52e1dd7d750c"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "affect",
+              "expected": {
+                "size": 0,
+                "lastEntryHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed": {
+                "size": 0,
+                "lastEntryHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "audit",
+              "expected": {
+                "size": 0,
+                "lastEntryHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed": {
+                "size": 0,
+                "lastEntryHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "turns",
+              "expected": {
+                "size": 8,
+                "lastEntryHash": "sha256:d3df43566af009aaf7b24163fa5e64b3db06755a63eecb0c3b7270df94a250e9"
+              },
+              "observed": {
+                "size": 8,
+                "lastEntryHash": "sha256:d3df43566af009aaf7b24163fa5e64b3db06755a63eecb0c3b7270df94a250e9"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            },
+            {
+              "stream": "intervention",
+              "expected": {
+                "size": 1,
+                "lastEntryHash": "sha256:a3853f04b3d4d244b87b38c4bf5e74579c6f7c69306aaf146ad815543abfa0f4"
+              },
+              "observed": {
+                "size": 2,
+                "lastEntryHash": "sha256:08bda00097e8210cf5e032616116011d4dfcfa5fcb30b2396e9f7e8789daf302"
+              },
+              "prefixIntact": true,
+              "chainWalkOk": true,
+              "violations": []
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "recovery": {
+    "lastAuditEventType": "recovery",
+    "checkpointsBefore": 9,
+    "checkpointsAfter": 10,
+    "lastCheckpointBefore": "sha256:6e3380f0732b07fe4a6a5e06dfe88d2368321b4258e9c8e892d5ea98107804fe",
+    "lastCheckpointAfter": "sha256:6f2f7a9a2f586d6e66d90a5238b0a040292246f8ed24e4f121be1f4e3768193b",
+    "resumeStepTurn": 8
+  },
+  "toolchain": {
+    "node": "v24.21.0",
+    "source": "workspace @ald/* dist build at softwareCommit"
+  },
+  "conclusion": "PASS: every runbook Restore gate held; traffic resumed with one post-restore step."
+}
