@@ -4,8 +4,10 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { mkdtempSync } from 'node:fs';
+
+import { repoRoot, venvPython } from './resolve-venv-python.mjs';
 
 import {
   binomialTest,
@@ -47,15 +49,19 @@ const protocol = JSON.parse(
 let inputPath = trackedPath;
 let temporaryDirectory: string | undefined;
 
-if (process.argv.includes('--live-r')) {
+if (process.argv.includes('--live-reference')) {
   temporaryDirectory = mkdtempSync(join(tmpdir(), 'ald-statistics-'));
   inputPath = join(temporaryDirectory, 'statistical-validation.tsv');
-  const result = spawnSync('Rscript', ['scripts/validate-statistics.R', inputPath], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  const result = spawnSync(
+    venvPython(),
+    [resolve(repoRoot, 'scripts/validate-statistics.py'), inputPath],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
   if (result.status !== 0) {
-    throw new Error(`independent R validation failed: ${result.stderr}`);
+    throw new Error(`independent Python validation failed: ${result.stderr}`);
   }
 }
 
@@ -112,7 +118,7 @@ function row(category: string, caseName: string, metric: string): Row {
 function close(actual: number, expected: number, tolerance = 1e-10): void {
   if (Math.abs(actual - expected) > tolerance) {
     throw new Error(
-      `reference mismatch: production=${String(actual)} R=${String(expected)}`,
+      `reference mismatch: production=${String(actual)} python=${String(expected)}`,
     );
   }
 }
@@ -249,7 +255,10 @@ if (
 }
 
 for (const entry of rows.filter((candidate) => candidate.category === 'type-i')) {
-  if (entry.value > 0.012) {
+  // Threshold = max-cell measured truth (0.0120 at upper-n25, 300k reps x 3
+  // seeds) + 5x MC sigma at 300k reps. The old 0.012 bar sat exactly at truth
+  // (any 30k stream failed ~50%); see plans/decisions.md 2026-10-04.
+  if (entry.value > 0.013) {
     throw new Error(`TOST boundary error exceeded tolerance for ${entry.case}`);
   }
 }
@@ -312,14 +321,14 @@ if (
 if (temporaryDirectory !== undefined) {
   const tracked = readFileSync(trackedPath, 'utf8');
   if (tracked !== text) {
-    throw new Error('live R output differs from the tracked validation receipt');
+    throw new Error('live Python output differs from the tracked validation receipt');
   }
   rmSync(temporaryDirectory, { recursive: true });
 }
 
 const digest = createHash('sha256').update(text).digest('hex');
 const scriptDigest = createHash('sha256')
-  .update(readFileSync('scripts/validate-statistics.R'))
+  .update(readFileSync('scripts/validate-statistics.py'))
   .digest('hex');
 if (
   protocol.independentReference.scriptSha256 !== scriptDigest ||
@@ -329,6 +338,6 @@ if (
   throw new Error('statistical protocol hashes do not match script and receipt');
 }
 console.log(
-  `Statistical validation passed: ${String(rows.length)} rows, 28 R reference values, ` +
+  `Statistical validation passed: ${String(rows.length)} rows, 28 Python reference values, ` +
     `coverage/type-I/clustering/full-rule/family/invalid-run checks, sha256:${digest}`,
 );
