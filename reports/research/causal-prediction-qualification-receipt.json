@@ -3,7 +3,7 @@
   "classification": "synthetic-software-qualification",
   "researchFinding": false,
   "capturedAt": "2026-09-11",
-  "protocolSha256": "9f4691d1b287ef44d62f330d3e1b62bd99e773454d209367e534420727bc412c",
+  "protocolSha256": "a2c393f464dacf1660be90faefd6f6bfc80b73abaf020d159e4ff34f21223eb0",
   "candidate": {
     "commit": "541142da301b20b7323930ee9f2bc08e99bb1814",
     "version": "0.1.68"
@@ -11,7 +11,7 @@
   "sourceHashes": {
     "packages/analysis/src/causal-prediction.ts": "80a1a8298feb4bbe302b7b1e9b81bf1b14e83327ae72967ce6a06b9fe5b830e2",
     "packages/analysis/__tests__/causal-prediction.test.ts": "41123c6445bdba88d2b09c8333af4b88128ac5a0db6cfd97fb06d39dc52c0fe5",
-    "protocols/causal-ledger-and-leakage.v1.json": "39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"
+    "protocols/causal-ledger-and-leakage.v1.json": "01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"
   },
   "exactValidation": {
     "freshFrozenInstall": true,
