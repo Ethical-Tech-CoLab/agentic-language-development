@@ -17,6 +17,23 @@ const writeNew = (path, value) => {
   assert.equal(existsSync(path), false, `refusing to overwrite ${path}`);
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
 };
+// Git renders UTC strict-ISO timestamps as +00:00 or Z depending on version
+// and platform, so bindings recorded under one spelling never match a
+// recomputation under the other. The attested fact is the instant: assert it
+// strictly (NaN fails closed on either side), then compare the rest exactly.
+const assertBindingCurrent = (recorded, recomputed) => {
+  assert.equal(
+    new Date(recorded.repositoryRegistration.committedAt).getTime(),
+    new Date(recomputed.repositoryRegistration.committedAt).getTime(),
+    'repository registration instant differs',
+  );
+  assert.deepEqual(
+    { ...recorded,
+      repositoryRegistration: { ...recorded.repositoryRegistration,
+        committedAt: recomputed.repositoryRegistration.committedAt } },
+    recomputed,
+  );
+};
 const mode = process.argv[2];
 assert.ok(['--compile', '--activate', '--check'].includes(mode) && process.argv.length === 3);
 
@@ -93,7 +110,7 @@ if (mode === '--compile') {
     if (mode === '--activate') {
       assert.equal(git('status', '--porcelain'), '', 'activate a committed packet');
       writeNew(bindingPath, binding);
-    } else assert.deepEqual(read(bindingPath), binding);
+    } else assertBindingCurrent(read(bindingPath), binding);
   }
 }
 console.log(`E01 v2 registration ${mode.slice(2)} complete`);

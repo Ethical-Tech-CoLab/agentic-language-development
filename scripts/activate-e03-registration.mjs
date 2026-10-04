@@ -18,6 +18,23 @@ assert.ok(stage === 'pilot' || attemptVersion === 'v1');
 const packetPath = `protocols/e03-${stage}-registration.${attemptVersion}.json`;
 const bindingPath = `protocols/e03-${stage}-registration-binding.${attemptVersion}.json`;
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+// Git renders UTC strict-ISO timestamps as +00:00 or Z depending on version
+// and platform, so bindings recorded under one spelling never match a
+// recomputation under the other. The attested fact is the instant: assert it
+// strictly (NaN fails closed on either side), then compare the rest exactly.
+const assertBindingCurrent = (recorded, recomputed) => {
+  assert.equal(
+    new Date(recorded.repositoryRegistration.committedAt).getTime(),
+    new Date(recomputed.repositoryRegistration.committedAt).getTime(),
+    'E03 activation binding instant differs',
+  );
+  assert.deepEqual(
+    { ...recorded,
+      repositoryRegistration: { ...recorded.repositoryRegistration,
+        committedAt: recomputed.repositoryRegistration.committedAt } },
+    recomputed,
+  );
+};
 const commit = git('log', '-1', '--format=%H', '--', packetPath);
 assert.match(commit, /^[a-f0-9]{40}$/u, 'E03 packet must have a repository commit');
 git('merge-base', '--is-ancestor', commit, 'HEAD');
@@ -72,6 +89,6 @@ if (mode === '--activate') {
   assert.equal(existsSync(bindingPath), false, 'refusing to overwrite an existing activation binding');
   writeFileSync(bindingPath, rendered, { flag: 'wx' });
 } else {
-  assert.equal(readFileSync(bindingPath, 'utf8'), rendered, 'E03 activation binding is stale');
+  assertBindingCurrent(JSON.parse(readFileSync(bindingPath, 'utf8')), JSON.parse(rendered));
 }
 console.log(`E03 ${stage} registration ${mode.slice(2)} valid: hash=${packet.preRegistrationHash}; simulated confirmations=3`);
