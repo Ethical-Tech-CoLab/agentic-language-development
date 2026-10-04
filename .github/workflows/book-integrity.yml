@@ -29,6 +29,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Create independent-statistics venv
+        run: |
+          uv venv --python 3.13
+          uv pip install --python .venv/bin/python -r requirements.txt
+
       - name: Audit dependency graph
         run: |
           mkdir -p artifacts
