@@ -1358,6 +1358,34 @@
       ],
       "requiredReceipt": "pnpm exec vitest run packages/verifier/__tests__/cli.test.ts"
     },
+    "packages/verifier/__tests__/mutation-matrix.test.ts": {
+      "selectors": [
+        "rejects modified event content",
+        "rejects a changed sequence number",
+        "rejects a deleted middle entry",
+        "rejects an inserted entry",
+        "rejects reordered entries",
+        "rejects an incorrect previous-entry hash",
+        "rejects an invalid writer signature",
+        "rejects a Merkle root edited without re-hashing the manifest",
+        "rejects a Merkle root that was re-hashed and re-signed with the real witness key",
+        "rejects a false inclusion proof",
+        "rejects an inconsistent checkpoint prefix",
+        "rejects an auxiliary tree that the run manifest does not declare",
+        "rejects a witness signature made by another key",
+        "rejects a modified run configuration",
+        "rejects a run manifest whose claim-boundary sentence was rewritten",
+        "rejects an anchor transaction on the wrong chain",
+        "rejects a simulated receipt relabeled as public-chain evidence",
+        "rejects a failed anchor transaction",
+        "rejects an anchor transaction the chain does not know",
+        "rejects a reverted anchor transaction",
+        "fails when events extend past the last confirmed anchor",
+        "reports the tail as a note under allowUnanchored",
+        "fails when the anchor receipt is removed, and passes with allowUnanchored"
+      ],
+      "requiredReceipt": "pnpm exec vitest run packages/verifier/__tests__/mutation-matrix.test.ts"
+    },
     "packages/verifier/__tests__/verify-bundle.test.ts": {
       "selectors": [
         "accepts it with exitCode 0 and every check satisfied",
@@ -2285,7 +2313,8 @@
       "assertionPaths": [
         "packages/anchor/__tests__/publisher.test.ts",
         "packages/anchor/__tests__/verify-anchor.test.ts",
-        "packages/ops/__tests__/failure-policy.test.ts"
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts"
       ]
     },
     {
@@ -2298,7 +2327,8 @@
       "assertionPaths": [
         "packages/anchor/__tests__/publisher.test.ts",
         "packages/anchor/__tests__/verify-anchor.test.ts",
-        "packages/ops/__tests__/failure-policy.test.ts"
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts"
       ]
     },
     {
@@ -2311,7 +2341,8 @@
       "assertionPaths": [
         "packages/anchor/__tests__/publisher.test.ts",
         "packages/anchor/__tests__/verify-anchor.test.ts",
-        "packages/ops/__tests__/failure-policy.test.ts"
+        "packages/ops/__tests__/failure-policy.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts"
       ]
     },
     {
@@ -6493,6 +6524,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6539,6 +6571,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6585,6 +6618,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6631,6 +6665,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6677,6 +6712,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6723,6 +6759,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",
@@ -6769,6 +6806,7 @@
         "packages/ops/__tests__/failure-policy.test.ts",
         "packages/ops/__tests__/snapshot.test.ts",
         "packages/orchestrator/__tests__/audit-interpreter.test.ts",
+        "packages/verifier/__tests__/mutation-matrix.test.ts",
         "scripts/__tests__/anchor-staging.test.ts",
         "scripts/anchor-faucet-watch.mjs",
         "scripts/anchor-public-submit.mjs",

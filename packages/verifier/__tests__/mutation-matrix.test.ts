@@ -2,6 +2,12 @@
  * The LEDGER-INTEGRITY-DESIGN.md §17 acceptance matrix: the verifier is not
  * complete until it rejects every one of these mutations of an otherwise
  * valid bundle, with the failure located in the right check.
+ *
+ * ALD-021 criterion 3, tail-reporting half: the "events extend past the last
+ * confirmed anchor" and "reports the tail as a note" cases pin that the
+ * verifier reports any event tail after the final anchored checkpoint
+ * (`unanchoredTailReported` + `unanchored-tail` gaps). Mentioned here so the
+ * conformance matrix maps this evidence to ALD-021 (R7-B gap fix).
  */
 import { join } from 'node:path';
 
