@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+
+import { repoRoot, venvPython } from './resolve-venv-python.mjs';
 
 import {
   LV01_CANDIDATE_DYADS,
@@ -22,10 +25,10 @@ const pilot = reduceLv01Pilot(
 );
 assert.equal(pilot.status, 'eligible');
 const upperSd = pilot.upperSdByComponent.fidelity;
-const referenceLines = execFileSync('Rscript', ['--vanilla', 'scripts/validate-lv01-reference.R', String(upperSd)], { encoding: 'utf8' }).trim().split('\n');
+const referenceLines = execFileSync(venvPython(), [resolve(repoRoot, 'scripts/validate-lv01-reference.py'), String(upperSd)], { encoding: 'utf8' }).trim().split('\n');
 const [factorLabel, factorRaw] = referenceLines.shift().split(',');
 assert.equal(factorLabel, 'factor');
-assert.ok(Math.abs(Number(factorRaw) - LV01_PILOT_UPPER_SD_FACTOR) <= 1e-12, 'R and TypeScript pilot dispersion factors disagree');
+assert.ok(Math.abs(Number(factorRaw) - LV01_PILOT_UPPER_SD_FACTOR) <= 1e-12, 'Python and TypeScript pilot dispersion factors disagree');
 const reference = new Map(referenceLines.map((line) => {
   const [n, component, critical, power] = line.split(',');
   return [`${n}/${component}`, { critical: Number(critical), power: Number(power) }];
@@ -39,8 +42,8 @@ for (const row of selection.rows) {
     assert.ok(expected && Number.isFinite(expected.power) && Number.isFinite(expected.critical));
     const observed = row.successes[component] / 30_000;
     const se = Math.sqrt(expected.power * (1 - expected.power) / 30_000);
-    assert.ok(Math.abs(observed - expected.power) <= Math.max(6 * se, 0.002), `${row.dyads}/${component} differs from independent R power`);
+    assert.ok(Math.abs(observed - expected.power) <= Math.max(6 * se, 0.002), `${row.dyads}/${component} differs from independent Python power`);
     comparisons += 1;
   }
 }
-console.log(`LV01 power reference valid: ${comparisons} R comparisons; no pilot or study data used`);
+console.log(`LV01 power reference valid: ${comparisons} Python comparisons; no pilot or study data used`);
