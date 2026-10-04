@@ -9,6 +9,7 @@ import { canonicalJson } from '@ald/hashing';
 import { ReferentialScenarioEngine } from '@ald/scenario';
 import { E02_PROBES, E02_ROWS_PER_STAGE, E02_REGISTERED_ROWS_PER_STAGE,
   auditE02Rows, evaluateE02Probe } from './e02-observation-analysis.mjs';
+import { venvPython } from '../../scripts/resolve-venv-python.mjs';
 
 export async function auditE02Observations(directory, expected) {
   const registered = expected !== undefined;
@@ -75,9 +76,18 @@ export async function auditE02Observations(directory, expected) {
   assert.equal(restore.restored.runs[0].prefix.ok, true);
   assert.deepEqual(restore.restored.runs[0].policyMatches, { 'baby-a': true, 'baby-b': true });
   assert.ok(events('intervention').some((event) => event.eventType === 'recovery'));
-  const rScript = `args <- as.numeric(commandArgs(TRUE)); k<-args[1]; n<-args[2]; kp<-args[3]; z<-qnorm(.95)
-  bound <- function(k) {p<-k/n; den<-1+z*z/n; center<-(p+z*z/(2*n))/den; half<-z*sqrt(p*(1-p)/n+z*z/(4*n*n))/den; c(max(0,center-half),min(1,center+half))}
-  cat(format(c(bound(k),bound(kp)),digits=17),sep="\\n")`;
+  const pythonScript = `import math, sys
+from scipy import stats
+k, n, kp = float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
+z = stats.norm.ppf(0.95)
+def bound(kk):
+    p = kk / n
+    den = 1.0 + z * z / n
+    center = (p + z * z / (2.0 * n)) / den
+    half = z * math.sqrt(p * (1.0 - p) / n + z * z / (4.0 * n * n)) / den
+    return (max(0.0, center - half), min(1.0, center + half))
+for value in bound(k) + bound(kp):
+    print("%.17g" % value)`;
   const recomputed = [];
   for (const stage of ['before-restore', 'after-restore']) {
     const reported = read(join(bundle, `analysis/semantic-leakage/${stage}-reports.json`));
@@ -103,15 +113,15 @@ export async function auditE02Observations(directory, expected) {
         assert.equal(canonicalJson(evidence.reports.find((r) => r.stage === stage && r.role === role && r.probe === probe)), canonicalJson(report));
         const values = result.result.linearProbe;
         const n = values.testRows, k = Math.round(values.observedAccuracy * n), kp = Math.round(values.positiveControl.observedAccuracy * n);
-        const bounds = execFileSync('/home/linuxbrew/.linuxbrew/bin/Rscript', ['--vanilla', '-e', rScript, String(k), String(n), String(kp)], { encoding: 'utf8' }).trim().split(/\s+/u).map(Number);
+        const bounds = execFileSync(venvPython(), ['-c', pythonScript, String(k), String(n), String(kp)], { encoding: 'utf8' }).trim().split(/\s+/u).map(Number);
         assert.equal(bounds.length, 4);
         const heldOut = result.split.test.map((index) => input.rows[index].label);
         const majority = Math.max(...Object.values(Object.groupBy(heldOut, (label) => label)).map((labels) => labels.length)) / n;
         assert.equal(majority, values.majorityBaselineAccuracy);
         assert.ok(Math.abs(bounds[1] - majority - values.advantageUpperBound) < 1e-8);
         assert.ok(Math.abs(bounds[2] - majority - values.positiveControl.advantageLowerBound) < 1e-8);
-        recomputed.push({ stage, role, probe, n, k, kp, rBounds: bounds, passed: result.passed });
-        console.log(`recomputed ${stage}/${role}/${probe}: input binding, model, split, and R bounds pass`);
+        recomputed.push({ stage, role, probe, n, k, kp, pythonBounds: bounds, passed: result.passed });
+        console.log(`recomputed ${stage}/${role}/${probe}: input binding, model, split, and Python bounds pass`);
       }
     }
   }
@@ -123,7 +133,7 @@ export async function auditE02Observations(directory, expected) {
   const passed = recomputed.length === 12 && recomputed.every((probe) => probe.passed);
   assert.equal(evidence.passed, passed);
   return { classification, researchFinding: false,
-    probesRecomputed: recomputed.length, independentWilsonReference: 'R qnorm and direct Wilson formula',
+    probesRecomputed: recomputed.length, independentWilsonReference: 'Python norm.ppf and direct Wilson formula',
     estimatorReplay: 'same implementation, not independent model training', rust, passed,
     probes: recomputed, bundleManifestHash: verification.bundleManifestHash };
 }

@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import { auditE02Observations } from '../deploy/mode-r/audit-e02-observations.mjs';
 import { e02RootBuildInputs, validateE02SlotContract } from '../deploy/mode-r/e02-slot-contract.mjs';
 import { resolveRewrittenCommit } from './git-history-rewrite.mjs';
+import { venvPython } from './resolve-venv-python.mjs';
 
 const evidenceRoot = 'evidence/qualification/e02-v3';
 const receiptPath = 'reports/research/e02-v3-qualification-receipt.json';
@@ -64,7 +65,7 @@ if (mode === '--audit') {
   assert.equal(existsSync(receiptPath), false, 'refusing to overwrite an earlier receipt');
   assert.ok(existsSync('.artifacts/cargo-target/release/ald-integrity-auditor'));
   assert.equal(sha256(readFileSync('.artifacts/cargo-target/release/ald-integrity-auditor')), bindings.executionHost.rustAuditorSha256);
-  execFileSync('/home/linuxbrew/.linuxbrew/bin/Rscript', ['--version']);
+  execFileSync(venvPython(), ['-c', 'import numpy, scipy']);
   for (const source of bindings.analysisVersions) assert.equal(sha256(readFileSync(source.path)), source.sha256, source.path);
   assert.deepEqual(e02RootBuildInputs(read('package.json')), bindings.executionHost.rootBuildInputs);
   // Five hours of controller CPU plus at most one CPU-hour per learner/Nursery

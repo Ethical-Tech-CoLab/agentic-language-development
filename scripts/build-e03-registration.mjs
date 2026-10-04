@@ -232,7 +232,7 @@ const bindingSourcePaths = [
   'protocols/e03-prototype-mode-amendment.v2.json',
   'scripts/build-e03-registration.mjs',
   'scripts/run-e03-power-selection.mjs',
-  'scripts/e03-power-selection.R',
+  'scripts/e03-power-selection.py',
   ...(fullCollectorQualificationSource ? [
     'packages/analysis/src/e03-full.ts',
     'packages/analysis/src/e03-full-qualification.ts',

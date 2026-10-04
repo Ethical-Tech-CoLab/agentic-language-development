@@ -8,6 +8,8 @@ import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { repoRoot, venvPython } from './resolve-venv-python.mjs';
+
 const { values } = parseArgs({
   options: {
     'pilot-receipt': { type: 'string', required: true },
@@ -58,17 +60,16 @@ assert.equal(reduction.value.pilotReceipt?.sha256, sha256(pilot.bytes));
 assert.equal(reduction.value.requiresProspectiveAmendment, false);
 assert.ok([25, 75, 155, 300].includes(reduction.value.selectedPrimarySeeds));
 
-const rscript = '/home/linuxbrew/.linuxbrew/bin/Rscript';
-assert.equal(existsSync(rscript), true, 'Homebrew Rscript is required');
-const scriptPath = 'scripts/e03-power-selection.R';
+const python = venvPython();
+const scriptPath = 'scripts/e03-power-selection.py';
 const scriptBytes = readFileSync(scriptPath);
 const temporary = mkdtempSync(`${tmpdir()}/ald-e03-power-`);
 const tsvPath = resolve(temporary, 'power.tsv');
 try {
   const result = spawnSync(
-    rscript,
+    python,
     [
-      scriptPath,
+      resolve(repoRoot, scriptPath),
       tsvPath,
       String(reduction.value.largestLatentPilotSd),
       String(reduction.value.selectedPrimarySeeds),
@@ -85,7 +86,7 @@ try {
   const fields = Object.fromEntries(keys.map((key, index) => [key, numbers[index]]));
   assert.ok(Math.abs(fields['largest_latent_pilot_sd'] -
     reduction.value.largestLatentPilotSd) <= 1e-14,
-  'R TSV pilot SD differs beyond decimal serialization precision');
+  'Python TSV pilot SD differs beyond decimal serialization precision');
   assert.equal(fields['primary_seeds'], reduction.value.selectedPrimarySeeds);
   assert.equal(fields['repetitions'], 30_000);
 
@@ -99,7 +100,7 @@ try {
     pilotRegistrationHash: pilot.value.registrationHash,
     pilotReceipt: { path: pilotReceiptPath, sha256: sha256(pilot.bytes) },
     pilotReduction: { path: pilotReductionPath, sha256: sha256(reduction.bytes) },
-    implementation: { path: scriptPath, sha256: sha256(scriptBytes), runtime: 'Homebrew base R' },
+    implementation: { path: scriptPath, sha256: sha256(scriptBytes), runtime: 'repo .venv Python (pinned numpy/scipy)' },
     largestLatentPilotSd: reduction.value.largestLatentPilotSd,
     selectedPrimarySeeds: fields['primary_seeds'],
     monteCarloRepetitions: fields['repetitions'],
@@ -128,7 +129,7 @@ try {
   const rendered = `${JSON.stringify(receipt, null, 2)}\n`;
   if (values.audit) {
     assert.equal(readFileSync(outputPath, 'utf8'), rendered,
-      'power receipt does not reproduce from the retained pilot input and R source');
+      'power receipt does not reproduce from the retained pilot input and Python source');
     console.log(`audited ${outputPath}`);
   } else {
     await mkdir(dirname(outputPath), { recursive: true });
