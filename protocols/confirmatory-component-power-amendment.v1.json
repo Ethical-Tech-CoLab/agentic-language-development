@@ -9,9 +9,9 @@
   "independentHumanReview": false,
   "externalSpend": 0,
   "sourcePolicies": [
-    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
-    {"path":"protocols/confirmatory-power-confidence-amendment.v1.json","sha256":"sha256:5389899d5989f96991b3e39f8855f9f531d6d8777f42e5c151e871c17fbe32d3"},
-    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"}
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"},
+    {"path":"protocols/confirmatory-power-confidence-amendment.v1.json","sha256":"sha256:fee412dc1296f4d5987fd31465b6914f8cab48f55fb2c59928c09f3ba397586c"},
+    {"path":"protocols/confirmatory-practical-margins.v1.json","sha256":"sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"}
   ],
   "reason": "The pilot summary retains fourteen marginal upper dispersions but no paired component covariance. A simulated complete-member success count would therefore require an unidentified within-member dependence model for H1, H5, and H8.",
   "members": 9,
