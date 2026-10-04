@@ -134,9 +134,9 @@
   "sourcePolicies": [
     {"path": "protocols/research-protocol-cards.v1.json", "sha256": "sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"},
     {"path": "protocols/scenario-split-and-model-comparison.v1.json", "sha256": "sha256:cfac41d3307319f60465c7e2ff05c9fb7b389b6347996b6baf99e20e50ba2671"},
-    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:36ddf1a1bd82b3cf001b4353558af46bc5e729592791b2a8ea01138b1eb260da"},
-    {"path": "protocols/lv01-study-design.v2.json", "sha256": "sha256:8fa62f2d8b32f2dfadf0db6450e4687dd9bb85e93824afbb4827edb345cb4743"},
-    {"path": "protocols/lv01-prototype-execution-profile.v2.json", "sha256": "sha256:3880e72bc37ddb6cb94094399bf22dcec327777fb387158e4488590292653c86"}
+    {"path": "protocols/confirmatory-practical-margins.v1.json", "sha256": "sha256:e235bc86ffa1d7cb8d5bc04aa4d6fca7afb5423b20374003ec7a7044186b0167"},
+    {"path": "protocols/lv01-study-design.v2.json", "sha256": "sha256:4aa01c58f6ea4eda7caecead4052c26a09ae352162c753b0e333de350e724589"},
+    {"path": "protocols/lv01-prototype-execution-profile.v2.json", "sha256": "sha256:3a698bc5c8261217ae4fe5504c37fd8bea23db7c631b7f25efb9bef73786a803"}
   ],
   "claimBoundary": "This outcome-blind deferred draft is not a registration, qualification, resource allocation, pilot, confirmatory result, replication, independent review, submission or publication. No stage packet is claimed before its allocation exists."
 }

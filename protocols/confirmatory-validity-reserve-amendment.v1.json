@@ -9,7 +9,7 @@
   "independentHumanReview": false,
   "externalSpend": 0,
   "sourcePolicies": [
-    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:57f147c991b266f8bc8dcd14657a30fa5e2de3caee3f34dcc7ae18f13bf186fe"},
+    {"path":"protocols/confirmatory-power-model-amendment.v1.json","sha256":"sha256:810d545f1557df5d659c03bdecd058c97e4887f7d33312071a64853b4d220e90"},
     {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"}
   ],
   "scope": {

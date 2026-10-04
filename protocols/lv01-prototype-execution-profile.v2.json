@@ -77,8 +77,8 @@
     "scheduleCommitment": "Commit all schedules before labels."
   },
   "sourcePolicies": [
-    {"path": "protocols/lv01-study-design.v1.json", "sha256": "sha256:76ae11ee23af5140d45b640769d67aa296fcf9676cdeb40595f01f286d85de66"},
-    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:39fe13c72a66b20a13931d8baf3ad012c5a2d1b5aaee31fa3247b32a6a658d45"}
+    {"path": "protocols/lv01-study-design.v1.json", "sha256": "sha256:a91e1f54d80c0a909316adbb7eafac411cbabd07a8e0a1e517dba64cbda3b959"},
+    {"path": "protocols/causal-ledger-and-leakage.v1.json", "sha256": "sha256:01634a482417507317f887c49ddba8571e08008170b249fbdcd6b9702751122a"}
   ],
   "claimBoundary": "Prototype-only execution claims. A true cross-topology claim would require separate new allocation and is outside LV01 v2. This draft authorizes no run."
 }

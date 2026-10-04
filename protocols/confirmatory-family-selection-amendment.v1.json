@@ -5,7 +5,7 @@
   "researchFinding": false,
   "independentHumanReview": false,
   "sourcePolicies": [
-    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:f19a90d6dc0610519bd7b6e9e41698cfbc7639785051a46ff2c2f5dad6996c8f"},
+    {"path":"protocols/statistical-analysis-and-power.v1.json","sha256":"sha256:06845a71bf5043e6965edde5330c305319ba10991a6ec36a81bbbb1392d5a1b6"},
     {"path":"protocols/seed-and-resource-allocation.v1.json","sha256":"sha256:647c5e1e344c19b2ede8d36d32d0e838ba6debddb471c6aaced110f52eebc082"},
     {"path":"protocols/research-protocol-cards.v1.json","sha256":"sha256:8611f894b1a99d966e0999c85552b9ccc07fe7ed081521f3173e498933c8bb4d"}
   ],
