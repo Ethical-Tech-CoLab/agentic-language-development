@@ -226,7 +226,9 @@ describe('current project status', () => {
     writeFileSync(notebookPath, readFileSync(notebookPath, 'utf8').replace(
       '| E03 | Chance, no-communication, and random-message controls | E01, E02 | Completed | Not tested | Qualification complete |',
       '| E03 | Chance, no-communication, and random-message controls | E01, E02 | Not started | Not tested | Pilot ready |'));
-    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'));
+    // The v3 receipt is copied only when retained in the working copy; force
+    // keeps the intended absent end state on clean checkouts too.
+    rmSync(join(directory, 'evidence/pilots/e03-blinded-v3/receipt.json'), { force: true });
     const packetPath = join(directory, 'protocols/e03-pilot-registration.v2.json');
     mkdirSync(dirname(packetPath), { recursive: true });
     writeFileSync(packetPath, '{"preRegistrationHash":"sha256:fixture","artifact":{}}\n');
