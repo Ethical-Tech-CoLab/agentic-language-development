@@ -351,6 +351,8 @@ describe('host-error detail propagation', () => {
     // Researcher-only seed material must never cross the boundary.
     const { randomSeed: _randomSeed, seedBindings: _seedBindings, ...visibleConfig } =
       fullConfig;
+    void _randomSeed;
+    void _seedBindings;
     expect(visibleConfig).not.toHaveProperty('randomSeed');
     expect(visibleConfig).not.toHaveProperty('seedBindings');
     return {
