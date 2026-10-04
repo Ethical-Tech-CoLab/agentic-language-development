@@ -38,8 +38,12 @@ async function scheduledChild(
   receiver: BabyRole,
 ): Promise<RunConfig> {
   const rootSeed = `sha256:${'7'.repeat(64)}`;
+  // Run IDs pass through the prose hygiene scan, which splits kebab-case and
+  // rejects stopwords, so the role segment is de-hyphenated (`babya`, not a
+  // bare `a`). The receiver role itself is unchanged everywhere else.
+  const receiverTag = receiver.replace('-', '');
   const parent = testConfig({
-    runId: `lv01-scheduled-parent-${receiver}`,
+    runId: `lv01-scheduled-parent-${receiverTag}`,
     experimentId: 'LV01',
     randomSeed: rootSeed,
     seedBindings: {
@@ -71,7 +75,7 @@ async function scheduledChild(
     parentCheckpointHash: checkpoint,
     babyAInitialPolicyRef: 'policies/baby-a-latest.json',
     babyBInitialPolicyRef: 'policies/baby-b-latest.json',
-    childRunIdPrefix: `lv01-scheduled-${receiver}`,
+    childRunIdPrefix: `lv01-scheduled-${receiverTag}`,
     actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
     slotSeeds: {
       scenario: `sha256:${'6'.repeat(64)}`,

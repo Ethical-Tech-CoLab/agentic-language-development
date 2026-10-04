@@ -69,7 +69,9 @@ describe('Nursery remote evidence provisioning', () => {
   });
 
   it('executes without a Controller-owned database or writer handle', async () => {
-    directory = mkdtempSync(join(tmpdir(), 'ald-remote-evidence-runtime-'));
+    // Short prefix: macOS limits unix socket paths to 104 chars and the
+    // capability sockets live three levels under this directory.
+    directory = mkdtempSync(join(tmpdir(), 'ald-rer-'));
     const runId = 'remote-evidence-runtime';
     const softwareCommit = 'git:remote-evidence-runtime-test';
     const config = testConfig(noLearningOverrides({
