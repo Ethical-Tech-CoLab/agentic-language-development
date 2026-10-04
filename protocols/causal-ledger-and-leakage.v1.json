@@ -139,12 +139,12 @@
     }
   },
   "operatingCharacteristics": {
-    "runtime": "Homebrew R 4.6.1",
-    "dependencies": "base R only",
-    "script": "scripts/validate-leakage-design.R",
-    "scriptSha256": "0c4aa50eb883670db2afec88c769e4210d9c31138aba38794cb2abc1a92505d5",
+    "runtime": "repo .venv Python 3.13.3 + numpy 2.5.3 + scipy 1.18.1 (pinned)",
+    "dependencies": "numpy + scipy only (pinned in requirements.txt)",
+    "script": "scripts/validate-leakage-design.py",
+    "scriptSha256": "cc7d472c42ee8d2e3730132a4f799a12d1797ae4e48da9fe63b65a6728ba209e",
     "receipt": "reports/research/leakage-design-validation.tsv",
-    "receiptSha256": "632f90104c0921378e1911b7683e6aa3a7f8e5d1b1744fe7d242779bf80460a3",
+    "receiptSha256": "2b45717ccdfb95448a50084ec7ebcae3a1eb1aea3d329c912a01c4d0be5041f9",
     "acceptance": {
       "minimumClearanceProbability": 0.90,
       "maximumBoundaryTypeI": 0.05,

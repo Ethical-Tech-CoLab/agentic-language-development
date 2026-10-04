@@ -170,7 +170,7 @@
     "audit:e03-mode-amendment": "node scripts/check-e03-prototype-mode-amendment.mjs",
     "audit:statistics:live": "tsx scripts/check-statistical-validation.ts --live-reference",
     "audit:causal-leakage": "tsx scripts/check-causal-leakage-design.ts",
-    "audit:causal-leakage:r": "tsx scripts/check-causal-leakage-design.ts --live-r",
+    "audit:causal-leakage:live": "tsx scripts/check-causal-leakage-design.ts --live-reference",
     "qualify:causal-prediction": "tsx scripts/check-causal-prediction-qualification.ts --write",
     "audit:causal-prediction": "tsx scripts/check-causal-prediction-qualification.ts",
     "qualify:causal-prediction-runtime": "tsx scripts/check-causal-prediction-runtime-qualification.ts --write --live-evidence",

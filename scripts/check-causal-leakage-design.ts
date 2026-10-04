@@ -4,7 +4,9 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+
+import { repoRoot, venvPython } from './resolve-venv-python.mjs';
 
 interface ReceiptRow {
   experiment: string;
@@ -69,7 +71,7 @@ if (protocol.schemaVersion !== 1) throw new Error('unexpected causal/leakage sch
 
 const operating = protocol.operatingCharacteristics;
 if (sha256(operating.script) !== operating.scriptSha256) {
-  throw new Error('leakage-design R script hash does not match the protocol');
+  throw new Error('leakage-design Python script hash does not match the protocol');
 }
 if (sha256(operating.receipt) !== operating.receiptSha256) {
   throw new Error('leakage-design receipt hash does not match the protocol');
@@ -77,16 +79,20 @@ if (sha256(operating.receipt) !== operating.receiptSha256) {
 
 let receiptPath = operating.receipt;
 let temporaryDirectory: string | undefined;
-if (process.argv.includes('--live-r')) {
+if (process.argv.includes('--live-reference')) {
   temporaryDirectory = mkdtempSync(join(tmpdir(), 'ald-leakage-design-'));
   receiptPath = join(temporaryDirectory, 'leakage-design-validation.tsv');
-  const result = spawnSync('Rscript', [operating.script, receiptPath], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  if (result.status !== 0) throw new Error(`independent R validation failed: ${result.stderr}`);
+  const result = spawnSync(
+    venvPython(),
+    [resolve(repoRoot, operating.script), receiptPath],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+  if (result.status !== 0) throw new Error(`independent Python validation failed: ${result.stderr}`);
   if (sha256(receiptPath) !== operating.receiptSha256) {
-    throw new Error('live R leakage-design receipt differs from the frozen receipt');
+    throw new Error('live Python leakage-design receipt differs from the frozen receipt');
   }
 }
 
