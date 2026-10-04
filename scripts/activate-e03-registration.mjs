@@ -33,6 +33,7 @@ const assertBindingCurrent = (recorded, recomputed) => {
       repositoryRegistration: { ...recorded.repositoryRegistration,
         committedAt: recomputed.repositoryRegistration.committedAt } },
     recomputed,
+    'E03 activation binding is stale',
   );
 };
 const commit = git('log', '-1', '--format=%H', '--', packetPath);
