@@ -106,5 +106,5 @@ pilot must estimate it before registration. If the uncertainty bound for SD
 exceeds 0.04 bits, D07 must increase the seed count before outcomes are
 unblinded. The portable audit checks hashes, decision floors, required
 comparators, information sets, positive controls, and implementation markers;
-`pnpm audit:causal-leakage:r` additionally reproduces the R receipt byte for
+`pnpm audit:causal-leakage:live` additionally reproduces the Python receipt byte for
 byte.

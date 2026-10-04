@@ -134,8 +134,8 @@ H5 uses exact-binomial decision probabilities. Independent component streams sup
 only a labeled joint diagnostic. Synthetic software fixtures qualify code paths but
 cannot supply pilot evidence, campaign power, selected N, or resource authorization.
 The retained [qualification receipt](reports/research/confirmatory-power-simulator-qualification-receipt.json)
-binds the exact v0.1.198 implementation and deterministic fixture output. All 112
-candidate/component comparisons agreed with independent R 4.6.1 reference power
+binds the exact v0.1.529 implementation and deterministic fixture output. All 112
+candidate/component comparisons agreed with independent Python/scipy reference power
 within the prespecified five-standard-error gate (maximum 2.55). This is bounded
 software qualification only; its fixture counts are not campaign measurements.
 The audit also verifies that the receipt's tree, version, and source bytes belong

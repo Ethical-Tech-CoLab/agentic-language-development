@@ -69,5 +69,19 @@ dependency; it does not remove the persistent per-run signer or registration gat
 - System packages go through MacPorts ONLY (`port`).
 - Python goes through uv ONLY (`~/.local/bin/uv`, already installed; do NOT
   reinstall it via MacPorts). Project environments live in the repo `.venv`.
-- The independent-statistics sidecar is Python/scipy (port of the former base-R
+- The independent-statistics sidecar is Python/scipy (port of the former R
   scripts); R/Rscript must not be reintroduced to code, docs, or CI.
+
+## Independent-statistics venv setup
+
+The confirmatory gates spawn `scripts/*.py` through the repo-local `.venv`
+(resolved by `scripts/resolve-venv-python.mjs`; no PATH or absolute-path setup).
+Create it once per checkout:
+
+```sh
+uv venv --python 3.13
+uv pip install --python .venv/bin/python -r requirements.txt
+```
+
+`requirements.txt` pins the exact numpy/scipy versions the frozen receipts were
+generated with. CI provisions the same venv via `astral-sh/setup-uv`.

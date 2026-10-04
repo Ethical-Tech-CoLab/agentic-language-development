@@ -10,7 +10,7 @@ export const LV01_POWER_VERSION = 'lv01-power-selection/v2' as const;
 export const LV01_CANDIDATE_DYADS = [75, 100, 125, 150, 200, 300] as const;
 export const LV01_MONTE_CARLO_REPETITIONS = 30_000;
 export const LV01_MINIMUM_FAMILY_LOWER_POWER = 0.90;
-/** sqrt(19 / qchisq(0.05 / 7, 19)) for seven registered components; independently checked by the R reference. */
+/** sqrt(19 / chi2.ppf(0.05 / 7, 19)) for seven registered components; independently checked by the Python reference. */
 export const LV01_PILOT_UPPER_SD_FACTOR = 1.6206392404280481 as const;
 const boundaries: Record<Lv01ComponentId, number> = { incremental: 0.02, fidelity: -0.02, disabled: 0.05, constant: 0.05, random: 0.05, shuffled: 0.05, intervention: 0.05 };
 const alternatives: Record<Lv01ComponentId, number> = { incremental: 0.04, fidelity: -0.01, disabled: 0.10, constant: 0.10, random: 0.10, shuffled: 0.10, intervention: 0.10 };

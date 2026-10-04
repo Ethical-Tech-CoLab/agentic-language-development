@@ -16,11 +16,11 @@ register, novelty-comparator matrix, research protocol cards, and machine-readab
 environment manifest. The versioned scenario/comparison manifest and its readable
 design note freeze the numeric compositional split, leak checks, matched budgets, and
 causal-versus-descriptive interpretation boundaries. The statistical-validation
-receipt is independently generated with base R and covers numerical reference values,
+receipt is independently generated with Python/scipy and covers numerical reference values,
 coverage, boundary error, clustering, complete E03 power, global-Holm sensitivity,
 and invalid-run behavior. The causal-ledger/leakage protocol freezes prospective
 prediction chronology, comparator information sets, allowed/forbidden fields,
-detector-positive controls, and powered E02/E20 negative bounds; its base-R receipt
+detector-positive controls, and powered E02/E20 negative bounds; its Python receipt
 contains outcome-blind operating characteristics rather than experiment results.
 The seed/resource protocol and generated ledger separately commit disjoint stage
 namespaces, paired-seed derivation, tuning limits, allocation formulas, a fresh local

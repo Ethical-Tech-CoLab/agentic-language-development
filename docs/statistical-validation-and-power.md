@@ -8,11 +8,12 @@ Canonical protocol: `protocols/statistical-analysis-and-power.v1.json`
 
 This is outcome-blind design evidence. It validates calculations and prospective
 operating characteristics; it contains no agent experiment result. The independent
-implementation is base R 4.6.1 installed through Homebrew. Its 66-row receipt is
+implementation is Python/scipy in the repo-local `.venv` (pinned exact versions in
+`requirements.txt`; see `CONFIGURATION.md`). Its 66-row receipt is
 `reports/research/statistical-validation.tsv`. `pnpm audit:statistics` compares 28
-production values with the frozen R references and enforces every declared simulation
-finding. `pnpm audit:statistics:r` regenerates the receipt in a temporary directory
-with R and requires byte identity.
+production values with the frozen Python references and enforces every declared simulation
+finding. `pnpm audit:statistics:live` regenerates the receipt in a temporary directory
+with the venv interpreter and requires byte identity.
 
 ## Numerical agreement
 
@@ -28,14 +29,14 @@ not merely their final booleans.
 
 | Stress case | Estimate | 95% Monte Carlo interval | Decision |
 |---|---:|---:|---|
-| Wilson coverage, binomial `p=0.25`, 200 episodes | 0.9592 | [0.9569, 0.9613] | Accept as descriptive interval |
-| Seed-t coverage, 25 beta-binomial seeds, latent SD 0.05 | 0.9523 | [0.9498, 0.9547] | Accept as primary seed-level interval |
-| Percentile-bootstrap coverage, same case, 999 resamples | 0.9335 | [0.9217, 0.9436] | Sensitivity only; upper bound is below nominal 0.95 |
-| Pooled-episode Type I under seed clustering | 0.3081 | [0.3029, 0.3133] | Reject for inference |
-| Seed-level Type I under the same clustering | 0.0406 | [0.0384, 0.0429] | Accept |
+| Wilson coverage, binomial `p=0.25`, 200 episodes | 0.9610 | [0.9587, 0.9631] | Accept as descriptive interval |
+| Seed-t coverage, 25 beta-binomial seeds, latent SD 0.05 | 0.9489 | [0.9464, 0.9514] | Accept as primary seed-level interval |
+| Percentile-bootstrap coverage, same case, 999 resamples | 0.9260 | [0.9137, 0.9367] | Sensitivity only; upper bound is below nominal 0.95 |
+| Pooled-episode Type I under seed clustering | 0.3042 | [0.2990, 0.3094] | Reject for inference |
+| Seed-level Type I under the same clustering | 0.0389 | [0.0368, 0.0411] | Accept |
 
 At the lower and upper TOST boundaries, false-equivalence point estimates ranged
-from 0.0071 to 0.0109 across the four seed counts at per-test alpha 0.01. The result
+from 0.0071 to 0.0122 across the four seed counts at per-test alpha 0.01. The result
 supports the implemented seed-level TOST rule and does not license episode-level
 pseudoreplication.
 
@@ -62,10 +63,10 @@ The rule is amended before registration:
 
 | Latent seed SD | Seeds/condition | Full numeric-rule power | 95% Monte Carlo interval |
 |---:|---:|---:|---:|
-| 0.05 | 25 | 0.9318 | [0.9267, 0.9366] |
-| 0.10 | 75 | 0.9308 | [0.9257, 0.9356] |
-| 0.15 | 155 | 0.9163 | [0.9107, 0.9216] |
-| 0.20 | 300 | 0.9552 | [0.9510, 0.9591] |
+| 0.05 | 25 | 0.9324 | [0.9273, 0.9372] |
+| 0.10 | 75 | 0.9262 | [0.9209, 0.9312] |
+| 0.15 | 155 | 0.9187 | [0.9132, 0.9239] |
+| 0.20 | 300 | 0.9576 | [0.9535, 0.9614] |
 
 All lower bounds exceed 0.90. The beta-binomial generator samples a bounded latent
 seed probability and then 200 binary episodes, so it does not rely on impossible
@@ -162,9 +163,9 @@ about observed distributions, and fixture execution is never a campaign power re
 
 The retained
 [`confirmatory-power-simulator-qualification-receipt.json`](../reports/research/confirmatory-power-simulator-qualification-receipt.json)
-binds the exact v0.1.198 implementation, source artifacts, fixture seed, and output
-digest. Its 112 candidate/component proportions were checked against independent R
-4.6.1 noncentral-t and exact-binomial power values; the maximum deviation was 2.55
+binds the exact v0.1.529 implementation, source artifacts, fixture seed, and output
+digest. Its 112 candidate/component proportions were checked against independent Python/scipy
+noncentral-t and exact-binomial power values; the maximum deviation was 2.55
 Monte Carlo standard errors under a prespecified five-standard-error gate. The
 receipt records no eligible pilot, selected N, campaign result, or resource approval.
 
@@ -204,8 +205,8 @@ that power receipt.
 ## Reproduction
 
 ```sh
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm audit:statistics
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH pnpm audit:statistics:r
+pnpm audit:statistics
+pnpm audit:statistics:live
 ```
 
 D05 is complete at the method-validation level. It does not create final

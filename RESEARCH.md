@@ -962,9 +962,9 @@ future outcome distribution. Software fixtures do not supply a pilot, power resu
 selected sample size, resource authorization, or empirical finding.
 The retained
 [software-qualification receipt](reports/research/confirmatory-power-simulator-qualification-receipt.json)
-binds the exact v0.1.198 implementation and output digest. Across eight candidates
+binds the exact v0.1.529 implementation and output digest. Across eight candidates
 and fourteen components, all 112 deterministic Monte Carlo proportions were within
-the prespecified five-standard-error gate of independent R 4.6.1 t/noncentral-t or
+the prespecified five-standard-error gate of independent Python/scipy t/noncentral-t or
 exact-binomial reference power; the maximum deviation was 2.55 standard errors.
 These synthetic fixture values qualify implementation behavior only. No eligible
 pilot was supplied and the receipt records no campaign power, selected N, resource
@@ -2086,10 +2086,10 @@ power claim. Independent base-R simulation instead draws a bounded latent seed
 probability from a beta distribution and then 200 binary episodes, applies all five
 Holm-adjusted control TOSTs, the oracle adequacy test, and all five Holm-adjusted
 paired separation tests. With 10,000 repetitions per row, full numeric-rule power
-was 0.9318, 0.9308, 0.9163, and 0.9552 for the four rows; lower 95% Monte Carlo bounds
-were 0.9267, 0.9257, 0.9107, and 0.9510. Exact output is committed in
+was 0.9324, 0.9262, 0.9187, and 0.9576 for the four rows; lower 95% Monte Carlo bounds
+were 0.9273, 0.9209, 0.9132, and 0.9535. Exact output is committed in
 `reports/research/statistical-validation.tsv` and independently replayed by
-`pnpm audit:statistics:r`. Failure to reproduce a lower bound of at least 0.90 blocks
+`pnpm audit:statistics:live`. Failure to reproduce a lower bound of at least 0.90 blocks
 registration; it does not permit post-hoc widening of the margin.
 
 Sensitivity analyses:
