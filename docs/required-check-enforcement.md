@@ -71,3 +71,35 @@ curl -s https://api.github.com/repos/Ethical-Tech-CoLab/agentic-language-develop
 whose merge is blocked while a check fails is the complete ALD-078 blocking
 proof. Until then, ALD-078's blocking half stays open no matter how green
 local runs are.
+
+## Local wiring proof (2026-10-04, ALDM, commit `03ec401`)
+
+The "runs on every proposed change" half is verified end to end locally:
+
+- Workflow triggers: `on: pull_request` (all PRs) plus `push` to `main`;
+  jobs `consolidated-suite` and `mode-r` are the only two job IDs.
+- `consolidated-suite` runs `pnpm run check:ci`, which runs the full vitest
+  suite via `test:ci`; vitest includes `packages/**`, `twins/**`,
+  `book/**`, and `scripts/__tests__`, so every backlog item's acceptance
+  tests ride the same gate.
+- The four suites ALD-078 names by ID all pass (node v24.21.0, 60/60
+  tests, 29.6s):
+
+```sh
+./node_modules/.bin/vitest run \
+  packages/evidence/__tests__/crash-safety.test.ts \
+  packages/gateway/__tests__/conformance.test.ts \
+  packages/leakage/__tests__/semantic-leakage.test.ts \
+  packages/redteam/__tests__/side-channel.test.ts \
+  packages/redteam/__tests__/observation-and-measurement.test.ts
+```
+
+  - ALD-011 crash-safety: 1 test, 20 randomized SIGKILL trials, no
+    torn-write failure;
+  - ALD-036 gateway conformance: 36 tests;
+  - ALD-057 semantic-leakage battery: 8 tests;
+  - ALD-067/068 red-team suites: 10 + 5 tests.
+
+This proves the suites exist, pass, and are wired into the CI command the
+workflow runs. It does not prove merge-blocking, which remains the open
+admin step above.
