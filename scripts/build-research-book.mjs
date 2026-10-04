@@ -186,6 +186,9 @@ function printableHtml(markdown) {
 async function printPdf(chrome) {
   const profile = await mkdtemp(join(tmpdir(), 'ald-research-book-'));
   try {
+    // Headless Chrome renders the PDF and then hangs in shutdown on some
+    // hosts instead of exiting, so bound the wait: a timeout kill is
+    // tolerated and the PDF-exists check below stays the real gate.
     const result = spawnSync(
       chrome,
       [
@@ -200,9 +203,14 @@ async function printPdf(chrome) {
         '--virtual-time-budget=10000',
         pathToFileURL(printPath).href,
       ],
-      { stdio: 'inherit' },
+      { stdio: 'inherit', timeout: 120_000, killSignal: 'SIGKILL' },
     );
-    if (result.status !== 0) {
+    const timedOut =
+      result.error !== undefined &&
+      typeof result.error === 'object' &&
+      'code' in result.error &&
+      result.error.code === 'ETIMEDOUT';
+    if (!timedOut && result.status !== 0) {
       throw new Error(`Chrome PDF rendering failed with exit ${result.status}`);
     }
   } finally {
