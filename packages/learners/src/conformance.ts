@@ -503,16 +503,35 @@ export function assertToolOnlyProposal(
     throw new LearnerConformanceError(`${where}: act() must return an object`);
   }
   const keys = Object.keys(envelope);
-  const allowed = ['proposal', 'privateLedgerDraft'];
+  const allowed = ['proposal', 'privateLedgerDraft', 'selectionProbs'];
   const extra = keys.filter((key) => !allowed.includes(key));
   if (extra.length > 0) {
     throw new LearnerConformanceError(
       `${where}: proposal envelope carries non-tool fields: ${extra.join(', ')}`,
     );
   }
-  for (const key of allowed) {
+  for (const key of ['proposal', 'privateLedgerDraft']) {
     if (!keys.includes(key)) {
       throw new LearnerConformanceError(`${where}: envelope is missing ${key}`);
+    }
+  }
+  // TurnProposalEnvelopeSchema permits an optional selectionProbs vector
+  // alongside the tool call (LV01 shared-draw disclosure). It is metadata
+  // about the draw, not a second action, so the harness accepts it but
+  // holds it to a structural shape: an array of finite numbers.
+  const envelopeRecord = envelope as { selectionProbs?: unknown };
+  if (envelopeRecord.selectionProbs !== undefined) {
+    const probs = envelopeRecord.selectionProbs;
+    if (
+      !Array.isArray(probs) ||
+      probs.some(
+        (value: unknown) =>
+          typeof value !== 'number' || !Number.isFinite(value),
+      )
+    ) {
+      throw new LearnerConformanceError(
+        `${where}: selectionProbs must be an array of finite numbers`,
+      );
     }
   }
 
