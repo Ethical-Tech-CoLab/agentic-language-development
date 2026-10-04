@@ -13,6 +13,8 @@ import {
   reduceConfirmatoryPilot,
 } from '@ald/analysis';
 
+import { venvPython } from './resolve-venv-python.mjs';
+
 const receiptPath = 'reports/research/confirmatory-pilot-reduction-qualification-receipt.json';
 const sourcePaths = [
   'packages/analysis/src/confirmatory-pilot-reduction.ts',
@@ -70,25 +72,36 @@ function referenceRows(inputs) {
     }
   }
   const program = String.raw`
-data <- read.table(file("stdin"), header=TRUE, sep="\t", stringsAsFactors=FALSE)
-cat(R.version.string, "\n", sep="")
-factor <- sqrt(19 / qchisq(0.05, 19))
-invalid_upper <- qnorm(0.95)^2 / (20 + qnorm(0.95)^2)
-cat(sprintf("%.17g\t%.17g\n", factor, invalid_upper))
-for (member in unique(data$member)) {
-  subset <- data[data$member == member, ]
-  for (component in unique(subset$component)) {
-    values <- subset$value[subset$component == component]
-    cat(member, component, length(values), sprintf("%.17g", mean(values)),
-        sprintf("%.17g", sd(values)), sprintf("%.17g", sd(values) * factor),
-        sep="\t")
-    cat("\n")
-  }
-}`;
-  const lines = execFileSync('Rscript', ['--vanilla', '-e', program],
+import math
+import statistics
+import sys
+from scipy import stats
+lines = sys.stdin.read().splitlines()
+assert lines[0] == 'member\tcomponent\tvalue', 'expected header row'
+groups = {}
+order = []
+for line in lines[1:]:
+    member, component, raw = line.split('\t')
+    key = (member, component)
+    if key not in groups:
+        groups[key] = []
+        order.append(key)
+    groups[key].append(float(raw))
+print(f"Python {sys.version.split()[0]} + numpy/scipy (repo .venv, pinned)")
+factor = math.sqrt(19.0 / stats.chi2.ppf(0.05, 19))
+z = stats.norm.ppf(0.95)
+invalid_upper = z * z / (20.0 + z * z)
+print("%.17g\t%.17g" % (factor, invalid_upper))
+for member, component in order:
+    values = groups[(member, component)]
+    sd = statistics.stdev(values)
+    print("%s\t%s\t%d\t%.17g\t%.17g\t%.17g"
+          % (member, component, len(values), statistics.mean(values), sd, sd * factor))
+`;
+  const lines = execFileSync(venvPython(), ['-c', program],
     { encoding: 'utf8', input: `${rows.join('\n')}\n` }).trim().split('\n');
-  const rVersion = lines.shift();
-  assert.match(rVersion, /^R version /u);
+  const implementation = lines.shift();
+  assert.match(implementation, /^Python /u);
   const [factor, invalidUpper] = lines.shift().split('\t').map(Number);
   const references = lines.map((line) => {
     const [memberId, componentId, n, mean, sampleSd, upper95Sd] = line.split('\t');
@@ -97,7 +110,7 @@ for (member in unique(data$member)) {
     return { memberId, componentId, n: numeric[0], mean: numeric[1],
       sampleSd: numeric[2], upper95Sd: numeric[3] };
   });
-  return { rVersion, factor, invalidUpper, references };
+  return { implementation, factor, invalidUpper, references };
 }
 
 export function runConfirmatoryPilotReductionQualification() {
@@ -116,13 +129,13 @@ export function runConfirmatoryPilotReductionQualification() {
       assert.ok(Number.isFinite(actual[key]));
       const difference = Math.abs(actual[key] - expected[key]);
       assert.ok(difference <= 1e-12,
-        `${expected.memberId}.${expected.componentId}.${key} differs from R`);
+        `${expected.memberId}.${expected.componentId}.${key} differs from Python`);
       maximumAbsoluteDifference = Math.max(maximumAbsoluteDifference, difference);
     }
   }
   for (const experiment of reduction.summary.experiments) {
     assert.ok(Math.abs(experiment.invalidProbabilityUpper95 - reference.invalidUpper) <= 1e-12,
-      `${experiment.id} invalid-run upper bound differs from R`);
+      `${experiment.id} invalid-run upper bound differs from Python`);
   }
   assert.equal(reduction.originalEvidenceVerified, false);
   assert.equal(reduction.registrationAncestryVerified, false);
@@ -150,7 +163,7 @@ export function runConfirmatoryPilotReductionQualification() {
     componentObservations: 280,
     rejectedMutationCases: 4,
     independentReference: {
-      implementation: reference.rVersion,
+      implementation: reference.implementation,
       comparisons: 42,
       maximumAbsoluteDifference,
       tolerance: 1e-12,
@@ -203,7 +216,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   } });
   if (values.preview) {
     const result = runConfirmatoryPilotReductionQualification();
-    console.log(`Pilot reducer preview: ${result.independentReference.comparisons} R comparisons, ${result.rejectedMutationCases} negative controls; no pilot admitted`);
+    console.log(`Pilot reducer preview: ${result.independentReference.comparisons} Python comparisons, ${result.rejectedMutationCases} negative controls; no pilot admitted`);
   } else if (values.write) {
     assert.equal(existsSync(receiptPath), false, 'refusing to overwrite qualification receipt');
     assert.equal(git('status', '--porcelain'), '', 'commit exact qualification sources before receipt creation');
@@ -231,6 +244,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(`Wrote ${receiptPath}`);
   } else {
     validateConfirmatoryPilotReductionQualification(JSON.parse(readFileSync(receiptPath, 'utf8')));
-    console.log('Confirmatory pilot-reduction software qualification valid against independent R');
+    console.log('Confirmatory pilot-reduction software qualification valid against independent Python');
   }
 }

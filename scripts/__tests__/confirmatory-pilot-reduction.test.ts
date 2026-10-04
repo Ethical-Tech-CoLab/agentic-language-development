@@ -38,7 +38,7 @@ function run(directory: string) {
 afterEach(() => { while (temporary.length) rmSync(temporary.pop()!, { recursive: true, force: true }); });
 
 describe('confirmatory pilot reduction policy gate', () => {
-  it('accepts the complete prospective policy and independent R factor', () => {
+  it('accepts the complete prospective policy and independent Python factor', () => {
     expect(run(fixture()).status).toBe(0);
   });
   it('rejects a smaller upper-SD factor', () => {

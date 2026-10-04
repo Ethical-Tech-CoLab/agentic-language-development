@@ -15,6 +15,8 @@ import {
   simulateConfirmatoryComponentPower,
 } from '@ald/analysis';
 
+import { venvPython } from './resolve-venv-python.mjs';
+
 const receiptPath = 'reports/research/confirmatory-power-simulator-qualification-receipt.json';
 const fixtureSeed = 'ald-confirmatory-power-software-qualification/v1';
 const fixtureUpperSd = 0.08;
@@ -75,32 +77,34 @@ function softwareFixture() {
   };
 }
 
-function independentRReferences() {
+function independentPythonReferences() {
   const program = String.raw`
-alpha <- 0.05 / 9
-ns <- c(25, 50, 75, 100, 125, 150, 200, 300)
-t_power <- function(n, standardized_delta) {
-  critical <- qt(1 - alpha, n - 1)
-  pt(critical, n - 1, ncp=sqrt(n) * standardized_delta, lower.tail=FALSE)
-}
-binomial_power <- function(n) {
-  p_values <- sapply(0:n, function(k) pbinom(k - 1, n, 0.5, lower.tail=FALSE))
-  critical <- which(p_values < alpha)[1] - 1
-  if (is.na(critical)) return(0)
-  pbinom(critical - 1, n, 0.75, lower.tail=FALSE)
-}
-cat(R.version.string, "\n", sep="")
-for (n in ns) {
-  cat(n, t_power(n, 0.05 / 0.08), t_power(n, 0.02 / 0.08),
-      t_power(n, 0.10 / 0.08), binomial_power(n), sep=",")
-  cat("\n")
-}`;
-  const lines = execFileSync('Rscript', ['--vanilla', '-e', program],
+import math
+import sys
+from scipy import stats
+alpha = 0.05 / 9
+ns = (25, 50, 75, 100, 125, 150, 200, 300)
+def t_power(n, standardized_delta):
+    critical = stats.t.ppf(1.0 - alpha, n - 1)
+    return stats.nct.sf(critical, n - 1, math.sqrt(n) * standardized_delta)
+def binomial_power(n):
+    p_values = [stats.binom.sf(k - 1, n, 0.5) for k in range(n + 1)]
+    below = [j for j, p in enumerate(p_values) if p < alpha]
+    if not below:
+        return 0.0
+    return stats.binom.sf(below[0] - 1, n, 0.75)
+print(f"Python {sys.version.split()[0]} + numpy/scipy (repo .venv, pinned)")
+for n in ns:
+    print("%d,%r,%r,%r,%r"
+          % (n, float(t_power(n, 0.05 / 0.08)), float(t_power(n, 0.02 / 0.08)),
+             float(t_power(n, 0.10 / 0.08)), float(binomial_power(n))))
+`;
+  const lines = execFileSync(venvPython(), ['-c', program],
     { encoding: 'utf8' }).trim().split('\n');
-  const rVersion = lines.shift();
-  assert.match(rVersion, /^R version /u);
+  const implementation = lines.shift();
+  assert.match(implementation, /^Python /u);
   return {
-    rVersion,
+    implementation,
     rows: lines.map((line) => {
       const [n, delta005, delta002, delta010, binary075] = line.split(',').map(Number);
       assert.ok([n, delta005, delta002, delta010, binary075].every(Number.isFinite));
@@ -123,7 +127,7 @@ const componentReferenceKey = {
 
 export function runConfirmatoryPowerSimulatorQualification() {
   const simulation = simulateConfirmatoryComponentPower(softwareFixture(), fixtureSeed);
-  const references = independentRReferences();
+  const references = independentPythonReferences();
   assert.deepEqual(simulation.rows.map((row) => row.primarySeeds),
     references.rows.map((row) => row.primarySeeds));
   let maximumStandardErrors = 0;
@@ -138,7 +142,7 @@ export function runConfirmatoryPowerSimulatorQualification() {
         const standardized = standardError === 0 ? observed === expected ? 0 : Infinity :
           Math.abs(observed - expected) / standardError;
         maximumStandardErrors = Math.max(maximumStandardErrors, standardized);
-        assert.ok(standardized <= 5, `${row.primarySeeds}.${memberId}.${componentId} differs from R by ${standardized} SE`);
+        assert.ok(standardized <= 5, `${row.primarySeeds}.${memberId}.${componentId} differs from Python by ${standardized} SE`);
         comparisons += 1;
       }
     }
@@ -150,7 +154,7 @@ export function runConfirmatoryPowerSimulatorQualification() {
     componentsPerCandidate: 14,
     repetitionsPerCandidate: simulation.rows[0].repetitions,
     independentReference: {
-      implementation: references.rVersion,
+      implementation: references.implementation,
       comparisons,
       maximumAbsoluteStandardErrors: maximumStandardErrors,
       thresholdStandardErrors: 5,
@@ -229,7 +233,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       },
       sourceArtifacts: sourcePaths.map((path) => sourceArtifact(path)),
       qualification: runConfirmatoryPowerSimulatorQualification(),
-      claimBoundary: 'This qualifies deterministic synthetic software paths against independent R reference power calculations. It is not a pilot, campaign power result, selected N, resource authorization, study outcome, scientific finding, independent human review, or publication result.',
+      claimBoundary: 'This qualifies deterministic synthetic software paths against independent Python reference power calculations. It is not a pilot, campaign power result, selected N, resource authorization, study outcome, scientific finding, independent human review, or publication result.',
     };
     validateConfirmatoryPowerSimulatorQualification(receipt);
     writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
@@ -237,6 +241,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   } else {
     assert.equal(existsSync(receiptPath), true, 'confirmatory power-simulator qualification receipt is missing');
     validateConfirmatoryPowerSimulatorQualification(JSON.parse(readFileSync(receiptPath, 'utf8')));
-    console.log('Confirmatory power-simulator software qualification valid against independent R references');
+    console.log('Confirmatory power-simulator software qualification valid against independent Python references');
   }
 }

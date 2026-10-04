@@ -15,7 +15,7 @@ import {
 
 export const CONFIRMATORY_PILOT_REDUCTION_VERSION = 'confirmatory-pilot-reduction/v1';
 export const CONFIRMATORY_PILOT_UPPER_SD_METHOD = 'normal-chi-square-one-sided-95-n20-v1';
-/** sqrt(19 / qchisq(0.05, 19)) from independent R 4.6.1. */
+/** sqrt(19 / chi2.ppf(0.05, 19)) from the independent Python/scipy reference. */
 export const CONFIRMATORY_PILOT_UPPER_SD_FACTOR = 1.3704103976822324;
 
 export interface ConfirmatoryPilotSlotObservation {

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { validateConfirmatoryPilotReductionQualification } from
   './qualify-confirmatory-pilot-reduction.mjs';
+import { venvPython } from './resolve-venv-python.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const sha256 = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
@@ -32,11 +33,11 @@ assert.match(policy.admissionInputs, /separate admission audit/u);
 assert.equal(policy.upperDispersion.method, 'normal-chi-square-one-sided-95-n20-v1');
 assert.equal(policy.upperDispersion.degreesOfFreedom, 19);
 assert.equal(policy.upperDispersion.oneSidedConfidence, 0.95);
-const rValues = execFileSync('Rscript', ['--vanilla', '-e',
-  'cat(format(qchisq(0.05,19),digits=17),format(sqrt(19/qchisq(0.05,19)),digits=17),sep=",");cat("\\n")'],
+const pythonValues = execFileSync(venvPython(), ['-c',
+  'import math; from scipy import stats; q = stats.chi2.ppf(0.05, 19); print("%.17g,%.17g" % (q, math.sqrt(19.0 / q)))'],
 { encoding: 'utf8' }).trim().split(',').map(Number);
-assert.ok(Math.abs(policy.upperDispersion.lowerChiSquareQuantile - rValues[0]) < 1e-12);
-assert.ok(Math.abs(policy.upperDispersion.factor - rValues[1]) < 1e-12);
+assert.ok(Math.abs(policy.upperDispersion.lowerChiSquareQuantile - pythonValues[0]) < 1e-12);
+assert.ok(Math.abs(policy.upperDispersion.factor - pythonValues[1]) < 1e-12);
 assert.match(source, /CONFIRMATORY_PILOT_UPPER_SD_FACTOR = 1\.3704103976822324/u);
 assert.match(source, /evidenceSha256/u);
 assert.match(source, /registrationSha256/u);
@@ -47,4 +48,4 @@ assert.match(policy.claimBoundary, /not original evidence verification/u);
 validateConfirmatoryPilotReductionQualification(read(new URL(
   '../reports/research/confirmatory-pilot-reduction-qualification-receipt.json',
   import.meta.url)), repoRoot);
-console.log('Prospective seven-experiment pilot reducer software-qualified against independent R; no pilot data admitted');
+console.log('Prospective seven-experiment pilot reducer software-qualified against independent Python; no pilot data admitted');

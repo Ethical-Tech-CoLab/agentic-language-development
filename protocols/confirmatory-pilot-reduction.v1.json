@@ -45,6 +45,6 @@
   "h5Rule": "Both H5 components are per-seed binary indicators; non-binary values are rejected. The power simulator later uses exact-binomial design probabilities, not this pilot SD.",
   "designUse": "Only conservative dispersion and validity risk may feed the frozen power model. Although the existing v2 summary contract contains sample means for audit consistency, those means must not influence margins, alternatives, model choice, outcomes, stopping rules, or seed selection; they must not be presented as pilot effects before design lock.",
   "failureRule": "Any missing, invalid, duplicated, reused, or unverified original slot blocks admission. This reducer deliberately refuses partial sets rather than turning a failure into a completed summary. Preserve failed original attempts separately.",
-  "qualificationRule": "Qualify the exact implementation with synthetic records, independent R 4.6.1 SD and chi-square references, and negative controls. Qualification is software-only and cannot provide real pilot evidence.",
+  "qualificationRule": "Qualify the exact implementation with synthetic records, independent Python/scipy SD and chi-square references, and negative controls. Qualification is software-only and cannot provide real pilot evidence.",
   "claimBoundary": "This policy and numerical reducer are not original evidence verification, an admitted blinded pilot, campaign power, selected sample size, resource authorization, a scientific finding, independent review, or a publication result."
 }
