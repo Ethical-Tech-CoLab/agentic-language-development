@@ -106,6 +106,35 @@ ALD_ALLOW_MAINNET_ANCHORING=true node scripts/anchor-public-submit.mjs --broadca
 Status: staging-ready. ALD-022 criterion 2 stays open until an approved
 staging broadcast produces a mainnet receipt.
 
+## Faucet-watch resume (R2-C, ALD-020)
+
+`scripts/anchor-faucet-watch.mjs` is the one-command resume path: it checks
+the anchor wallet balance and, only when funded, broadcasts, verifies the
+Sepolia receipt, checks the ALD-020 box, syncs BACKLOG/README/RESEARCH counts,
+regenerates the conformance matrix, verifies gates, and commits the named
+files. Push is opt-in (`--push`, only with push authorization).
+
+```sh
+node scripts/anchor-faucet-watch.mjs \
+  --rpc-url-file ~/.ald/sepolia-rpc.url \
+  --key-file ~/.ald/sepolia-anchor.key \
+  --to 0x<project address> \
+  --checkpoint-hash sha256:<64 hex> \
+  --receipt-out reports/research/ald-020-sepolia-anchor-receipt.json
+```
+
+Safety shape (not configurable): no `--network` input exists; the RPC chain
+id must be exactly 84532; the receipt must report `base-sepolia`; a zero
+balance is never funded. Mainnet is unreachable through this script.
+`--check-only` reports the funding decision without broadcasting.
+`--watch --interval-seconds <n> --max-checks <n>` repeats the check bounded;
+each funded check broadcasts at most once (receipt files are never
+overwritten, and re-running after a close-out refuses the checked box).
+
+Not funded yet: the command prints `NOT_FUNDED` with balance, required total
+(estimate x 2 margin), and address, then exits 0. Fund the printed address
+from a Base Sepolia faucet and re-run; nothing else changes until funds land.
+
 ## Troubleshooting
 
 - `RPC chain id ... does not match`: the RPC file points at the wrong network.
