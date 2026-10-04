@@ -1,0 +1,118 @@
+# Public-Chain Anchor Staging (ALD-020 / ALD-022)
+
+Manual runbook for submitting checkpoint digests to Base Sepolia (ALD-020)
+and staging the mainnet opt-in path (ALD-022) with
+`scripts/anchor-public-submit.mjs`. All research campaign runs stay on
+`anchorClass: "simulated"`; public-chain operation is outside the approved
+research profile and needs a prospective governance amendment per
+`SPECIFICATION.md` §13.4 before any production use.
+
+## Prerequisites
+
+- `pnpm install --frozen-lockfile && pnpm run build`
+- A Base RPC endpoint per network, each stored as one URL on a single line in
+  its own file (for example `~/.ald/sepolia-rpc.url`). Only the host label is
+  ever recorded; userinfo, path, and query credentials never reach output.
+- A dedicated, low-balance anchor wallet key file per network (see below).
+  Mainnet additionally requires a managed signer or hardware-backed key per
+  SPEC §19 ADR-02 — a file key is a staging-only stand-in, never production
+  custody.
+- For Sepolia: testnet ETH on the wallet from a Base Sepolia faucet. One
+  zero-value anchor costs well under 0.001 test ETH.
+- For mainnet: explicit user approval in chat before any broadcast. No
+  exceptions, including staging.
+
+Generate a wallet (mode 0600, refuses to overwrite; prints the address only):
+
+```sh
+node scripts/anchor-public-submit.mjs --generate-key --key-file ~/.ald/sepolia-anchor.key
+```
+
+## ALD-020: Base Sepolia submission
+
+1. Dry-run (read-only; broadcasts nothing):
+
+```sh
+node scripts/anchor-public-submit.mjs --dry-run --network base-sepolia \
+  --rpc-url-file ~/.ald/sepolia-rpc.url \
+  --from 0x<wallet address> --to 0x<project address> \
+  --checkpoint-hash sha256:<64 hex> \
+  --out /tmp/ald020-dryrun.json
+```
+
+A `--checkpoint-manifest <path>` may replace `--checkpoint-hash`; the
+manifest `checkpointHash` is then bound into the evidence.
+
+2. Broadcast, wait for 1 confirmation, verify calldata, write the receipt:
+
+```sh
+node scripts/anchor-public-submit.mjs --broadcast --network base-sepolia \
+  --rpc-url-file ~/.ald/sepolia-rpc.url \
+  --key-file ~/.ald/sepolia-anchor.key \
+  --to 0x<project address> \
+  --checkpoint-hash sha256:<64 hex> \
+  --out reports/research/ald-020-sepolia-anchor-receipt.json
+```
+
+3. Verify on the public explorer at the printed
+`https://sepolia.basescan.org/tx/<hash>` URL:
+   - status success, chain 84532 (Base Sepolia);
+   - `from` is the anchor wallet, `to` is the project address;
+   - input data is exactly `0x<checkpoint digest>`, 66 characters, nothing else.
+4. Link the receipt and explorer URL from `BACKLOG.md` ALD-020 and the
+conformance matrix, then check the box.
+
+If a broadcast run is interrupted after printing the transaction hash, check
+the explorer before re-running: a fresh process signs at a fresh nonce and
+would pay for a second transaction for the same checkpoint.
+
+## ALD-022: mainnet staging (no broadcast without approval)
+
+Default-off is enforced twice: `BaseAnchorPublisher` throws
+`MainnetAnchoringDisabledError` before any RPC call unless constructed with
+`allowMainnet: true` AND `ALD_ALLOW_MAINNET_ANCHORING=true`, and the staging
+script applies the same rule to every mainnet invocation, including dry-runs.
+Covered by `packages/anchor/__tests__/publisher.test.ts`
+(mainnet policy switch) and `scripts/__tests__/anchor-staging.test.ts`.
+
+Staging dry-run (read-only; the farthest this path goes without approval):
+
+```sh
+ALD_ALLOW_MAINNET_ANCHORING=true node scripts/anchor-public-submit.mjs --dry-run \
+  --network base-mainnet --allow-mainnet \
+  --rpc-url-file ~/.ald/mainnet-rpc.url \
+  --from 0x<wallet address> --to 0x<project address> \
+  --checkpoint-hash sha256:<64 hex> \
+  --out /tmp/ald022-dryrun.json
+```
+
+Without both opt-ins the command exits 2 with `MAINNET_ANCHORING_DISABLED`
+and makes zero mainnet RPC calls.
+
+Mainnet broadcast additionally requires `--confirm-mainnet-broadcast`, which
+must be passed only after explicit user approval in chat, and then waits for
+the `safe-tag` depth (192 Base blocks) before reporting anchored-final:
+
+```sh
+ALD_ALLOW_MAINNET_ANCHORING=true node scripts/anchor-public-submit.mjs --broadcast \
+  --network base-mainnet --allow-mainnet --confirm-mainnet-broadcast \
+  --rpc-url-file ~/.ald/mainnet-rpc.url \
+  --key-file ~/.ald/mainnet-anchor.key \
+  --to 0x<project address> \
+  --checkpoint-hash sha256:<64 hex> \
+  --out reports/research/ald-022-mainnet-anchor-receipt.json
+```
+
+Status: staging-ready. ALD-022 criterion 2 stays open until an approved
+staging broadcast produces a mainnet receipt.
+
+## Troubleshooting
+
+- `RPC chain id ... does not match`: the RPC file points at the wrong network.
+- Empty balance / `eth_estimateGas` failure on Sepolia: fund the printed
+  wallet address from a faucet and re-run the dry-run.
+- Key file permission errors: the loader requires mode 0600 and a
+  group/other-writable-free parent directory (`chmod 600` the file,
+  `chmod go-w` the directory); the generator already creates both correctly.
+- `Refusing to overwrite`: evidence files are write-once; choose a new
+  `--out` path instead of replacing a receipt.
