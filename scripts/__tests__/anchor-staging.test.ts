@@ -796,6 +796,31 @@ describe('checkOnce with mocked RPC', () => {
     expect(status).toMatchObject({ funded: false, requiredWei: '45230000000000' });
   });
 
+  it('R10-C-M16 U3: sends the bare digest as estimateGas calldata (no sha256: scheme)', async () => {
+    const dir = makeTmp();
+    let seenParams: Array<Record<string, unknown>> | null = null;
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: (body: { id: number; params: Array<Record<string, unknown>> }) => {
+        seenParams = body.params;
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ jsonrpc: '2.0', id: body.id, result: '0x5857' }),
+        };
+      },
+      eth_gasPrice: '0x1',
+    });
+    await checkOnce(watchArgs(dir), CHECKPOINT, FROM);
+    expect(seenParams?.[0]).toMatchObject({
+      from: FROM,
+      to: TO,
+      value: '0x0',
+      data: `0x${CHECKPOINT.slice('sha256:'.length)}`,
+    });
+  });
+
   it('refuses non-Sepolia chains, bad chain hex, and bad balance hex', async () => {
     const dir = makeTmp();
     stubRpcByMethod({
@@ -857,6 +882,18 @@ describe('readAndAssertReceipt', () => {
       explorerTxUrl: `https://evil.test/?next=https://sepolia.basescan.org/tx/${TX}`,
     }));
     expect(() => readAndAssertReceipt(spoofed)).toThrowError(/valid Sepolia explorer URL/);
+  });
+
+  it('R10-C-M16 U6: refuses Sepolia explorer URLs without a 0x transaction hash', () => {
+    const dir = makeTmp();
+    const variants = [
+      'https://sepolia.basescan.org/tx/NOT-A-HASH',
+      'https://sepolia.basescan.org/tx/',
+    ];
+    for (const [index, explorerTxUrl] of variants.entries()) {
+      const path = writeTmpFile(dir, `u6-${String(index)}.json`, JSON.stringify({ ...good, explorerTxUrl }));
+      expect(() => readAndAssertReceipt(path)).toThrowError(/valid Sepolia explorer URL/);
+    }
   });
 
   it('refuses malformed JSON and missing files', () => {
