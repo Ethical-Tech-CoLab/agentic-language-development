@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 import type { AnchorPublisher } from '@ald/types';
+import { ZodError } from 'zod';
 
 import {
   connectAnchorServiceRpc,
@@ -45,6 +46,38 @@ describe('Anchor Service RPC', () => {
         anchorClass: 'public-chain',
         network: 'base-sepolia',
       })).rejects.toThrow('identity does not match');
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects a malformed submit response', async () => {
+    // R10-C-M5 F8 kill: without client-side receipt parsing this resolves.
+    const directory = mkdtempSync(join(tmpdir(), 'ald-anchor-service-'));
+    const socketPath = join(directory, 'anchor.sock');
+    const runId = 'anchor-service-run';
+    const publisher: AnchorPublisher = {
+      anchorClass: 'simulated',
+      network: 'base-sepolia',
+      submit: async () =>
+        ({ bogus: true }) as unknown as Awaited<
+          ReturnType<AnchorPublisher['submit']>
+        >,
+      awaitConfirmation: async () => receipt(runId, 'confirmed'),
+    };
+    const server = await createAnchorServiceRpcServer(
+      socketPath,
+      runId,
+      publisher,
+    );
+    try {
+      const connected = await connectAnchorServiceRpc(socketPath, runId, publisher);
+      const failure = await connected.publisher.submit(manifest()).then(
+        () => null,
+        (error: unknown) => error,
+      );
+      expect(failure).toBeInstanceOf(ZodError);
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
       rmSync(directory, { recursive: true, force: true });

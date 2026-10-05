@@ -410,9 +410,16 @@ describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () 
     transport.dropNext(5);
     const publisher = publisherFor(ctx, transport, { attempts: 3 });
 
-    await expect(publisher.submit(manifest)).rejects.toBeInstanceOf(
-      AnchorSubmissionFailedError,
+    // R10-C-M5 F5 kill: pin the machine-readable code, not just the class.
+    const failure = await publisher.submit(manifest).then(
+      () => null,
+      (error: unknown) => error,
     );
+    expect(failure).toBeInstanceOf(AnchorSubmissionFailedError);
+    expect((failure as AnchorSubmissionFailedError).code).toBe(
+      'ANCHOR_SUBMISSION_FAILED',
+    );
+    expect((failure as AnchorSubmissionFailedError).attempts).toBe(3);
     expect(transport.sendAttempts).toBe(3);
     expect(transport.submissions).toHaveLength(0);
   });
