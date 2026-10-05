@@ -15,15 +15,9 @@ describe('LV01 power and reserve selection', () => {
     expect(selection.rows.map((row) => row.reserveDyads)).toEqual([16, 20, 24, 29, 37, 52]);
     expect(selection.rows.every((row) => row.reserveAdequacy >= 0.95)).toBe(true);
   });
-  it('selects the smallest qualifying N when power suffices', () => {
-    const tight = reduceLv01Pilot(LV01_COMPONENT_IDS.map((component) => ({ component, values: Array.from({ length: 20 }, (_, index) => index < 10 ? -0.005 : 0.005) })), 0);
-    expect(tight).toMatchObject({ status: 'eligible' });
-    const selection = selectLv01Power(tight, 'lv01-power-probe/v1');
-    expect(selection.status).toBe('selected');
-    expect(selection.selectedDyads).toBe(75);
-    expect(selection.reserveDyads).toBe(16);
-    expect(selection.rows[0]?.eligible).toBe(true);
-  });
+  // NOTE (R9-A): 'selects the smallest qualifying N when power suffices'
+  // moved to ./ledger-value-power-select.test.ts so the slowest Monte Carlo
+  // case runs in its own worker in parallel with the rest.
   it('rejects malformed pilot and selection inputs fail-closed', () => {
     expect(() => reduceLv01Pilot(LV01_COMPONENT_IDS.map((component) => ({ component, values: Array.from({ length: 20 }, () => Number.NaN) })), 0)).toThrow();
     expect(() => reduceLv01Pilot([], 0)).toThrow();
