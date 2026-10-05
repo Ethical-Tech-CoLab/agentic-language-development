@@ -593,9 +593,8 @@ describe('rpcClient faults (mocked fetch)', () => {
   ])('%s rpcClient redacts the RPC URL from fetch errors', async (_name, makeClient: any) => {
     const rpcUrl = 'https://user:SECRET@rpc.example.test:8545/v2/key';
     const call = makeClient(rpcUrl, 'rpc.example.test:8545');
-    vi.stubGlobal('fetch', vi.fn(async () => {
-      throw new TypeError(`Request cannot be constructed from a URL that includes credentials: ${rpcUrl}`);
-    }));
+    const thrown = new TypeError(`Request cannot be constructed from a URL that includes credentials: ${rpcUrl}`);
+    vi.stubGlobal('fetch', vi.fn(async () => { throw thrown; }));
     const failure = await call('eth_chainId', []).then(
       () => { throw new Error('expected rejection'); },
       (error: Error) => error,
@@ -605,6 +604,18 @@ describe('rpcClient faults (mocked fetch)', () => {
     );
     expect(failure.message).not.toContain('SECRET');
     expect(failure.message).not.toContain(rpcUrl);
+    expect((failure as { cause?: unknown }).cause).toBe(thrown);
+  });
+
+  // R9-Q (M11 survivor): non-Error fetch rejections pass through untouched —
+  // the redaction guard must not crash on values without .message.
+  it.each([
+    ['submit', submitRpcClient],
+    ['watch', watchRpcClient],
+  ])('%s rpcClient passes non-Error rejections through', async (_name, makeClient: any) => {
+    const call = makeClient('https://rpc.example.test', 'rpc.example.test');
+    vi.stubGlobal('fetch', vi.fn(async () => { throw 'string-failure'; }));
+    await expect(call('eth_chainId', [])).rejects.toBe('string-failure');
   });
 });
 
