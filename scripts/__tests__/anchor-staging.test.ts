@@ -48,6 +48,7 @@ import {
   writeEvidenceOnce,
 } from '../anchor-public-submit.mjs';
 import {
+  assertReceiptInsideRepo,
   checkOnce,
   readAndAssertReceipt,
   readSecretFile as readWatchSecretFile,
@@ -788,10 +789,10 @@ describe('readAndAssertReceipt', () => {
   });
 });
 
-describe('syncCloseOut confinement (throws before any side effect)', () => {
+describe('assertReceiptInsideRepo confinement (pure: never touches BACKLOG)', () => {
   it('refuses absolute outside paths, parent escapes, and the repo root itself', () => {
     for (const receiptOut of ['/tmp/evil.json', '../evil.json', '.', '..']) {
-      expect(() => syncCloseOut({}, receiptOut)).toThrowError(/inside the repository/);
+      expect(() => assertReceiptInsideRepo(receiptOut)).toThrowError(/inside the repository/);
     }
   });
 
@@ -801,9 +802,29 @@ describe('syncCloseOut confinement (throws before any side effect)', () => {
     const link = join(REPO_ROOT, '.r7b-symlink-probe.json');
     symlinkSync(target, link);
     try {
-      expect(() => syncCloseOut({}, '.r7b-symlink-probe.json')).toThrowError(/symlink/);
+      expect(() => assertReceiptInsideRepo('.r7b-symlink-probe.json')).toThrowError(/symlink/);
     } finally {
       unlinkSync(link);
+    }
+  });
+
+  it('returns the absolute path for a genuine in-repo receipt', () => {
+    const linkName = '.r8h-inside-probe.json';
+    const link = join(REPO_ROOT, linkName);
+    writeFileSync(link, '{}');
+    try {
+      expect(assertReceiptInsideRepo(linkName)).toBe(link);
+    } finally {
+      unlinkSync(link);
+    }
+  });
+
+  it('syncCloseOut delegates to the confinement check first', () => {
+    // Outside paths only: even with either guard removed (single mutant),
+    // the other still throws before any BACKLOG write (lexical message or
+    // realpath ENOENT). The symlink case stays on the pure unit above.
+    for (const receiptOut of ['/tmp/evil.json', '../evil.json']) {
+      expect(() => syncCloseOut({}, receiptOut)).toThrowError(Error);
     }
   });
 });

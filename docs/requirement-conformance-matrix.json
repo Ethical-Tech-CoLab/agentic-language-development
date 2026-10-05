@@ -1465,6 +1465,8 @@
         "refuses malformed JSON and missing files",
         "refuses absolute outside paths, parent escapes, and the repo root itself",
         "refuses symlink escapes even when the link lives in the repo",
+        "returns the absolute path for a genuine in-repo receipt",
+        "syncCloseOut delegates to the confinement check first",
         "single-shot NOT_FUNDED exits 0 without sleeping",
         "a bounded watch re-checks then gives up cleanly",
         "check-only + push reports funded but never broadcasts or pushes",

@@ -185,7 +185,15 @@ export function readAndAssertReceipt(receiptOut) {
   return receipt;
 }
 
-export function syncCloseOut(receipt, receiptOut) {
+/**
+ * Pure receipt confinement for `--receipt-out`: lexical in-repo check plus a
+ * symlink-escape check. Exported (and unit-tested) separately from
+ * `syncCloseOut` so the confinement tests can never fall through into the
+ * close-out's BACKLOG writes and commit — an R8-H mutant proved a
+ * `syncCloseOut`-level symlink test would live-fire the close-out if the
+ * realpath guard were ever disabled.
+ */
+export function assertReceiptInsideRepo(receiptOut) {
   const absoluteReceipt = resolve(ROOT, receiptOut);
   if (!absoluteReceipt.startsWith(`${ROOT}/`)) {
     throw new Error(`--receipt-out must live inside the repository to be committable: ${receiptOut}`);
@@ -197,6 +205,11 @@ export function syncCloseOut(receipt, receiptOut) {
   if (!realReceipt.startsWith(`${realpathSync(ROOT)}/`)) {
     throw new Error(`--receipt-out escapes the repository via symlink: ${receiptOut}`);
   }
+  return absoluteReceipt;
+}
+
+export function syncCloseOut(receipt, receiptOut) {
+  const absoluteReceipt = assertReceiptInsideRepo(receiptOut);
   const backlogPath = resolve(ROOT, 'BACKLOG.md');
   const readmePath = resolve(ROOT, 'README.md');
   const researchPath = resolve(ROOT, 'RESEARCH.md');
