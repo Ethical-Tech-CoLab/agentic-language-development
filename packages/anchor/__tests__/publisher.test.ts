@@ -217,6 +217,45 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
   });
 
+  it('returns the stored row on a repeated confirmation, not a fresh copy', async () => {
+    // R10-C-M12 M4 kill: finalize must return alreadyStored, not final.
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport);
+
+    const submitted = await publisher.submit(manifest);
+    transport.mineBlock(1);
+    const first = await publisher.awaitConfirmation(submitted);
+    const second = await publisher.awaitConfirmation(submitted);
+
+    expect(first.status).toBe('confirmed');
+    expect(second.recordedAt).toBe(first.recordedAt);
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
+  });
+
+  it('returns the stored row when the poll budget gives up after a store', async () => {
+    // R10-C-M12 M5 kill: giveUp must return the meanwhile-stored row.
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport, { pollAttempts: 1 });
+
+    const submitted = await publisher.submit(manifest);
+    await ctx.writer.insertAnchorReceipt({
+      ...submitted,
+      status: 'confirmed',
+      blockNumber: 1,
+      blockHash: `0x${'44'.repeat(32)}`,
+      confirmations: 1,
+    });
+
+    const result = await publisher.awaitConfirmation(submitted);
+
+    expect(result.status).toBe('confirmed');
+    expect(result.confirmations).toBe(1);
+  });
+
   it("requires three blocks under '3-confirmations'", async () => {
     const ctx = await context();
     const manifest = await ctx.addCheckpoint();
@@ -645,6 +684,26 @@ describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () 
     const confirmed = await restarted.awaitConfirmation(recovered);
     expect(confirmed.status).toBe('confirmed');
     expect(readPendingSubmissions(pendingFile)).toHaveLength(0);
+  });
+
+  it('backs off exponentially between send attempts', async () => {
+    // R10-C-M12 M6 kill: backoff doubles per attempt (1, 2, ...).
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const sleeps: number[] = [];
+    const publisher = publisherFor(ctx, transport, {
+      attempts: 3,
+      sleep: async (ms: number) => {
+        sleeps.push(ms);
+      },
+    });
+    transport.dropNext(2);
+
+    const receipt = await publisher.submit(manifest);
+
+    expect(receipt.status).toBe('submitted');
+    expect(sleeps).toEqual([1, 2]);
   });
 });
 

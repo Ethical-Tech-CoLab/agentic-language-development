@@ -135,6 +135,8 @@
         "refuses to anchor a checkpoint that is not in the evidence store",
         "refuses a manifest whose runIdHash matches no run",
         "dedups concurrent confirmations for one receipt into one decision",
+        "returns the stored row on a repeated confirmation, not a fresh copy",
+        "returns the stored row when the poll budget gives up after a store",
         "records the confirmation when a given-up poll is resumed later",
         "resumes a given-up submission from the sidecar after a restart",
         "anchorAndConfirm submits and waits in one call",
@@ -149,6 +151,7 @@
         "returns the first submission for a duplicate submit with no pendingFile",
         "collapses concurrent submits for one checkpoint into one transaction",
         "round-trips the pending file so a crash cannot lose the tx hash",
+        "backs off exponentially between send attempts",
         "parses the supported policies",
         "budgets enough confirmation polls to reach the safe-tag depth",
         "reaches the safe-tag depth under the default poll budget",
@@ -172,7 +175,9 @@
         "fails when the transaction does not exist on chain",
         "fails when the on-chain transaction reverted",
         "fails when the on-chain destination is not the receipt destination",
-        "fails when the transaction is not yet in the claimed block"
+        "fails when the transaction is not yet in the claimed block",
+        "distrusts on-chain calldata for a checkpoint it was not asked about",
+        "rejects a submitted receipt offline"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/anchor/__tests__/verify-anchor.test.ts"
     },

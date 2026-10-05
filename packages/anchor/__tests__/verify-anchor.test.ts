@@ -267,4 +267,50 @@ describe('verifyAnchorReceipt', () => {
     expect(result.checks.blockIncluded).toBe(false);
     expect(result.checks.receiptStatusSuccess).toBe(false);
   });
+
+  it('distrusts on-chain calldata for a checkpoint it was not asked about', async () => {
+    // R10-C-M12 M7 kill: chainInputMatches must cross-check expectedInput.
+    const { receipt, transport, ctx } = await anchored();
+    const other = await ctx.addCheckpoint();
+    expect(other.checkpointHash).not.toBe(receipt.checkpointHash);
+
+    const result = await verifyAnchorReceipt(
+      receipt,
+      other.checkpointHash,
+      transport,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.checks.chainInputMatches).toBe(false);
+  });
+
+  it('rejects a submitted receipt offline', async () => {
+    // R10-C-M12 M8 kill: only confirmed counts as anchored.
+    const ctx = await createAnchorContext();
+    openContexts.push(ctx);
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = new BaseAnchorPublisher({
+      transport,
+      anchorClass: 'simulated',
+      evidence: ctx.writer,
+      clock: ctx.clock,
+      anchorAddress: ANCHOR_ADDRESS,
+      finalityPolicy: '1-confirmation',
+      retry: { attempts: 3, initialBackoffMs: 1, sleep: immediateSleep },
+    });
+    const submitted = await publisher.submit(manifest);
+
+    const result = await verifyAnchorReceipt(
+      submitted,
+      manifest.checkpointHash,
+      null,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.checks.statusConfirmed).toBe(false);
+    expect(result.problems).toContain(
+      "receipt status is 'submitted', not 'confirmed'",
+    );
+  });
 });
