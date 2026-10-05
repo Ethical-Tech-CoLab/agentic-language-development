@@ -126,7 +126,11 @@ pass on CI (`ubuntu-latest`). Causes quoted from observed errors:
 
 - `scripts/__tests__/a0-launch.test.ts` (9): needs `systemd-run` transient
   units — macOS has no systemd (payload exit code 2 from the missing
-  supervisor path). Tests: runs a trivial job to completion and cleans up
+  supervisor path; the two retains tests fail parsing the absent
+  readback with `SyntaxError` on empty stdout, and the three refuses
+  tests see the fallback reason `launcher nice readback below courteous
+  level` instead of the lease/policy/hash reasons). Tests: runs a
+  trivial job to completion and cleans up
   the unit; enforces the deadline and verifies launch readbacks on a live
   job; propagates a failing payload exit code without supervisor error;
   refuses a non-owner without touching the lease; refuses a lease bound to
@@ -138,7 +142,8 @@ pass on CI (`ubuntu-latest`). Causes quoted from observed errors:
 - `scripts/__tests__/a0-preflight.test.ts` (1) +
   `scripts/__tests__/a0-preflight-state.test.ts` (2; R9-F split): needs
   the `aldresearch.slice` cgroup accounting group — observed
-  `enforcement: aldresearch.slice absent (accounting group unreadable)`.
+  `enforcement: aldresearch.slice absent (accounting group unreadable)`;
+  the reconciles test instead sees null OOM counters.
   Tests: establishes the OOM baseline on first run, then requires quiet
   history (a0-preflight.test.ts); reconciles only a matching incident
   with no new OOM kills; refuses a declared workload that cannot fit
