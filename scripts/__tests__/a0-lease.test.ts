@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -243,5 +243,47 @@ describe('A0 single host-job lease', () => {
     expect(JSON.parse(refused.stderr).lease).toBe('error');
     expect(refused.stderr).toContain('missing or invalid');
     expect(existsSync(ACTIVE)).toBe(false);
+  });
+
+  it('refuses to release a running lease while its unit is still active', () => {
+    // R10-C-Q1 ALD2 flag (a0-lease gap 1 of 2): release must never orphan a live unit.
+    if (activeLeaseExists()) return;
+    const unit = `ald-test-a0-lease-${process.pid}.service`;
+    const started = spawnSync('systemd-run', ['--user', `--unit=${unit}`, 'sleep', '30'], { encoding: 'utf8' });
+    if (started.status !== 0) return; // No systemd user manager here; nothing to refuse against.
+    const live = spawnSync('systemctl', ['--user', 'is-active', '--quiet', unit]);
+    if (live.status !== 0) { spawnSync('systemctl', ['--user', 'stop', unit]); return; }
+    mkdirSync(DIR, { recursive: true });
+    writeFileSync(ACTIVE, `${JSON.stringify({ id: 'a0-test-running-live', unit, status: 'running', owner: OWNER, task: 'test' })}\n`);
+    try {
+      const refused = run('release', '--owner', OWNER, '--reason', 'must not orphan');
+      expect(refused.status).toBe(2);
+      expect(JSON.parse(refused.stderr).lease).toBe('error');
+      expect(refused.stderr).toContain('has a running job');
+      expect(existsSync(ACTIVE)).toBe(true); // Still held, not orphaned.
+    } finally {
+      spawnSync('systemctl', ['--user', 'stop', unit]);
+      rmSync(ACTIVE, { force: true });
+    }
+  });
+
+  it('stamps launcher-lost when releasing a running lease whose unit is gone', () => {
+    // R10-C-Q1 ALD2 flag (a0-lease gap 2 of 2): vanished unit releases with a stamped outcome.
+    if (activeLeaseExists()) return;
+    const id = `a0-test-running-gone-${process.pid}-${Date.now().toString(36)}`;
+    mkdirSync(DIR, { recursive: true });
+    writeFileSync(ACTIVE, `${JSON.stringify({ id, unit: `aldresearch-job-${id}.scope`, status: 'running', owner: OWNER, task: 'test' })}\n`);
+    const released = run('release', '--owner', OWNER, '--reason', 'unit vanished');
+    expect(released.status).toBe(0);
+    expect(existsSync(ACTIVE)).toBe(false);
+    const hits = readdirSync(DIR)
+      .filter((f) => f.startsWith('released-'))
+      .map((f) => ({ f, r: JSON.parse(readFileSync(join(DIR, f), 'utf8')) as { id: string; outcome: string } }))
+      .filter(({ r }) => r.id === id);
+    expect(hits).toHaveLength(1);
+    expect(hits[0].r.outcome).toContain('launcher-lost');
+    expect(hits[0].r.outcome).toContain('already gone');
+    expect(hits[0].r.outcome).toContain('unit vanished');
+    rmSync(join(DIR, hits[0].f)); // Our record is asserted inline; leave no residue for reruns.
   });
 });
