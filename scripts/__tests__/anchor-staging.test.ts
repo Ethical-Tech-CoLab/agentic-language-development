@@ -12,7 +12,7 @@
  * the exit-code map) with tmp fixtures and a stubbed `fetch`.
  */
 import { execFile } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,6 +64,7 @@ const TX = `0x${'ab'.repeat(32)}`;
 const FROM = `0x${'c1'.repeat(20)}`;
 const TO = `0x${'d0'.repeat(20)}`;
 const CHECKPOINT = `sha256:${'3f'.repeat(32)}`;
+const INPUT = `0x${'3f'.repeat(32)}`;
 
 describe('staging gate chain identity', () => {
   it('matches the authoritative @ald/anchor chain ids', () => {
@@ -1396,6 +1397,99 @@ describe('R8-Q key generation and submit dispatch', () => {
     expect(failure).toBeInstanceOf(Error);
     expect(failure).not.toBeInstanceOf(StagingGateError);
     expect(failure.message).toBe('Transport returned input data that does not match the checkpoint digest.');
+  });
+
+  it('runBroadcast polls to finality, verifies on-chain, and writes the receipt', async () => {
+    // R10-C-Q1 G1 kill: success path through the poll loop + on-chain verify + write.
+    const dir = makeTmp();
+    const out = join(dir, 'out.json');
+    const sendAnchorTransaction = vi.fn().mockResolvedValue({
+      transactionHash: TX,
+      from: FROM,
+      to: TO,
+      inputData: INPUT,
+    });
+    const getTransactionReceipt = vi.fn().mockResolvedValue({
+      blockNumber: 10,
+      blockHash: `0x${'44'.repeat(32)}`,
+      status: 'success',
+    });
+    const latestBlockNumber = vi.fn().mockResolvedValue(10);
+    const getTransaction = vi.fn().mockResolvedValue({ input: INPUT, to: TO });
+    vi.spyOn(ViemChainTransport, 'create').mockReturnValue({
+      chainId: PUBLIC_ANCHOR_NETWORKS['base-sepolia'].chainId,
+      endpointLabel: 'stub',
+      sendAnchorTransaction,
+      getTransactionReceipt,
+      latestBlockNumber,
+      getTransaction,
+    } as any);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    await runBroadcast({
+      mode: 'broadcast',
+      network: 'base-sepolia',
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      keyFile: writeTmpFile(dir, 'anchor.key', `${'0x'}${'11'.repeat(32)}\n`),
+      from: null,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out,
+      allowMainnet: false,
+      confirmMainnetBroadcast: false,
+    });
+    expect(sendAnchorTransaction).toHaveBeenCalledOnce();
+    expect(getTransactionReceipt).toHaveBeenCalledOnce();
+    expect(getTransaction).toHaveBeenCalledOnce();
+    const record = JSON.parse(readFileSync(out, 'utf8'));
+    expect(record).toMatchObject({
+      kind: 'anchor-broadcast-receipt',
+      transactionHash: TX,
+      blockNumber: 10,
+      confirmations: 1,
+    });
+  });
+
+  it('runBroadcast rejects a reverted transaction before writing', async () => {
+    // R10-C-Q1 G1 kill: reverted path throws, no receipt row written.
+    const dir = makeTmp();
+    const out = join(dir, 'out.json');
+    const getTransaction = vi.fn();
+    vi.spyOn(ViemChainTransport, 'create').mockReturnValue({
+      chainId: PUBLIC_ANCHOR_NETWORKS['base-sepolia'].chainId,
+      endpointLabel: 'stub',
+      sendAnchorTransaction: vi.fn().mockResolvedValue({
+        transactionHash: TX,
+        from: FROM,
+        to: TO,
+        inputData: INPUT,
+      }),
+      getTransactionReceipt: vi.fn().mockResolvedValue({
+        blockNumber: 10,
+        blockHash: `0x${'44'.repeat(32)}`,
+        status: 'reverted',
+      }),
+      latestBlockNumber: vi.fn().mockResolvedValue(10),
+      getTransaction,
+    } as any);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const failure = await runBroadcast({
+      mode: 'broadcast',
+      network: 'base-sepolia',
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      keyFile: writeTmpFile(dir, 'anchor.key', `${'0x'}${'11'.repeat(32)}\n`),
+      from: null,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out,
+      allowMainnet: false,
+      confirmMainnetBroadcast: false,
+    }).then(() => null, (error: any) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure.message).toMatch(/reverted/);
+    expect(existsSync(out)).toBe(false);
+    expect(getTransaction).not.toHaveBeenCalled();
   });
 
   it('submit runCli dispatches broadcast refusals through main with exit 2', async () => {

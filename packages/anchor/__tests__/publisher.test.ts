@@ -11,6 +11,8 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ANCHOR_CHAIN_IDS,
+  AnchorNetworkMismatchError,
+  AnchorPayloadMismatchError,
   AnchorSubmissionFailedError,
   BASE_BLOCK_TIME_SECONDS,
   BaseAnchorPublisher,
@@ -195,6 +197,24 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
     expect(stored[0]?.status).toBe('confirmed');
     expect(stored[0]?.checkpointHash).toBe(manifest.checkpointHash);
     expect(publisher.pendingSubmissions()).toHaveLength(0);
+  });
+
+  it('dedups concurrent confirmations for one receipt into one decision', async () => {
+    // R10-C-Q1 G4 kill: confirmationInFlight branch was uncovered.
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport);
+
+    const submitted = await publisher.submit(manifest);
+    transport.mineBlock(1);
+    const [first, second] = await Promise.all([
+      publisher.awaitConfirmation(submitted),
+      publisher.awaitConfirmation(submitted),
+    ]);
+    expect(first).toBe(second);
+    expect(first.status).toBe('confirmed');
+    expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
   });
 
   it("requires three blocks under '3-confirmations'", async () => {
@@ -386,6 +406,50 @@ describe('BaseAnchorPublisher.awaitConfirmation (ALD-021)', () => {
   });
 });
 
+describe('constructor guards (R10-C-Q1)', () => {
+  it('rejects a transport chain id that mismatches its network', async () => {
+    const ctx = await context();
+    let failure;
+    try {
+      publisherFor(ctx, new FakeChainTransport({ chainId: 1 }));
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(AnchorNetworkMismatchError);
+    expect((failure as AnchorNetworkMismatchError).code).toBe(
+      'ANCHOR_NETWORK_MISMATCH',
+    );
+  });
+
+  it('rejects non-positive retry and poll budgets', async () => {
+    const ctx = await context();
+    expect(() =>
+      publisherFor(ctx, new FakeChainTransport(), { attempts: 0 }),
+    ).toThrowError(RangeError);
+    expect(() =>
+      publisherFor(ctx, new FakeChainTransport(), { pollAttempts: 0 }),
+    ).toThrowError(RangeError);
+    expect(
+      () =>
+        new BaseAnchorPublisher({
+          transport: new FakeChainTransport(),
+          anchorClass: 'simulated',
+          evidence: ctx.writer,
+          clock: ctx.clock,
+          anchorAddress: ANCHOR_ADDRESS,
+          finalityPolicy: '1-confirmation',
+          retry: {
+            attempts: 5,
+            initialBackoffMs: 1,
+            maxBackoffMs: 4,
+            sleep: immediateSleep,
+          },
+          confirmationPoll: { attempts: 5, intervalMs: -1 },
+        }),
+    ).toThrowError(RangeError);
+  });
+});
+
 describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () => {
   it('retries a transient send failure without duplicate submission', async () => {
     const ctx = await context();
@@ -424,6 +488,32 @@ describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () 
     expect(transport.submissions).toHaveLength(0);
   });
 
+  it('rejects a submission whose payload mismatches the checkpoint', async () => {
+    // R10-C-Q1 G3 kill: payload-mismatch throw was export-listed only.
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport);
+
+    const send = vi
+      .spyOn(transport, 'sendAnchorTransaction')
+      .mockResolvedValue({
+        transactionHash: `0x${'aa'.repeat(32)}`,
+        from: ANCHOR_ADDRESS,
+        to: ANCHOR_ADDRESS,
+        inputData: `0x${'99'.repeat(32)}`,
+      });
+    const failure = await publisher.submit(manifest).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(AnchorPayloadMismatchError);
+    expect((failure as AnchorPayloadMismatchError).code).toBe(
+      'ANCHOR_PAYLOAD_MISMATCH',
+    );
+    expect(send).toHaveBeenCalledOnce();
+  });
+
   it('returns the existing pending state for a duplicate submit', async () => {
     const ctx = await context();
     const manifest = await ctx.addCheckpoint();
@@ -458,6 +548,28 @@ describe('retry and idempotency (ALD-021 criterion 2, ALD-018 criterion 3)', () 
     // One receipt per chain per checkpoint, even across repeated polls.
     await publisher.awaitConfirmation(submitted);
     expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(1);
+  });
+
+  it('anchorAndConfirm returns the stored receipt for a confirmed checkpoint', async () => {
+    // R10-C-Q1 G5 kill: early-return branch was uncovered.
+    const ctx = await context();
+    const manifest = await ctx.addCheckpoint();
+    const transport = new FakeChainTransport();
+    const publisher = publisherFor(ctx, transport, {
+      pendingFile: join(ctx.directory, 'pending.json'),
+    });
+
+    const submitted = await publisher.submit(manifest);
+    transport.mineBlock(1);
+    const confirmed = await publisher.awaitConfirmation(submitted);
+
+    const callsBefore = transport.rpcCalls;
+    const again = await publisher.anchorAndConfirm(manifest);
+    expect(again).toEqual(confirmed);
+    expect(again.status).toBe('confirmed');
+    expect(transport.submissions).toHaveLength(1);
+    // Early return performs no transport reads; re-confirming would poll.
+    expect(transport.rpcCalls).toBe(callsBefore);
   });
 
   it('returns the first submission for a duplicate submit with no pendingFile', async () => {

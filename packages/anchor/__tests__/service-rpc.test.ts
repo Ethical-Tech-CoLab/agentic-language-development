@@ -83,6 +83,40 @@ describe('Anchor Service RPC', () => {
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+  it('rejects a malformed confirmation response', async () => {
+    // R10-C-Q1 G6 kill: awaitConfirmation client parse, mirror of F8.
+    const directory = mkdtempSync(join(tmpdir(), 'ald-anchor-service-'));
+    const socketPath = join(directory, 'anchor.sock');
+    const runId = 'anchor-service-run';
+    const publisher: AnchorPublisher = {
+      anchorClass: 'simulated',
+      network: 'base-sepolia',
+      submit: async () => receipt(runId, 'submitted'),
+      awaitConfirmation: async () =>
+        ({ bogus: true }) as unknown as Awaited<
+          ReturnType<AnchorPublisher['awaitConfirmation']>
+        >,
+    };
+    const server = await createAnchorServiceRpcServer(
+      socketPath,
+      runId,
+      publisher,
+    );
+    try {
+      const connected = await connectAnchorServiceRpc(socketPath, runId, publisher);
+      const failure = await connected.publisher
+        .awaitConfirmation(receipt(runId, 'submitted'))
+        .then(
+          () => null,
+          (error: unknown) => error,
+        );
+      expect(failure).toBeInstanceOf(ZodError);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
 });
 
 const sha = `sha256:${'00'.repeat(32)}`;
