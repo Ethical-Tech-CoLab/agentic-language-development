@@ -76,6 +76,21 @@ describe('Evidence-absent quarantine (R5-A governance)', () => {
     },
   );
 
+  it.each([
+    { name: 'lv01-paired-development-v21', present: true },
+    { name: 'no-such-marker', present: false },
+  ])('exitIfQuarantined returns normally for $name (present=$present)', ({ name, present }) => {
+    // exitIfQuarantined calls process.exit on the quarantine path, so it
+    // cannot be invoked in-process: spawn a probe that must survive the
+    // call and print SENTINEL. Kills R9-BG mutants M1 (ignores present)
+    // and M2 (ignores no-marker).
+    const probe = `import('./scripts/quarantine.mjs').then((m) => { m.exitIfQuarantined('${name}', ${present}); console.log('SENTINEL'); });`;
+    const result = spawnSync(process.execPath, ['-e', probe], { cwd: root, encoding: 'utf8' });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('SENTINEL');
+    expect(result.stdout).not.toContain('QUARANTINED');
+  });
+
   it('wires the 2 vitest-side quarantine branches', () => {
     const runner = readFileSync(`${root}scripts/__tests__/lv01-fixture-runner.test.ts`, 'utf8');
     expect(runner).toContain('quarantineSkipLine(\'lv01-development-allocation-v12\'');
