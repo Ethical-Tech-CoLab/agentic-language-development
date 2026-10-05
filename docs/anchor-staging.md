@@ -140,6 +140,8 @@ balance is never funded. Mainnet is unreachable through this script.
 `--watch --interval-seconds <n> --max-checks <n>` repeats the check bounded;
 each funded check broadcasts at most once (receipt files are never
 overwritten, and re-running after a close-out refuses the checked box).
+`--receipt-out` must resolve inside the repository (symlink escapes are
+refused) so the close-out commit only ever stages repo files.
 
 Not funded yet: the command prints `NOT_FUNDED` with balance, required total
 (estimate x 2 margin), and address, then exits 0. Fund the printed address
