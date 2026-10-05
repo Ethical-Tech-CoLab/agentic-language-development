@@ -84,10 +84,17 @@ describe('Evidence-absent quarantine (R5-A governance)', () => {
     // cannot be invoked in-process: spawn a probe that must survive the
     // call and print SENTINEL. Kills R9-BG mutants M1 (ignores present)
     // and M2 (ignores no-marker).
+    // Self-validating test data (R9-BT H4): the P1 case only kills M1
+    // when its marker really exists, so assert the setup first.
+    if (present) {
+      expect(readQuarantineMarker(name)).not.toBeNull();
+    } else {
+      expect(readQuarantineMarker(name)).toBeNull();
+    }
     const probe = `import('./scripts/quarantine.mjs').then((m) => { m.exitIfQuarantined('${name}', ${present}); console.log('SENTINEL'); });`;
     const result = spawnSync(process.execPath, ['-e', probe], { cwd: root, encoding: 'utf8' });
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('SENTINEL');
+    expect(result.stdout).toMatch(/^SENTINEL$/mu);
     expect(result.stdout).not.toContain('QUARANTINED');
   });
 
