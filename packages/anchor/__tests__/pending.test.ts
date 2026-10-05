@@ -89,4 +89,10 @@ describe('pending sidecar M10 pins', () => {
     writeFileSync(path, JSON.stringify({ version: 1, submissions: [submission({ checkpointSequence: -1 })] }));
     expect(() => readPendingSubmissions(path)).toThrowError(PendingFileInvalidError);
   });
+
+  it('R10-C-M17 V2: zero chainId is rejected', () => {
+    const path = join(makeDir(), 'pending.json');
+    writeFileSync(path, JSON.stringify({ version: 1, submissions: [submission({ chainId: 0 })] }));
+    expect(() => readPendingSubmissions(path)).toThrowError(PendingFileInvalidError);
+  });
 });
