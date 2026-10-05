@@ -41,7 +41,9 @@ node scripts/anchor-public-submit.mjs --dry-run --network base-sepolia \
 ```
 
 A `--checkpoint-manifest <path>` may replace `--checkpoint-hash`; the
-manifest `checkpointHash` is then bound into the evidence.
+manifest `checkpointHash` is then bound into the evidence. Manifests
+fail fast: a file with no valid `checkpointHash` shape is refused with
+`has no valid checkpointHash` before any RPC call.
 
 2. Broadcast, wait for 1 confirmation, verify calldata, write the receipt:
 
@@ -53,6 +55,10 @@ node scripts/anchor-public-submit.mjs --broadcast --network base-sepolia \
   --checkpoint-hash sha256:<64 hex> \
   --out reports/research/ald-020-sepolia-anchor-receipt.json
 ```
+
+`--from` is optional on broadcast: when given it must match the
+`--key-file` wallet address (case-insensitive) or the run is refused
+with `--from does not match`; when omitted the key wallet is used.
 
 3. Verify on the public explorer at the printed
 `https://sepolia.basescan.org/tx/<hash>` URL:
@@ -137,7 +143,10 @@ Safety shape (not configurable): no `--network` input exists; the RPC chain
 id must be exactly 84532; the receipt must report `base-sepolia`; a zero
 balance is never funded. Mainnet is unreachable through this script.
 `--check-only` reports the funding decision without broadcasting.
-`--watch --interval-seconds <n> --max-checks <n>` repeats the check bounded;
+`--min-balance-wei <wei>` overrides the funding threshold (default: the
+gas estimate x 2 margin, or 1 wei when the estimate is zero).
+`--watch --interval-seconds <n> --max-checks <n>` repeats the check bounded
+(defaults: 300 seconds between checks, 1 check);
 each funded check broadcasts at most once (receipt files are never
 overwritten, and re-running after a close-out refuses the checked box).
 `--receipt-out` must resolve inside the repository (symlink escapes are
@@ -146,6 +155,24 @@ refused) so the close-out commit only ever stages repo files.
 Not funded yet: the command prints `NOT_FUNDED` with balance, required total
 (estimate x 2 margin), and address, then exits 0. Fund the printed address
 from a Base Sepolia faucet and re-run; nothing else changes until funds land.
+
+The close-out is repo-state sensitive: it rewrites the ALD-020 box and the
+count snapshots in `BACKLOG.md`/`README.md`/`RESEARCH.md`, regenerates and
+re-checks the conformance matrix, runs the project-status and secrets gates,
+then `git add`s and commits exactly those files plus the receipt. Any of
+those steps can fail the run (missing snapshot line, gate failure, nothing
+to commit); fix the reported step and re-run — the broadcast is not
+repeated once the box is checked.
+
+## Exit codes
+
+All three scripts share one convention: `0` means the command did what it
+said (including `NOT_FUNDED`, which is a successful funding check, not an
+error); `2` means a staging-gate refusal (`StagingGateError`: wrong
+network, mainnet without both opt-ins, confinement violation);
+`1` means anything else went wrong (RPC failure, malformed manifest,
+broadcast or verification failure, close-out failure). Only the
+human-readable `error: ...` line is printed; the gate code is not.
 
 ## Troubleshooting
 
@@ -160,3 +187,20 @@ from a Base Sepolia faucet and re-run; nothing else changes until funds land.
   `chmod go-w` the directory); the generator already creates both correctly.
 - `Refusing to overwrite`: evidence files are write-once; choose a new
   `--out` path instead of replacing a receipt.
+- Broadcast receipt with status `failed`: the transaction was mined but
+  reverted on-chain. Gas was spent; nothing was anchored. Check the `to`
+  address and the checkpoint digest, then start a fresh broadcast (a new
+  nonce) — do not re-verify the failed receipt.
+- Confirmation wait gives up (`submitted` receipt, depth below target):
+  the poll budget expired before the required confirmations. This is not
+  terminal — no receipt row is stored and the pending sidecar entry stays
+  as the resume handle. The transaction may still confirm later; re-run
+  the wait against the same transaction hash rather than re-broadcasting.
+- `receipt inputData ... is not the 32-byte checkpoint digest`: the
+  on-chain calldata does not match the checkpoint being verified — wrong
+  checkpoint, wrong transaction, or a tampered receipt. Do not treat the
+  receipt as evidence for this checkpoint; re-verify against the correct
+  transaction hash.
+- `ANCHOR_PAYLOAD_MISMATCH` before broadcast: the manifest checkpoint
+  digest does not match the calldata about to be sent. The broadcast is
+  refused before any RPC send; fix the manifest and re-run.
