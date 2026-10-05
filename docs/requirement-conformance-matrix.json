@@ -1421,6 +1421,7 @@
         "requires --from for --dry-run and --key-file for --broadcast",
         "accepts a checkpoint manifest instead of a raw hash",
         "rejects bad networks, addresses, and checkpoint refs",
+        "rejects a bad network in broadcast mode",
         "rejects unknown flags and missing values",
         "parses mainnet opt-in and confirm flags",
         "accepts 84532",

@@ -239,6 +239,21 @@ describe('parsePublicSubmitArgs', () => {
     expect(() => parsePublicSubmitArgs(base)).toThrowError(StagingGateError);
   });
 
+  it('rejects a bad network in broadcast mode', () => {
+    // R10-C-M4 E5 kill: the shared --network check must hold for --broadcast too.
+    let failure;
+    try {
+      parsePublicSubmitArgs([
+        '--broadcast', '--network', 'base-goerli', '--rpc-url-file', 'r',
+        '--key-file', 'k', '--to', TO, '--checkpoint-hash', CHECKPOINT, '--out', 'o',
+      ]);
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(StagingGateError);
+    expect(failure.message).toMatch(/--network must be base-sepolia or base-mainnet/);
+  });
+
   it('rejects unknown flags and missing values', () => {
     expect(() => parsePublicSubmitArgs(['--dry-run', '--bogus', 'x'])).toThrowError(StagingGateError);
     expect(() => parsePublicSubmitArgs(['--dry-run', '--to'])).toThrowError(StagingGateError);
