@@ -15,9 +15,9 @@ import type { AddressInfo } from 'node:net';
 import { inspect } from 'node:util';
 
 import { decodeHash } from '@ald/hashing';
-import { keccak256, parseTransaction } from 'viem';
+import { TransactionNotFoundError, keccak256, parseTransaction } from 'viem';
 import type { Hex } from 'viem';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import {
   BaseAnchorPublisher,
@@ -60,6 +60,8 @@ interface FakeNodeOptions {
   httpFailure?: { status: number; body: string };
   /** Answer `eth_getTransactionByHash`/`Receipt` with a JSON-RPC null result. */
   emptyResults?: boolean;
+  /** Answer `eth_getTransactionByHash` with null block fields (pending). */
+  pendingTransactions?: boolean;
 }
 
 /**
@@ -236,11 +238,12 @@ class FakeNode {
         if (known === undefined) {
           return null;
         }
+        const pending = this.options.pendingTransactions === true;
         return {
           hash: known.hash,
           nonce: `0x${known.nonce.toString(16)}`,
-          blockHash: BLOCK_HASH,
-          blockNumber: '0x11',
+          blockHash: pending ? null : BLOCK_HASH,
+          blockNumber: pending ? null : '0x11',
           transactionIndex: '0x0',
           from: anchorKey.address,
           to: DESTINATION,
@@ -432,6 +435,34 @@ describe('ViemChainTransport', () => {
       client.getTransactionReceipt(UNKNOWN_HASH),
     ).resolves.toBeNull();
   });
+
+  it('finds a not-found error nested under an outer cause', async () => {
+    // R10-C-M7 G2 kill: causeChain traversal. viem surfaces these top-level
+    // today, but wild providers nest them; the stub pins the drift-robustness
+    // (LEDGER §11) without depending on any one viem version's shapes.
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    const nested = new Error('provider wrapper', {
+      cause: new TransactionNotFoundError({ hash: UNKNOWN_HASH }),
+    });
+    (client as unknown as { publicClient: unknown }).publicClient = {
+      getTransaction: vi.fn().mockRejectedValue(nested),
+    };
+    await expect(client.getTransaction(UNKNOWN_HASH)).resolves.toBeNull();
+  });
+
+  it('reports a pending transaction with a null block number', async () => {
+    // R10-C-M7 G8 kill: pending (unmined) tx keeps blockNumber null, not 0.
+    const rpc = await node({ pendingTransactions: true });
+    const client = transportFor(rpc.url, 'fake-node');
+    const sent = await client.sendAnchorTransaction({
+      checkpointHash: CHECKPOINT_HASH,
+      to: DESTINATION,
+    });
+    const pending = await client.getTransaction(sent.transactionHash);
+    expect(pending?.blockNumber).toBeNull();
+    expect(pending?.blockHash).toBeNull();
+  });
 });
 
 describe('nonce pinning (LEDGER §16 Phase 2)', () => {
@@ -543,6 +574,21 @@ describe('error redaction (LEDGER §11)', () => {
       .catch((error: unknown) => error);
     expect((failure as Error).message).toContain('HTTP 503');
     expect((failure as Error).message).not.toContain('over quota');
+  });
+
+  it('finds a provider code nested under an outer cause', async () => {
+    // R10-C-M7 G2 kill: providerCode traversal, same LEDGER §11 rationale.
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    const nested = new Error('provider wrapper', { cause: { status: 503 } });
+    (client as unknown as { publicClient: unknown }).publicClient = {
+      getTransaction: vi.fn().mockRejectedValue(nested),
+    };
+    const failure = await client
+      .getTransaction(UNKNOWN_HASH)
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(TransientChainError);
+    expect((failure as Error).message).toContain('HTTP 503');
   });
 
   it('never turns a provider failure into the chain fact "not found"', async () => {

@@ -183,10 +183,13 @@
         "submits calldata that is exactly the 32-byte checkpoint digest",
         "maps getTransaction, getTransactionReceipt and the head block",
         "returns null for an unknown transaction instead of throwing",
+        "finds a not-found error nested under an outer cause",
+        "reports a pending transaction with a null block number",
         "re-broadcasts one pinned nonce when a send is retried",
         "reports the existing transaction when a send loses its response",
         "never leaks the RPC URL from a failing provider",
         "keeps the provider status code, which is not a credential",
+        "finds a provider code nested under an outer cause",
         "keeps the credential out of the receipt and out of the failure",
         "keeps the credential out of an anchor-unavailable deviation"
       ],
