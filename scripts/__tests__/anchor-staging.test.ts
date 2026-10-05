@@ -574,6 +574,16 @@ describe('resolveCheckpointHash manifests', () => {
       { checkpointHash: null, checkpointManifest: writeTmpFile(dir, 'bad.json', '{nope') },
     )).toThrowError(/Could not read checkpoint manifest/);
   });
+
+  it('R10-C-M9 J8: watch refuses malformed checkpointHash shape in manifests', () => {
+    const dir = makeTmp();
+    const malformed = ['sha256:zzz', '0xdead', `sha256:${'a'.repeat(63)}`];
+    malformed.forEach((checkpointHash, i) => {
+      const manifest = writeTmpFile(dir, `m${i}.json`, JSON.stringify({ checkpointHash }));
+      expect(() => resolveWatchCheckpointHash({ checkpointHash: null, checkpointManifest: manifest }))
+        .toThrowError(/no valid checkpointHash/);
+    });
+  });
 });
 
 describe('writeEvidenceOnce', () => {
@@ -771,6 +781,19 @@ describe('checkOnce with mocked RPC', () => {
     });
     const status = await checkOnce(watchArgs(dir, { minBalanceWei: '1000' }), CHECKPOINT, FROM);
     expect(status).toMatchObject({ funded: false, requiredWei: '1000', shortfallWei: '1000' });
+  });
+
+  it('R10-C-M9 J4: pins the doubled estimate requirement (x2 margin)', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x3b9aca00',
+    });
+    const status = await checkOnce(watchArgs(dir), CHECKPOINT, FROM);
+    // 22615 gas x 1 gwei x 2 margin = 45230000000000.
+    expect(status).toMatchObject({ funded: false, requiredWei: '45230000000000' });
   });
 
   it('refuses non-Sepolia chains, bad chain hex, and bad balance hex', async () => {
