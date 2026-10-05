@@ -61,6 +61,7 @@ describe('Evidence-absent quarantine (R5-A governance)', () => {
     expect(line).toContain('QUARANTINED lv01-paired-development-v21');
     expect(line).toContain('quarantine/lv01-paired-development-v21.json');
     expect(line).toContain('docs/quarantine-record.md');
+    expect(line).toContain('| resume: ');
     expect(quarantineSkipLine('no-such-marker', false)).toBeNull();
     expect(readQuarantineMarker('no-such-marker')).toBeNull();
     expect(quarantineMarkerPath('x')).toContain('quarantine/x.json');
