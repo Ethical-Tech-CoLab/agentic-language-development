@@ -95,7 +95,8 @@ ALD_ALLOW_MAINNET_ANCHORING=true node scripts/anchor-public-submit.mjs --dry-run
   --out /tmp/ald022-dryrun.json
 ```
 
-Without both opt-ins the command exits 2 with `MAINNET_ANCHORING_DISABLED`
+Without both opt-ins the command refuses with exit 2 (gate error
+`MAINNET_ANCHORING_DISABLED`; only the human-readable message is printed)
 and makes zero mainnet RPC calls.
 
 Mainnet broadcast additionally requires `--confirm-mainnet-broadcast`, which
