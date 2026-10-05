@@ -2,7 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const explicitCoverage = Object.freeze({
-  'ALD-001': ['packages/types/__tests__/schema-manifest.test.ts'],
+  'ALD-001': ['packages/types/__tests__/schema-manifest.test.ts', 'scripts/check-workspace-bootstrap.mjs'],
   'ALD-002': ['packages/types/__tests__/schema-manifest.test.ts'],
   'ALD-003': ['packages/config/__tests__/environment.test.ts', 'scripts/scan-secrets.mjs'],
   'ALD-004': ['twins/packs/__tests__/routes.test.ts'],

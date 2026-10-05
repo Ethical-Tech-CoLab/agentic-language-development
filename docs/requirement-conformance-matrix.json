@@ -1545,6 +1545,12 @@
       ],
       "requiredReceipt": "pnpm run lint:research-console"
     },
+    "scripts/check-workspace-bootstrap.mjs": {
+      "selectors": [
+        "node scripts/check-workspace-bootstrap.mjs"
+      ],
+      "requiredReceipt": "node scripts/check-workspace-bootstrap.mjs"
+    },
     "scripts/lint-learner-contracts.mjs": {
       "selectors": [
         "pnpm run lint:contracts"
@@ -1650,7 +1656,8 @@
       "itemTitle": "pnpm workspaces monorepo bootstrap",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/types/__tests__/schema-manifest.test.ts"
+        "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs"
       ]
     },
     {
@@ -1661,7 +1668,8 @@
       "itemTitle": "pnpm workspaces monorepo bootstrap",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/types/__tests__/schema-manifest.test.ts"
+        "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs"
       ]
     },
     {
@@ -1672,7 +1680,8 @@
       "itemTitle": "pnpm workspaces monorepo bootstrap",
       "disposition": "provisional-mapped",
       "assertionPaths": [
-        "packages/types/__tests__/schema-manifest.test.ts"
+        "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs"
       ]
     },
     {
@@ -4804,6 +4813,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
@@ -4826,6 +4836,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
@@ -4848,6 +4859,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
@@ -4870,6 +4882,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
@@ -4892,6 +4905,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
@@ -4914,6 +4928,7 @@
         "packages/gateway/__tests__/conditions.test.ts",
         "packages/gateway/__tests__/conformance.test.ts",
         "packages/types/__tests__/schema-manifest.test.ts",
+        "scripts/check-workspace-bootstrap.mjs",
         "twins/packs/__tests__/routes.test.ts"
       ]
     },
