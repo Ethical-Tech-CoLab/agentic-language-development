@@ -130,12 +130,14 @@ pass on CI (`ubuntu-latest`). Causes quoted from observed errors:
   timeout origin; retains an ordinary near-boundary nonzero exit as
   completed; attributes a systemd RuntimeMaxSec stop as timeout without any
   supervisor sample.
-- `scripts/__tests__/a0-preflight.test.ts` (3): needs the `aldresearch.slice`
-  cgroup accounting group — observed `enforcement: aldresearch.slice absent
-  (accounting group unreadable)`. Tests: establishes the OOM baseline on
-  first run, then requires quiet history; reconciles only a matching
-  incident with no new OOM kills; refuses a declared workload that cannot
-  fit host reserve without a cap.
+- `scripts/__tests__/a0-preflight.test.ts` (1) +
+  `scripts/__tests__/a0-preflight-state.test.ts` (2; R9-F split): needs
+  the `aldresearch.slice` cgroup accounting group — observed
+  `enforcement: aldresearch.slice absent (accounting group unreadable)`.
+  Tests: establishes the OOM baseline on first run, then requires quiet
+  history (a0-preflight.test.ts); reconciles only a matching incident
+  with no new OOM kills; refuses a declared workload that cannot fit
+  host reserve without a cap (a0-preflight-state.test.ts).
 - `scripts/__tests__/campaign-readiness.test.ts` (3): reads
   `/proc/<pid>/stat` — observed `ENOENT` (no procfs on macOS). Tests:
   accepts a source-bound running pilot only while its exact controller is
@@ -143,3 +145,4 @@ pass on CI (`ubuntu-latest`). Causes quoted from observed errors:
   rejects a stale ready pilot status after original collection has started.
 
 None of these files were touched by the quarantine change or the R4-A port.
+R9-F split a0-preflight 5+5 (macOS set now 1+2 across the two files).
