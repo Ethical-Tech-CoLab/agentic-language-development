@@ -1490,6 +1490,7 @@
         "countCriteria handles zero boxes",
         "checkCriterionBox checks the first matching box only",
         "in-process --help exits 0 on both CLIs",
+        "submit --help broadcast synopsis admits base-mainnet like the parser",
         "accepts -h as well as --help on both CLIs",
         "names the invoking mode in missing-file errors (not always --broadcast)",
         "rejects a flag followed by another flag (not just a trailing flag)",
