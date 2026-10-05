@@ -64,13 +64,18 @@ fails closed on mismatch.
    or `packet`/`commitPresent` in the vitest-side test).
 5. Update `scripts/__tests__/quarantine.test.ts` in the SAME commit:
    drop the name from `MARKERS`, drop its row from `QUARANTINED_SCRIPTS`
-   (script-side) or its wiring assertion (vitest-side).
+   (script-side) or its wiring assertion (vitest-side). If the removed
+   name is the file's example marker, also re-point the example usages
+   (skip-behavior test, `exitIfQuarantined` `it.each`) to another
+   still-quarantined marker, or step 6 goes red.
 6. Re-run the step-2 command plus
    `./node_modules/.bin/vitest run scripts/__tests__/quarantine.test.ts`;
    both must pass with no `QUARANTINED <name>` line.
 7. Update this record: decrement the Active count above, update the "exact
-   set of N markers" count in the Mechanism paragraph, and drop the
-   quarantine's table row. Also update the pinned count in the
+   set of N markers" count in the Mechanism paragraph, drop the
+   quarantine's row from BOTH tables (removal-command table above and
+   criterion-mapping table below), and renumber the mapping table.
+   Also update the pinned count in the
    `scripts/__tests__/quarantine.test.ts` test title and the "Active
    deviation" count in `docs/test-reliability-policy.md`. No BACKLOG edit
    is needed (thematic neighbours are informational only — no box was
