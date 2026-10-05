@@ -42,6 +42,7 @@ import {
   readSecretFile as readSubmitSecretFile,
   resolveCheckpointHash as resolveSubmitCheckpointHash,
   rpcClient as submitRpcClient,
+  runBroadcast,
   runCli as runSubmitCli,
   runDryRun,
   writeEvidenceOnce,
@@ -422,6 +423,7 @@ function writeTmpFile(dir: string, name: string, contents: string, mode = 0o600)
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -928,5 +930,234 @@ describe('watch loop bounds and exit map', () => {
       ...base, '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
       '--key-file', join(dir, 'missing.key'), '--receipt-out', join(dir, 'r.json'),
     ])).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R8-C hardening: refusal ordering, mainnet paths, strictness, and empty /
+// boundary inputs. Still no live network: `fetch` is stubbed, env is
+// stubbed per test, and every broadcast test below throws before any file,
+// key, or RPC access (the arg files need not exist).
+// ---------------------------------------------------------------------------
+
+describe('runBroadcast refusal ordering (offline)', () => {
+  function broadcastArgs(dir: string, extra: Record<string, any> = {}): any {
+    return {
+      mode: 'broadcast',
+      network: 'base-mainnet',
+      rpcUrlFile: join(dir, 'missing.url'),
+      keyFile: join(dir, 'missing.key'),
+      from: null,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out: join(dir, 'out.json'),
+      allowMainnet: false,
+      confirmMainnetBroadcast: false,
+      ...extra,
+    };
+  }
+
+  it('refuses mainnet with neither opt-in before touching files', async () => {
+    const dir = makeTmp();
+    const failure = await runBroadcast(broadcastArgs(dir)).then(
+      () => null,
+      (error: any) => error,
+    );
+    expect(failure).toBeInstanceOf(StagingGateError);
+    expect(failure.code).toBe('MAINNET_ANCHORING_DISABLED');
+    expect(failure.reason).toBe('both');
+  });
+
+  it('refuses mainnet with only one opt-in before touching files', async () => {
+    const dir = makeTmp();
+    await expect(runBroadcast(broadcastArgs(dir, { allowMainnet: true })))
+      .rejects.toThrowError(StagingGateError);
+    vi.stubEnv(MAINNET_ENV_VAR, 'true');
+    const failure = await runBroadcast(broadcastArgs(dir)).then(
+      () => null,
+      (error: any) => error,
+    );
+    expect(failure).toBeInstanceOf(StagingGateError);
+    expect(failure.reason).toBe('missing-option');
+  });
+
+  it('refuses mainnet without the confirm flag even with both opt-ins', async () => {
+    const dir = makeTmp();
+    vi.stubEnv(MAINNET_ENV_VAR, 'true');
+    const failure = await runBroadcast(broadcastArgs(dir, { allowMainnet: true })).then(
+      () => null,
+      (error: any) => error,
+    );
+    expect(failure).toBeInstanceOf(StagingGateError);
+    expect(failure.code).toBe('MAINNET_BROADCAST_UNCONFIRMED');
+  });
+
+  it('a Sepolia invocation sails past the gate to file access', async () => {
+    const dir = makeTmp();
+    // Not a StagingGateError: the gate passes and readSecretFile fails.
+    const failure = await runBroadcast(broadcastArgs(dir, {
+      network: 'base-sepolia',
+      allowMainnet: false,
+    })).then(() => null, (error: any) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure).not.toBeInstanceOf(StagingGateError);
+    expect(failure.message).toMatch(/Could not read RPC URL file/);
+  });
+});
+
+describe('runDryRun mainnet and manifest paths', () => {
+  it('refuses a mainnet dry-run without opt-ins before touching files', async () => {
+    const dir = makeTmp();
+    await expect(runDryRun({
+      network: 'base-mainnet',
+      allowMainnet: false,
+      rpcUrlFile: join(dir, 'missing.url'),
+      from: FROM,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out: join(dir, 'dry.json'),
+    })).rejects.toThrowError(StagingGateError);
+  });
+
+  it('runs a mainnet dry-run with both opt-ins and warns broadcast is blocked', async () => {
+    const dir = makeTmp();
+    vi.stubEnv(MAINNET_ENV_VAR, 'true');
+    stubRpcByMethod({
+      eth_chainId: '0x2105',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(dir, 'dry.json');
+    await runDryRun({
+      network: 'base-mainnet',
+      allowMainnet: true,
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      from: FROM,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out,
+    });
+    const record = JSON.parse(readFileSync(out, 'utf8'));
+    expect(record).toMatchObject({
+      kind: 'anchor-dry-run',
+      broadcast: false,
+      network: 'base-mainnet',
+      chainId: 8453,
+      finalityPolicy: 'safe-tag',
+    });
+    expect(log.mock.calls.some((call) => String(call[0]).includes('remains blocked'))).toBe(true);
+  });
+
+  it('binds a checkpoint manifest into the dry-run record', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const manifest = writeTmpFile(dir, 'c.json', JSON.stringify({ checkpointHash: CHECKPOINT }));
+    const out = join(dir, 'dry.json');
+    await runDryRun({
+      network: 'base-sepolia',
+      allowMainnet: false,
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      from: FROM,
+      to: TO,
+      checkpointHash: null,
+      checkpointManifest: manifest,
+      out,
+    });
+    const record = JSON.parse(readFileSync(out, 'utf8'));
+    expect(record).toMatchObject({ checkpointHash: CHECKPOINT, checkpointManifest: manifest });
+  });
+});
+
+describe('R8-C strictness and empty/boundary inputs', () => {
+  it('checkOnce surfaces an estimateGas failure (no fallback there)', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: new Error('estimation unavailable'),
+      eth_gasPrice: '0x1',
+    });
+    await expect(checkOnce({
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      to: TO,
+      minBalanceWei: null,
+    }, CHECKPOINT, FROM)).rejects.toThrowError(/estimation unavailable/);
+  });
+
+  it('readAndAssertReceipt is type-strict on chainId', () => {
+    const dir = makeTmp();
+    const path = writeTmpFile(dir, 'r.json', JSON.stringify({
+      network: 'base-sepolia',
+      chainId: '84532',
+      explorerTxUrl: `https://sepolia.basescan.org/tx/${TX}`,
+    }));
+    expect(() => readAndAssertReceipt(path)).toThrowError(/unexpected network/);
+  });
+
+  it('decideFunding funds a positive balance against a zero requirement', () => {
+    expect(decideFunding({ balanceWei: '1', requiredWei: '0' }))
+      .toEqual({ funded: true, shortfallWei: '0' });
+  });
+
+  it('explorerTxUrl rejects non-string hashes', () => {
+    for (const hash of [null, undefined, 123, {}]) {
+      expect(() => explorerTxUrl('base-sepolia', hash)).toThrowError(StagingGateError);
+    }
+  });
+
+  it('endpointLabelFor falls back on empty input', () => {
+    expect(endpointLabelFor('')).toBe('rpc');
+  });
+
+  it('parsePublicSubmitArgs rejects empty addresses and hashes', () => {
+    const base = ['--dry-run', '--rpc-url-file', 'r', '--from', FROM, '--to', TO, '--out', 'o'];
+    expect(() => parsePublicSubmitArgs([...base, '--checkpoint-hash', ''])).toThrowError(StagingGateError);
+    expect(() => parsePublicSubmitArgs(
+      ['--dry-run', '--rpc-url-file', 'r', '--from', FROM, '--to', '', '--checkpoint-hash', CHECKPOINT, '--out', 'o'],
+    )).toThrowError(StagingGateError);
+  });
+
+  it('submit manifest refuses null and non-string checkpointHash', () => {
+    const dir = makeTmp();
+    for (const checkpointHash of [null, 123, {}]) {
+      const manifest = writeTmpFile(dir, `m-${String(checkpointHash)}.json`, JSON.stringify({ checkpointHash }));
+      expect(() => resolveSubmitCheckpointHash({ checkpointHash: null, checkpointManifest: manifest }))
+        .toThrowError(/no valid checkpointHash/);
+    }
+  });
+
+  it('countCriteria handles zero boxes', () => {
+    expect(countCriteria('# Backlog\n\nno boxes here\n')).toEqual({ checked: 0, total: 0 });
+  });
+
+  it('checkCriterionBox checks the first matching box only', () => {
+    const fixture = [
+      '#### ALD-020 — Base Sepolia anchoring client',
+      '  - [ ] A submitted checkpoint root is independently observable (a).',
+      '  - [ ] A submitted checkpoint root is independently observable (b).',
+      '',
+    ].join('\n');
+    const updated = checkCriterionBox(fixture, 'ALD-020', 'A submitted checkpoint root is independently observable');
+    expect(updated).toContain('  - [x] A submitted checkpoint root is independently observable (a).');
+    expect(updated).toContain('  - [ ] A submitted checkpoint root is independently observable (b).');
+    expect(countCriteria(updated)).toEqual({ checked: 1, total: 2 });
+  });
+
+  it('in-process --help exits 0 on both CLIs', async () => {
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    expect(await runWatchCli(['--help'])).toBe(0);
+    expect(await runSubmitCli(['--help'])).toBe(0);
+    expect(write).toHaveBeenCalled();
   });
 });

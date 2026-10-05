@@ -204,7 +204,7 @@ export async function runDryRun(args) {
   }
 }
 
-async function runBroadcast(args) {
+export async function runBroadcast(args) {
   assertNetworkAllowed({ network: args.network, allowMainnet: args.allowMainnet });
   if (args.network === 'base-mainnet') {
     assertMainnetBroadcastConfirmed({ confirmed: args.confirmMainnetBroadcast });
