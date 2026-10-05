@@ -189,12 +189,17 @@ const lease = {
   // Slice membership carries the aggregate caps; CPUWeight deprioritizes;
   // MemoryMax is the per-job backstop; RuntimeMaxSec enforces the duration at
   // the supervisor layer as well as in the launcher. Slice must be installed.
+  // systemd expands `$` in the scope command line (`$$` collapses to a
+  // literal `$`), so double every `$`: the payload shell then receives the
+  // operator's literal command (R10-A: unescaped `kill -TERM $$` arrived as
+  // `kill -TERM $` and exited 2 instead of self-signalling). `%` passes
+  // through unexpanded (probed). The recorded `command` stays unescaped.
   run: [
     'systemd-run', '--user', '--scope', `--unit=${unit}`,
     '--slice=aldresearch.slice',
     ...LEAF_PROPERTIES,
     `--property=RuntimeMaxSec=${timeoutSec}`,
-    '--', 'sh', '-c', values.command,
+    '--', 'sh', '-c', values.command.replace(/\$/g, '$$$$'),
   ],
   launcher: `node scripts/a0-launch.mjs --owner ${values.owner}`,
 };

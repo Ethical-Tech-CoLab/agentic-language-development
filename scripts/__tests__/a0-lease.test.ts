@@ -110,6 +110,17 @@ describe('A0 single host-job lease', () => {
     expect(existsSync(ACTIVE)).toBe(false);
   });
 
+  it('escapes $ for systemd while recording the literal command', () => {
+    if (activeLeaseExists()) return;
+    const command = 'kill -TERM $$';
+    const preflight = writePreflight({ command });
+    const created = run(...createArgs(preflight).map((a) => (a === 'true' ? command : a)));
+    expect(created.status).toBe(0);
+    const lease = JSON.parse(created.stdout);
+    expect(lease.command).toBe(command);
+    expect(lease.run.slice(-3)).toEqual(['sh', '-c', 'kill -TERM $$$$']);
+  });
+
   it('grants exactly one owner under concurrent create races', async () => {
     if (activeLeaseExists()) return;
     const preflight = writePreflight();
