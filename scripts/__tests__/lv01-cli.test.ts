@@ -11,6 +11,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const cli = fileURLToPath(new URL('../lv01.mjs', import.meta.url));
 const run = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' });
+// Hermetic A0-lease view for admit tests: parallel suites hold real leases.
+const runWithLeaseDir = (leaseDir: string, ...args: string[]) =>
+  spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8', env: { ...process.env, ALD_A0_LEASE_DIR: leaseDir } });
 
 const fixturePaths = (stage: string, version: string): string[] => [
   `protocols/lv01-${stage}-resource-allocation.v${version}.json`,
@@ -157,12 +160,12 @@ describe('LV01 execution CLI', () => {
     const early = run(...collectArgs('development', '1'));
     expect(early.status).not.toBe(0);
     expect(early.stderr).toContain('missing admitted ready receipt');
-    const admitted = run('admit', '--stage', 'development', '--version', '1', '--live-evidence');
+    // Hermetic no-lease view: parallel suites hold real A0 leases (R10-A race).
+    const leaseDir = mkdtempSync(join(tmpdir(), 'ald-lv01-nolease-'));
+    const admitted = runWithLeaseDir(leaseDir, 'admit', '--stage', 'development', '--version', '1', '--live-evidence');
     expect(admitted.status).not.toBe(0);
     expect(admitted.stdout).toContain('admission: blocked');
-    // No R01-B clearance and no A0 lease exist: exactly these two reasons.
-    // (Fails if an operator holds a live lease during the test run, which
-    // would itself violate single-lease concurrency.)
+    // No R01-B clearance and (hermetically) no A0 lease: exactly these two reasons.
     expect(admitted.stdout).toContain('blocked: resource-allocation-missing');
     expect(admitted.stdout).toContain('blocked: host-not-ready');
     // A blocked verdict never takes the canonical immutable path.
@@ -175,6 +178,31 @@ describe('LV01 execution CLI', () => {
       status: 'blocked',
       reasons: ['resource-allocation-missing', 'host-not-ready'],
     });
+    rmSync(leaseDir, { recursive: true, force: true });
+  });
+
+  it('admits host-ready with a live lease fixture and keeps only the allocation reason', () => {
+    writeBoundTopologyV1();
+    if (!trackedTreeClean()) {
+      const result = run('compile', '--stage', 'development', '--version', '1', '--write');
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('clean tracked tree');
+      return;
+    }
+    const compiled = run('compile', '--stage', 'development', '--version', '1', '--write');
+    expect(compiled.status).toBe(0);
+    const bound = run('bind', '--stage', 'development', '--version', '1', '--write');
+    expect(bound.status).toBe(0);
+    const leaseDir = mkdtempSync(join(tmpdir(), 'ald-lv01-livelease-'));
+    const preflightPath = join(leaseDir, 'preflight.json');
+    writeFileSync(preflightPath, `${JSON.stringify({ admission: 'admit', at: new Date().toISOString() })}\n`);
+    writeFileSync(join(leaseDir, 'active.json'), `${JSON.stringify({ owner: 'fixture', preflight: preflightPath })}\n`);
+    const admitted = runWithLeaseDir(leaseDir, 'admit', '--stage', 'development', '--version', '1', '--live-evidence');
+    expect(admitted.status).not.toBe(0);
+    expect(admitted.stdout).toContain('admission: blocked');
+    expect(admitted.stdout).toContain('blocked: resource-allocation-missing');
+    expect(admitted.stdout).not.toContain('blocked: host-not-ready');
+    rmSync(leaseDir, { recursive: true, force: true });
   });
 
   it('collect rejects both parent-bundle and per-slot-parents', () => {

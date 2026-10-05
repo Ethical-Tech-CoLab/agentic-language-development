@@ -115,7 +115,10 @@ try {
 }
 let hostReady = false;
 try {
-  const lease = JSON.parse(readFileSync('.artifacts/a0-leases/active.json', 'utf8'));
+  // Overridable for hermetic tests: parallel suites hold real A0 leases that
+  // would otherwise flip this probe (R10-A cross-file race). Default unchanged.
+  const leaseDir = process.env.ALD_A0_LEASE_DIR ?? '.artifacts/a0-leases';
+  const lease = JSON.parse(readFileSync(`${leaseDir}/active.json`, 'utf8'));
   const preflight = JSON.parse(readFileSync(lease.preflight, 'utf8'));
   const age = Date.now() - Date.parse(preflight.at);
   hostReady =
