@@ -122,12 +122,23 @@ export function rpcClient(rpcUrl, label) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), RPC_TIMEOUT_MS);
     try {
-      const response = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: nextId++, method, params }),
-        signal: controller.signal,
-      });
+      let response;
+      try {
+        response = await fetch(rpcUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: nextId++, method, params }),
+          signal: controller.signal,
+        });
+      } catch (error) {
+        // Secret-safety (R9-G): fetch construction errors echo the full RPC
+        // URL, which may carry credentials — redact to the host label.
+        // Anything not containing the URL passes through untouched.
+        if (error instanceof Error && error.message.includes(rpcUrl)) {
+          throw new Error(error.message.split(rpcUrl).join(label), { cause: error });
+        }
+        throw error;
+      }
       if (!response.ok) {
         throw new Error(`${label} ${method} failed: HTTP ${response.status}`);
       }

@@ -54,6 +54,7 @@ import {
   readAndAssertReceipt,
   readSecretFile as readWatchSecretFile,
   resolveCheckpointHash as resolveWatchCheckpointHash,
+  rpcClient as watchRpcClient,
   runCli as runWatchCli,
   runWatch,
   syncCloseOut,
@@ -582,6 +583,28 @@ describe('rpcClient faults (mocked fetch)', () => {
     await expect(call('eth_chainId', [])).rejects.toThrowError(/boom/);
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('socket hang up'); }));
     await expect(call('eth_chainId', [])).rejects.toThrowError(/socket hang up/);
+  });
+
+  // R9-G: fetch construction errors echo the full RPC URL (which may carry
+  // credentials); both clients must redact it to the host label.
+  it.each([
+    ['submit', submitRpcClient],
+    ['watch', watchRpcClient],
+  ])('%s rpcClient redacts the RPC URL from fetch errors', async (_name, makeClient: any) => {
+    const rpcUrl = 'https://user:SECRET@rpc.example.test:8545/v2/key';
+    const call = makeClient(rpcUrl, 'rpc.example.test:8545');
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new TypeError(`Request cannot be constructed from a URL that includes credentials: ${rpcUrl}`);
+    }));
+    const failure = await call('eth_chainId', []).then(
+      () => { throw new Error('expected rejection'); },
+      (error: Error) => error,
+    );
+    expect(failure.message).toBe(
+      'Request cannot be constructed from a URL that includes credentials: rpc.example.test:8545',
+    );
+    expect(failure.message).not.toContain('SECRET');
+    expect(failure.message).not.toContain(rpcUrl);
   });
 });
 
