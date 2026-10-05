@@ -1,33 +1,22 @@
 /**
- * LV01 stage collector: pure planning, live branch execution, slot and
- * stage collection, and audit replay from raw bundles.
+ * LV01 stage collector: live collection.
  *
- * Pure tests pin the scheduled lookup against direct engine generation (the
- * exact call the runtime makes for a branch turn 0) and the plan rebuild
- * against the committed plan. Live tests train a tiny scratch-rl parent,
- * export its bundle, then collect and audit for real: no collector boolean
- * reaches the auditor.
+ * Live tests train a tiny scratch-rl parent, export its bundle, then collect
+ * and audit for real: no collector boolean reaches the auditor. Split from
+ * lv01-collector.test.ts (R8-W) so planning and live suites run in parallel
+ * workers; shared fixtures live in ./lv01-collector-fixtures.js.
  */
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { exportRunBundle, SqliteEvidenceWriter } from '@ald/evidence';
-import { hashCanonical, sha256Bytes } from '@ald/hashing';
-import { indexLv01TrainingLedger, loadLearnerContract } from '@ald/learners';
-import { ReferentialScenarioEngine, readGroundTruth } from '@ald/scenario';
-import { fixedTokenInventory, type LedgerEvent } from '@ald/types';
+import { hashCanonical } from '@ald/hashing';
+import { loadLearnerContract } from '@ald/learners';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createHarness, testConfig, type Harness } from '../helpers.js';
+import { createHarness, type Harness } from '../helpers.js';
 import { LV01_BRANCHES, LV01_RESOURCE_COUNTERS } from '../../src/experiments/ledger-value.js';
-import { buildLv01Schedule } from '../../src/experiments/lv01-schedule.js';
-import {
-  deriveLv01LedgerCutoff,
-  mapLv01LedgerAssociations,
-  type Lv01PairedPredictionProvider,
-} from '../../src/experiments/lv01-paired-predictions.js';
-import { verifyLv01TreatmentTargets } from '../../src/experiments/lv01-ledger-treatments.js';
 import {
   wireLv01CollectionOrdinary,
 } from '../../src/experiments/lv01-ordinary-wiring.js';
@@ -40,393 +29,21 @@ import {
 } from '../../src/experiments/lv01-stage-packets.js';
 import {
   LV01_PARTITION_CASE_BINDING,
-  assertLv01SlotBranchCensus,
-  assertLv01SlotSingleServedCase,
   auditLv01Stage,
-  buildLv01TreatmentCases,
   collectLv01Slot,
   collectLv01Stage,
   lv01ParentCheckpointHash,
   lv01SlotSeeds,
-  lv01WorkloadForCollection,
-  prepareLv01PairedCase,
   readLv01BundleDocs,
-  rebuildLv01CasePlan,
-  scheduledLv01BranchTarget,
 } from '../../src/experiments/lv01-collector.js';
-
-const hash = (char: string): string => `sha256:${char.repeat(64)}`;
-const inventory = fixedTokenInventory(32);
-const ORDINARY: Lv01PairedPredictionProvider = {
-  ordinaryId: 'uniform',
-  ordinaryFit: { kind: 'uniform' },
-};
-const LEDGER_VALUE_PLAN = {
-  version: 1 as const,
-  designCommitmentHash: hash('a'),
-  analysisCommitmentHash: hash('b'),
-  seedResourceCommitmentHash: hash('c'),
-  predictionFunctionVersion: 'lv01-ledger-value-prediction/v1',
-  partitionContractVersion: 'lv01-within-support/v1',
-};
-
-function weightsZeroExcept(entries: Array<[number, number]>): number[] {
-  const array = Array.from({ length: 16 }, () => 0);
-  for (const [index, value] of entries) array[index] = value;
-  return array;
-}
-
-function ledgerEvent(runId: string, partial: Partial<LedgerEvent> & { sequence: number }): LedgerEvent {
-  return {
-    version: 1,
-    runId,
-    babyId: 'B',
-    turn: 0,
-    eventType: 'hypothesis.created',
-    contentSchema: 'agent-native-ledger',
-    subjectId: 'symbol:S01',
-    content: { termRef: 'symbol:S01', associationOverTypeCodes: weightsZeroExcept([[1, 3], [4, 1]]) },
-    blindingNonce: 'nonce',
-    previousEntryHash: hash('0'),
-    recordedAt: '2026-09-27T00:00:00.000Z',
-    writerKeyId: 'test-key',
-    entryHash: hashCanonical('collector-fixture-entry/v1', `${runId}:${partial.sequence}`),
-    writerSignature: 'sig',
-    ...partial,
-  } as LedgerEvent;
-}
-
-function fixtureParent() {
-  const rootSeed = hash('7');
-  return testConfig({
-    runId: 'lv01-collector-parent',
-    experimentId: 'LV01',
-    randomSeed: rootSeed,
-    seedBindings: {
-      version: 1,
-      scenario: rootSeed,
-      babyA: hash('1'),
-      babyB: hash('2'),
-      gateway: hash('3'),
-      analysis: hash('4'),
-    },
-    babyA: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
-    babyB: { track: 'scratch-rl', modelRef: 'gru-actor-critic-v1' },
-    learningSignal: 'extrinsic-task',
-    maxTurnsPerRun: 4,
-    evaluationTurns: 1,
-    ledgerValuePlan: LEDGER_VALUE_PLAN,
-  });
-}
-
-function fixtureIndex() {
-  const events = [
-    ledgerEvent('collector-fixture', { sequence: 1, turn: 0 }),
-    ledgerEvent('collector-fixture', {
-      sequence: 2,
-      turn: 1,
-      eventType: 'hypothesis.revised',
-      subjectId: 'symbol:S02',
-      content: { termRef: 'symbol:S02', associationOverTypeCodes: weightsZeroExcept([[9, 2], [14, 2]]) },
-    }),
-  ];
-  const forRole = (role: 'baby-a' | 'baby-b') => {
-    const records = mapLv01LedgerAssociations(events, role, () => true);
-    const cutoff = deriveLv01LedgerCutoff(records);
-    return indexLv01TrainingLedger(records, role, cutoff);
-  };
-  return { indexA: forRole('baby-a'), indexB: forRole('baby-b') };
-}
-
-function fixtureSchedule(runSeed: string) {
-  const engine = new ReferentialScenarioEngine(
-    {
-      version: 1,
-      symbolInventory: fixedTokenInventory(32),
-      interactionMode: 'cooperative-signaling',
-      heldOutTypeCodes: [0, 5, 10, 15],
-    },
-    runSeed,
-  );
-  const schedule = buildLv01Schedule({
-    engine,
-    counts: { training: 0, 'validation-fit': 1, 'validation-selection': 1, 'within-support-test': 1 },
-    receiverRoles: ['baby-a', 'baby-b'],
-  });
-  return { engine, schedule };
-}
-
-function fixtureSlotSeeds() {
-  const seeds = lv01SlotSeeds(hash('a'), 1);
-  return { scenario: seeds.scenario, babyA: seeds.babyA, babyB: seeds.babyB, gateway: seeds.gateway, analysis: seeds.analysis };
-}
-
-function packetInput() {
-  return {
-    stage: 'development' as const,
-    version: 101,
-    designVersion: 2 as const,
-    designCommitmentHash: hash('a'),
-    analysisCommitmentHash: hash('b'),
-    seedResourceCommitmentHash: hash('c'),
-    sourceCommit: 'd'.repeat(40),
-    modelIdentity: {
-      architecture: 'gru-actor-critic-v1' as const,
-      track: 'scratch-rl' as const,
-      parameterCountPerAgent: 4049 as const,
-      inputSize: 50 as const,
-      hiddenSize: 16 as const,
-    },
-    allocation: { path: 'protocols/lv01-development-resource-allocation.v101.json', sha256: hash('e') },
-    qualifications: {
-      designCheck: 'passed' as const,
-      powerCheck: 'passed' as const,
-      topology: { path: 'reports/research/lv01-topology-qualification.v101.json', sha256: hash('f'), passed: true as const },
-    },
-    slotPlan: { primaries: 1, reserves: 1 },
-  };
-}
-
-async function packetInputWithAllocation(dir: string) {
-  const allocation = {
-    schemaVersion: 1,
-    studyId: 'LV01',
-    status: 'design-locked-not-executed',
-    allocation: {
-      smallFixture: { trainingCases: 4, validationFitCases: 2, validationSelectionCases: 2, withinSupportTestCases: 2 },
-    },
-  };
-  const path = join(dir, 'allocation.fixture.json');
-  const raw = `${JSON.stringify(allocation)}\n`;
-  await writeFile(path, raw, 'utf8');
-  return { ...packetInput(), allocation: { path, sha256: `sha256:${sha256Bytes(Buffer.from(raw, 'utf8')).toString('hex')}` } };
-}
-
-describe('LV01 collector pure planning', () => {
-  it('resolves small-fixture and pinned prototype workloads and fails closed otherwise', () => {
-    const allocation = {
-      allocation: {
-        smallFixture: {
-          trainingCases: 4,
-          validationFitCases: 2,
-          validationSelectionCases: 2,
-          withinSupportTestCases: 2,
-        },
-      },
-    };
-    expect(lv01WorkloadForCollection('development', allocation)).toEqual({
-      profile: 'small-fixture',
-      trainingTurns: 4,
-      validationFitCases: 2,
-      validationSelectionCases: 2,
-      withinSupportTestCases: 2,
-    });
-    expect(() => lv01WorkloadForCollection('development', { allocation: {} })).toThrow(/small-fixture/);
-    expect(() => lv01WorkloadForCollection('development', null)).toThrow(/small-fixture/);
-    expect(lv01WorkloadForCollection('development', {
-      allocation: {
-        prototype: {
-          trainingCases: 3000,
-          validationFitCases: 240,
-          validationSelectionCases: 240,
-          withinSupportTestCases: 240,
-        },
-      },
-    })).toEqual({
-      profile: 'prototype',
-      trainingTurns: 3000,
-      validationFitCases: 240,
-      validationSelectionCases: 240,
-      withinSupportTestCases: 240,
-    });
-    expect(() => lv01WorkloadForCollection('development', {
-      allocation: {
-        prototype: {
-          trainingCases: 2999,
-          validationFitCases: 240,
-          validationSelectionCases: 240,
-          withinSupportTestCases: 240,
-        },
-      },
-    })).toThrow(/must match the pinned full workload/u);
-    expect(() => lv01WorkloadForCollection('development', {
-      allocation: {
-        smallFixture: { trainingCases: 4, validationFitCases: 2, validationSelectionCases: 2, withinSupportTestCases: 2 },
-        prototype: { trainingCases: 3000, validationFitCases: 240, validationSelectionCases: 240, withinSupportTestCases: 240 },
-      },
-    })).toThrow(/both smallFixture and prototype/u);
-  });
-
-  it('derives deterministic slot seeds with no fresh entropy', () => {
-    const first = lv01SlotSeeds(hash('a'), 1);
-    expect(lv01SlotSeeds(hash('a'), 1)).toEqual(first);
-    expect(lv01SlotSeeds(hash('a'), 2)).not.toEqual(first);
-    expect(new Set(Object.values(first)).size).toBe(6);
-  });
-
-  it('looks up exactly the scheduled case the runtime serves a branch turn 0', () => {
-    const parent = fixtureParent();
-    const seeds = lv01SlotSeeds(hash('a'), 1);
-    const engine = new ReferentialScenarioEngine(
-      {
-        version: 1,
-        symbolInventory: fixedTokenInventory(32),
-        interactionMode: parent.interactionMode,
-        heldOutTypeCodes: [0, 5, 10, 15],
-      },
-      seeds.scenario,
-    );
-    const schedule = buildLv01Schedule({
-      engine,
-      counts: { training: 0, 'validation-fit': 2, 'validation-selection': 2, 'within-support-test': 2 },
-      receiverRoles: ['baby-a', 'baby-b'],
-    });
-    const scheduled = scheduledLv01BranchTarget({ schedule, partition: 'within-support-test', caseIndex: 0, receiver: 'baby-b' });
-    expect(scheduled.receiver).toBe('baby-b');
-    expect(scheduled.scheduledCaseId).toBe('within-support-test:baby-b:0000');
-    // The runtime's own service call, replicated argument for argument.
-    const cased = engine.generateLv01Case(0, 'within-support-test', { sender: 'baby-a', receiver: 'baby-b' });
-    const truth = readGroundTruth(cased.scenario.groundTruth);
-    expect(scheduled.targetTypeCode).toBe(truth.targetTypeCode);
-    expect([...scheduled.candidateTypeCodes]).toEqual([...truth.receiverOrder]);
-    expect([...scheduled.candidateRefs]).toEqual([...truth.candidateRefs]);
-    expect(scheduled.stateHash).toBe(cased.scenario.stateHash);
-  });
-
-  it('keys one treatment case per ledger branch on the scheduled target', () => {
-    const { schedule } = fixtureSchedule(hash('7'));
-    const scheduled = scheduledLv01BranchTarget({ schedule, partition: 'within-support-test', caseIndex: 0, receiver: 'baby-b' });
-    const [consistent, shuffled] = buildLv01TreatmentCases(scheduled, 'lv01-x');
-    expect(consistent?.caseId).toBe('lv01-x-ledger-consistent:turn:0');
-    expect(shuffled?.caseId).toBe('lv01-x-ledger-shuffled:turn:0');
-    expect(consistent?.receiverRole).toBe('baby-b');
-    expect(consistent?.targetTypeCode).toBe(scheduled.targetTypeCode);
-    expect(consistent?.targetTypeCode).toBe(shuffled?.targetTypeCode);
-  });
-
-  it('commits the batch before planning slices onto ledger branches only', () => {
-    const parent = fixtureParent();
-    const { indexA, indexB } = fixtureIndex();
-    const { schedule } = fixtureSchedule(hash('s'));
-    const scheduled = scheduledLv01BranchTarget({ schedule, partition: 'within-support-test', caseIndex: 0, receiver: 'baby-b' });
-    const prefix = 'lv01-collector-case';
-    const { plan, batch } = prepareLv01PairedCase({
-      parent,
-      parentCheckpointHash: hash('c'),
-      babyAInitialPolicyRef: 'policies/baby-a-latest.json',
-      babyBInitialPolicyRef: 'policies/baby-b-latest.json',
-      childRunIdPrefix: prefix,
-      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0001', partition: 'dev' },
-      treatmentCases: [...buildLv01TreatmentCases(scheduled, prefix)],
-      nativeIndexes: { babyA: indexA, babyB: indexB },
-      symbolInventory: [...inventory],
-      derangementSeed: hash('d'),
-      slotSeeds: fixtureSlotSeeds(),
-      scheduledCase: { partition: 'within-support-test', caseIndex: 0, receiverRole: 'baby-b' },
-    });
-    expect(plan.branches).toHaveLength(7);
-    expect(plan.branches.map((entry) => entry.branch)).toEqual([...LV01_BRANCHES]);
-    for (const entry of plan.branches) {
-      expect(entry.config.runId).toBe(`${prefix}-${entry.branch}`);
-      const slice = entry.config.lv01PairedCase?.ledgerTreatment;
-      if (entry.branch === 'ledger-consistent' || entry.branch === 'ledger-shuffled') {
-        expect(slice?.batchCommitment).toBe(batch.batchCommitment);
-      } else {
-        expect(slice).toBeUndefined();
-      }
-    }
-    verifyLv01TreatmentTargets(
-      batch,
-      batch.cases.map((entry) => ({ caseId: entry.caseId, targetTypeCode: entry.targetTypeCode })),
-    );
-    expect(() =>
-      verifyLv01TreatmentTargets(batch, [{ caseId: 'foreign', targetTypeCode: 1 }]),
-    ).toThrow(/never served/);
-    expect(() =>
-      verifyLv01TreatmentTargets(
-        batch,
-        batch.cases.map((entry) => ({ caseId: entry.caseId, targetTypeCode: entry.targetTypeCode + 1 })),
-      ),
-    ).toThrow(/wrong case/);
-  });
-
-  it('rebuilds the registered plan from branch run-configs alone', () => {
-    const parent = fixtureParent();
-    const { indexA, indexB } = fixtureIndex();
-    const { schedule } = fixtureSchedule(hash('s'));
-    const scheduled = scheduledLv01BranchTarget({ schedule, partition: 'within-support-test', caseIndex: 0, receiver: 'baby-b' });
-    const prefix = 'lv01-collector-rebuild';
-    const { plan } = prepareLv01PairedCase({
-      parent,
-      parentCheckpointHash: hash('c'),
-      babyAInitialPolicyRef: 'policies/baby-a-latest.json',
-      babyBInitialPolicyRef: 'policies/baby-b-latest.json',
-      childRunIdPrefix: prefix,
-      actionDrawScope: { stage: 'development', slotKind: 'primary', slotIndex: '0002', partition: 'dev' },
-      treatmentCases: [...buildLv01TreatmentCases(scheduled, prefix)],
-      nativeIndexes: { babyA: indexA, babyB: indexB },
-      symbolInventory: [...inventory],
-      derangementSeed: hash('d'),
-      slotSeeds: fixtureSlotSeeds(),
-      scheduledCase: { partition: 'within-support-test', caseIndex: 0, receiverRole: 'baby-b' },
-    });
-    const docsFor = (runConfig: unknown) => ({
-      runManifest: {},
-      runConfig,
-      interventions: [],
-      turns: [],
-      ledgerA: [],
-      ledgerB: [],
-      policies: {},
-      checkpoints: [],
-    });
-    const rebuilt = rebuildLv01CasePlan({
-      parentDocs: docsFor(parent),
-      branchDocs: plan.branches.map((entry) => docsFor(entry.config)),
-    });
-    expect(rebuilt.preStateCommitment).toBe(plan.preStateCommitment);
-    expect(rebuilt.branches.map((entry) => entry.config.runId)).toEqual(
-      plan.branches.map((entry) => entry.config.runId),
-    );
-    // Hyphenated branch names must not corrupt the prefix recovery.
-    expect(rebuilt.branches[6]?.config.runId.endsWith('-ledger-shuffled')).toBe(true);
-  });
-
-  it('census accepts exactly the seven contracted branch entries in any order', () => {
-    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
-    expect(() => assertLv01SlotBranchCensus(1, [...expected].reverse(), expected)).not.toThrow();
-  });
-
-  it('census rejects an extra branch entry beyond the contract', () => {
-    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
-    expect(() => assertLv01SlotBranchCensus(1, [...expected, 'lv01-development-v101-s0001-evil'], expected)).toThrow(
-      /branch census disagrees with the seven-branch contract/u,
-    );
-  });
-
-  it('census rejects a missing branch entry', () => {
-    const expected = [...LV01_BRANCHES].map((branch) => `lv01-development-v101-s0001-${branch}`);
-    expect(() => assertLv01SlotBranchCensus(1, expected.slice(1), expected)).toThrow(
-      /branch census disagrees with the seven-branch contract/u,
-    );
-  });
-
-  it('singleton accepts one served case across all branches', () => {
-    expect(() => assertLv01SlotSingleServedCase(1, Array.from({ length: 7 }, () => 'state-hash'))).not.toThrow();
-  });
-
-  it('singleton rejects branches serving distinct cases', () => {
-    expect(() => assertLv01SlotSingleServedCase(1, ['hash-a', 'hash-b'])).toThrow(
-      /served 2 distinct cases, expected exactly one/u,
-    );
-  });
-
-  it('singleton rejects an empty served set', () => {
-    expect(() => assertLv01SlotSingleServedCase(1, [])).toThrow(
-      /served 0 distinct cases, expected exactly one/u,
-    );
-  });
-});
+import {
+  LEDGER_VALUE_PLAN,
+  ORDINARY,
+  fixtureParent,
+  hash,
+  inventory,
+  packetInputWithAllocation,
+} from './lv01-collector-fixtures.js';
 
 describe('LV01 collector live collection', () => {
   let harness: Harness | undefined;
