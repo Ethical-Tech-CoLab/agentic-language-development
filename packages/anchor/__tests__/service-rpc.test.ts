@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 import type { AnchorPublisher } from '@ald/types';
+import { connectEvidenceRpc } from '@ald/evidence';
 import { ZodError } from 'zod';
 
 import {
@@ -46,6 +47,67 @@ describe('Anchor Service RPC', () => {
         anchorClass: 'public-chain',
         network: 'base-sepolia',
       })).rejects.toThrow('identity does not match');
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects a mismatched network on connect', async () => {
+    // R10-C-M11 L1 kill: without the network clause this resolves.
+    const directory = mkdtempSync(join(tmpdir(), 'ald-anchor-service-'));
+    const socketPath = join(directory, 'anchor.sock');
+    const runId = 'anchor-service-run';
+    const publisher: AnchorPublisher = {
+      anchorClass: 'simulated',
+      network: 'base-sepolia',
+      submit: async () => receipt(runId, 'submitted'),
+      awaitConfirmation: async () => receipt(runId, 'confirmed'),
+    };
+    const server = await createAnchorServiceRpcServer(
+      socketPath,
+      runId,
+      publisher,
+    );
+    try {
+      await expect(connectAnchorServiceRpc(socketPath, runId, {
+        anchorClass: 'simulated',
+        network: 'base-mainnet',
+      })).rejects.toThrow('identity does not match');
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses a wrong-arity describe call', async () => {
+    // R10-C-M11 L3 kill: without the arity check this resolves.
+    const directory = mkdtempSync(join(tmpdir(), 'ald-anchor-service-'));
+    const socketPath = join(directory, 'anchor.sock');
+    const runId = 'anchor-service-run';
+    const publisher: AnchorPublisher = {
+      anchorClass: 'simulated',
+      network: 'base-sepolia',
+      submit: async () => receipt(runId, 'submitted'),
+      awaitConfirmation: async () => receipt(runId, 'confirmed'),
+    };
+    const server = await createAnchorServiceRpcServer(
+      socketPath,
+      runId,
+      publisher,
+    );
+    try {
+      const raw = await connectEvidenceRpc(
+        socketPath,
+        runId,
+        'anchor-service-v1',
+      );
+      await expect(raw.call('describe', [])).resolves.toMatchObject({
+        anchorClass: 'simulated',
+      });
+      await expect(raw.call('describe', [{ extra: true }])).rejects.toThrow(
+        'evidence RPC result was not confirmed',
+      );
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
       rmSync(directory, { recursive: true, force: true });

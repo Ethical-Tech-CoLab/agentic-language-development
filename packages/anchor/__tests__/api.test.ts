@@ -104,6 +104,21 @@ describe('public API surface', () => {
   });
 });
 
+describe('error taxonomy names', () => {
+  it('carries the class name on every error', () => {
+    // R10-C-M11 L7 kill: a fixed base name breaks all three pins.
+    expect(new anchor.TransientChainError('boom').name).toBe(
+      'TransientChainError',
+    );
+    expect(new anchor.AnchorSubmissionFailedError(3).name).toBe(
+      'AnchorSubmissionFailedError',
+    );
+    expect(
+      new anchor.AnchorError('TRANSIENT_CHAIN_ERROR', 'boom').name,
+    ).toBe('AnchorError');
+  });
+});
+
 describe('anchorInputData (LEDGER §12)', () => {
   it('is the raw digest and nothing else', () => {
     const hash = `sha256:${'ab'.repeat(32)}`;
