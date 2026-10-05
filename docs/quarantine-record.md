@@ -19,6 +19,9 @@ Loud skip-if-evidence-absent per check, implemented in
   gate output, naming the marker and this record. The suite-level test
   `scripts/__tests__/quarantine.test.ts` pins the exact set of 7 markers and
   asserts each quarantined unit passes loud.
+- Path contract: markers live at `<repo>/quarantine/<name>.json`, resolved
+  from the module's own location; moving either breaks every skip (fail-closed
+  red, not silent pass).
 
 Re-arm vs removal (fully reversible either way):
 
