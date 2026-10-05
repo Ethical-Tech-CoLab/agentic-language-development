@@ -59,7 +59,7 @@ node scripts/anchor-public-submit.mjs --broadcast --network base-sepolia \
    - status success, chain 84532 (Base Sepolia);
    - `from` is the anchor wallet, `to` is the project address;
    - input data is exactly `0x<checkpoint digest>`, 66 characters, nothing else.
-4. Link the receipt and explorer URL from `BACKLOG.md` ALD-020 and the
+4. Link the receipt and explorer URL in `BACKLOG.md` ALD-020 and the
 conformance matrix, then check the box.
 
 Receipt shape can be checked dry (no network) before the live run:
@@ -147,8 +147,11 @@ from a Base Sepolia faucet and re-run; nothing else changes until funds land.
 ## Troubleshooting
 
 - `RPC chain id ... does not match`: the RPC file points at the wrong network.
-- Empty balance / `eth_estimateGas` failure on Sepolia: fund the printed
-  wallet address from a faucet and re-run the dry-run.
+- Empty balance on Sepolia: fund the printed wallet address from a faucet
+  and re-run the dry-run.
+- `eth_estimateGas` failure: the node rejected the estimate call (not a
+  funding problem) — check the RPC endpoint and the `from`/`to` addresses,
+  then re-run.
 - Key file permission errors: the loader requires mode 0600 and a
   group/other-writable-free parent directory (`chmod 600` the file,
   `chmod go-w` the directory); the generator already creates both correctly.
