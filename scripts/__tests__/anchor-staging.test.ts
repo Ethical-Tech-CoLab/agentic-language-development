@@ -11,7 +11,7 @@
  * mocked-RPC clients, receipt checks, close-out confinement, loop bounds, and
  * the exit-code map) with tmp fixtures and a stubbed `fetch`.
  */
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { chmodSync, mkdtempSync, readFileSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -885,6 +885,9 @@ describe('watch loop bounds and exit map', () => {
     const dir = makeTmp();
     const calls = brokeStubs();
     vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Real 1s sleep kept deliberately: a fake-timers version of this test
+    // hangs (the watch loop + RPC abort timers do not settle under mocked
+    // clocks — observed R8-X), and the real second is cheap.
     const result = await runWatch([
       '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
       '--key-file', keyFile(dir),
@@ -939,24 +942,29 @@ describe('watch loop bounds and exit map', () => {
     ])).toBe(1);
   });
 
-  it('real process exit codes match the map (subprocess)', () => {
+  it('real process exit codes match the map (subprocess)', async () => {
     const dir = makeTmp();
-    const run = (script: string, argv: string[]): unknown => {
-      try {
-        execFileSync(process.execPath, [script, ...argv], { cwd: REPO_ROOT, stdio: 'pipe' });
-        return 0;
-      } catch (error) {
-        return (error as { status?: unknown }).status;
-      }
-    };
-    expect(run(WATCH_SCRIPT, ['--bogus'])).toBe(2);
-    expect(run(SUBMIT_SCRIPT, ['--bogus'])).toBe(2);
-    expect(run(WATCH_SCRIPT, ['--help'])).toBe(0);
-    expect(run(SUBMIT_SCRIPT, ['--help'])).toBe(0);
-    expect(run(WATCH_SCRIPT, [
-      ...base, '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
-      '--key-file', join(dir, 'missing.key'), '--receipt-out', join(dir, 'r.json'),
-    ])).toBe(1);
+    const rpcUrl = writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n');
+    const run = (script: string, argv: string[]): Promise<unknown> => new Promise((resolve) => {
+      execFile(process.execPath, [script, ...argv], { cwd: REPO_ROOT }, (error, _stdout, _stderr) => {
+        resolve(error ? (error as { code?: unknown }).code : 0);
+      });
+    });
+    // The five probes are independent: run them concurrently (R8-X trim;
+    // same five assertions as the old serial version).
+    const [watchBogus, submitBogus, watchHelp, submitHelp, missingKey] = await Promise.all([
+      run(WATCH_SCRIPT, ['--bogus']),
+      run(SUBMIT_SCRIPT, ['--bogus']),
+      run(WATCH_SCRIPT, ['--help']),
+      run(SUBMIT_SCRIPT, ['--help']),
+      run(WATCH_SCRIPT, [...base, '--rpc-url-file', rpcUrl,
+        '--key-file', join(dir, 'missing.key'), '--receipt-out', join(dir, 'r.json')]),
+    ]);
+    expect(watchBogus).toBe(2);
+    expect(submitBogus).toBe(2);
+    expect(watchHelp).toBe(0);
+    expect(submitHelp).toBe(0);
+    expect(missingKey).toBe(1);
   });
 });
 
