@@ -1220,6 +1220,31 @@ describe('R8-C strictness and empty/boundary inputs', () => {
     expect(String(write.mock.calls[0][0])).toContain('anchor-faucet-watch.mjs');
     expect(String(write.mock.calls[1][0])).toContain('anchor-public-submit.mjs');
   });
+
+  // R9-J: every parser-accepted flag must appear in --help (no phantom doc
+  // flags either — unknown flags are rejected, tested above).
+  it.each([
+    ['submit', runSubmitCli, ['--generate-key', '--dry-run', '--broadcast', '--allow-mainnet',
+      '--confirm-mainnet-broadcast', '--network', '--rpc-url-file', '--key-file', '--from',
+      '--checkpoint-hash', '--checkpoint-manifest', '--to', '--out', '--help']],
+    ['watch', runWatchCli, ['--check-only', '--push', '--watch', '--rpc-url-file', '--key-file',
+      '--to', '--checkpoint-hash', '--checkpoint-manifest', '--receipt-out',
+      '--min-balance-wei', '--interval-seconds', '--max-checks', '--help']],
+  ])('%s --help documents every accepted --flag', async (_name, runCli: any, flags: string[]) => {
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    expect(await runCli(['--help'])).toBe(0);
+    const text = String(write.mock.calls[0][0]);
+    for (const flag of flags) expect(text).toContain(flag);
+    // -h needs a regex: it is a substring of --help and --checkpoint-hash.
+    expect(text).toMatch(/-h(?![A-Za-z])/);
+  });
+
+  it('submit --help broadcast synopsis admits base-mainnet like the parser', async () => {
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    expect(await runSubmitCli(['--help'])).toBe(0);
+    const text = String(write.mock.calls[0][0]);
+    expect(text.match(/--network <base-sepolia\|base-mainnet>/g)).toHaveLength(2);
+  });
 });
 
 // ---------------------------------------------------------------------------

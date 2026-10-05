@@ -51,7 +51,7 @@ const HELP = `anchor-public-submit.mjs — manual Base anchor submissions (ALD-0
       writes a dry-run record. Broadcasts nothing. Mainnet dry-runs require
       both --allow-mainnet and ALD_ALLOW_MAINNET_ANCHORING=true.
 
-  --broadcast --network <base-sepolia> --rpc-url-file <path>
+  --broadcast --network <base-sepolia|base-mainnet> --rpc-url-file <path>
       --key-file <path> --to <address>
       [--checkpoint-hash <sha256:...> | --checkpoint-manifest <path>]
       --out <receipt.json> [--from <address>]
@@ -65,6 +65,8 @@ Examples:
   node scripts/anchor-public-submit.mjs --generate-key --key-file ~/.ald/sepolia-anchor.key
   node scripts/anchor-public-submit.mjs --dry-run --rpc-url-file ~/.ald/sepolia-rpc.url \\
       --from 0x... --to 0x... --checkpoint-hash sha256:... --out /tmp/ald020-dryrun.json
+
+  --help/-h prints this usage and exits 0.
 `;
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });

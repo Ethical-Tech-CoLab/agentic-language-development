@@ -55,7 +55,7 @@ const HELP = `anchor-faucet-watch.mjs — ALD-020 funded-broadcast resume (Sepol
   checks the ALD-020 box, syncs BACKLOG/README/RESEARCH counts, regenerates
   the conformance matrix, verifies gates, and commits the named files.
   --push additionally pushes (only with push authorization).
-  Not funded -> prints NOT_FUNDED and exits 0. --help exits 0.
+  Not funded -> prints NOT_FUNDED and exits 0. --help/-h exits 0.
 `;
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
