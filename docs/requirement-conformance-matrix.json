@@ -124,7 +124,12 @@
         "refuses a key file in a group/other-writable directory",
         "accepts a trailing-whitespace key file and refuses to clobber it",
         "lives outside the per-run event signer key store",
-        "rotates the wallet key without invalidating prior receipts"
+        "rotates the wallet key without invalidating prior receipts",
+        "refuses an over-long key with the shape error, not the curve error",
+        "normalizes an uppercase key to lowercase hex",
+        "accepts a readable-but-not-writable key directory",
+        "creates missing parent directories owner-only",
+        "enforces 0600 on creation regardless of umask"
       ],
       "requiredReceipt": "pnpm exec vitest run packages/anchor/__tests__/key-file.test.ts"
     },

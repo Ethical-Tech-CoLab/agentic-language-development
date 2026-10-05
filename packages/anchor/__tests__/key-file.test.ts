@@ -255,4 +255,77 @@ describe('anchor key files (ALD-019)', () => {
 
     expect(ctx.writer.readAnchorReceipts(ctx.runId)).toHaveLength(2);
   });
+
+  it('refuses an over-long key with the shape error, not the curve error', async () => {
+    // R10-C-M13 N1 kill: unanchored pattern would match a 64-substring.
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'long.key');
+    await writeFile(path, `0x${'ab'.repeat(32)}cd\n`, { mode: 0o600 });
+
+    const failure = await loadAnchorKeyFile(path).catch(
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(AnchorKeyFileError);
+    expect((failure as Error).message).toContain('expected exactly one');
+  });
+
+  it('normalizes an uppercase key to lowercase hex', async () => {
+    // R10-C-M13 N2 kill: without lowercasing the case survives.
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'upper.key');
+    const key = generateAnchorKey();
+    await writeFile(path, `0x${key.privateKey.slice(2).toUpperCase()}\n`, {
+      mode: 0o600,
+    });
+
+    const loaded = await loadAnchorKeyFile(path);
+    expect(loaded.privateKey).toBe(key.privateKey);
+    expect(loaded.address).toBe(key.address);
+  });
+
+  it('accepts a readable-but-not-writable key directory', async () => {
+    // R10-C-M13 N3 kill: only writability is refused, not readability.
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'anchor.key');
+    const key = generateAnchorKey();
+    await writeAnchorKeyFile(path, key.privateKey);
+    await chmod(directory, 0o755);
+
+    await expect(loadAnchorKeyFile(path)).resolves.toMatchObject({
+      address: key.address,
+    });
+    await chmod(directory, 0o700);
+  });
+
+  it('creates missing parent directories owner-only', async () => {
+    // R10-C-M13 N5 kill: group/other bits on created parents are refused.
+    const directory = await temporaryDirectory();
+    const path = join(directory, 'nested', 'keys', 'anchor.key');
+    const previous = process.umask(0o0);
+    try {
+      await writeAnchorKeyFile(path, generateAnchorKey().privateKey);
+    } finally {
+      process.umask(previous);
+    }
+
+    const stats = await stat(join(directory, 'nested'));
+    expect(stats.mode & 0o077).toBe(0);
+  });
+
+  it('enforces 0600 on creation regardless of umask', async () => {
+    // R10-C-M13 N6 kill: without the explicit chmod the umask wins.
+    const directory = await temporaryDirectory();
+    const keys = join(directory, 'keys');
+    await mkdir(keys, { recursive: true });
+    const path = join(keys, 'anchor.key');
+    const previous = process.umask(0o777);
+    try {
+      await writeAnchorKeyFile(path, generateAnchorKey().privateKey);
+    } finally {
+      process.umask(previous);
+    }
+
+    const stats = await stat(path);
+    expect(stats.mode & 0o777).toBe(ANCHOR_KEY_FILE_MODE);
+  });
 });
