@@ -537,10 +537,12 @@ describe('resolveCheckpointHash manifests', () => {
     const dir = makeTmp();
     const badJson = writeTmpFile(dir, 'bad.json', '{nope');
     const noHash = writeTmpFile(dir, 'nohash.json', JSON.stringify({ checkpointHash: '0xdead' }));
-    for (const checkpointManifest of [badJson, join(dir, 'missing.json'), noHash]) {
+    for (const checkpointManifest of [badJson, join(dir, 'missing.json')]) {
       expect(() => resolveSubmitCheckpointHash({ checkpointHash: null, checkpointManifest }))
-        .toThrowError(Error);
+        .toThrowError(/Could not read checkpoint manifest/);
     }
+    expect(() => resolveSubmitCheckpointHash({ checkpointHash: null, checkpointManifest: noHash }))
+      .toThrowError(/no valid checkpointHash/);
     expect(() => resolveSubmitCheckpointHash(
       { checkpointHash: null, checkpointManifest: join(dir, 'no-parent', 'c.json') },
     )).toThrowError(/Could not read checkpoint manifest/);
@@ -553,7 +555,7 @@ describe('resolveCheckpointHash manifests', () => {
       .toBe(CHECKPOINT);
     expect(() => resolveWatchCheckpointHash(
       { checkpointHash: null, checkpointManifest: writeTmpFile(dir, 'bad.json', '{nope') },
-    )).toThrowError(Error);
+    )).toThrowError(/Could not read checkpoint manifest/);
   });
 });
 
@@ -565,7 +567,7 @@ describe('writeEvidenceOnce', () => {
     expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ a: 1 });
     expect(() => writeEvidenceOnce(path, { a: 2 })).toThrowError(/Refusing to overwrite/);
     expect(() => writeEvidenceOnce(join(dir, 'no-parent', 'e.json'), {}))
-      .toThrowError(Error);
+      .toThrowError(/ENOENT/);
   });
 });
 
@@ -608,7 +610,10 @@ describe('runDryRun with mocked RPC', () => {
     });
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     await runDryRun(args);
-    expect(log).toHaveBeenCalled();
+    expect(log).toHaveBeenCalledOnce();
+    expect(JSON.parse(String(log.mock.calls[0][0]))).toMatchObject({
+      kind: 'anchor-dry-run', broadcast: false, network: 'base-sepolia',
+    });
     const record = JSON.parse(readFileSync(args.out, 'utf8'));
     expect(record).toMatchObject({
       kind: 'anchor-dry-run',
@@ -655,14 +660,14 @@ describe('runDryRun with mocked RPC', () => {
       eth_estimateGas: '0x1',
       eth_gasPrice: '0x1',
     });
-    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(Error);
+    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(/does not match base-sepolia/);
     stubRpcByMethod({
       eth_chainId: '0x14a34',
       eth_getBalance: '0xZZZ',
       eth_estimateGas: '0x1',
       eth_gasPrice: '0x1',
     });
-    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(Error);
+    await expect(runDryRun(dryRunArgs(dir))).rejects.toThrowError(/Cannot convert/);
   });
 });
 
@@ -734,14 +739,14 @@ describe('checkOnce with mocked RPC', () => {
       eth_estimateGas: '0x1',
       eth_gasPrice: '0x1',
     });
-    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(Error);
+    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(StagingGateError);
     stubRpcByMethod({
       eth_chainId: '0x14a34',
       eth_getBalance: 'not-hex',
       eth_estimateGas: '0x1',
       eth_gasPrice: '0x1',
     });
-    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(Error);
+    await expect(checkOnce(watchArgs(dir), CHECKPOINT, FROM)).rejects.toThrowError(/Cannot convert/);
   });
 });
 
@@ -760,15 +765,15 @@ describe('readAndAssertReceipt', () => {
 
   it('refuses wrong networks, wrong chains, and missing explorer URLs', () => {
     const dir = makeTmp();
-    const variants = [
-      { ...good, network: 'base-mainnet' },
-      { ...good, chainId: 8453 },
-      { ...good, explorerTxUrl: `https://basescan.org/tx/${TX}` },
-      { ...good, explorerTxUrl: null },
+    const variants: Array<[any, RegExp]> = [
+      [{ ...good, network: 'base-mainnet' }, /unexpected network/],
+      [{ ...good, chainId: 8453 }, /unexpected network/],
+      [{ ...good, explorerTxUrl: `https://basescan.org/tx/${TX}` }, /valid Sepolia explorer URL/],
+      [{ ...good, explorerTxUrl: null }, /valid Sepolia explorer URL/],
     ];
-    for (const [index, receipt] of variants.entries()) {
+    for (const [index, [receipt, message]] of variants.entries()) {
       const path = writeTmpFile(dir, `r${String(index)}.json`, JSON.stringify(receipt));
-      expect(() => readAndAssertReceipt(path)).toThrowError(Error);
+      expect(() => readAndAssertReceipt(path)).toThrowError(message);
     }
   });
 
@@ -821,11 +826,11 @@ describe('assertReceiptInsideRepo confinement (pure: never touches BACKLOG)', ()
   });
 
   it('syncCloseOut delegates to the confinement check first', () => {
-    // Outside paths only: even with either guard removed (single mutant),
-    // the other still throws before any BACKLOG write (lexical message or
-    // realpath ENOENT). The symlink case stays on the pure unit above.
+    // Outside paths only: both hit the lexical guard, and pinning its exact
+    // message keeps the test red if the delegation (or the guard) is ever
+    // removed. The symlink case stays on the pure unit above.
     for (const receiptOut of ['/tmp/evil.json', '../evil.json']) {
-      expect(() => syncCloseOut({}, receiptOut)).toThrowError(Error);
+      expect(() => syncCloseOut({}, receiptOut)).toThrowError(/inside the repository/);
     }
   });
 });
@@ -903,7 +908,7 @@ describe('watch loop bounds and exit map', () => {
       '--receipt-out', receiptOut, '--check-only', '--push',
     ]);
     expect(result).toEqual({ acted: false });
-    expect(() => readFileSync(receiptOut, 'utf8')).toThrowError(Error);
+    expect(() => readFileSync(receiptOut, 'utf8')).toThrowError(/ENOENT/);
   });
 
   it('an existing receipt-out aborts before any RPC call', async () => {
@@ -1180,7 +1185,9 @@ describe('R8-C strictness and empty/boundary inputs', () => {
     const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     expect(await runWatchCli(['--help'])).toBe(0);
     expect(await runSubmitCli(['--help'])).toBe(0);
-    expect(write).toHaveBeenCalled();
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(String(write.mock.calls[0][0])).toContain('anchor-faucet-watch.mjs');
+    expect(String(write.mock.calls[1][0])).toContain('anchor-public-submit.mjs');
   });
 });
 
@@ -1255,7 +1262,7 @@ describe('R8-Q key generation and submit dispatch', () => {
     const printed = JSON.parse(String(log.mock.calls[0][0]));
     expect(printed).toMatchObject({ keyFile });
     expect(printed.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
-    await expect(runGenerateKey({ keyFile })).rejects.toThrowError(Error);
+    await expect(runGenerateKey({ keyFile })).rejects.toThrowError(/could not be created/);
   });
 
   it('runBroadcast refuses a --from/key mismatch before building the transport', async () => {
