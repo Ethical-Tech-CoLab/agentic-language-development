@@ -1498,6 +1498,7 @@
         "checkCriterionBox works on the last section (no following header)",
         "runGenerateKey writes mode-0600, prints keyFile/address JSON, refuses overwrite",
         "runBroadcast refuses a --from/key mismatch before building the transport",
+        "runBroadcast rejects a transport whose input data mismatches the checkpoint digest",
         "submit runCli dispatches broadcast refusals through main with exit 2",
         "submit runCli runs a full dry-run through main with exit 0"
       ],

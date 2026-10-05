@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ANCHOR_CHAIN_IDS } from '@ald/anchor';
+import { ANCHOR_CHAIN_IDS, ViemChainTransport } from '@ald/anchor';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -1350,6 +1350,37 @@ describe('R8-Q key generation and submit dispatch', () => {
     expect(failure).toBeInstanceOf(Error);
     expect(failure).not.toBeInstanceOf(StagingGateError);
     expect(failure.message).toMatch(/--from does not match/);
+  });
+
+  it('runBroadcast rejects a transport whose input data mismatches the checkpoint digest', async () => {
+    // R10-C-M1 B4 kill: without the post-send inputData check this resolves.
+    const dir = makeTmp();
+    const sendAnchorTransaction = vi.fn().mockResolvedValue({
+      transactionHash: TX,
+      inputData: `0x${'99'.repeat(32)}`,
+    });
+    vi.spyOn(ViemChainTransport, 'create').mockReturnValue({
+      chainId: PUBLIC_ANCHOR_NETWORKS['base-sepolia'].chainId,
+      sendAnchorTransaction,
+    } as any);
+    const failure = await runBroadcast({
+      mode: 'broadcast',
+      network: 'base-sepolia',
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      keyFile: writeTmpFile(dir, 'anchor.key', `${'0x'}${'11'.repeat(32)}\n`),
+      from: null,
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out: join(dir, 'out.json'),
+      allowMainnet: false,
+      confirmMainnetBroadcast: false,
+    }).then(() => null, (error: any) => error);
+    expect(ViemChainTransport.create).toHaveBeenCalledOnce();
+    expect(sendAnchorTransaction).toHaveBeenCalledOnce();
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure).not.toBeInstanceOf(StagingGateError);
+    expect(failure.message).toBe('Transport returned input data that does not match the checkpoint digest.');
   });
 
   it('submit runCli dispatches broadcast refusals through main with exit 2', async () => {
