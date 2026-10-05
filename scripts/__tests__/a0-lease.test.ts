@@ -1,5 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -285,5 +286,33 @@ describe('A0 single host-job lease', () => {
     expect(hits[0].r.outcome).toContain('already gone');
     expect(hits[0].r.outcome).toContain('unit vanished');
     rmSync(join(DIR, hits[0].f)); // Our record is asserted inline; leave no residue for reruns.
+  });
+
+  it('refuses a create whose source identity is unresolvable', () => {
+    // R10-C-Q1 ALD2 flag 2: autoSource catch + unknown-source refuse (:35-41, :134).
+    // Isolated cwd outside any git checkout, so no operator lease can be disturbed.
+    const dir = mkdtempSync(join(tmpdir(), 'ald-a0-lease-nosource-'));
+    try {
+      const args = createArgs(writePreflight()).filter((a, i, arr) => a !== '--source' && arr[i - 1] !== '--source');
+      const refused = spawnSync(process.execPath, [cli, ...args], { cwd: dir, encoding: 'utf8' });
+      expect(refused.status).toBe(2);
+      expect(JSON.parse(refused.stderr).lease).toBe('error');
+      expect(refused.stderr).toContain('cannot bind source identity');
+      expect(existsSync(join(dir, '.artifacts/a0-leases/active.json'))).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('binds git HEAD as source when --source is omitted', () => {
+    // R10-C-Q1 ALD2 flag 2: autoSource success path (:35-41 try).
+    if (activeLeaseExists()) return;
+    const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
+    if (head.status !== 0) return; // Not a git checkout; nothing to auto-bind.
+    const sha = head.stdout.trim();
+    const args = createArgs(writePreflight({ source: sha })).filter((a, i, arr) => a !== '--source' && arr[i - 1] !== '--source');
+    const created = run(...args);
+    expect(created.status).toBe(0);
+    expect(JSON.parse(created.stdout).source).toBe(sha);
   });
 });
