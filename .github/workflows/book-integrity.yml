@@ -18,13 +18,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@49d03f1bf5d455a413dfbdf99e6718054a4cd975
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
 
-      - name: Install Node.js and pnpm with Homebrew
-        run: |
-          brew install node@24 pnpm
-          echo "$(brew --prefix node@24)/bin" >> "$GITHUB_PATH"
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -64,13 +66,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@49d03f1bf5d455a413dfbdf99e6718054a4cd975
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
 
-      - name: Install Node.js and pnpm with Homebrew
-        run: |
-          brew install node@24 pnpm
-          echo "$(brew --prefix node@24)/bin" >> "$GITHUB_PATH"
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
