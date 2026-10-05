@@ -199,7 +199,7 @@ export function parsePublicSubmitArgs(argv) {
     return args;
   }
   if (args.rpcUrlFile === null) {
-    throw usageError(`${args.mode === '--dry-run' ? '--dry-run' : '--broadcast'} requires --rpc-url-file <path>.`);
+    throw usageError(`${args.mode === 'dry-run' ? '--dry-run' : '--broadcast'} requires --rpc-url-file <path>.`);
   }
   if (args.to === null || !ADDRESS_PATTERN.test(args.to)) {
     throw usageError('--to must be a 0x-prefixed 20-byte destination address.');

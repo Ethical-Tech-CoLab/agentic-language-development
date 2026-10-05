@@ -142,7 +142,7 @@ export function rpcClient(rpcUrl, label) {
   };
 }
 
-async function runGenerateKey(args) {
+export async function runGenerateKey(args) {
   const { generateAnchorKey, writeAnchorKeyFile } = await loadAnchorOrExplain();
   const fresh = generateAnchorKey();
   const saved = await writeAnchorKeyFile(args.keyFile, fresh.privateKey);

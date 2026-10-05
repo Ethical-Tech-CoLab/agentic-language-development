@@ -12,7 +12,7 @@
  * the exit-code map) with tmp fixtures and a stubbed `fetch`.
  */
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,6 +45,7 @@ import {
   runBroadcast,
   runCli as runSubmitCli,
   runDryRun,
+  runGenerateKey,
   writeEvidenceOnce,
 } from '../anchor-public-submit.mjs';
 import {
@@ -1180,5 +1181,132 @@ describe('R8-C strictness and empty/boundary inputs', () => {
     expect(await runWatchCli(['--help'])).toBe(0);
     expect(await runSubmitCli(['--help'])).toBe(0);
     expect(write).toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R8-Q coverage gaps: short flags, missing-value shapes, post-parse required
+// checks, last-section close-out, key generation, and submit-CLI dispatch.
+// (Plus a regression test for the '--dry-run' mode-message bug.)
+// ---------------------------------------------------------------------------
+
+describe('R8-Q parser edges', () => {
+  it('accepts -h as well as --help on both CLIs', () => {
+    expect(parsePublicSubmitArgs(['-h']).mode).toBe('help');
+    expect(parseFaucetWatchArgs(['-h']).help).toBe(true);
+  });
+
+  it('names the invoking mode in missing-file errors (not always --broadcast)', () => {
+    const messageOf = (argv: string[]): string => {
+      try {
+        parsePublicSubmitArgs(argv);
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+      expect.unreachable();
+    };
+    const dryBase = ['--dry-run', '--from', FROM, '--to', TO, '--checkpoint-hash', CHECKPOINT];
+    expect(messageOf([...dryBase, '--out', 'o'])).toContain('--dry-run requires --rpc-url-file');
+    expect(messageOf(['--broadcast', '--rpc-url-file', 'r', '--key-file', 'k', '--to', TO, '--checkpoint-hash', CHECKPOINT]))
+      .toContain('--broadcast requires --out');
+    expect(messageOf([...dryBase, '--rpc-url-file', 'r'])).toContain('--dry-run requires --out');
+  });
+
+  it('rejects a flag followed by another flag (not just a trailing flag)', () => {
+    expect(() => parsePublicSubmitArgs(['--dry-run', '--to', '--from', FROM, '--checkpoint-hash', CHECKPOINT]))
+      .toThrowError(/requires a value/);
+    expect(() => parseFaucetWatchArgs(['--rpc-url-file'])).toThrowError(/requires a value/);
+  });
+
+  it('watch post-parse checks fire when a required flag is absent entirely', () => {
+    const full = ['--rpc-url-file', 'r', '--key-file', 'k', '--to', TO,
+      '--checkpoint-hash', CHECKPOINT, '--receipt-out', 'o'];
+    const drop = (flag: string): string[] => full.filter((t: string, i: number) => !(t === flag || full[i - 1] === flag));
+    expect(() => parseFaucetWatchArgs(drop('--rpc-url-file'))).toThrowError(/--rpc-url-file/);
+    expect(() => parseFaucetWatchArgs(drop('--key-file'))).toThrowError(/--key-file/);
+    expect(() => parseFaucetWatchArgs(drop('--to'))).toThrowError(/--to must be/);
+    expect(() => parseFaucetWatchArgs(drop('--checkpoint-hash'))).toThrowError(/Provide --checkpoint-hash/);
+    expect(() => parseFaucetWatchArgs(drop('--receipt-out'))).toThrowError(/--receipt-out/);
+  });
+
+  it('checkCriterionBox works on the last section (no following header)', () => {
+    const fixture = [
+      '#### ALD-020 — Base Sepolia anchoring client',
+      '  - [x] A submitted checkpoint root is independently observable.',
+      '',
+      '#### ALD-998 — Confirmation',
+      '  - [ ] A receipt is marked confirmed only after depth.',
+      '',
+    ].join('\n');
+    const updated = checkCriterionBox(fixture, 'ALD-998', 'A receipt is marked confirmed');
+    expect(updated).toContain('  - [x] A receipt is marked confirmed only after depth.');
+    expect(countCriteria(updated)).toEqual({ checked: 2, total: 2 });
+  });
+});
+
+describe('R8-Q key generation and submit dispatch', () => {
+  it('runGenerateKey writes mode-0600, prints keyFile/address JSON, refuses overwrite', async () => {
+    const dir = makeTmp();
+    const keyFile = join(dir, 'fresh.key');
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await runGenerateKey({ keyFile });
+    expect(statSync(keyFile).mode & 0o777).toBe(0o600);
+    expect(log).toHaveBeenCalledOnce();
+    const printed = JSON.parse(String(log.mock.calls[0][0]));
+    expect(printed).toMatchObject({ keyFile });
+    expect(printed.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    await expect(runGenerateKey({ keyFile })).rejects.toThrowError(Error);
+  });
+
+  it('runBroadcast refuses a --from/key mismatch before building the transport', async () => {
+    const dir = makeTmp();
+    const failure = await runBroadcast({
+      mode: 'broadcast',
+      network: 'base-sepolia',
+      rpcUrlFile: writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      keyFile: writeTmpFile(dir, 'anchor.key', `${'0x'}${'11'.repeat(32)}\n`),
+      from: '0x2222222222222222222222222222222222222222',
+      to: TO,
+      checkpointHash: CHECKPOINT,
+      checkpointManifest: null,
+      out: join(dir, 'out.json'),
+      allowMainnet: false,
+      confirmMainnetBroadcast: false,
+    }).then(() => null, (error: any) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure).not.toBeInstanceOf(StagingGateError);
+    expect(failure.message).toMatch(/--from does not match/);
+  });
+
+  it('submit runCli dispatches broadcast refusals through main with exit 2', async () => {
+    const dir = makeTmp();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Parses cleanly (so main dispatches), then runBroadcast refuses at the gate.
+    expect(await runSubmitCli([
+      '--broadcast', '--network', 'base-mainnet', '--rpc-url-file', join(dir, 'missing.url'),
+      '--key-file', join(dir, 'missing.key'), '--to', TO, '--checkpoint-hash', CHECKPOINT,
+      '--out', join(dir, 'out.json'),
+    ])).toBe(2);
+  });
+
+  it('submit runCli runs a full dry-run through main with exit 0', async () => {
+    const dir = makeTmp();
+    stubRpcByMethod({
+      eth_chainId: '0x14a34',
+      eth_getBalance: '0x0',
+      eth_estimateGas: '0x5857',
+      eth_gasPrice: '0x1',
+    });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(dir, 'dry.json');
+    const code = await runSubmitCli([
+      '--dry-run', '--network', 'base-sepolia',
+      '--rpc-url-file', writeTmpFile(dir, 'rpc.url', 'https://rpc.example.test\n'),
+      '--from', FROM, '--to', TO, '--checkpoint-hash', CHECKPOINT, '--out', out,
+    ]);
+    expect(code).toBe(0);
+    expect(JSON.parse(readFileSync(out, 'utf8'))).toMatchObject({
+      kind: 'anchor-dry-run', broadcast: false, chainId: 84532,
+    });
   });
 });

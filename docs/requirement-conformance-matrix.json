@@ -1489,7 +1489,16 @@
         "submit manifest refuses null and non-string checkpointHash",
         "countCriteria handles zero boxes",
         "checkCriterionBox checks the first matching box only",
-        "in-process --help exits 0 on both CLIs"
+        "in-process --help exits 0 on both CLIs",
+        "accepts -h as well as --help on both CLIs",
+        "names the invoking mode in missing-file errors (not always --broadcast)",
+        "rejects a flag followed by another flag (not just a trailing flag)",
+        "watch post-parse checks fire when a required flag is absent entirely",
+        "checkCriterionBox works on the last section (no following header)",
+        "runGenerateKey writes mode-0600, prints keyFile/address JSON, refuses overwrite",
+        "runBroadcast refuses a --from/key mismatch before building the transport",
+        "submit runCli dispatches broadcast refusals through main with exit 2",
+        "submit runCli runs a full dry-run through main with exit 0"
       ],
       "requiredReceipt": "pnpm exec vitest run scripts/__tests__/anchor-staging.test.ts"
     },
