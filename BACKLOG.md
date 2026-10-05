@@ -943,7 +943,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-073 — Gate G1: Integrity and isolation readiness (E00–E03)
 - **Priority:** P0 · **Size:** S · **Class:** MVP · **Depends on:** ALD-015, ALD-021, ALD-029, ALD-035, ALD-036, ALD-041, ALD-042, ALD-067, ALD-068, ALD-071, ALD-072
-- **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E00](EXPERIMENT-NOTEBOOK.md#e00-ledger-integrity-and-base-anchoring), [E01](EXPERIMENT-NOTEBOOK.md#e01-channel-isolation-and-side-channel-red-team), [E02](EXPERIMENT-NOTEBOOK.md#e02-observation-and-metadata-leakage-audit), [E03](EXPERIMENT-NOTEBOOK.md#e03-chance-no-communication-and-random-message-controls)
+- **Spec refs:** `SPECIFICATION.md` [§17.4 Traceability to E00–E50](SPECIFICATION.md#174-traceability-to-e00-e50), `EXPERIMENT-NOTEBOOK.md` [E00](EXPERIMENT-NOTEBOOK.md#e00-ledger-integrity-and-simulated-commitment), [E01](EXPERIMENT-NOTEBOOK.md#e01-channel-isolation-and-side-channel-red-team), [E02](EXPERIMENT-NOTEBOOK.md#e02-observation-and-metadata-leakage-audit), [E03](EXPERIMENT-NOTEBOOK.md#e03-chance-no-communication-and-random-message-controls)
 - **Scope:** Define and check the readiness gate confirming the software capability required for `E00`–`E03` exists and passes its own conformance checks — the gate asserts *capability is ready to run the experiment*, not that the experiment has been run or what it found.
 - **Acceptance criteria:**
   - [x] `E00` readiness: the verifier accepts an unchanged anchored bundle and rejects all 14 mutation/anchor cases in LEDGER §17, including wrong-chain anchors and unanchored tails.
@@ -1045,7 +1045,7 @@ Each item lists: Priority, Size, Classification (MVP / Research-Grade / Later-Re
 
 #### ALD-083 — Canonical E03 registration compiler
 - **Priority:** P0 · **Size:** M · **Class:** Research-Grade · **Depends on:** ALD-071, ALD-082
-- **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `RESEARCH.md` [Appendix D](RESEARCH.md#appendix-d-pre-registered-e03-protocol)
+- **Spec refs:** `SPECIFICATION.md` [§15.1 Pre-Registration Binding](SPECIFICATION.md#151-pre-registration-binding), `RESEARCH.md` [Appendix D](RESEARCH.md#appendix-d-registered-e03-control-qualification)
 - **Scope:** Compile E03's registered parameter template, its canonical domain-separated hash, complete seed allocation, and per-condition run-config templates into one validated artifact.
 - **Acceptance criteria:**
   - [x] The compiler output validates as a `PreRegistrationArtifact` and is byte-identical on repeat.
@@ -1091,7 +1091,7 @@ This table maps every experiment in `EXPERIMENT-NOTEBOOK.md` §7–§8 to the re
 
 | Experiment | Gate | Gate Item | Underlying Readiness Items |
 |---|---|---|---|
-| [E00](EXPERIMENT-NOTEBOOK.md#e00-ledger-integrity-and-base-anchoring) | G1 | ALD-073 | ALD-015, ALD-021 |
+| [E00](EXPERIMENT-NOTEBOOK.md#e00-ledger-integrity-and-simulated-commitment) | G1 | ALD-073 | ALD-015, ALD-021 |
 | [E01](EXPERIMENT-NOTEBOOK.md#e01-channel-isolation-and-side-channel-red-team) | G1 | ALD-073 | ALD-067 |
 | [E02](EXPERIMENT-NOTEBOOK.md#e02-observation-and-metadata-leakage-audit) | G1 | ALD-073 | ALD-038, ALD-039, ALD-068 |
 | [E03](EXPERIMENT-NOTEBOOK.md#e03-chance-no-communication-and-random-message-controls) | G1 | ALD-073 | ALD-029, ALD-035, ALD-036, ALD-041, ALD-042, ALD-072 |
