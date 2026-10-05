@@ -28,7 +28,7 @@ Do these steps in order, as an administrator of
    open the PR → Checks → the `action_required` run → "Approve and run".
    Approve the currently-held run for the latest PR head — run IDs recorded
    in docs/hosted-ci-evidence.md lag new pushes (latest recorded run is for
-   a90728a; HEAD has since moved to f288767).
+   a90728a; HEAD has since moved on).
    Both jobs must execute; if either fails, fix the branch and re-run until
    both are green. This registers the `consolidated-suite` and `mode-r`
    check names on the upstream repository.
