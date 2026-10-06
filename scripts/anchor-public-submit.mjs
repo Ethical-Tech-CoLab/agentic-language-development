@@ -223,7 +223,6 @@ export async function runBroadcast(args) {
     assertMainnetBroadcastConfirmed({ confirmed: args.confirmMainnetBroadcast });
   }
   const rpcUrl = readSecretFile(args.rpcUrlFile, 'RPC URL');
-  const label = endpointLabelFor(rpcUrl);
   const { checkpointHash, checkpointManifest } = resolveCheckpointHash(args);
   const {
     ViemChainTransport,
