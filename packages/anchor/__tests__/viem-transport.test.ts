@@ -71,6 +71,7 @@ interface FakeNodeOptions {
 class FakeNode {
   readonly methods: string[] = [];
   readonly accepted: AcceptedTransaction[] = [];
+  readonly seen: Array<{ method: string; params: readonly unknown[] }> = [];
 
   private server: Server | undefined;
   private port = 0;
@@ -101,6 +102,12 @@ class FakeNode {
 
   callsTo(method: string): number {
     return this.methods.filter((seen) => seen === method).length;
+  }
+
+  paramsFor(method: string): unknown[][] {
+    return this.seen
+      .filter((call) => call.method === method)
+      .map((call) => [...call.params]);
   }
 
   async stop(): Promise<void> {
@@ -148,6 +155,7 @@ class FakeNode {
         params?: unknown[];
       };
       this.methods.push(method);
+      this.seen.push({ method, params: params ?? [] });
       if (method === 'eth_sendRawTransaction' && this.dropsLeft > 0) {
         this.dropsLeft -= 1;
         this.accept(params ?? []);
@@ -400,6 +408,19 @@ describe('ViemChainTransport', () => {
     expect(rpc.callsTo('eth_sendRawTransaction')).toBe(1);
   });
 
+  it('R10-C-M18 W10: signs a zero-value transaction', async () => {
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    await client.sendAnchorTransaction({
+      checkpointHash: CHECKPOINT_HASH,
+      to: DESTINATION,
+    });
+    const accepted = rpc.accepted[0];
+    expect(rpc.accepted).toHaveLength(1);
+    // viem omits zero-valued fields when parsing, so 0n reads back undefined.
+    expect(parseTransaction((accepted?.raw ?? '0x') as Hex).value ?? 0n).toBe(0n);
+  });
+
   it('maps getTransaction, getTransactionReceipt and the head block', async () => {
     const rpc = await node();
     const client = transportFor(rpc.url, 'fake-node');
@@ -505,6 +526,38 @@ describe('nonce pinning (LEDGER §16 Phase 2)', () => {
     expect(sent.transactionHash).toBe(rpc.accepted[0]?.hash);
     expect(sent.inputData).toBe(anchorInputData(CHECKPOINT_HASH));
   });
+
+  it('R10-C-M18 W8: pins one submission across address-case variants', async () => {
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    const uppercased = `0x${DESTINATION.slice(2).toUpperCase()}`;
+    const first = await client.sendAnchorTransaction({
+      checkpointHash: CHECKPOINT_HASH,
+      to: DESTINATION,
+    });
+    const second = await client.sendAnchorTransaction({
+      checkpointHash: CHECKPOINT_HASH,
+      to: uppercased,
+    });
+
+    expect(rpc.accepted).toHaveLength(2);
+    expect(new Set(rpc.accepted.map((tx) => tx.nonce))).toEqual(new Set([0]));
+    expect(new Set(rpc.accepted.map((tx) => tx.raw)).size).toBe(1);
+    expect(second.transactionHash).toBe(first.transactionHash);
+    expect(rpc.callsTo('eth_getTransactionCount')).toBe(1);
+  });
+
+  it('R10-C-M18 W9: reads the nonce from the pending pool', async () => {
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    await client.sendAnchorTransaction({
+      checkpointHash: CHECKPOINT_HASH,
+      to: DESTINATION,
+    });
+    expect(rpc.paramsFor('eth_getTransactionCount')).toEqual([
+      [anchorKey.address, 'pending'],
+    ]);
+  });
 });
 
 describe('error redaction (LEDGER §11)', () => {
@@ -589,6 +642,28 @@ describe('error redaction (LEDGER §11)', () => {
       .catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(TransientChainError);
     expect((failure as Error).message).toContain('HTTP 503');
+  });
+
+  it('R10-C-M18 W1/W3: keeps safe provider codes, drops anything else', async () => {
+    const rpc = await node();
+    const client = transportFor(rpc.url, 'fake-node');
+    const failureFor = async (code: unknown): Promise<string> => {
+      (client as unknown as { publicClient: unknown }).publicClient = {
+        getTransaction: vi
+          .fn()
+          .mockRejectedValue(Object.assign(new Error('provider down'), { code })),
+      };
+      const failure = await client
+        .getTransaction(UNKNOWN_HASH)
+        .catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(TransientChainError);
+      return (failure as Error).message;
+    };
+    expect(await failureFor('ECONNREFUSED')).toContain('ECONNREFUSED');
+    expect(await failureFor('econnrefused')).not.toContain('econnrefused');
+    // First character must be uppercase too, not just the tail.
+    expect(await failureFor('eCONNREFUSED')).not.toContain('eCONNREFUSED');
+    expect(await failureFor('HAS SPACES; rm -rf /')).not.toContain('HAS SPACES');
   });
 
   it('never turns a provider failure into the chain fact "not found"', async () => {
