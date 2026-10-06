@@ -1454,6 +1454,8 @@
         "rejects negative and non-numeric inputs",
         "counts boxes the way the project-status checker does",
         "checks the targeted box and preserves statement text",
+        "R10-C-M19 X1: matches statement prefixes containing regex syntax literally",
+        "R10-C-M19 X10: matches snapshot versions containing regex syntax literally",
         "refuses missing sections, missing statements, and double-apply",
         "syncs the backlog count line",
         "syncs only the current-version snapshot line",

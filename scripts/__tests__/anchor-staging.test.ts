@@ -341,6 +341,26 @@ describe('backlog close-out helpers', () => {
     expect(updated).toContain('  - [ ] A receipt is marked confirmed only after depth.');
   });
 
+  it('R10-C-M19 X1: matches statement prefixes containing regex syntax literally', () => {
+    const fixture = [
+      '# Backlog',
+      '',
+      '#### ALD-020 — Base Sepolia anchoring client',
+      '- **Acceptance criteria:**',
+      '  - [ ] Priced at $5.00 (v1.0) today.',
+      '',
+    ].join('\n');
+    const updated = checkCriterionBox(fixture, 'ALD-020', 'Priced at $5.00 (v1.0)');
+    expect(updated).toContain('  - [x] Priced at $5.00 (v1.0) today.');
+  });
+
+  it('R10-C-M19 X10: matches snapshot versions containing regex syntax literally', () => {
+    const text = 'v1.0+hotfix · 1/1 backlog acceptance criteria verified.';
+    expect(syncSnapshotLine(text, '1.0+hotfix', 2, 3)).toBe(
+      'v1.0+hotfix · 2/3 backlog acceptance criteria verified.',
+    );
+  });
+
   it('refuses missing sections, missing statements, and double-apply', () => {
     expect(() => checkCriterionBox(BACKLOG_FIXTURE, 'ALD-999', 'Anything')).toThrowError(StagingGateError);
     expect(() => checkCriterionBox(BACKLOG_FIXTURE, 'ALD-020', 'No such statement')).toThrowError(StagingGateError);
