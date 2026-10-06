@@ -291,10 +291,13 @@ describe('anchor key files (ALD-019)', () => {
     await writeAnchorKeyFile(path, key.privateKey);
     await chmod(directory, 0o755);
 
-    await expect(loadAnchorKeyFile(path)).resolves.toMatchObject({
-      address: key.address,
-    });
-    await chmod(directory, 0o700);
+    try {
+      await expect(loadAnchorKeyFile(path)).resolves.toMatchObject({
+        address: key.address,
+      });
+    } finally {
+      await chmod(directory, 0o700);
+    }
   });
 
   it('creates missing parent directories owner-only', async () => {

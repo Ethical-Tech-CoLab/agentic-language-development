@@ -2,10 +2,10 @@
  * R10-C-M10: direct unit pins for the pending sidecar (packages/anchor/src/pending.ts).
  * Landed post-M9-ship (was held to avoid pack mixing).
  */
-import { mkdtempSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('node:crypto', async (importOriginal) => ({
   ...((await importOriginal()) as object),
@@ -29,6 +29,9 @@ function makeDir(): string {
 }
 afterEach(() => {
   vi.restoreAllMocks();
+});
+afterAll(() => {
+  for (const dir of DIRS.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
 function submission(overrides: Partial<PendingAnchorSubmission> = {}): PendingAnchorSubmission {
